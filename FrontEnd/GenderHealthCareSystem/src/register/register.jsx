@@ -52,24 +52,24 @@ const Register = () => {
 
         <div className="p-8">
           <Form layout="vertical" size="large">
-            <div className="flex gap-4">
-              <Form.Item
-                name="lastName"
-                label="Họ"
-                className="w-1/2"
-                rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
-              >
-                <Input placeholder="Nguyễn" />
-              </Form.Item>
-              <Form.Item
-                name="firstName"
-                label="Tên"
-                className="w-1/2"
-                rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-              >
-                <Input placeholder="Văn A" />
-              </Form.Item>
-            </div>
+            <Form.Item
+              name="username"
+              label="Tên đăng nhập"
+              rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Nhập tên đăng nhập"
+                autoComplete="username"
+              />
+            </Form.Item>
+            <Form.Item
+              name="fullName"
+              label="Họ Tên"
+              rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+            >
+              <Input placeholder="Nguyễn Văn A" />
+            </Form.Item>
             <Form.Item
               name="phone"
               label="Số điện thoại"
@@ -81,20 +81,22 @@ const Register = () => {
             </Form.Item>
             <div className="flex justify-between gap-4">
               <Form.Item
-              className="w-1/2"
+                className="w-1/2"
                 name="birthDate"
                 label="Ngày sinh"
-                rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn ngày sinh!" },
+                ]}
               >
                 <DatePicker
                   className="w-full"
                   placeholder="Chọn ngày sinh"
                   format="DD/MM/YYYY"
-                  suffixIcon={
-                    <CalendarOutlined className="text-gray-400" />}/>
+                  suffixIcon={<CalendarOutlined className="text-gray-400" />}
+                />
               </Form.Item>
               <Form.Item
-              className="w-1/2"
+                className="w-1/2"
                 name="gender"
                 label="Giới tính"
                 rules={[
