@@ -68,18 +68,19 @@ const Home = () => {
             </div>
 
             {/* Right side content */}
-            <div className="flex-1 max-w-[60%] relative z-10">
-              <Title level={1} className="mb-4">Welcome to Our Site</Title>
-              <Paragraph className="text-lg">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed et magna justo.
+            <div className="flex-1 max-w-[60%] git text-white text-center flex flex-col items-center">
+              <Title level={1} className="text-white mb-4">Chào mừng đến với Gender Healthcare</Title>
+              <Paragraph className="text-lg text-white">
+                Tư vấn y khoa, xét nghiệm STIs,...
               </Paragraph>
-              <Button 
-                type="primary" 
-                size="large"
-                className="mt-6"
-              >
-                Get Started
-              </Button>
+              <div className="flex gap-4 mt-6">
+                <Button type="primary" size="large">
+                  Xét nghiệm
+                </Button>
+                <Button type="primary" size="large">
+                  Tư vấn
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -87,13 +88,13 @@ const Home = () => {
         {/* Services Section */}
         <div className="py-12 px-8">
           <Title level={2} className="text-center mb-10">
-            Our Services
+            Dịch vụ của chúng tôi
           </Title>
-          
+
           <Row gutter={[24, 24]} justify="center">
             {/* Card 1 */}
-            <Col xs={24} sm={12} md={8}>
-              <Card 
+            <Col xs={24} sm={13} md={7}>
+              <Card
                 hoverable
                 className="h-full"
               >
@@ -101,22 +102,22 @@ const Home = () => {
                   <div className="text-[#0099CF] text-5xl mb-6">
                     <CalendarOutlined />
                   </div>
-                  <Title level={4}>Menstrual Health Tracking</Title>
+                  <Title level={4}>Theo dõi chu kỳ kinh nguyệt</Title>
                   <Paragraph className="mb-6 flex-grow">
-                    Track your menstrual cycle, receive reminders for ovulation, fertility periods, and birth control.
+                    Theo dõi chu kì kinh nguyệt của bạn, nhận nhắc nhở thời gian rụng trứng, khả năng mang thai, và thời gian uống thuốc tránh thai.
                   </Paragraph>
-                  <Button 
+                  <Button
                     type="primary"
                   >
-                    Learn More <ArrowRightOutlined />
+                    Theo dõi <ArrowRightOutlined />
                   </Button>
                 </div>
               </Card>
             </Col>
 
             {/* Card 2 */}
-            <Col xs={24} sm={12} md={8}>
-              <Card 
+            <Col xs={24} sm={12} md={7}>
+              <Card
                 hoverable
                 className="h-full"
               >
@@ -124,43 +125,44 @@ const Home = () => {
                   <div className="text-[#0099CF] text-5xl mb-6">
                     <MessageOutlined />
                   </div>
-                  <Title level={4}>Online Consultations</Title>
+                  <Title level={4}>Tư vấn trực tuyến</Title>
                   <Paragraph className="mb-6 flex-grow">
-                    Schedule appointments with our consultants to discuss your healthcare needs and concerns.
+                    Đặt lịch trực tuyến với tư vấn viên để trao đổi những thắc mắc của bạn về sức khỏe.
                   </Paragraph>
-                  <Button 
+                  <Button
                     type="primary"
                   >
-                    Learn More <ArrowRightOutlined />
+                    Tư vấn <ArrowRightOutlined />
                   </Button>
                 </div>
               </Card>
             </Col>
 
             {/* Card 3 */}
-            <Col xs={24} sm={12} md={8}>
-              <Card 
+            <Col xs={24} sm={12} md={7}>
+              <Card
                 hoverable
-                className="h-full" 
+                className="h-full"
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="text-[#0099CF] text-5xl mb-6">
                     <FileTextOutlined />
                   </div>
-                  <Title level={4}>STI Testing</Title>
+                  <Title level={4}>Xét nghiệm STIs</Title>
                   <Paragraph className="mb-6 flex-grow">
-                    Schedule confidential STI testing appointments and access your results securely online.
+                    Đặt lịch xét nghiệm STIs và nhận kết quả online một cách nhanh chóng.
                   </Paragraph>
-                  <Button 
+                  <Button
                     type="primary"
                   >
-                    Learn More <ArrowRightOutlined />
+                    Đặt lịch <ArrowRightOutlined />
                   </Button>
                 </div>
               </Card>
             </Col>
           </Row>
         </div>
+
       </>
     </ConfigProvider>
   );
