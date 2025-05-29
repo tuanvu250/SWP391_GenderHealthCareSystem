@@ -1,4 +1,4 @@
-import { Form, Input, Button, Divider, Checkbox } from "antd";
+import { Form, Input, Button, Divider, Checkbox} from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -7,12 +7,39 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const handleNavigation = (path) => {
     navigate(path);
   };
+
+  const onFinish = async (values) => {
+    try {
+      console.log("Form values:", values);
+      const response = await axios.post("https://dummyjson.com/auth/login", {
+        username: values.username,
+        password: values.password,
+      });
+      
+      console.log("Login response:", response.data);
+
+      if(response.data && response.data.accessToken) {
+        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem("user", JSON.stringify(response.data))
+        console.log("success")
+      } else {
+        console.log("error login")
+      }
+    } catch (error) {
+      console.error("Login error: ", error);
+      if(error.response) {
+        console.log("wrong username or password");
+      }
+    }
+  }
 
   return (
     <div
@@ -50,7 +77,10 @@ const Login = () => {
 
         {/* Form */}
         <div className="p-8">
-          <Form layout="vertical" size="large" className="space-y-4">
+          <Form layout="vertical"
+          form={form}
+          onFinish={onFinish}
+          size="large" className="space-y-4">
             <Form.Item
               name="username"
               rules={[
