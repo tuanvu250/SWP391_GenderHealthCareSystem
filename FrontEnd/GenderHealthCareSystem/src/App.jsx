@@ -2,6 +2,7 @@ import Header from "./layout/header";
 import Home from "./home/home";
 import Login from "./login/login";
 import Register from "./register/register"; 
+import Footer from "./layout/footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 const MainLayout = ({ children }) => {
@@ -9,6 +10,7 @@ const MainLayout = ({ children }) => {
     <>
       <Header />
       <main>{children}</main>
+      <Footer/>
     </>
   );
 };

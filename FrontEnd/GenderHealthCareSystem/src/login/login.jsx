@@ -1,4 +1,4 @@
-import { Form, Input, Button, Divider, Checkbox} from "antd";
+import { Form, Input, Button, Divider, Checkbox, message} from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -8,36 +8,42 @@ import {
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useState } from "react";
 
 const Login = () => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleNavigation = (path) => {
     navigate(path);
   };
 
   const onFinish = async (values) => {
+    setLoading(true);
     try {
-      console.log("Form values:", values);
+      
       const response = await axios.post("https://dummyjson.com/auth/login", {
         username: values.username,
         password: values.password,
       });
       
-      console.log("Login response:", response.data);
 
       if(response.data && response.data.accessToken) {
-        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem("token", response.data.accessToken);
         sessionStorage.setItem("user", JSON.stringify(response.data))
-        console.log("success")
+        
+        message.success("Đăng nhập thành công!");
+        navigate("/home");
       } else {
         console.log("error login")
       }
     } catch (error) {
       console.error("Login error: ", error);
       if(error.response) {
-        console.log("wrong username or password");
+        message.error('Sai tên đăng nhập hoặc mật khẩu!');
       }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -118,6 +124,7 @@ const Login = () => {
               <Button
                 type="primary"
                 htmlType="submit"
+                loading={loading}
                 className="h-12 w-full rounded-md bg-[#7AC943] font-bold text-white hover:bg-[#6BB234]"
               >
                 ĐĂNG NHẬP
