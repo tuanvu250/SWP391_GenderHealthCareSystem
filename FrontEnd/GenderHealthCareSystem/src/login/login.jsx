@@ -115,7 +115,9 @@ const Login = () => {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Ghi nhớ đăng nhập</Checkbox>
               </Form.Item>
-              <a className="text-sm font-medium text-[#0099CF] hover:text-[#0088bb]">
+              <a className="text-sm font-medium text-[#0099CF] hover:text-[#0088bb]"
+                onClick={() => navigate("/forgot-password")}
+              >
                 Quên mật khẩu?
               </a>
             </div>
