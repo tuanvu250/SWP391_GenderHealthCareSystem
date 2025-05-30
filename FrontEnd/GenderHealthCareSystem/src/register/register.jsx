@@ -3,7 +3,6 @@ import {
   UserOutlined,
   LockOutlined,
   GoogleOutlined,
-  FacebookOutlined,
   ArrowLeftOutlined,
   MailOutlined,
   PhoneOutlined,

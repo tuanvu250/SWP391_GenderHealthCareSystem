@@ -3,6 +3,8 @@ import Home from "./home/home";
 import Login from "./login/login";
 import Register from "./register/register"; 
 import Footer from "./layout/footer";
+import OtpCode from "./login/otp";
+import ResetPassword from "./login/resetPassword";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 const MainLayout = ({ children }) => {
@@ -37,6 +39,8 @@ const App = () => {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<OtpCode />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
