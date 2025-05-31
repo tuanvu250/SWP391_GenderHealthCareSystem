@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
+  const [form] = Form.useForm();
+
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
@@ -19,7 +18,7 @@ const ResetPassword = () => {
           type="primary"
           shape="round"
           icon={<ArrowLeftOutlined />}
-          onClick={() => handleNavigation("/login")}
+          onClick={() => navigate("/login")}
           className="flex items-center shadow-md"
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.9)",

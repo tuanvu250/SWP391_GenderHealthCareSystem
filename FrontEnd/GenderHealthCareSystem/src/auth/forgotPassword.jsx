@@ -5,14 +5,11 @@ import { Button, Form, Input } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 
 
-const OtpCode = () => {
+const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [otpValue, setOtpValue] = useState("");
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
 
   const onFinish = async (values) => {
     console.log("OTP Code:", values.otp);
@@ -36,7 +33,7 @@ const OtpCode = () => {
           type="primary"
           shape="round"
           icon={<ArrowLeftOutlined />}
-          onClick={() => handleNavigation("/login")}
+          onClick={() => navigate("/login")}
           className="flex items-center shadow-md"
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -92,7 +89,7 @@ const OtpCode = () => {
               <Form.Item>
                 <Button
                   type="link"
-                  onClick={() => handleNavigation("/reset-password")}
+                  onClick={() => navigate("/reset-password")}
                   className="text-blue-500 hover:text-blue-700"
                 >
                   Gửi lại mã OTP
@@ -106,4 +103,4 @@ const OtpCode = () => {
   );
 };
 
-export default OtpCode;
+export default ForgotPassword;

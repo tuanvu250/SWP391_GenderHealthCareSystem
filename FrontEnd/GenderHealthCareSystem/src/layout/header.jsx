@@ -17,11 +17,6 @@ const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
 
-  const handleNavigation = (path) => {
-    navigate(path);
-    setMenuVisible(false);
-  };
-
   useEffect(() => {
     // Check if user is logged in by checking sessionStorage
     const token = sessionStorage.getItem("token");
@@ -56,10 +51,10 @@ const Header = () => {
           </div>
         </Menu.Item>
       )}
-      <Menu.Item key="profile" onClick={() => handleNavigation("/profile")}>
+      <Menu.Item key="profile" onClick={() => navigate("/profile")}>
         Thông tin cá nhân
       </Menu.Item>
-      <Menu.Item key="settings" onClick={() => handleNavigation("/settings")}>
+      <Menu.Item key="settings" onClick={() => navigate("/settings")}>
         Cài đặt tài khoản
       </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>
@@ -72,19 +67,19 @@ const Header = () => {
     <Menu>
       <Menu.Item        
         key="1"
-        onClick={() => handleNavigation("/services/health-checkup")}
+        onClick={() => navigate("/services/health-checkup")}
       >
         Xét nghiệm STIs
       </Menu.Item>
       <Menu.Item
         key="2"
-        onClick={() => handleNavigation("/services/consultation")}
+        onClick={() => navigate("/services/consultation")}
       >
         Đặt câu hỏi hoặc tư vấn
       </Menu.Item>
       <Menu.Item
         key="3"
-        onClick={() => handleNavigation("/services/appointments")}
+        onClick={() => navigate("/services/appointments")}
       >
         Đặt lịch khám
       </Menu.Item>
@@ -97,7 +92,7 @@ const Header = () => {
         {/* Logo */}
         <a
           className="flex items-center space-x-2 cursor-pointer"
-          onClick={() => handleNavigation("/home")}
+          onClick={() => navigate("/home")}
         >
           <svg
             width="24"
@@ -122,7 +117,7 @@ const Header = () => {
         <nav className="hidden lg:block">
           <ul className="flex space-x-8 font-medium">
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => handleNavigation("/home")}>Trang chủ</a>
+              <a onClick={() => navigate("/home")}>Trang chủ</a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <Dropdown
@@ -136,13 +131,13 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => handleNavigation("/menstrual-cycle")}>Theo dõi kỳ kinh</a>
+              <a onClick={() => navigate("/menstrual-cycle")}>Theo dõi kỳ kinh</a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => handleNavigation("/about")}>Giới thiệu</a>
+              <a onClick={() => navigate("/about")}>Giới thiệu</a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => handleNavigation("/blog")}>Blog</a>
+              <a onClick={() => navigate("/blog")}>Blog</a>
             </li>
           </ul>
         </nav>
@@ -197,7 +192,7 @@ const Header = () => {
           ) : (
             <button
               className="py-1.5 px-4 sm:px-6 md:px-8 bg-[#0099CF] text-white rounded-full hover:bg-[#0088bb] font-medium shadow-sm transition-colors text-sm whitespace-nowrap"
-              onClick={() => handleNavigation("/login")}
+              onClick={() => navigate("/login")}
             >
               Đăng nhập
             </button>
@@ -283,7 +278,7 @@ const Header = () => {
               <li>
                 <a 
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => handleNavigation("/home")}
+                  onClick={() => navigate("/home")}
                 >
                   Trang chủ
                 </a>
@@ -295,7 +290,7 @@ const Header = () => {
                   <li>
                     <a 
                       className="block !text-gray-800 hover:text-[#0099CF] "
-                      onClick={() => handleNavigation("/services/health-checkup")}
+                      onClick={() => navigate("/services/health-checkup")}
                     >
                       Xét nghiệm STIs
                     </a>
@@ -303,7 +298,7 @@ const Header = () => {
                   <li>
                     <a 
                       className="block !text-gray-800 hover:text-[#0099CF]"
-                      onClick={() => handleNavigation("/services/consultation")}
+                      onClick={() => navigate("/services/consultation")}
                     >
                       Đặt câu hỏi hoặc tư vấn
                     </a>
@@ -311,7 +306,7 @@ const Header = () => {
                   <li>
                     <a 
                       className="block !text-gray-800 hover:text-[#0099CF]"
-                      onClick={() => handleNavigation("/services/appointments")}
+                      onClick={() => navigate("/services/appointments")}
                     >
                       Đặt lịch khám
                     </a>
@@ -322,7 +317,7 @@ const Header = () => {
               <li>
                 <a 
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => handleNavigation("/menstrual-cycle")}
+                  onClick={() => navigate("/menstrual-cycle")}
                 >
                   Theo dõi kỳ kinh
                 </a>
@@ -331,7 +326,7 @@ const Header = () => {
               <li>
                 <a 
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => handleNavigation("/about")}
+                  onClick={() => navigate("/about")}
                 >
                   Giới thiệu
                 </a>
@@ -340,7 +335,7 @@ const Header = () => {
               <li>
                 <a 
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => handleNavigation("/blog")}
+                  onClick={() => navigate("/blog")}
                 >
                   Blog
                 </a>
@@ -354,7 +349,7 @@ const Header = () => {
                     <a 
                       className="flex items-center text-gray-600 hover:text-[#0099CF]"
                       onClick={() => {
-                        handleNavigation("/profile");
+                        navigate("/profile");
                         setMenuVisible(false);
                       }}
                     >
@@ -365,7 +360,7 @@ const Header = () => {
                     <a 
                       className="flex items-center text-gray-600 hover:text-[#0099CF]"
                       onClick={() => {
-                        handleNavigation("/notifications");
+                        navigate("/notifications");
                         setMenuVisible(false);
                       }}
                     >
@@ -394,7 +389,7 @@ const Header = () => {
               <button
                 className="w-full py-2 text-center bg-[#0099CF] text-white rounded-md hover:bg-[#0088bb]"
                 onClick={() => {
-                  handleNavigation("/login");
+                  navigate("/login");
                   setMenuVisible(false);
                 }}
               >

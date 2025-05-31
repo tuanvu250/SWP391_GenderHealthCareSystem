@@ -7,27 +7,13 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { loginAPI } from "../util/api"
 import { useState } from "react";
 
 const Login = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
-  
-
-  const callLoginAPI = async (userData) => {
-     const response = await axios.post("/api/auth/login", userData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-  }
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -37,10 +23,9 @@ const Login = () => {
         usernameOrEmail: values.username,
         password: values.password,
       };
-
-      const response = await callLoginAPI(userData);
       
-
+      const response = await loginAPI(userData);
+      
       if(response.data && response.data.token) {
         sessionStorage.setItem("token", response.data.token);
         sessionStorage.setItem("user", JSON.stringify(response.data))
@@ -73,7 +58,7 @@ const Login = () => {
           type="primary"
           shape="round"
           icon={<ArrowLeftOutlined />}
-          onClick={() => handleNavigation("/home")}
+          onClick={() => navigate("/home")}
           className="flex items-center shadow-md"
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.9)",
