@@ -10,7 +10,8 @@ import Register from "./register/register";
 import OtpCode from "./login/otp";
 import ResetPassword from "./login/resetPassword";
 
-import InputMenstrualCycle from "./menstrualCycle/InputMenstrualCycle"; // <-- nhớ sửa đường dẫn đúng
+import InputMenstrualCycle from "./menstrualcycle/InputMenstrualCycle"; 
+import MenstrualOvulation from "./menstrualcycle/MenstrualOvulation"; 
 
 const MainLayout = ({ children }) => {
   return (
@@ -47,6 +48,14 @@ const App = () => {
           element={
             <MainLayout>
               <InputMenstrualCycle />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/menstrual-ovulation"
+          element={
+            <MainLayout>
+              <MenstrualOvulation />
             </MainLayout>
           }
         />

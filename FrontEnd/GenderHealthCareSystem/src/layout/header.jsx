@@ -136,7 +136,7 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => handleNavigation("/period-tracker")}>Theo dõi kỳ kinh</a>
+              <a onClick={() => handleNavigation("/menstrual-cycle")}>Theo dõi kỳ kinh</a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => handleNavigation("/about")}>Giới thiệu</a>
@@ -322,7 +322,7 @@ const Header = () => {
               <li>
                 <a 
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => handleNavigation("/period-tracker")}
+                  onClick={() => handleNavigation("/menstrual-cycle")}
                 >
                   Theo dõi kỳ kinh
                 </a>
