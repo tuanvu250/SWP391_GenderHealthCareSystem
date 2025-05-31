@@ -1,3 +1,5 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Row, Col, Card, Button, Typography, ConfigProvider } from "antd";
 import {
   CalendarOutlined,
@@ -12,6 +14,7 @@ import heroImg from "../assets/hero-section.png";
 const { Title, Paragraph } = Typography;
 
 const Home = () => {
+ const navigate = useNavigate();
   return (
     <ConfigProvider
       theme={{
@@ -137,6 +140,7 @@ const Home = () => {
                   <Button
                     type="primary"
                     className="rounded-full px-6 flex items-center gap-2 hover:translate-x-1 transition-transform"
+                     onClick={() => navigate("/menstrual-cycle")}
                   >
                     <span>Theo dõi</span> <ArrowRightOutlined />
                   </Button>

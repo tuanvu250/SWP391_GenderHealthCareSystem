@@ -1,18 +1,23 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Header from "./layout/header";
+import Footer from "./layout/footer";
+
 import Home from "./home/home";
 import Login from "./login/login";
-import Register from "./register/register"; 
-import Footer from "./layout/footer";
+import Register from "./register/register";
 import OtpCode from "./login/otp";
 import ResetPassword from "./login/resetPassword";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import InputMenstrualCycle from "./menstrualCycle/InputMenstrualCycle"; // <-- nhớ sửa đường dẫn đúng
 
 const MainLayout = ({ children }) => {
   return (
     <>
       <Header />
       <main>{children}</main>
-      <Footer/>
+      <Footer />
     </>
   );
 };
@@ -34,6 +39,14 @@ const App = () => {
           element={
             <MainLayout>
               <Home />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/menstrual-cycle"
+          element={
+            <MainLayout>
+              <InputMenstrualCycle />
             </MainLayout>
           }
         />
