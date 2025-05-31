@@ -52,7 +52,7 @@ const Header = () => {
               icon={!user.image && <UserOutlined />}
               size="default"
             />
-            <span className="font-bold">{user?.firtName} {user?.lastName}</span>
+            <span className="font-bold">{user?.fullName}</span>
           </div>
         </Menu.Item>
       )}
