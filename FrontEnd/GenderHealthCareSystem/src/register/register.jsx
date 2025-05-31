@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, use } from "react";
+import { useState} from "react";
 import axios from "axios";
 
 const Register = () => {
@@ -38,22 +38,32 @@ const Register = () => {
    };
   }
 
-  const handleRegister = async (values) => {
-    setLoading(true);
-    try {
-      const userData = formatUserData(values);
-      console.log("User Data being sent:", userData);
-      
-      const response = await axios.post("/api/auth/register", userData, {
+  const callRegisterAPI = async (userData) => {
+     const response = await axios.post("/api/auth/register", userData, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
+      return response;
+  }
+
+  const handleConfirmPassword = (value) => {
+    const password = form.getFieldValue("password");
+    if (value && value !== password) {
+      return Promise.reject("Mật khẩu xác nhận không khớp!");
+    }
+    return Promise.resolve();
+  };
+
+  const handleRegister = async (values) => {
+    setLoading(true);
+    try {
+      const userData = formatUserData(values);
       
-      console.log("Response:", response);
-      
+      const response = await callRegisterAPI(userData);
+
       if (response.data && response.status === 200) {
-        message.success("Đăng ký thành công!");
+        message.success("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
         navigate("/login");
       } else {
         message.warning("Đăng ký không thành công, vui lòng thử lại!");
@@ -62,32 +72,13 @@ const Register = () => {
       console.error("Register error full details:", error);
       
       if (error.response) {
-        const { status, data } = error.response;
-        console.error(`Error status: ${status}, data:`, data);
-        
-        if (status === 500) {
-          console.error("Server error details:", data);
-          // Hiển thị thông tin chi tiết về lỗi nếu có
-          if (data && data.message) {
-            message.error(`Lỗi máy chủ: ${data.message}`);
-          } else {
-            message.error("Lỗi máy chủ. Vui lòng thử lại sau hoặc liên hệ quản trị viên.");
-          }
-        } else if (status === 400) {
-          if (data && data.message) {
-            message.error(data.message);
-          } else {
-            message.error("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.");
-          }
-        } else if (status === 409) {
+        if (error.response.status === 400) {
+          message.error("Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại!");
+        } else if (error.response.status === 409) {
           message.error("Tên đăng nhập hoặc email đã tồn tại!");
         } else {
-          message.error("Đăng ký không thành công. Vui lòng thử lại!");
+          message.error("Đăng ký không thành công, vui lòng thử lại sau!");
         }
-      } else if (error.request) {
-        message.error("Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng!");
-      } else {
-        message.error("Đã xảy ra lỗi khi gửi yêu cầu!");
       }
     } finally {
       setLoading(false);
@@ -99,7 +90,7 @@ const Register = () => {
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imgLogin})` }}
     >
-      <div className="absolute top-6 left-6">
+      <div className="fixed top-6 left-6">
         <Button
           type="primary"
           shape="round"
@@ -218,10 +209,16 @@ const Register = () => {
             </Form.Item>
 
             <Form.Item
+              dependencies={["password"]}
               name="confirmPassword"
               label="Xác nhận mật khẩu"
               rules={[
                 { required: true, message: "Vui lòng xác nhận mật khẩu!" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    return handleConfirmPassword(value);
+                  },
+                }),
               ]}
             >
               <Input.Password

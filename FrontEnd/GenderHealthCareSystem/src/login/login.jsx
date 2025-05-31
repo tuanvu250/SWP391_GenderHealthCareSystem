@@ -18,29 +18,44 @@ const Login = () => {
     navigate(path);
   };
 
+  
+
+  const callLoginAPI = async (userData) => {
+     const response = await axios.post("/api/auth/login", userData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response;
+  }
+
   const onFinish = async (values) => {
     setLoading(true);
     try {
       
-      const response = await axios.post("https://dummyjson.com/auth/login", {
-        username: values.username,
+      const userData = {
+        usernameOrEmail: values.username,
         password: values.password,
-      });
+      };
+
+      const response = await callLoginAPI(userData);
       
 
-      if(response.data && response.data.accessToken) {
-        sessionStorage.setItem("token", response.data.accessToken);
+      if(response.data && response.data.token) {
+        sessionStorage.setItem("token", response.data.token);
         sessionStorage.setItem("user", JSON.stringify(response.data))
-        
+        console.log(sessionStorage.getItem("user"));
         message.success("Đăng nhập thành công!");
         navigate("/home");
       } else {
-        console.log("error login")
+        message.error("Đăng nhập thất bại, vui lòng thử lại!");
+        form.resetFields();
       }
     } catch (error) {
       console.error("Login error: ", error);
       if(error.response) {
         message.error('Sai tên đăng nhập hoặc mật khẩu!');
+        form.setFieldValue("password", "");
       }
     } finally {
       setLoading(false);
