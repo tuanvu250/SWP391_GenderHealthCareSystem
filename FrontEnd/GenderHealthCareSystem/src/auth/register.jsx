@@ -13,7 +13,6 @@ import { registerAPI } from "../util/api";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
 import { useState} from "react";
-import axios from "axios";
 
 const Register = () => {
   const { Option } = Select;

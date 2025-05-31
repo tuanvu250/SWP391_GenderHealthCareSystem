@@ -9,6 +9,8 @@ import {
   SearchOutlined
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
+import LogoText from "../assets/logo-text.svg";
+import LogoSign from "../assets/logo-sign.svg";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -87,30 +89,15 @@ const Header = () => {
   );
 
   return (
-    <header className="bg-white z-50 px-4 sm:px-8 md:px-16 text-gray-800 py-3 shadow-sm sticky top-0 border-b border-gray-100">
+    <header className="bg-white py-3 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <a
-          className="flex items-center space-x-2 cursor-pointer"
+          className="flex items-center cursor-pointer"
           onClick={() => navigate("/home")}
         >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-[#0099CF]"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M3.66898 3.92278C3.26824 4.06336 3 4.44172 3 4.86641V10.6607C3 16.2212 6.51216 21.1752 11.7592 23.0158C11.9151 23.0705 12.0849 23.0705 12.2408 23.0158C17.4878 21.1752 21 16.2212 21 10.6606V4.86641C21 4.44172 20.7318 4.06336 20.331 3.92278L12.331 1.11643C12.1167 1.04127 11.8833 1.04127 11.669 1.11643L3.66898 3.92278ZM12.3333 8.00031C12.8856 8.00031 13.3333 8.44803 13.3333 9.00031V10.567C13.3333 10.6222 13.3781 10.667 13.4333 10.667H15C15.5523 10.667 16 11.1147 16 11.667V12.3336C16 12.8859 15.5523 13.3336 15 13.3336H13.4333C13.3781 13.3336 13.3333 13.3784 13.3333 13.4336V15.0003C13.3333 15.5526 12.8856 16.0003 12.3333 16.0003H11.6667C11.1144 16.0003 10.6667 15.5526 10.6667 15.0003V13.4336C10.6667 13.3784 10.6219 13.3336 10.5667 13.3336H9C8.44772 13.3336 8 12.8859 8 12.3336V11.667C8 11.1147 8.44772 10.667 9 10.667H10.5667C10.6219 10.667 10.6667 10.6222 10.6667 10.567V9.00031C10.6667 8.44803 11.1144 8.00031 11.6667 8.00031H12.3333Z"
-              fill="currentColor"
-            />
-          </svg>
-
-          <span className="font-bold text-xl text-[#0099CF]">HealthCare</span>
+          <img src={LogoSign} alt="LogoSign" className="h-10" />
+          <img src={LogoText} alt="LogoText" className="h-9" />
         </a>
 
         {/* Navigation - Desktop */}
@@ -121,7 +108,7 @@ const Header = () => {
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <Dropdown
-                overlay={servicesMenu}
+                menu={servicesMenu}
                 trigger={["hover"]}
               >
                 <a className="flex items-center space-x-1">
