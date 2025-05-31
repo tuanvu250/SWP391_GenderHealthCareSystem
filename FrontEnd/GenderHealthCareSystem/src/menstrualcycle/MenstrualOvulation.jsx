@@ -12,33 +12,33 @@ const defaultCalendarData = [
 ]
 
 const defaultColorCode = {
-  "5": "bg-red-300", // Day 1 of period
-  "6": "bg-red-300", // Day 2 of period
-  "7": "bg-red-300", // Day 3 of period
-  "8": "bg-red-300", // Day 4 of period
-  "9": "bg-red-300", // Day 5 of period
-  "10": "bg-green-200", // Safe day
-  "11": "bg-green-200", // Safe day
-  "12": "bg-yellow-300", // Fertile window starts
-  "13": "bg-yellow-300", // Fertile day
-  "14": "bg-orange-300", // Ovulation day
-  "15": "bg-yellow-300", // Fertile day
-  "16": "bg-yellow-300", // Fertile window ends
-  "17": "bg-blue-200", // Fertility decreasing
-  "18": "bg-green-200", // Safe day
-  "19": "bg-green-200", // Safe day
-  "20": "bg-green-200", // Safe day
-  "21": "bg-green-200", // Safe day
-  "22": "bg-green-200", // Safe day
-  "23": "bg-green-200", // Safe day
-  "24": "bg-green-200", // Safe day
-  "25": "bg-green-200", // Safe day
-  "26": "bg-green-200", // Safe day
-  "27": "bg-green-200", // Safe day
-  "28": "bg-green-200", // Safe day
-  "29": "bg-green-200", // Safe day
-  "30": "bg-green-200", // Safe day
-  "31": "bg-green-200", // Safe day
+  "5": "bg-red-300",
+  "6": "bg-red-300",
+  "7": "bg-red-300",
+  "8": "bg-red-300",
+  "9": "bg-red-300",
+  "10": "bg-green-200",
+  "11": "bg-green-200",
+  "12": "bg-yellow-300",
+  "13": "bg-yellow-300",
+  "14": "bg-orange-300",
+  "15": "bg-yellow-300",
+  "16": "bg-yellow-300",
+  "17": "bg-blue-200",
+  "18": "bg-green-200",
+  "19": "bg-green-200",
+  "20": "bg-green-200",
+  "21": "bg-green-200",
+  "22": "bg-green-200",
+  "23": "bg-green-200",
+  "24": "bg-green-200",
+  "25": "bg-green-200",
+  "26": "bg-green-200",
+  "27": "bg-green-200",
+  "28": "bg-green-200",
+  "29": "bg-green-200",
+  "30": "bg-green-200",
+  "31": "bg-green-200",
 }
 
 const legendItems = [
@@ -56,25 +56,13 @@ export default function OvulationCalendar() {
   const [colorCode, setColorCode] = useState(defaultColorCode)
   const [currentMonth, setCurrentMonth] = useState("Tháng 5 - 2025")
 
-  // Giả lập lấy dữ liệu từ backend (có thể thay bằng fetch API sau)
-  useEffect(() => {
-    // Trong thực tế, bạn có thể gọi API ở đây
-    // fetch('/api/calendar').then(res => res.json()).then(data => {
-    //   setCalendarData(data.calendar);
-    //   setColorCode(data.colorCode);
-    // });
-  }, [])
 
   const handlePrevMonth = () => {
-    // Xử lý khi người dùng chuyển sang tháng trước
     setCurrentMonth("Tháng 4 - 2025")
-    // Trong thực tế, bạn sẽ cập nhật calendarData và colorCode
   }
 
   const handleNextMonth = () => {
-    // Xử lý khi người dùng chuyển sang tháng sau
     setCurrentMonth("Tháng 6 - 2025")
-    // Trong thực tế, bạn sẽ cập nhật calendarData và colorCode
   }
 
   return (
