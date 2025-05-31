@@ -9,6 +9,7 @@ import {
   HomeOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
+import { registerAPI } from "../util/api";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
 import { useState} from "react";
@@ -19,9 +20,6 @@ const Register = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
 
  const formatUserData = (values) => {
    return {
@@ -38,15 +36,6 @@ const Register = () => {
    };
   }
 
-  const callRegisterAPI = async (userData) => {
-     const response = await axios.post("/api/auth/register", userData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      return response;
-  }
-
   const handleConfirmPassword = (value) => {
     const password = form.getFieldValue("password");
     if (value && value !== password) {
@@ -60,7 +49,7 @@ const Register = () => {
     try {
       const userData = formatUserData(values);
       
-      const response = await callRegisterAPI(userData);
+      const response = await registerAPI(userData);
 
       if (response.data && response.status === 200) {
         message.success("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
@@ -95,7 +84,7 @@ const Register = () => {
           type="primary"
           shape="round"
           icon={<ArrowLeftOutlined />}
-          onClick={() => handleNavigation("/home")}
+          onClick={() => navigate("/home")}
           className="flex items-center shadow-md"
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -108,7 +97,7 @@ const Register = () => {
       </div>
 
       {/* Form đăng ký */}
-      <div className="mt-12 mb-12 bg-opacity-95 mx-auto w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-lg backdrop-blur-sm">
+      <div className="mt-16 mb-12 bg-opacity-95 mx-auto w-full md:max-w-lg overflow-hidden rounded-xl bg-white shadow-lg backdrop-blur-sm max-w-md">
         <div className="bg-[#2196F3] px-8 py-6">
           <h2 className="text-center text-2xl font-bold text-white">
             Đăng ký tài khoản
@@ -241,7 +230,7 @@ const Register = () => {
             <div className="mt-4 text-center text-sm text-gray-600">
               Đã có tài khoản?
               <a
-                onClick={() => handleNavigation("/login")}
+                onClick={() => navigate("/login")}
                 className="ml-1 font-medium text-[#7AC943] hover:text-[#6BB234] cursor-pointer"
               >
                 Đăng nhập
