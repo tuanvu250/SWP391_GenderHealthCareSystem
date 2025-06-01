@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { useContext, useState, useEffect } from "react";
-import { loginAPI, registerAPI } from "../../util/api";
+import { loginAPI, registerAPI } from "../../util/Api";
 import { message } from "antd";
 
 const TOKEN_KEY = "token";
@@ -12,7 +12,6 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
   return context;
 };
-
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -38,7 +37,13 @@ export const AuthProvider = ({ children }) => {
     } else {
       setIsAuthenticated(false);
     }
+
+    console.log(">>> isLogin:", isAuthenticated);
   }, []);
+
+  useEffect(() => {
+    console.log("isAuthenticated state changed:", isAuthenticated);
+  }, [isAuthenticated]);
 
   const loginAction = async (userData) => {
     try {
@@ -51,20 +56,23 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
         setToken(response.data.token);
         setIsAuthenticated(true);
-        return {success: true, message: "Đăng nhập thành công!"};
+        return { success: true, message: "Đăng nhập thành công!" };
       } else {
         setIsAuthenticated(false);
-        return {success: false, message: "Đăng nhập không thành công, vui lòng thử lại!"};
+        return {
+          success: false,
+          message: "Đăng nhập không thành công, vui lòng thử lại!",
+        };
       }
     } catch (error) {
       setIsAuthenticated(false);
       let message = "Đăng nhập không thành công, vui lòng thử lại!";
-      if(error.response.status === 400) {
+      if (error.response.status === 400) {
         message = "Tên đăng nhập hoặc mật khẩu không đúng!";
       } else if (error.response.status === 500) {
         message = "Lỗi máy chủ, vui lòng thử lại sau!";
       }
-      return {success: false, message: message};
+      return { success: false, message: message };
     }
   };
 
@@ -81,18 +89,37 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await registerAPI(userData);
       if (response.data && response.status === 200) {
-        return {success: true, message: "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ."};
+        return {
+          success: true,
+          message: "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.",
+        };
       } else {
-        return {success: false, message: "Đăng ký không thành công, vui lòng thử lại!"};
+        return {
+          success: false,
+          message: "Đăng ký không thành công, vui lòng thử lại!",
+        };
       }
     } catch (error) {
-      return {success: false, message: error.response?.data?.message || "Đăng ký không thành công, vui lòng thử lại!"};
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Đăng ký không thành công, vui lòng thử lại!",
+      };
     }
-  }
-  
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, token, loginAction, logoutAction, registerAction }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        token,
+        loginAction,
+        logoutAction,
+        registerAction,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

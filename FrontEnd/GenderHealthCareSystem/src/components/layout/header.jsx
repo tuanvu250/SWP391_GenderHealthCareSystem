@@ -11,7 +11,7 @@ import {
 import { useState} from "react";
 import LogoText from "../../assets/logo-text.svg";
 import LogoSign from "../../assets/logo-sign.svg";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../provider/AuthProvider";
 
 const Header = () => {
   const navigate = useNavigate();

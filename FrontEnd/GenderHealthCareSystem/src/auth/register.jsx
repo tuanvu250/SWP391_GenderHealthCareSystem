@@ -12,7 +12,7 @@ import {
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
 import { useState} from "react";
-import { useAuth } from "../components/hooks/useAuth";
+import { useAuth } from "../components/provider/AuthProvider";
 
 const Register = () => {
   const { Option } = Select;
