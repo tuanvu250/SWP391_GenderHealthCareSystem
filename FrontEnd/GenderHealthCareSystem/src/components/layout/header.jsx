@@ -1,47 +1,33 @@
-import { Avatar, Badge, Button, Dropdown, Menu, message, Drawer } from "antd";
+import { Avatar, Badge, Button, Dropdown, Menu, Drawer } from "antd";
 import { useNavigate } from "react-router-dom";
-import { 
-  CaretDownFilled, 
-  BellOutlined, 
-  UserOutlined, 
+import {
+  CaretDownFilled,
+  BellOutlined,
+  UserOutlined,
   MenuOutlined,
   CloseOutlined,
-  SearchOutlined
+  SearchOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
-import LogoText from "../assets/logo-text.svg";
-import LogoSign from "../assets/logo-sign.svg";
+import { useState} from "react";
+import LogoText from "../../assets/logo-text.svg";
+import LogoSign from "../../assets/logo-sign.svg";
+import { useAuth } from "../hooks/useAuth";
 
 const Header = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
-
-  useEffect(() => {
-    // Check if user is logged in by checking sessionStorage
-    const token = sessionStorage.getItem("token");
-    if (token) {
-      setUser(JSON.parse(sessionStorage.getItem("user")));
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
+  const auth = useAuth();
+  const user = auth.user;
+  const isLoggedIn = auth.isAuthenticated;
 
   const handleLogout = () => {
-    // Clear session storage and update login state
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    setIsLoggedIn(false);
-    message.success("Đăng xuất thành công!");
-    navigate("/home");
+    auth.logoutAction();
   };
 
   const userMenu = (
     <Menu>
-      { user && (
+      {user && (
         <Menu.Item>
           <div className="flex items-center space-x-2 gap-2">
             <Avatar
@@ -49,7 +35,7 @@ const Header = () => {
               icon={!user.image && <UserOutlined />}
               size="default"
             />
-            <span className="font-bold">{user?.fullName}</span>
+            <span className="font-bold">{user.username}</span>
           </div>
         </Menu.Item>
       )}
@@ -67,29 +53,20 @@ const Header = () => {
 
   const servicesMenu = (
     <Menu>
-      <Menu.Item        
-        key="1"
-        onClick={() => navigate("/services/health-checkup")}
-      >
+      <Menu.Item key="1" onClick={() => navigate("/services/health-checkup")}>
         Xét nghiệm STIs
       </Menu.Item>
-      <Menu.Item
-        key="2"
-        onClick={() => navigate("/services/consultation")}
-      >
+      <Menu.Item key="2" onClick={() => navigate("/services/consultation")}>
         Đặt câu hỏi hoặc tư vấn
       </Menu.Item>
-      <Menu.Item
-        key="3"
-        onClick={() => navigate("/services/appointments")}
-      >
+      <Menu.Item key="3" onClick={() => navigate("/services/appointments")}>
         Đặt lịch khám
       </Menu.Item>
     </Menu>
   );
 
   return (
-    <header className="bg-white py-3 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
+    <header className="bg-white py-2.5 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <a
@@ -107,10 +84,7 @@ const Header = () => {
               <a onClick={() => navigate("/home")}>Trang chủ</a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <Dropdown
-                menu={servicesMenu}
-                trigger={["hover"]}
-              >
+              <Dropdown menu={servicesMenu} trigger={["hover"]}>
                 <a className="flex items-center space-x-1">
                   <span>Dịch vụ</span>
                   <CaretDownFilled className="text-gray-500 size-2.5 ml-1" />
@@ -118,7 +92,9 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => navigate("/menstrual-cycle")}>Theo dõi kỳ kinh</a>
+              <a onClick={() => navigate("/menstrual-cycle")}>
+                Theo dõi kỳ kinh
+              </a>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => navigate("/about")}>Giới thiệu</a>
@@ -147,9 +123,9 @@ const Header = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Search Icon - Mobile */}
-          <button 
+          <button
             className="md:hidden text-gray-500 hover:text-[#0099CF] p-2"
             onClick={() => setSearchVisible(!searchVisible)}
           >
@@ -171,7 +147,7 @@ const Header = () => {
                     src={user?.image}
                     icon={!user?.image && <UserOutlined />}
                     size="default"
-                  />  
+                  />
                   <CaretDownFilled className="text-gray-500 size-2.5 ml-1 hidden sm:block" />
                 </div>
               </Dropdown>
@@ -184,9 +160,9 @@ const Header = () => {
               Đăng nhập
             </button>
           )}
-          
+
           {/* Menu button - Mobile */}
-          <button 
+          <button
             className="lg:hidden text-gray-600 hover:text-[#0099CF] p-1 ml-2"
             onClick={() => setMenuVisible(true)}
           >
@@ -194,7 +170,7 @@ const Header = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile Search Bar */}
       {searchVisible && (
         <div className="md:hidden py-3 px-4 animate-fadeIn">
@@ -254,28 +230,30 @@ const Header = () => {
                     size="large"
                   />
                   <div>
-                    <p className="font-medium">{user?.firtName} {user?.lastName}</p>
+                    <p className="font-medium">
+                      {user?.firtName} {user?.lastName}
+                    </p>
                     <p className="text-gray-500 text-sm">Xem hồ sơ</p>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <ul className="space-y-4">
               <li>
-                <a 
+                <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
                   onClick={() => navigate("/home")}
                 >
                   Trang chủ
                 </a>
               </li>
-              
+
               <li className="border-b border-gray-100 pb-4">
                 <p className="font-medium mb-2">Dịch vụ</p>
                 <ul className="pl-4 space-y-3">
                   <li>
-                    <a 
+                    <a
                       className="block !text-gray-800 hover:text-[#0099CF] "
                       onClick={() => navigate("/services/health-checkup")}
                     >
@@ -283,7 +261,7 @@ const Header = () => {
                     </a>
                   </li>
                   <li>
-                    <a 
+                    <a
                       className="block !text-gray-800 hover:text-[#0099CF]"
                       onClick={() => navigate("/services/consultation")}
                     >
@@ -291,7 +269,7 @@ const Header = () => {
                     </a>
                   </li>
                   <li>
-                    <a 
+                    <a
                       className="block !text-gray-800 hover:text-[#0099CF]"
                       onClick={() => navigate("/services/appointments")}
                     >
@@ -300,27 +278,27 @@ const Header = () => {
                   </li>
                 </ul>
               </li>
-              
+
               <li>
-                <a 
+                <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
                   onClick={() => navigate("/menstrual-cycle")}
                 >
                   Theo dõi kỳ kinh
                 </a>
               </li>
-              
+
               <li>
-                <a 
+                <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
                   onClick={() => navigate("/about")}
                 >
                   Giới thiệu
                 </a>
               </li>
-              
+
               <li>
-                <a 
+                <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
                   onClick={() => navigate("/blog")}
                 >
@@ -333,7 +311,7 @@ const Header = () => {
               <div className="mt-6 pt-4 border-t border-gray-100">
                 <ul className="space-y-4">
                   <li>
-                    <a 
+                    <a
                       className="flex items-center text-gray-600 hover:text-[#0099CF]"
                       onClick={() => {
                         navigate("/profile");
@@ -344,14 +322,14 @@ const Header = () => {
                     </a>
                   </li>
                   <li>
-                    <a 
+                    <a
                       className="flex items-center text-gray-600 hover:text-[#0099CF]"
                       onClick={() => {
                         navigate("/notifications");
                         setMenuVisible(false);
                       }}
                     >
-                      <BellOutlined className="mr-2" /> Thông báo 
+                      <BellOutlined className="mr-2" /> Thông báo
                       {<Badge count={5} className="ml-2" />}
                     </a>
                   </li>
@@ -359,7 +337,7 @@ const Header = () => {
               </div>
             )}
           </div>
-          
+
           {/* Footer */}
           <div className="pt-6 mt-6 border-t border-gray-100">
             {isLoggedIn ? (

@@ -1,4 +1,4 @@
-import { Form, Input, Button, Divider, Checkbox, message} from "antd";
+import { Form, Input, Button, Divider, Checkbox, message } from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -7,45 +7,33 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
-import { loginAPI } from "../util/api"
 import { useState } from "react";
+import { useAuth } from "../components/hooks/useAuth";
 
 const Login = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      
-      const userData = {
-        usernameOrEmail: values.username,
-        password: values.password,
-      };
-      
-      const response = await loginAPI(userData);
-      
-      if(response.data && response.data.token) {
-        sessionStorage.setItem("token", response.data.token);
-        sessionStorage.setItem("user", JSON.stringify(response.data))
-        console.log(sessionStorage.getItem("user"));
-        message.success("Đăng nhập thành công!");
+      const response = await auth.loginAction(values);
+      if (response.success) {
+        message.success(response.message);
         navigate("/home");
       } else {
-        message.error("Đăng nhập thất bại, vui lòng thử lại!");
-        form.resetFields();
+        message.error(response.message);
+        form.setFieldValue("password", ""); // Clear password field on error
       }
     } catch (error) {
-      console.error("Login error: ", error);
-      if(error.response) {
-        message.error('Sai tên đăng nhập hoặc mật khẩu!');
-        form.setFieldValue("password", "");
-      }
+      console.error("Login error:", error);
+      message.error("Đăng nhập không thành công, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div
@@ -83,10 +71,13 @@ const Login = () => {
 
         {/* Form */}
         <div className="p-8">
-          <Form layout="vertical"
-          form={form}
-          onFinish={onFinish}
-          size="large" className="space-y-4">
+          <Form
+            layout="vertical"
+            form={form}
+            onFinish={onFinish}
+            size="large"
+            className="space-y-4"
+          >
             <Form.Item
               name="username"
               rules={[
@@ -115,7 +106,8 @@ const Login = () => {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Ghi nhớ đăng nhập</Checkbox>
               </Form.Item>
-              <a className="text-sm font-medium text-[#0099CF] hover:text-[#0088bb]"
+              <a
+                className="text-sm font-medium text-[#0099CF] hover:text-[#0088bb]"
                 onClick={() => navigate("/forgot-password")}
               >
                 Quên mật khẩu?
