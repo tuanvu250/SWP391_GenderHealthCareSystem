@@ -20,7 +20,7 @@ public class StisResult {
 
     private Integer resultId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private StisBooking stisBooking;
 

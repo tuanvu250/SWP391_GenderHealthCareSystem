@@ -21,11 +21,11 @@ import java.time.LocalDateTime;
 
         private Integer bookingId;
 
-        @ManyToOne(fetch = FetchType.LAZY)
+        @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "CustomerID", referencedColumnName = "UserID")
         private Users customer;
 
-        @ManyToOne(fetch = FetchType.LAZY)
+        @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "ServiceID")
         private StisService stisService;
 

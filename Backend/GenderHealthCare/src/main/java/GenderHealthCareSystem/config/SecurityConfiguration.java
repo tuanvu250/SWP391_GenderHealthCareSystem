@@ -27,6 +27,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/", "/admins", "/login").permitAll()
                         .requestMatchers("/users/**").hasAnyRole("Customer","Admin","Consultant","Staff","Manager")  // Chỉ user có role USER mới được truy cập /user/**
+                        .requestMatchers("/api/blog-posts/**").hasRole("Consultant")
                         .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

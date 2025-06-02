@@ -21,11 +21,11 @@ public class Question {
 
     private Integer questionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CustomerID", referencedColumnName = "UserID")
     private Users customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID")
     private Users consultant;
 
@@ -38,7 +38,7 @@ public class Question {
     @Column(name = "Answer", columnDefinition = "TEXT")
     private String answer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "AnswerBy", referencedColumnName = "UserID")
     private Users answerBy;
 

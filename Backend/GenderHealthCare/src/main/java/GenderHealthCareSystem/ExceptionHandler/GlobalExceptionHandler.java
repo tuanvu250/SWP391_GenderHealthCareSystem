@@ -8,10 +8,33 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.BindingResult;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<List<String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        // Extract validation errors from BindingResult
+        BindingResult bindingResult = ex.getBindingResult();
+        List<String> errors = new ArrayList<>();
+        for (var fieldError : bindingResult.getFieldErrors()) {
+            errors.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
+        }
+
+        ApiResponse<List<String>> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                errors,
+                null,
+                "Validation error"
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiResponse> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         // Log the exception (optional)

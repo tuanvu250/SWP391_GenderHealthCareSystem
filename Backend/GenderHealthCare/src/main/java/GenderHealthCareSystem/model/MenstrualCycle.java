@@ -18,7 +18,7 @@ public class MenstrualCycle {
 
     private Integer cycleId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CustomerID", referencedColumnName = "UserID")
     private Users customer;
 

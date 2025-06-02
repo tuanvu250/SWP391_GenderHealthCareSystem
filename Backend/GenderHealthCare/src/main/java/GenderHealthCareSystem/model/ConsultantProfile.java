@@ -18,7 +18,7 @@ public class ConsultantProfile {
 
     private Integer profileId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID", unique = true)
     private Users consultant; // This links to the Users entity
 

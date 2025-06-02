@@ -44,6 +44,7 @@ public class SecurityUtil {
                 .claim("email", userDetails.getAccount().getEmail())
                 .claim("role", userDetails.getAccount().getUsers().getRole().getRoleName())
                 .claim("accountId", userDetails.getAccount().getAccountId())
+                .claim("userID", userDetails.getAccount().getUsers().getUserId())
                 .claim("fullName", userDetails.getAccount().getUsers().getFullName())
                 .build();
 

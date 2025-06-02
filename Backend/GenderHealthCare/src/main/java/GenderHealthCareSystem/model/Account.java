@@ -19,7 +19,7 @@ public class Account {
 
     private Integer accountId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "UserID", referencedColumnName = "UserID", unique = true)
     private Users users; // Renamed from UserID to avoid confusion with the field name
 

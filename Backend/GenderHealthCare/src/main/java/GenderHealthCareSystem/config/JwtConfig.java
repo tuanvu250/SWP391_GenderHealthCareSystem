@@ -19,21 +19,25 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 @Configuration
 public class JwtConfig {
 
+    // Khóa bí mật dùng để mã hóa và giải mã JWT, được lấy từ file cấu hình
     @Value("${jwt.base64-secret}")
     private String jwtKey;
 
     private static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
 
+    // Lấy khóa bí mật từ chuỗi khóa đã mã hóa base64 và chuyển đổi sang SecretKey
     private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
     }
 
+    // Tạo đối tượng JwtEncoder để mã hóa (tạo) các JWT
     @Bean
     public JwtEncoder jwtEncoder() {
         return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKey()));
     }
 
+    // Tạo đối tượng JwtDecoder để giải mã (xác minh) các JWT
     @Bean
     public JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey())

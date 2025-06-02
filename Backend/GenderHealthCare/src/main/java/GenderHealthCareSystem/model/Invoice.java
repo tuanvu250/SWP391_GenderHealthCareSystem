@@ -21,7 +21,7 @@ public class Invoice {
 
     private Integer invoiceId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private ConsultationBooking consultationBooking;
 

@@ -21,7 +21,7 @@ public class Remind {
     @Column(name = "RemindID")
     private Integer remindId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CycleID")
     private MenstrualCycle menstrualCycle;
 

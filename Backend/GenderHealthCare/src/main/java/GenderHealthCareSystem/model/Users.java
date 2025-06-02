@@ -19,7 +19,7 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RoleID")
     private Role role;
 

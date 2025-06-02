@@ -21,7 +21,7 @@ public class StisFeedback {
 
     private Integer feedbackId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private StisBooking stisBooking;
 

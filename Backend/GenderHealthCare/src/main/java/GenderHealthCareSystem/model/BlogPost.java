@@ -21,14 +21,14 @@ public class BlogPost {
 
     private Integer postId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID")
     private Users consultant;
 
-    @Column(name = "Title", length = 255)
+    @Column(name = "Title", length = 255, columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(name = "Content", columnDefinition = "TEXT")
+    @Column(name = "Content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Column(name = "ThumbnailURL", columnDefinition = "TEXT")
@@ -37,6 +37,6 @@ public class BlogPost {
     @Column(name = "PublishedAt")
     private LocalDateTime publishedAt;
 
-    @Column(name = "Tags", columnDefinition = "TEXT")
+    @Column(name = "Tags", columnDefinition = "NVARCHAR(MAX)")
     private String tags; // Consider a separate Tag entity and ManyToMany relationship
 }
