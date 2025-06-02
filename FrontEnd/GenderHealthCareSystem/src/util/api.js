@@ -47,3 +47,16 @@ export const loginAPI = async (values) => {
 export const getUserProfile = async () => {
   return api.get("/users/me");
 }
+
+export const forgotPasswordAPI = async (usernameOrEmail) => {
+  return api.post("/auth/forgot-password", { usernameOrEmail });
+}
+
+export const resetPasswordAPI = async (values) => {
+  const userData = {
+    usernameOrEmail: values.usernameOrEmail,
+    otp: values.otp,
+    newPassword: values.newPassword,
+  };
+  return api.post("/auth/reset-password", userData);
+}

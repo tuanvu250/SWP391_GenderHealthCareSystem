@@ -1,8 +1,13 @@
 import imgLogin from "../assets/login.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Form, Input, message } from "antd";
-import { ArrowLeftOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  MailOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { forgotPasswordAPI, resetPasswordAPI } from "../util/api";
 
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
@@ -13,37 +18,46 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
 
   // Xử lý gửi yêu cầu lấy mã OTP
+  
   const handleSendOTP = async (values) => {
     setLoading(true);
     try {
       // Giả lập API call
-      console.log("Sending OTP request for:", values.usernameOrEmail);
-      
-      // Đợi 1.5 giây để giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Giả sử gửi OTP thành công
-      message.success("Mã OTP đã được gửi đến email của bạn!");
-      setEmail(values.usernameOrEmail);
-      setOtpSent(true);
+      const response = await forgotPasswordAPI(values.usernameOrEmail);
+      console.log("Response from forgotPasswordAPI:", response);
+
+      if (response.status == 200) {
+        message.success("Mã OTP đã được gửi đến email của bạn!");
+        setEmail(values.usernameOrEmail);
+        setOtpSent(true);
+      } else {
+        message.error(
+          "Không tìm thấy tài khoản với tên đăng nhập hoặc email này."
+        );
+        setOtpSent(false);
+        return;
+      }
     } catch (error) {
       console.error("Error sending OTP:", error);
       message.error("Có lỗi xảy ra khi gửi mã OTP. Vui lòng thử lại sau.");
+      setOtpSent(false);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  }, [otpSent]);
 
   // Xử lý xác thực mã OTP
   const handleVerifyOTP = async (values) => {
     setLoading(true);
     try {
       // Giả lập API call
-      console.log("Verifying OTP:", values.otp);
-      
-      // Đợi 1.5 giây để giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const userData = {  
+        usernameOrEmail: email,
+        otp: values.otp,
+      }
       // Giả sử xác thực OTP thành công
       message.success("Xác thực mã OTP thành công!");
       navigate("/reset-password");
@@ -58,19 +72,6 @@ const ForgotPassword = () => {
   const handleOtpChange = (value) => {
     setOtpValue(value);
     form.setFieldsValue({ otp: value });
-  };
-
-  const handleResendOTP = async () => {
-    setLoading(true);
-    try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      message.success("Đã gửi lại mã OTP mới đến email của bạn!");
-    } catch (error) {
-      message.error("Không thể gửi lại mã OTP. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -109,13 +110,17 @@ const ForgotPassword = () => {
             // Form nhập email hoặc username
             <>
               <h3 className="text-center text-lg text-gray-700 mb-6">
-                Vui lòng nhập tên đăng nhập hoặc email đã đăng ký để nhận mã xác thực
+                Vui lòng nhập tên đăng nhập hoặc email đã đăng ký để nhận mã xác
+                thực
               </h3>
               <Form layout="vertical" size="large" onFinish={handleSendOTP}>
                 <Form.Item
                   name="usernameOrEmail"
                   rules={[
-                    { required: true, message: "Vui lòng nhập tên đăng nhập hoặc email!" }
+                    {
+                      required: true,
+                      message: "Vui lòng nhập tên đăng nhập hoặc email!",
+                    },
                   ]}
                 >
                   <Input
@@ -140,10 +145,16 @@ const ForgotPassword = () => {
             // Form nhập mã OTP
             <>
               <h3 className="text-center text-lg text-gray-700 mb-4">
-                Mã OTP đã được gửi đến email <span className="font-semibold">{email}</span>.
-                <br />Vui lòng nhập mã để tiếp tục.
+                Mã OTP đã được gửi đến email của bạn
+                <br />
+                Vui lòng nhập mã để tiếp tục.
               </h3>
-              <Form layout="vertical" size="large" form={form} onFinish={handleVerifyOTP}>
+              <Form
+                layout="vertical"
+                size="large"
+                form={form}
+                onFinish={handleVerifyOTP}
+              >
                 <Form.Item
                   className="mb-4 text-center"
                   name="otp"
@@ -171,7 +182,7 @@ const ForgotPassword = () => {
                 <div className="flex justify-between items-center mt-4">
                   <Button
                     type="link"
-                    onClick={handleResendOTP}
+                    onClick={handleSendOTP}
                     className="text-blue-500 hover:text-blue-700"
                     disabled={loading}
                   >
