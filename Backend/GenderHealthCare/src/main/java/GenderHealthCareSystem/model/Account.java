@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "Account")
@@ -31,4 +33,11 @@ public class Account {
 
     @Column(name = "Password", length = 255)
     private String password; // Ensure this is stored securely (hashed)
+
+    @Column(name = "ResetOtp", length = 10)
+    private String resetOtp;
+
+    @Column(name = "ResetOtpExpiry")
+    private LocalDateTime resetOtpExpiry;
+
 }
