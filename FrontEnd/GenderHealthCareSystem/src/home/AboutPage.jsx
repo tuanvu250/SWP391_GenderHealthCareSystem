@@ -6,7 +6,6 @@ const AboutPage  = () => {
       {/* Menu */}
       <nav className="flex gap-6 mb-10 text-sm text-gray-500">
         <span className="text-blue-600 font-semibold border-b-2 border-blue-600">Giới thiệu</span>
-        <span>Dịch vụ</span>
         <span>Ban chuyên gia</span>
         <span>Biên tập nội dung</span>
         <span>Chính sách</span>
