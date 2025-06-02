@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
     }
 
-    console.log(">>> isLogin:", isAuthenticated);
+    //console.log(">>> isLogin:", isAuthenticated);
   }, []);
 
   useEffect(() => {

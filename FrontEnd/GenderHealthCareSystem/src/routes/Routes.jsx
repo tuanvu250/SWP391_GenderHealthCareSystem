@@ -7,7 +7,7 @@ import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
 import InputMenstrualCycle from "../menstrualcycle/InputMenstrualCycle";
-import Profile from "../user/UserProfile"; // Thêm import cho Profile
+import Profile from "../user/UserProfile"; 
 import ProtectedRoute from "./ProtectedRoute";
 
 // Layout component with Header
@@ -30,7 +30,12 @@ function RouteMap() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/menstrual-cycle" element={<InputMenstrualCycle />} />
+        <Route path="/menstrual-cycle" element={<InputMenstrualCycle />} /> 
+        <Route path="/profile" element={
+        <ProtectedRoute>
+            <Profile />
+        </ProtectedRoute>
+      } />
       </Route>
 
       {/* Routes không có Layout */}
@@ -38,12 +43,6 @@ function RouteMap() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
-      <Route path="/profile" element={
-        <ProtectedRoute>
-            <Profile />
-        </ProtectedRoute>
-      } />
     </Routes>
   );
 }
