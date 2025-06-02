@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
+import { Spin } from "antd"; // Import Spin từ Ant Design
 
 /**
  * Component bảo vệ route, kiểm tra đăng nhập và vai trò người dùng
@@ -11,7 +12,17 @@ import { useAuth } from "../components/provider/AuthProvider";
  */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   // Lấy thông tin xác thực
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Spin tip="Đang xác thực..." size="large">
+          <div className="p-12"></div>
+        </Spin>
+      </div>
+    );
+  }
   
   // Kiểm tra đã đăng nhập chưa
   if (!isAuthenticated) {

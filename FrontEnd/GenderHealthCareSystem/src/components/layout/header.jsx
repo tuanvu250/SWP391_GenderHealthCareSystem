@@ -23,6 +23,7 @@ const Header = () => {
 
   const handleLogout = () => {
     auth.logoutAction();
+    navigate("/");
   };
 
   // Định nghĩa lại userMenu dưới dạng object cho Ant Design v5

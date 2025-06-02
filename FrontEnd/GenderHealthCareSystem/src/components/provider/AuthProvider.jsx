@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const storedToken = sessionStorage.getItem(TOKEN_KEY);
     const storedUser = sessionStorage.getItem(USER_KEY);
@@ -38,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
     }
 
+    setLoading(false);
     //console.log(">>> isLogin:", isAuthenticated);
   }, []);
 
@@ -115,6 +118,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         token,
+        loading,
         loginAction,
         logoutAction,
         registerAction,
