@@ -25,8 +25,8 @@ const AboutPage  = () => {
             Chúng tôi tin rằng với những thông tin luôn cập nhật và các công cụ kiểm tra sức khỏe mới, bạn có thể đưa ra những quyết định sáng suốt hơn vì sức khỏe của bản thân và những người thân yêu. Khỏe hơn – hạnh phúc hơn!
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <img src="https://via.placeholder.com/200x150" alt="img1" className="rounded-lg w-full" />
+        <div >
+          <img src="https://sandiegomagazine.com/wp-content/uploads/2023/08/4ebd3202b5396fd043b142145624b1ec.jpg" alt="img1" className="rounded-lg w-full" />
          
         </div>
       </div>
@@ -58,7 +58,7 @@ const AboutPage  = () => {
         </p>
         <div className="mt-4">
           <p className="font-bold">James Miles-Lambert</p>
-          <p className="text-sm text-gray-600">CEO - Người sáng lập Hello Health Group</p>
+          <p className="text-sm text-gray-600">CEO - Người sáng lập Gender Health Group</p>
         </div>
       </div>
     </div>
