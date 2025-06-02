@@ -18,7 +18,7 @@ const AboutPage  = () => {
         <div>
           <h1 className="text-3xl font-bold mb-4">Giới thiệu Gender HealthCare</h1>
           <p className="text-gray-700 mb-4">
-            Gender Healthcare được ra mắt vào năm 202525 tại Việt Nam với mong muốn cung cấp trực tuyến những kiến thức sức khỏe hữu ích cho bạn đọc. Tại Gender Healthcare, bạn có thể tham khảo thông tin, đặt lịch hẹn với chuyên gia, sử dụng công cụ đo lường và đánh giá tình trạng sức khỏe, gia nhập cộng đồng bạn đọc và cùng nhau chia sẻ câu chuyện sức khỏe của mình.
+            Gender Healthcare được ra mắt vào năm 2025 tại Việt Nam với mong muốn cung cấp trực tuyến những kiến thức sức khỏe hữu ích cho bạn đọc. Tại Gender Healthcare, bạn có thể tham khảo thông tin, đặt lịch hẹn với chuyên gia, sử dụng công cụ đo lường và đánh giá tình trạng sức khỏe, gia nhập cộng đồng bạn đọc và cùng nhau chia sẻ câu chuyện sức khỏe của mình.
           </p>
           <p className="text-gray-700">
             Chúng tôi tin rằng với những thông tin luôn cập nhật và các công cụ kiểm tra sức khỏe mới, bạn có thể đưa ra những quyết định sáng suốt hơn vì sức khỏe của bản thân và những người thân yêu. Khỏe hơn – hạnh phúc hơn!
