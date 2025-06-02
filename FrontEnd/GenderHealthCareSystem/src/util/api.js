@@ -42,6 +42,8 @@ export const loginAPI = async (values) => {
   return api.post("/auth/login", userData);
 };
 
+
+//data của người dùng
 export const getUserProfile = async () => {
-  return api.get("/user/profile");
+  return api.get("/users/me");
 }

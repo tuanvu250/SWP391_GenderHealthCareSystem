@@ -1,4 +1,4 @@
-import { Avatar, Badge, Button, Dropdown, Menu, Drawer } from "antd";
+import { Avatar, Badge, Button, Dropdown, Drawer } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   CaretDownFilled,
@@ -25,45 +25,60 @@ const Header = () => {
     auth.logoutAction();
   };
 
-  const userMenu = (
-    <Menu>
-      {user && (
-        <Menu.Item>
+  // Định nghĩa lại userMenu dưới dạng object cho Ant Design v5
+  const userMenu = {
+    items: [
+      user && {
+        key: 'user-info',
+        label: (
           <div className="flex items-center space-x-2 gap-2">
             <Avatar
-              src={user.image}
-              icon={!user.image && <UserOutlined />}
+              src={user?.userImageUrl}
+              icon={!user?.userImageUrl && <UserOutlined />}
               size="default"
             />
-            <span className="font-bold">{user.username}</span>
+            <span className="font-bold">{user?.username}</span>
           </div>
-        </Menu.Item>
-      )}
-      <Menu.Item key="profile" onClick={() => navigate("/profile")}>
-        Thông tin cá nhân
-      </Menu.Item>
-      <Menu.Item key="settings" onClick={() => navigate("/settings")}>
-        Cài đặt tài khoản
-      </Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout}>
-        Đăng xuất
-      </Menu.Item>
-    </Menu>
-  );
+        ),
+      },
+      {
+        key: 'profile',
+        label: 'Thông tin cá nhân',
+        onClick: () => navigate("/profile")
+      },
+      {
+        key: 'settings',
+        label: 'Cài đặt tài khoản',
+        onClick: () => navigate("/settings")
+      },
+      {
+        key: 'logout',
+        label: 'Đăng xuất',
+        onClick: handleLogout
+      }
+    ].filter(Boolean) // Lọc bỏ các mục null/undefined
+  };
 
-  const servicesMenu = (
-    <Menu>
-      <Menu.Item key="1" onClick={() => navigate("/services/health-checkup")}>
-        Xét nghiệm STIs
-      </Menu.Item>
-      <Menu.Item key="2" onClick={() => navigate("/services/consultation")}>
-        Đặt câu hỏi hoặc tư vấn
-      </Menu.Item>
-      <Menu.Item key="3" onClick={() => navigate("/services/appointments")}>
-        Đặt lịch khám
-      </Menu.Item>
-    </Menu>
-  );
+  // Định nghĩa lại servicesMenu dưới dạng object
+  const servicesMenu = {
+    items: [
+      {
+        key: '1',
+        label: 'Xét nghiệm STIs',
+        onClick: () => navigate("/services/health-checkup")
+      },
+      {
+        key: '2',
+        label: 'Đặt câu hỏi hoặc tư vấn',
+        onClick: () => navigate("/services/consultation")
+      },
+      {
+        key: '3',
+        label: 'Đặt lịch khám',
+        onClick: () => navigate("/services/appointments")
+      }
+    ]
+  };
 
   return (
     <header className="bg-white py-2.5 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
@@ -141,7 +156,7 @@ const Header = () => {
                 </button>
               </Badge>
 
-              <Dropdown overlay={userMenu} trigger={["click"]}>
+              <Dropdown menu={userMenu} trigger={["click"]}>
                 <div className="flex items-center cursor-pointer gap-1">
                   <Avatar
                     src={user?.image}

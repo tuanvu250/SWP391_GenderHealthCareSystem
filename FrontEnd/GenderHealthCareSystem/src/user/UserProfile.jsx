@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Typography, Card, Avatar, Tabs, Button, Row, Col, 
-  Statistic, Tag, Divider, Space, List, Form, Input, 
+  Tag, Space, List, Form, Input, 
   DatePicker, Select, Badge, Modal, Rate
 } from 'antd';
 import { 
@@ -11,27 +11,49 @@ import {
   MedicineBoxOutlined, NotificationOutlined, SettingOutlined,
   CommentOutlined, StarOutlined, LikeOutlined
 } from '@ant-design/icons';
-import { useAuth } from "../components/provider/AuthProvider";
+import { getUserProfile } from "../util/Api";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
 const UserProfile = () => {
-  const { user } = useAuth();
+  const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Giả lập dữ liệu
+  const formatDate = date => date ? new Date(date).toISOString().split('T')[0] : '';
+
+
+  const fetchUserProfile = async() => {
+    try {
+      const res = await getUserProfile();
+      if (res && res.data) {
+        setUser(res.data);
+        //console.log("User profile data:", res.data);
+      }
+      else {
+        console.error("No user profile data found");
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      // Xử lý lỗi nếu cần
+    }
+  }
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
   const userProfile = {
-    name: user?.fullName || "Sarah Johnson",
-    email: user?.email || "sarah.johnson@example.com",
-    phone: user?.phone || "+84 123 456 789",
-    dob: "1990-01-15",
-    gender: "Female",
-    address: "123 Main Street, District 1, Ho Chi Minh City",
-    joinDate: "2023-06-01",
-    avatar: user?.avatar || "https://randomuser.me/api/portraits/women/44.jpg",
+    name: user?.fullName,
+    email: user?.email,
+    phone: user?.phone,
+    dob: user?.birthDate,
+    gender: user?.gender,
+    address: user?.address,
+    joinDate: formatDate(user?.createdAt),
+    avatar: user?.userImageUrl || "https://www.gravatar.com/avatarr",
   };
 
   const recentAppointments = [
