@@ -30,14 +30,12 @@ const UserProfile = () => {
       const res = await getUserProfile();
       if (res && res.data) {
         setUser(res.data);
-        //console.log("User profile data:", res.data);
       }
       else {
         console.error("No user profile data found");
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      // Xử lý lỗi nếu cần
     }
   }
 
@@ -110,7 +108,6 @@ const UserProfile = () => {
     },
   ];
 
-  // Thêm dữ liệu lịch sử feedback và rating
   const feedbackHistory = [
     {
       id: "FB001",
@@ -252,7 +249,7 @@ const UserProfile = () => {
           itemLayout="vertical"
           dataSource={recentAppointments}
           renderItem={(item) => (
-            <Card style={{ marginBottom: 16 }}>
+            <Card className="mb-4">
               <List.Item
                 key={item.id}
                 extra={getStatusTag(item.status)}
@@ -267,7 +264,7 @@ const UserProfile = () => {
                   }
                   description={item.clinic}
                 />
-                <Space direction="vertical" style={{ marginTop: 8 }}>
+                <Space direction="vertical" className="mt-2">
                   <Space>
                     <CalendarOutlined />
                     <Text>{item.date}</Text>
@@ -296,7 +293,7 @@ const UserProfile = () => {
           itemLayout="vertical"
           dataSource={menstrualCycles}
           renderItem={(item) => (
-            <Card style={{ marginBottom: 16 }}>
+            <Card className="mb-4">
               <List.Item key={item.id}>
                 <List.Item.Meta
                   title={
@@ -306,11 +303,11 @@ const UserProfile = () => {
                     </Space>
                   }
                   description={
-                    <div style={{ marginTop: 8 }}>
-                      <div style={{ marginBottom: 8 }}>
+                    <div className="mt-2">
+                      <div className="mb-2">
                         <Text strong>Triệu chứng:</Text>
                         {item.symptoms.map((symptom, index) => (
-                          <Tag color="purple" key={index} style={{ marginLeft: 8 }}>
+                          <Tag color="purple" key={index} className="ml-2">
                             {symptom}
                           </Tag>
                         ))}
@@ -338,7 +335,7 @@ const UserProfile = () => {
           itemLayout="vertical"
           dataSource={feedbackHistory}
           renderItem={(item) => (
-            <Card style={{ marginBottom: 16 }}>
+            <Card className="mb-4">
               <List.Item
                 key={item.id}
                 actions={[
@@ -358,13 +355,13 @@ const UserProfile = () => {
                         <Text strong>{item.serviceName}</Text>
                         <Text type="secondary">tại {item.clinic}</Text>
                       </Space>
-                      <div style={{ marginTop: 4 }}>
+                      <div className="mt-1">
                         <Rate disabled defaultValue={item.rating} />
                       </div>
                     </div>
                   }
                   description={
-                    <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
+                    <Space direction="vertical" className="w-full mt-2">
                       <Space>
                         <UserOutlined />
                         <Text>{item.doctorName}</Text>
@@ -376,13 +373,7 @@ const UserProfile = () => {
                     </Space>
                   }
                 />
-                <div style={{ 
-                  background: '#f9f9f9', 
-                  padding: 16, 
-                  marginTop: 16, 
-                  borderRadius: 8,
-                  border: '1px solid #e8e8e8' 
-                }}>
+                <div className="bg-gray-50 p-4 mt-4 rounded-lg border border-gray-200">
                   <Paragraph>{item.comment}</Paragraph>
                 </div>
               </List.Item>
@@ -394,20 +385,20 @@ const UserProfile = () => {
   ];
 
   return (
-    <div className="profile-container" style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
-      <div className="profile-content" style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="max-w-7xl mx-auto">
         {/* Header Card */}
-        <Card style={{ marginBottom: 24 }}>
+        <Card className="mb-6">
           <Row gutter={[24, 24]} align="middle">
-            <Col xs={24} md={8} style={{ textAlign: 'center' }}>
-              <Badge count={<SettingOutlined style={{ color: '#f56a00' }} />} offset={[-5, 5]}>
+            <Col xs={24} md={8} className="text-center">
+              <Badge count={<SettingOutlined className="text-orange-500" />} offset={[-5, 5]}>
                 <Avatar 
                   size={120} 
                   src={userProfile.avatar} 
                   icon={<UserOutlined />} 
                 />
               </Badge>
-              <Title level={3} style={{ marginTop: 16, marginBottom: 4 }}>
+              <Title level={3} className="mt-4 mb-1">
                 {userProfile.name}
               </Title>
               <Text type="secondary">
@@ -512,7 +503,7 @@ const UserProfile = () => {
               name="dob" 
               label="Ngày sinh"
             >
-              <DatePicker style={{ width: '100%' }} />
+              <DatePicker className="w-full" />
             </Form.Item>
             
             <Form.Item 
@@ -534,7 +525,7 @@ const UserProfile = () => {
             </Form.Item>
             
             <Form.Item>
-              <Space style={{ width: '100%', justifyContent: 'end' }}>
+              <Space className="w-full justify-end">
                 <Button onClick={handleModalCancel}>Hủy</Button>
                 <Button type="primary" htmlType="submit">Cập nhật</Button>
               </Space>

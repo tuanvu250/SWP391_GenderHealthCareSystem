@@ -11,6 +11,7 @@ import Profile from "../user/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import AboutPage from "../home/AboutPage";
 import MenstrualOvulation from "../menstrualcycle/MenstrualOvulation";
+import Blog from "../blog/Blog";
 
 // Layout component with Header
 const Layout = () => {
@@ -40,6 +41,7 @@ function RouteMap() {
         } />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/menstrual-ovulation" element={<MenstrualOvulation />} />
+        <Route path="/blog" element={<Blog />} />
       </Route>
 
       {/* Routes không có Layout */}
