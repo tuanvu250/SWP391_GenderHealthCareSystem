@@ -14,7 +14,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("OTP for Password Reset");
-        message.setText("Mã OTP của bạn là: " + otp + "OTP có hiệu lực trong 3 phút.");
+        message.setText("Mã OTP của bạn là: " + otp + " OTP có hiệu lực trong 3 phút.");
         mailSender.send(message);
     }
 }
