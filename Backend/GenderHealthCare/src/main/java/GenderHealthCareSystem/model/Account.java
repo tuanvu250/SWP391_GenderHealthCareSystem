@@ -40,4 +40,8 @@ public class Account {
     @Column(name = "ResetOtpExpiry")
     private LocalDateTime resetOtpExpiry;
 
+    @Column(name = "OtpVerified")
+    private Boolean otpVerified;
+
+
 }
