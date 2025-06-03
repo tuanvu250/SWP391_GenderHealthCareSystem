@@ -48,7 +48,10 @@ public class ForgotPasswordController {
         // Gửi OTP qua email, không trả về OTP trong response
         emailService.sendOtpEmail(account.getEmail(), otp);
 
-        return ResponseEntity.ok(Map.of("message", "OTP sent to your email!"));
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP sent to your email!",
+                "email", account.getEmail()
+        ));
     }
 
     // 2. Xác thực OTP
