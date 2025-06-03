@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       setIsAuthenticated(false);
       let message = "Đăng nhập không thành công, vui lòng thử lại!";
-      if (error.response.status === 400) {
+      if (error.response.status === 401) {
         message = "Tên đăng nhập hoặc mật khẩu không đúng!";
       } else if (error.response.status === 500) {
         message = "Lỗi máy chủ, vui lòng thử lại sau!";

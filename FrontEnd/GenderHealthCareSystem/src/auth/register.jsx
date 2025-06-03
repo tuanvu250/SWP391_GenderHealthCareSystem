@@ -121,8 +121,11 @@ const Register = () => {
                 <DatePicker
                   className="w-full"
                   placeholder="Chọn ngày sinh"
-                  format="DD/MM/YYYY"
+                  format="YYYY-MM-DD"
                   suffixIcon={<CalendarOutlined className="text-gray-400" />}
+                  disabledDate={(current) =>
+                    current && current >= new Date()
+                  }
                 />
               </Form.Item>
               <Form.Item
