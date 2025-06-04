@@ -3,6 +3,7 @@ package GenderHealthCareSystem.controller;
 import GenderHealthCareSystem.model.ApiResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.service.BlogPostService;
+import GenderHealthCareSystem.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.List;
 public class BlogPostController {
 
     private final BlogPostService blogPostService;
+    private final UserService userService;
 
     /**
      * Lấy tất cả các bài viết.
@@ -40,8 +42,11 @@ public class BlogPostController {
      * @return ResponseEntity chứa bài viết đã được tạo.
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestBody BlogPost blogPost) {
+    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestBody BlogPost blogPost, @AuthenticationPrincipal Jwt jwt) {
+        System.out.println(Integer.parseInt(jwt.getClaimAsString("userID")));
+        blogPost.setConsultant(this.userService.getUserById(Integer.parseInt(jwt.getClaimAsString("userID"))));
         this.blogPostService.saveBlogPost(blogPost);
+
         var response = new ApiResponse<>(HttpStatus.CREATED, "Blog post created successfully", blogPost, null);
         return ResponseEntity.ok().body(response);
     }
