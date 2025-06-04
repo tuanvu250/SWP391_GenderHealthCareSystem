@@ -1,10 +1,12 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.BlogPostResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.repository.BlogPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,16 +42,45 @@ public class BlogPostService {
         blogPostRepository.save(blogPost);
     }
 
-    public List<BlogPost> findAllBlogPosts() {
-        return blogPostRepository.findAll();
+    public List<BlogPostResponse> findAllBlogPosts() {
+        List<BlogPost> blogPosts = blogPostRepository.findAll();
+        List<BlogPostResponse> responses = new ArrayList<>();
+        for (BlogPost blogPost : blogPosts) {
+            responses.add(mapToResponse(blogPost));
+        }
+        return responses;
     }
 
-    public List<BlogPost> findBlogPostsByAuthor(String ID) {
-        return blogPostRepository.findByConsultant_UserId(Integer.parseInt(ID));
+    public List<BlogPostResponse> findBlogPostsByAuthor(String ID) {
+        List<BlogPost> blogPosts = blogPostRepository.findByConsultant_UserId(Integer.parseInt(ID));
+        List<BlogPostResponse> responses = new ArrayList<>();
+        for (BlogPost blogPost : blogPosts) {
+            responses.add(mapToResponse(blogPost));
+        }
+        return responses;
     }
 
-    public List<BlogPost> findFourNewestBlogs() {
-        return blogPostRepository.findTop4ByOrderByPublishedAtDesc();
+    public List<BlogPostResponse> findFourNewestBlogs() {
+        List<BlogPost> blogPosts = blogPostRepository.findTop4ByOrderByPublishedAtDesc();
+        List<BlogPostResponse> responses = new ArrayList<>();
+        for (BlogPost blogPost : blogPosts) {
+            responses.add(mapToResponse(blogPost));
+        }
+        return responses;
+    }
+
+    public BlogPostResponse mapToResponse(BlogPost blogPost) {
+        BlogPostResponse blogPostResponse = new BlogPostResponse();
+        blogPostResponse.setPostId(blogPost.getPostId());
+        blogPostResponse.setTitle(blogPost.getTitle());
+        blogPostResponse.setContent(blogPost.getContent());
+        blogPostResponse.setThumbnailUrl(blogPost.getThumbnailUrl());
+        blogPostResponse.setPublishedAt(blogPost.getPublishedAt());
+        blogPostResponse.setTags(blogPost.getTags());
+        blogPostResponse.setConsultantId(blogPost.getConsultant().getUserId());
+        blogPostResponse.setConsultantName(blogPost.getConsultant().getFullName());
+        blogPostResponse.setConsultantImageUrl(blogPost.getConsultant().getUserImageUrl());
+        return blogPostResponse;
     }
          
 

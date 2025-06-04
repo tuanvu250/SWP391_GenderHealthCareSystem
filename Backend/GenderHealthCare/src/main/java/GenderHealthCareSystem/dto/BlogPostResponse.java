@@ -13,6 +13,7 @@ public class BlogPostResponse {
 
     private Integer postId;
     private Integer consultantId;
+    private String consultantImageUrl;
     private String consultantName;
     private String title;
     private String content;

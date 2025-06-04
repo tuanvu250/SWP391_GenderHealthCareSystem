@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.controller;
 
+import GenderHealthCareSystem.dto.BlogPostResponse;
 import GenderHealthCareSystem.model.ApiResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.service.BlogPostService;
@@ -29,8 +30,8 @@ public class BlogPostController {
      * @return ResponseEntity chứa danh sách tất cả các bài viết.
      */
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<BlogPost>>> getAllBlogPosts() {
-        List<BlogPost> blogPosts = blogPostService.findAllBlogPosts();
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getAllBlogPosts() {
+        List<BlogPostResponse> blogPosts = blogPostService.findAllBlogPosts();
         var response = new ApiResponse<>(HttpStatus.OK, "Blog posts retrieved successfully", blogPosts, null);
         return ResponseEntity.ok().body(response);
     }
@@ -47,7 +48,7 @@ public class BlogPostController {
         blogPost.setConsultant(this.userService.getUserById(Integer.parseInt(jwt.getClaimAsString("userID"))));
         this.blogPostService.saveBlogPost(blogPost);
 
-        var response = new ApiResponse<>(HttpStatus.CREATED, "Blog post created successfully", blogPost, null);
+        var response = new ApiResponse<>(HttpStatus.CREATED, "Blog post created successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
 
@@ -83,8 +84,8 @@ public class BlogPostController {
      * @return ResponseEntity chứa danh sách 4 bài viết mới nhất.
      */
     @GetMapping("/newest")
-    public ResponseEntity<ApiResponse<List<BlogPost>>> getNewestBlogPosts() {
-        List<BlogPost> newestBlogPosts = blogPostService.findFourNewestBlogs(); // Assuming the service method is implemented
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getNewestBlogPosts() {
+        List<BlogPostResponse> newestBlogPosts = blogPostService.findFourNewestBlogs(); // Assuming the service method is implemented
         var response = new ApiResponse<>(HttpStatus.OK, "4 newest blog posts retrieved successfully", newestBlogPosts, null);
         return ResponseEntity.ok().body(response);
     }
@@ -96,8 +97,8 @@ public class BlogPostController {
      * @return ResponseEntity chứa các bài viết của người dùng.
      */
     @GetMapping("/author")
-    public ResponseEntity<ApiResponse<List<BlogPost>>> getBlogsByAuthor(@AuthenticationPrincipal Jwt jwt) {
-        List<BlogPost> blogPosts = blogPostService.findBlogPostsByAuthor(jwt.getClaimAsString("userID"));
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getBlogsByAuthor(@AuthenticationPrincipal Jwt jwt) {
+        List<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(jwt.getClaimAsString("userID"));
         var response = new ApiResponse<>(HttpStatus.OK, "Blogs retrieved successfully", blogPosts, null);
         return ResponseEntity.ok().body(response);
     }
