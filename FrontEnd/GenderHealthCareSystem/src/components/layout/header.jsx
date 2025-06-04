@@ -82,8 +82,8 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white py-2.5 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
-      <div className="container mx-auto flex justify-between items-center">
+    <header className="bg-white py-2.5 z-50 px-4 md:px-8 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
+      <div className="mx-auto flex justify-between items-center w-full">
         {/* Logo */}
         <a
           className="flex items-center cursor-pointer"
