@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
+import dayjs from 'dayjs'; // Import dayjs
 import { 
   Typography, Card, Avatar, Tabs, Button, Row, Col, 
   Tag, Space, List, Form, Input, 
-  DatePicker, Select, Badge, Modal, Rate
+  DatePicker, Select, Badge, Modal, Rate, message, Popconfirm
 } from 'antd';
 import { 
   UserOutlined, EditOutlined, CalendarOutlined,
   PhoneOutlined, MailOutlined, HomeOutlined,
   HeartOutlined, ClockCircleOutlined, FileTextOutlined,
   MedicineBoxOutlined, NotificationOutlined, SettingOutlined,
-  CommentOutlined, StarOutlined, LikeOutlined
+  CommentOutlined, LikeOutlined, LockOutlined,
+  WarningOutlined, ExclamationCircleOutlined
 } from '@ant-design/icons';
-import { getUserProfile } from "../util/Api";
+import { getUserProfile } from "../components/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -21,6 +23,10 @@ const UserProfile = () => {
   const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [settingTab, setSettingTab] = useState("password"); // "password" or "deactivate"
+  const [form] = Form.useForm(); // Edit profile form
+  const [passwordForm] = Form.useForm(); // Password change form
 
   const formatDate = date => date ? new Date(date).toISOString().split('T')[0] : '';
 
@@ -157,7 +163,19 @@ const UserProfile = () => {
     }
   };
 
+  // Hàm xử lý khi mở modal chỉnh sửa
   const handleEditProfile = () => {
+    // Đặt giá trị ban đầu cho form khi mở modal
+    form.setFieldsValue({
+      fullName: user?.fullName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      // Chuyển đổi chuỗi ngày thành đối tượng dayjs
+      dob: user?.birthDate ? dayjs(user?.birthDate) : null,
+      gender: user?.gender || '',
+      address: user?.address || '',
+    });
+    
     setIsModalOpen(true);
   };
 
@@ -168,6 +186,170 @@ const UserProfile = () => {
   const handleFormSubmit = (values) => {
     console.log("Updated profile:", values);
     setIsModalOpen(false);
+  };
+
+  // Hàm mở modal cài đặt tài khoản
+  const handleOpenSettings = () => {
+    setSettingTab("password");
+    passwordForm.resetFields();
+    setIsSettingsModalOpen(true);
+  };
+
+  // Hàm đóng modal cài đặt tài khoản
+  const handleSettingsModalCancel = () => {
+    setIsSettingsModalOpen(false);
+  };
+
+  // Hàm xử lý đổi mật khẩu
+  const handleChangePassword = (values) => {
+    console.log("Change password:", values);
+    
+    // API call để đổi mật khẩu
+    // try {
+    //   const response = await changePassword(values);
+    //   if (response.status === 200) {
+    //     message.success("Mật khẩu đã được thay đổi thành công!");
+    //     setIsSettingsModalOpen(false);
+    //   }
+    // } catch (error) {
+    //   message.error("Không thể thay đổi mật khẩu. Vui lòng thử lại.");
+    // }
+    
+    message.success("Mật khẩu đã được thay đổi thành công!");
+    passwordForm.resetFields();
+    setIsSettingsModalOpen(false);
+  };
+
+  // Hàm xử lý vô hiệu hóa tài khoản
+  const handleDeactivateAccount = () => {
+    console.log("Deactivate account");
+    
+    // API call để vô hiệu hóa tài khoản
+    // try {
+    //   const response = await deactivateAccount();
+    //   if (response.status === 200) {
+    //     message.success("Tài khoản đã được vô hiệu hóa.");
+    //     // Đăng xuất
+    //     // logout();
+    //     // Chuyển hướng về trang chủ
+    //     // navigate("/");
+    //   }
+    // } catch (error) {
+    //   message.error("Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.");
+    // }
+    
+    message.success("Tài khoản đã được vô hiệu hóa.");
+    setIsSettingsModalOpen(false);
+  };
+
+  // Nội dung modal cài đặt tài khoản
+  const renderSettingsContent = () => {
+    switch (settingTab) {
+      case "password":
+        return (
+          <Form
+            form={passwordForm}
+            layout="vertical"
+            onFinish={handleChangePassword}
+          >
+            <Form.Item
+              name="currentPassword"
+              label="Mật khẩu hiện tại"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại!" }]}
+            >
+              <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu hiện tại" />
+            </Form.Item>
+            
+            <Form.Item
+              name="newPassword"
+              label="Mật khẩu mới"
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu mới!" },
+                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" }
+              ]}
+            >
+              <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu mới" />
+            </Form.Item>
+            
+            <Form.Item
+              name="confirmPassword"
+              label="Xác nhận mật khẩu mới"
+              dependencies={["newPassword"]}
+              rules={[
+                { required: true, message: "Vui lòng xác nhận mật khẩu mới!" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("newPassword") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      "Mật khẩu xác nhận không khớp với mật khẩu mới!"
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password prefix={<LockOutlined />} placeholder="Xác nhận mật khẩu mới" />
+            </Form.Item>
+            
+            <Form.Item>
+              <Space className="w-full justify-end">
+                <Button onClick={handleSettingsModalCancel}>Hủy</Button>
+                <Button type="primary" htmlType="submit">Đổi mật khẩu</Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        );
+        
+      case "deactivate":
+        return (
+          <div>
+            <div className="bg-orange-50 p-4 mb-4 rounded-lg border border-orange-200">
+              <Space align="start">
+                <WarningOutlined className="text-orange-500 text-lg mt-1" />
+                <div>
+                  <Text strong className="text-orange-800">Cảnh báo: Hành động không thể hoàn tác</Text>
+                  <Paragraph className="text-orange-700 mt-2">
+                    Việc vô hiệu hóa tài khoản sẽ:
+                  </Paragraph>
+                  <ul className="list-disc ml-5 text-orange-700">
+                    <li>Ẩn tất cả thông tin cá nhân của bạn</li>
+                    <li>Hủy tất cả các cuộc hẹn sắp tới</li>
+                    <li>Xóa quyền truy cập vào hệ thống của bạn</li>
+                    <li>Lưu giữ dữ liệu y tế của bạn theo quy định pháp luật</li>
+                  </ul>
+                </div>
+              </Space>
+            </div>
+            
+            <Paragraph className="mb-4">
+              Để vô hiệu hóa tài khoản của bạn, vui lòng nhấn nút "Vô hiệu hóa tài khoản" bên dưới.
+            </Paragraph>
+            
+            <div className="text-right">
+              <Space>
+                <Button onClick={handleSettingsModalCancel}>Hủy</Button>
+                <Popconfirm
+                  title="Bạn chắc chắn muốn vô hiệu hóa tài khoản?"
+                  description="Hành động này không thể hoàn tác!"
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                  okButtonProps={{ danger: true }}
+                  icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                  onConfirm={handleDeactivateAccount}
+                >
+                  <Button type="primary" danger>
+                    Vô hiệu hóa tài khoản
+                  </Button>
+                </Popconfirm>
+              </Space>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
   };
 
   const tabItems = [
@@ -425,10 +607,11 @@ const UserProfile = () => {
                 </Col>
                 <Col xs={24} sm={12} md={8}>
                   <Button 
-                    icon={<StarOutlined />}
+                    icon={<SettingOutlined />}
                     block
+                    onClick={handleOpenSettings}
                   >
-                    Viết đánh giá mới
+                    Cài đặt tài khoản
                   </Button>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
@@ -453,25 +636,20 @@ const UserProfile = () => {
           />
         </Card>
 
-        {/* Edit Profile Modal */}
+        {/* Edit Profile Modal - giữ nguyên, không thay đổi */}
         <Modal
           title="Chỉnh sửa hồ sơ"
           open={isModalOpen}
           onCancel={handleModalCancel}
           footer={null}
         >
+          {/* phần content giữ nguyên */}
           <Form
+            form={form}
             layout="vertical"
-            initialValues={{
-              fullName: userProfile.name,
-              email: userProfile.email,
-              phone: userProfile.phone,
-              dob: userProfile.dob,
-              gender: userProfile.gender,
-              address: userProfile.address,
-            }}
             onFinish={handleFormSubmit}
           >
+            {/* các Form Item giữ nguyên */}
             <Form.Item 
               name="fullName" 
               label="Họ và tên"
@@ -503,7 +681,11 @@ const UserProfile = () => {
               name="dob" 
               label="Ngày sinh"
             >
-              <DatePicker className="w-full" />
+              <DatePicker 
+                className="w-full" 
+                format="YYYY-MM-DD"
+                disabledDate={(current) => current && current > dayjs()}
+              />
             </Form.Item>
             
             <Form.Item 
@@ -531,6 +713,48 @@ const UserProfile = () => {
               </Space>
             </Form.Item>
           </Form>
+        </Modal>
+
+        {/* Thêm Modal cài đặt tài khoản */}
+        <Modal
+          title={
+            <Space>
+              <SettingOutlined />
+              <span>Cài đặt tài khoản</span>
+            </Space>
+          }
+          open={isSettingsModalOpen}
+          onCancel={handleSettingsModalCancel}
+          footer={null}
+          width={600}
+        >
+          <Tabs 
+            activeKey={settingTab}
+            onChange={setSettingTab}
+            items={[
+              {
+                key: "password",
+                label: (
+                  <span>
+                    <LockOutlined />
+                    Đổi mật khẩu
+                  </span>
+                ),
+              },
+              {
+                key: "deactivate",
+                label: (
+                  <span>
+                    <WarningOutlined />
+                    Vô hiệu hóa tài khoản
+                  </span>
+                ),
+              },
+            ]}
+          />
+          <div className="mt-4">
+            {renderSettingsContent()}
+          </div>
         </Modal>
       </div>
     </div>

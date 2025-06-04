@@ -7,7 +7,7 @@ import {
   MailOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { forgotPasswordAPI, verifyOTPAPI } from "../util/api";
+import { forgotPasswordAPI, verifyOTPAPI } from "../components/utils/api";
 
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);

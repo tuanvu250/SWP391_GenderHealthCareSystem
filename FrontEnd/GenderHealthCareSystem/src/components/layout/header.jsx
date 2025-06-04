@@ -50,7 +50,7 @@ const Header = () => {
       {
         key: 'settings',
         label: 'Cài đặt tài khoản',
-        onClick: () => navigate("/settings")
+        onClick: () => navigate("/profile?openSettings=true")
       },
       {
         key: 'logout',
