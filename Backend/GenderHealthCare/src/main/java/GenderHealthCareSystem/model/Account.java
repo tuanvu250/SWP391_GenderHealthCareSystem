@@ -31,4 +31,7 @@ public class Account {
 
     @Column(name = "Password", length = 255)
     private String password; // Ensure this is stored securely (hashed)
+
+    @Column(name = "Status", length = 20)
+    private String status;
 }

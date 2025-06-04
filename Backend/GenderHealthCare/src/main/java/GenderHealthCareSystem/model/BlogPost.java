@@ -39,4 +39,9 @@ public class BlogPost {
 
     @Column(name = "Tags", columnDefinition = "NVARCHAR(MAX)")
     private String tags; // Consider a separate Tag entity and ManyToMany relationship
+
+    @Column(name = "Deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean deleted = false;
+
+
 }

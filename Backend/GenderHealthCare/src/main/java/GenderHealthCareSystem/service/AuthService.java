@@ -57,6 +57,7 @@ public class AuthService {
         account.setUserName(request.getUserName());
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
+        account.setStatus("ACTIVE");
         accountRepository.save(account);
     }
 }

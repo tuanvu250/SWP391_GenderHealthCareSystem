@@ -13,6 +13,8 @@ public class BlogPostService {
     private final BlogPostRepository blogPostRepository;
 
     public void saveBlogPost(BlogPost blogPost) {
+        blogPost.setDeleted(false);
+        blogPost.setPublishedAt(java.time.LocalDateTime.now());
         this.blogPostRepository.save(blogPost);
     }
 
@@ -22,7 +24,13 @@ public class BlogPostService {
     }
 
     public void deleteBlogPostById(int id) {
-        blogPostRepository.deleteById(id);
+        BlogPost blog= blogPostRepository.findById(id).get();
+        if (blog == null) {
+            throw new RuntimeException("Không tìm thấy bài viết với id: " + id);
+        }
+        blog.setDeleted(true);
+        this.blogPostRepository.save(blog);
+
     }
 
     public void updateBlogPost(BlogPost blogPost) {
@@ -39,4 +47,10 @@ public class BlogPostService {
     public List<BlogPost> findBlogPostsByAuthor(String ID) {
         return blogPostRepository.findByConsultant_UserId(Integer.parseInt(ID));
     }
+
+    public List<BlogPost> findFourNewestBlogs() {
+        return blogPostRepository.findTop4ByOrderByPublishedAtDesc();
+    }
+         
+
 }

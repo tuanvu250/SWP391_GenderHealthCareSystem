@@ -19,6 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account account = accountRepository
                 .findByUserNameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với username/email: " + usernameOrEmail));
+        if (!account.getStatus().equals("ACTIVE")) {
+            throw new UsernameNotFoundException("Tài khoản không hoạt động");
+        }
         return new CustomUserDetails(account);
     }
 }

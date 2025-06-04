@@ -47,6 +47,9 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     private LocalDateTime updatedAt;
     @Column(name = "UserImageUrl")
     private String userImageUrl;
+
+
+
     // Relationships to other tables if needed (e.g., @OneToMany for bookings)
     // @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     // private Account account;
