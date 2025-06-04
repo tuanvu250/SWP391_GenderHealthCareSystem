@@ -163,9 +163,9 @@ const Home = () => {
 
   return (
       <>
-        {/* Banner Section styled like MedEase - Updated with px-16 */}
+        {/* Banner Section styled like MedEase - Loại bỏ container */}
         <div className="bg-gradient-to-r from-sky-50 to-blue-100 overflow-hidden md:px-16 px-4">
-          <div className="container mx-auto pt-8">
+          <div className="mx-auto pt-8">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pb-0" >
               {/* Left content */}
               <div className="w-full lg:w-1/2 space-y-6 lg:pb-12">
@@ -244,13 +244,13 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Services Section - Updated with px-16 */}
+        {/* Services Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-gradient-to-b from-white to-sky-50 relative">
           {/* Background decorations */}
           <div className="absolute top-12 right-8 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
           <div className="absolute bottom-12 left-8 w-48 h-48 bg-green-100 rounded-full opacity-30"></div>
           
-          <div className="container mx-auto relative z-10">
+          <div className="mx-auto relative z-10">
             <div className="text-center mb-16 relative">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Giải pháp sức khỏe toàn diện</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -344,9 +344,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Features or Testimonials Section - With px-16 */}
+        {/* Features or Testimonials Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-white">
-          <div className="container mx-auto">
+          <div className="mx-auto">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Tại sao chọn chúng tôi</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -403,13 +403,13 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Testimonials Section - Customer Ratings & Feedback */}
+        {/* Testimonials Section - Customer Ratings & Feedback - Loại bỏ container */}
         <div className="py-16 px-16 bg-gradient-to-b from-sky-50 to-white relative">
           {/* Background decorations */}
           <div className="absolute top-24 left-12 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
           <div className="absolute bottom-24 right-12 w-48 h-48 bg-green-100 rounded-full opacity-30"></div>
           
-          <div className="container mx-auto relative z-10">
+          <div className="mx-auto relative z-10">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Phản hồi từ người dùng</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -549,9 +549,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Latest Blog Posts Section */}
+        {/* Latest Blog Posts Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-white">
-          <div className="container mx-auto">
+          <div className="mx-auto">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Kiến thức sức khỏe</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">

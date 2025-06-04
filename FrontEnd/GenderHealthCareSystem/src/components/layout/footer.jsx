@@ -18,7 +18,7 @@ const Footer = () => {
     <footer>
       {/* Main Footer - Reduced padding and updated colors */}
       <div className="bg-[#0099CF] text-white py-10 md:px-16 px-8">
-        <div className="container mx-auto">
+        <div className="mx-auto">
           <Row gutter={[32, 24]}>
             {/* Company Info */}
             <Col xs={24} md={12} lg={8}>
