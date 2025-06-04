@@ -4,12 +4,15 @@ import GenderHealthCareSystem.dto.ProfileDTO;
 import GenderHealthCareSystem.dto.UpdateProfileRequest;
 import GenderHealthCareSystem.model.ConsultantProfile;
 import GenderHealthCareSystem.repository.ConsultantProfileRepository;
+import GenderHealthCareSystem.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -65,5 +68,27 @@ public class ProfileController {
         return ResponseEntity.ok(Map.of("message", "Profile updated successfully!"));
     }
 
-    
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    @PutMapping("/me/avatar")
+    public ResponseEntity<?> updateAvatar(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
+        Optional<ConsultantProfile> optional = consultantProfileRepository.findByConsultant_UserId(consultantId);
+        if (optional.isEmpty())
+            return ResponseEntity.status(404).body(Map.of("message", "Profile not found!"));
+
+        String avatarUrl = cloudinaryService.uploadFile(file);
+
+        ConsultantProfile profile = optional.get();
+        profile.setAvatarUrl(avatarUrl);
+        consultantProfileRepository.save(profile);
+
+        return ResponseEntity.ok(Map.of("message", "Avatar updated successfully!", "avatarUrl", avatarUrl));
+    }
+
 }
