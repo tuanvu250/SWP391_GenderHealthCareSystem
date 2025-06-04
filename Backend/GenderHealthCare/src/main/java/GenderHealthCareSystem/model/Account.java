@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "Account")
@@ -34,6 +36,15 @@ public class Account {
 
     @Column(name = "Status", length = 50)
     private String status;
+    @Column(name = "ResetOtpExpiry")
+    private LocalDateTime resetOtpExpiry;
 
+    @Column(name = "Otp", length = 6)
+    private String resetOtp;
+
+    @Column(name = "OtpVerified")
+    private Boolean otpVerified;
+
+ 
 
 }
