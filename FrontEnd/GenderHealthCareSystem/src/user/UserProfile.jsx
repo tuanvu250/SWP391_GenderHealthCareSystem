@@ -1,51 +1,89 @@
 import React, { useEffect, useState } from "react";
-import dayjs from 'dayjs'; // Import dayjs
-import { 
-  Typography, Card, Avatar, Tabs, Button, Row, Col, 
-  Tag, Space, List, Form, Input, 
-  DatePicker, Select, Badge, Modal, Rate, message, Popconfirm
-} from 'antd';
-import { 
-  UserOutlined, EditOutlined, CalendarOutlined,
-  PhoneOutlined, MailOutlined, HomeOutlined,
-  HeartOutlined, ClockCircleOutlined, FileTextOutlined,
-  MedicineBoxOutlined, NotificationOutlined, SettingOutlined,
-  CommentOutlined, LikeOutlined, LockOutlined,
-  WarningOutlined, ExclamationCircleOutlined
-} from '@ant-design/icons';
-import { getUserProfile } from "../components/utils/api";
+import dayjs from "dayjs";
+import {
+  Typography,
+  Card,
+  Avatar,
+  Tabs,
+  Button,
+  Row,
+  Col,
+  Tag,
+  Space,
+  List,
+  Form,
+  Input,
+  Upload,
+  DatePicker,
+  Select,
+  Badge,
+  Modal,
+  Rate,
+  message,
+  Popconfirm,
+} from "antd";
+import {
+  UserOutlined,
+  EditOutlined,
+  CalendarOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  HomeOutlined,
+  HeartOutlined,
+  ClockCircleOutlined,
+  FileTextOutlined,
+  MedicineBoxOutlined,
+  NotificationOutlined,
+  SettingOutlined,
+  CommentOutlined,
+  LikeOutlined,
+  LockOutlined,
+  WarningOutlined,
+  ExclamationCircleOutlined,
+  CameraOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
+import { getUserProfile, updateUserAvatarAPI } from "../components/utils/api";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
 const UserProfile = () => {
+  // Thêm state cho quản lý avatar
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  // Giữ nguyên các state khác
   const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [settingTab, setSettingTab] = useState("password"); // "password" or "deactivate"
-  const [form] = Form.useForm(); // Edit profile form
-  const [passwordForm] = Form.useForm(); // Password change form
+  const [settingTab, setSettingTab] = useState("password");
+  const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
 
-  const formatDate = date => date ? new Date(date).toISOString().split('T')[0] : '';
-
-
-  const fetchUserProfile = async() => {
-    try {
-      const res = await getUserProfile();
-      if (res && res.data) {
-        setUser(res.data);
-      }
-      else {
-        console.error("No user profile data found");
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  }
+  const formatDate = (date) =>
+    date ? new Date(date).toISOString().split("T")[0] : "";
 
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const res = await getUserProfile();
+        if (res && res.data) {
+          setUser(res.data);
+          // Cập nhật avatarUrl khi nhận dữ liệu từ server
+          if (res.data.userImageUrl) {
+            setAvatarUrl(res.data.userImageUrl);
+          }
+          console.log(">>> User profile data:", res.data);
+        } else {
+          console.error("No user profile data found");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
     fetchUserProfile();
   }, []);
 
@@ -57,7 +95,59 @@ const UserProfile = () => {
     gender: user?.gender,
     address: user?.address,
     joinDate: formatDate(user?.createdAt),
-    avatar: user?.userImageUrl || "https://www.gravatar.com/avatarr",
+    avatar:
+      avatarUrl || user?.userImageUrl || "https://www.gravatar.com/avatar",
+  };
+
+  // Xử lý tải lên và cập nhật avatar
+  const customUploadRequest = async (options) => {
+    const { file, onSuccess, onError, onProgress } = options;
+
+    // Kiểm tra file trước khi tải lên
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      message.error("Bạn chỉ có thể tải lên file JPG/PNG!");
+      onError(new Error("Bạn chỉ có thể tải lên file JPG/PNG!"));
+      return;
+    }
+
+    const isLt2M = file.size / 1024 / 1024 < 24;
+    if (!isLt2M) {
+      message.error("Kích thước ảnh phải nhỏ hơn 24MB!");
+      onError(new Error("Kích thước ảnh phải nhỏ hơn 24MB!"));
+      return;
+    }
+
+    // Bắt đầu tải lên, hiển thị trạng thái loading
+    setAvatarLoading(true);
+
+    // Giả lập tiến trình tải lên
+
+    try {
+      // Tạo FormData để gửi đến server
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      // Gọi API để cập nhật avatar
+      const response = null;
+
+      // Nếu API trả về thành công
+      if (response && response.data) {
+        // Cập nhật URL avatar mới
+        setAvatarUrl(response.data.userImageUrl);
+
+        message.success("Cập nhật ảnh đại diện thành công!");
+        onSuccess(response, file);
+      } else {
+        throw new Error("Không nhận được phản hồi từ server");
+      }
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      message.error("Không thể cập nhật ảnh đại diện. Vui lòng thử lại!");
+      onError(error);
+    } finally {
+      setAvatarLoading(false);
+    }
   };
 
   const recentAppointments = [
@@ -121,10 +211,11 @@ const UserProfile = () => {
       doctorName: "Dr. Emily Chen",
       serviceName: "Gynecological Consultation",
       rating: 5,
-      comment: "Dr. Chen was extremely professional and caring. She took time to explain my condition thoroughly and answered all my questions patiently. The staff at the Women's Health Center were also very helpful.",
+      comment:
+        "Dr. Chen was extremely professional and caring. She took time to explain my condition thoroughly and answered all my questions patiently. The staff at the Women's Health Center were also very helpful.",
       helpful: 12,
       clinic: "Women's Health Center",
-      appointmentId: "AP001"
+      appointmentId: "AP001",
     },
     {
       id: "FB002",
@@ -132,10 +223,11 @@ const UserProfile = () => {
       doctorName: "Dr. Jessica Lee",
       serviceName: "Skin Examination",
       rating: 4,
-      comment: "Dr. Lee was very knowledgeable and provided good advice for my skin condition. The clinic was clean, but I had to wait a bit longer than expected for my appointment.",
+      comment:
+        "Dr. Lee was very knowledgeable and provided good advice for my skin condition. The clinic was clean, but I had to wait a bit longer than expected for my appointment.",
       helpful: 8,
       clinic: "Skin Care Clinic",
-      appointmentId: "AP003"
+      appointmentId: "AP003",
     },
     {
       id: "FB003",
@@ -143,10 +235,11 @@ const UserProfile = () => {
       doctorName: "Dr. Robert Smith",
       serviceName: "Annual Physical",
       rating: 3,
-      comment: "The examination was thorough but rushed. Dr. Smith could have provided more detailed explanations about my health concerns.",
+      comment:
+        "The examination was thorough but rushed. Dr. Smith could have provided more detailed explanations about my health concerns.",
       helpful: 5,
       clinic: "City Medical Center",
-      appointmentId: "AP004"
+      appointmentId: "AP004",
     },
   ];
 
@@ -167,15 +260,15 @@ const UserProfile = () => {
   const handleEditProfile = () => {
     // Đặt giá trị ban đầu cho form khi mở modal
     form.setFieldsValue({
-      fullName: user?.fullName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
       // Chuyển đổi chuỗi ngày thành đối tượng dayjs
       dob: user?.birthDate ? dayjs(user?.birthDate) : null,
-      gender: user?.gender || '',
-      address: user?.address || '',
+      gender: user?.gender || "",
+      address: user?.address || "",
     });
-    
+
     setIsModalOpen(true);
   };
 
@@ -203,7 +296,7 @@ const UserProfile = () => {
   // Hàm xử lý đổi mật khẩu
   const handleChangePassword = (values) => {
     console.log("Change password:", values);
-    
+
     // API call để đổi mật khẩu
     // try {
     //   const response = await changePassword(values);
@@ -214,7 +307,7 @@ const UserProfile = () => {
     // } catch (error) {
     //   message.error("Không thể thay đổi mật khẩu. Vui lòng thử lại.");
     // }
-    
+
     message.success("Mật khẩu đã được thay đổi thành công!");
     passwordForm.resetFields();
     setIsSettingsModalOpen(false);
@@ -223,7 +316,7 @@ const UserProfile = () => {
   // Hàm xử lý vô hiệu hóa tài khoản
   const handleDeactivateAccount = () => {
     console.log("Deactivate account");
-    
+
     // API call để vô hiệu hóa tài khoản
     // try {
     //   const response = await deactivateAccount();
@@ -237,7 +330,7 @@ const UserProfile = () => {
     // } catch (error) {
     //   message.error("Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.");
     // }
-    
+
     message.success("Tài khoản đã được vô hiệu hóa.");
     setIsSettingsModalOpen(false);
   };
@@ -255,22 +348,30 @@ const UserProfile = () => {
             <Form.Item
               name="currentPassword"
               label="Mật khẩu hiện tại"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" },
+              ]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu hiện tại" />
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Nhập mật khẩu hiện tại"
+              />
             </Form.Item>
-            
+
             <Form.Item
               name="newPassword"
               label="Mật khẩu mới"
               rules={[
                 { required: true, message: "Vui lòng nhập mật khẩu mới!" },
-                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" }
+                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
               ]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu mới" />
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Nhập mật khẩu mới"
+              />
             </Form.Item>
-            
+
             <Form.Item
               name="confirmPassword"
               label="Xác nhận mật khẩu mới"
@@ -289,18 +390,23 @@ const UserProfile = () => {
                 }),
               ]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Xác nhận mật khẩu mới" />
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Xác nhận mật khẩu mới"
+              />
             </Form.Item>
-            
+
             <Form.Item>
               <Space className="w-full justify-end">
                 <Button onClick={handleSettingsModalCancel}>Hủy</Button>
-                <Button type="primary" htmlType="submit">Đổi mật khẩu</Button>
+                <Button type="primary" htmlType="submit">
+                  Đổi mật khẩu
+                </Button>
               </Space>
             </Form.Item>
           </Form>
         );
-        
+
       case "deactivate":
         return (
           <div>
@@ -308,7 +414,9 @@ const UserProfile = () => {
               <Space align="start">
                 <WarningOutlined className="text-orange-500 text-lg mt-1" />
                 <div>
-                  <Text strong className="text-orange-800">Cảnh báo: Hành động không thể hoàn tác</Text>
+                  <Text strong className="text-orange-800">
+                    Cảnh báo: Hành động không thể hoàn tác
+                  </Text>
                   <Paragraph className="text-orange-700 mt-2">
                     Việc vô hiệu hóa tài khoản sẽ:
                   </Paragraph>
@@ -316,16 +424,19 @@ const UserProfile = () => {
                     <li>Ẩn tất cả thông tin cá nhân của bạn</li>
                     <li>Hủy tất cả các cuộc hẹn sắp tới</li>
                     <li>Xóa quyền truy cập vào hệ thống của bạn</li>
-                    <li>Lưu giữ dữ liệu y tế của bạn theo quy định pháp luật</li>
+                    <li>
+                      Lưu giữ dữ liệu y tế của bạn theo quy định pháp luật
+                    </li>
                   </ul>
                 </div>
               </Space>
             </div>
-            
+
             <Paragraph className="mb-4">
-              Để vô hiệu hóa tài khoản của bạn, vui lòng nhấn nút "Vô hiệu hóa tài khoản" bên dưới.
+              Để vô hiệu hóa tài khoản của bạn, vui lòng nhấn nút "Vô hiệu hóa
+              tài khoản" bên dưới.
             </Paragraph>
-            
+
             <div className="text-right">
               <Space>
                 <Button onClick={handleSettingsModalCancel}>Hủy</Button>
@@ -335,7 +446,7 @@ const UserProfile = () => {
                   okText="Xác nhận"
                   cancelText="Hủy"
                   okButtonProps={{ danger: true }}
-                  icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                  icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
                   onConfirm={handleDeactivateAccount}
                 >
                   <Button type="primary" danger>
@@ -346,7 +457,7 @@ const UserProfile = () => {
             </div>
           </div>
         );
-        
+
       default:
         return null;
     }
@@ -432,10 +543,7 @@ const UserProfile = () => {
           dataSource={recentAppointments}
           renderItem={(item) => (
             <Card className="mb-4">
-              <List.Item
-                key={item.id}
-                extra={getStatusTag(item.status)}
-              >
+              <List.Item key={item.id} extra={getStatusTag(item.status)}>
                 <List.Item.Meta
                   avatar={<Avatar icon={<UserOutlined />} />}
                   title={
@@ -481,7 +589,9 @@ const UserProfile = () => {
                   title={
                     <Space>
                       <CalendarOutlined />
-                      <Text>{item.startDate} đến {item.endDate}</Text>
+                      <Text>
+                        {item.startDate} đến {item.endDate}
+                      </Text>
                     </Space>
                   }
                   description={
@@ -527,7 +637,7 @@ const UserProfile = () => {
                   </Space>,
                   <Button key="edit" type="link" size="small">
                     Chỉnh sửa đánh giá
-                  </Button>
+                  </Button>,
                 ]}
               >
                 <List.Item.Meta
@@ -573,32 +683,57 @@ const UserProfile = () => {
         <Card className="mb-6">
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} md={8} className="text-center">
-              <Badge count={<SettingOutlined className="text-orange-500" />} offset={[-5, 5]}>
-                <Avatar 
-                  size={120} 
-                  src={userProfile.avatar} 
-                  icon={<UserOutlined />} 
-                />
-              </Badge>
+              <div className="relative inline-block">
+                <Badge
+                  offset={[-5, 5]}
+                >
+                  <Avatar
+                    size={120}
+                    src={userProfile.avatar}
+                    icon={<UserOutlined />}
+                    className={avatarLoading ? "opacity-60" : ""}
+                  />
+                </Badge>
+
+                {/* Thay thế nút bấm bằng component Upload */}
+                <Upload
+                  customRequest={customUploadRequest}
+                  showUploadList={false}
+                  accept="image/png,image/jpeg"
+                  className="absolute bottom-0 right-0"
+                >
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={
+                      avatarLoading ? <LoadingOutlined /> : <CameraOutlined />
+                    }
+                    size="medium"
+                    className="bg-blue-500"
+                    disabled={avatarLoading}
+                  />
+                </Upload>
+              </div>
               <Title level={3} className="mt-4 mb-1">
                 {userProfile.name}
               </Title>
-              <Text type="secondary">
-                Thành viên từ {userProfile.joinDate}
-              </Text>
+              <Text type="secondary">Thành viên từ {userProfile.joinDate}</Text>
             </Col>
+
+            {/* Phần còn lại giữ nguyên */}
             <Col xs={24} md={16}>
               <Row gutter={[16, 16]}>
                 <Col xs={24}>
                   <Paragraph>
-                    Chào mừng bạn đến với trang hồ sơ cá nhân. Tại đây bạn có thể xem và quản lý thông tin cá nhân,
-                    theo dõi lịch sử khám bệnh và quản lý chu kỳ kinh nguyệt của mình.
+                    Chào mừng bạn đến với trang hồ sơ cá nhân. Tại đây bạn có
+                    thể xem và quản lý thông tin cá nhân, theo dõi lịch sử khám
+                    bệnh và quản lý chu kỳ kinh nguyệt của mình.
                   </Paragraph>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
-                  <Button 
-                    type="primary" 
-                    icon={<EditOutlined />} 
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
                     block
                     onClick={handleEditProfile}
                   >
@@ -606,7 +741,7 @@ const UserProfile = () => {
                   </Button>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
-                  <Button 
+                  <Button
                     icon={<SettingOutlined />}
                     block
                     onClick={handleOpenSettings}
@@ -615,10 +750,7 @@ const UserProfile = () => {
                   </Button>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
-                  <Button 
-                    icon={<CalendarOutlined />}
-                    block
-                  >
+                  <Button icon={<CalendarOutlined />} block>
                     Đặt lịch khám
                   </Button>
                 </Col>
@@ -629,8 +761,8 @@ const UserProfile = () => {
 
         {/* Tabs */}
         <Card>
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             items={tabItems}
           />
@@ -644,72 +776,63 @@ const UserProfile = () => {
           footer={null}
         >
           {/* phần content giữ nguyên */}
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleFormSubmit}
-          >
+          <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
             {/* các Form Item giữ nguyên */}
-            <Form.Item 
-              name="fullName" 
+            <Form.Item
+              name="fullName"
               label="Họ và tên"
-              rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+              rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
             >
               <Input />
             </Form.Item>
-            
-            <Form.Item 
-              name="email" 
+
+            <Form.Item
+              name="email"
               label="Email"
               rules={[
-                { required: true, message: 'Vui lòng nhập email' },
-                { type: 'email', message: 'Email không hợp lệ' }
+                { required: true, message: "Vui lòng nhập email" },
+                { type: "email", message: "Email không hợp lệ" },
               ]}
             >
               <Input />
             </Form.Item>
-            
-            <Form.Item 
-              name="phone" 
+
+            <Form.Item
+              name="phone"
               label="Số điện thoại"
-              rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại" },
+              ]}
             >
               <Input />
             </Form.Item>
-            
-            <Form.Item 
-              name="dob" 
-              label="Ngày sinh"
-            >
-              <DatePicker 
-                className="w-full" 
+
+            <Form.Item name="dob" label="Ngày sinh">
+              <DatePicker
+                className="w-full"
                 format="YYYY-MM-DD"
                 disabledDate={(current) => current && current > dayjs()}
               />
             </Form.Item>
-            
-            <Form.Item 
-              name="gender" 
-              label="Giới tính"
-            >
+
+            <Form.Item name="gender" label="Giới tính">
               <Select>
                 <Option value="Female">Nữ</Option>
                 <Option value="Male">Nam</Option>
                 <Option value="Other">Khác</Option>
               </Select>
             </Form.Item>
-            
-            <Form.Item 
-              name="address" 
-              label="Địa chỉ"
-            >
+
+            <Form.Item name="address" label="Địa chỉ">
               <Input.TextArea rows={2} />
             </Form.Item>
-            
+
             <Form.Item>
               <Space className="w-full justify-end">
                 <Button onClick={handleModalCancel}>Hủy</Button>
-                <Button type="primary" htmlType="submit">Cập nhật</Button>
+                <Button type="primary" htmlType="submit">
+                  Cập nhật
+                </Button>
               </Space>
             </Form.Item>
           </Form>
@@ -728,7 +851,7 @@ const UserProfile = () => {
           footer={null}
           width={600}
         >
-          <Tabs 
+          <Tabs
             activeKey={settingTab}
             onChange={setSettingTab}
             items={[
@@ -752,9 +875,7 @@ const UserProfile = () => {
               },
             ]}
           />
-          <div className="mt-4">
-            {renderSettingsContent()}
-          </div>
+          <div className="mt-4">{renderSettingsContent()}</div>
         </Modal>
       </div>
     </div>
