@@ -67,3 +67,18 @@ export const resetPasswordAPI = async (values) => {
   };
   return api.post("/auth/reset-password", userData);
 }
+
+export const blogHomeAPI = async () => {
+  return api.get("/blog-posts/newest");
+}
+
+export const updateUserAvatarAPI = async (file) => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  return api.post("/users/me/avatar", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}

@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedToken = sessionStorage.getItem(TOKEN_KEY);
     const storedUser = sessionStorage.getItem(USER_KEY);
-
+    console.log(">>> storedToken:", storedToken);
     if (storedToken) {
       setToken(storedToken);
 
