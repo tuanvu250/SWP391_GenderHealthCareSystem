@@ -28,6 +28,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/", "/admins", "/login").permitAll()
                         .requestMatchers("/users/**").hasAnyRole("Customer","Admin","Consultant","Staff","Manager")  // Chỉ user có role USER mới được truy cập /user/**
                         .requestMatchers("/api/blog-posts/**").hasRole("Consultant")
+                        .requestMatchers("/api/menstrual/**").hasRole("Cusomer")
+                        .requestMatchers("/api/pills/**").hasRole("Customer")
                         .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
