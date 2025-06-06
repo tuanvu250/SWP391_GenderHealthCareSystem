@@ -28,4 +28,40 @@ public class CloudinaryService {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
         return (String) uploadResult.get("secure_url");
     }
+
+
+    public String getPublicIdFromUrl(String url) {
+        if (url == null || url.isEmpty()) return null;
+        try {
+            String[] parts = url.split("/");
+            int uploadIndex = -1;
+            for (int i = 0; i < parts.length; i++) {
+                if ("upload".equals(parts[i])) {
+                    uploadIndex = i;
+                    break;
+                }
+            }
+            if (uploadIndex == -1 || uploadIndex + 2 > parts.length) return null;
+            StringBuilder publicId = new StringBuilder();
+            for (int i = uploadIndex + 1; i < parts.length; i++) {
+                if (i == uploadIndex + 1 && parts[i].startsWith("v")) continue;
+                if (publicId.length() > 0) publicId.append("/");
+                publicId.append(parts[i]);
+            }
+            int dot = publicId.lastIndexOf(".");
+            if (dot != -1) publicId.setLength(dot);
+            return publicId.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // (nếu muốn) Thêm luôn hàm xóa file:
+    public void deleteFile(String publicId) {
+        try {
+            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        } catch (Exception e) {
+            // Xử lý lỗi nếu cần
+        }
+    }
 }

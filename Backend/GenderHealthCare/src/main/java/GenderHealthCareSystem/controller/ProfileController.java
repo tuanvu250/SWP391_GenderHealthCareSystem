@@ -66,6 +66,14 @@ public class ProfileController {
 
         Users user = optional.get();
 
+        // Nếu đã có avatar cũ, xóa nó trên Cloudinary
+        if (user.getUserImageUrl() != null) {
+            String publicId = cloudinaryService.getPublicIdFromUrl(user.getUserImageUrl());
+            if (publicId != null) {
+                cloudinaryService.deleteFile(publicId);
+            }
+        }
+
         // Upload file lên Cloudinary 
         String avatarUrl = cloudinaryService.uploadFile(file);
 
