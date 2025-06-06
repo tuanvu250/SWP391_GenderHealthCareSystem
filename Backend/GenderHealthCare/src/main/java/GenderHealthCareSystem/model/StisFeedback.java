@@ -28,7 +28,7 @@ public class StisFeedback {
     @Column(name = "Rating")
     private Integer rating; // Assuming rating is an integer (e.g., 1-5)
 
-    @Column(name = "Comment", columnDefinition = "TEXT")
+    @Column(name = "Comment", columnDefinition = "NVARCHAR(MAX)")
     private String comment;
 
     @Column(name = "CreatedAt")

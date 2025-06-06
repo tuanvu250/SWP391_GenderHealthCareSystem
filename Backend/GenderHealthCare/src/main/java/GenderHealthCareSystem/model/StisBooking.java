@@ -42,7 +42,7 @@ import java.time.LocalDateTime;
         // CHECK (PaymentStatus IN ('Unpaid', 'Paid', 'Refunded'))
         private String paymentStatus;
 
-        @Column(name = "Note", columnDefinition = "TEXT")
+        @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
         private String note;
 
         @Column(name = "CreatedAt")
