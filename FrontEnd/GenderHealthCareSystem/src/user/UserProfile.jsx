@@ -23,7 +23,7 @@ import {
   Popconfirm,
   Slider,
 } from "antd";
-import ImgCrop from "antd-img-crop"; // Import component ImgCrop từ antd-img-crop
+import ImgCrop from "antd-img-crop";
 import {
   UserOutlined,
   EditOutlined,
@@ -45,7 +45,11 @@ import {
   CameraOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
-import { getUserProfile, updateUserAvatarAPI } from "../components/utils/api";
+import {
+  getUserProfile,
+  updateUserAvatarAPI,
+  updateUserProfileAPI,
+} from "../components/utils/api";
 import { useAuth } from "../components/provider/AuthProvider"; // Import hook useAuth từ AuthProvider
 
 const { Title, Text, Paragraph } = Typography;
@@ -58,13 +62,15 @@ const UserProfile = () => {
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [settingTab, setSettingTab] = useState("password");
-  const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
 
-  const {updateUser} = useAuth();
+  // Thêm state mới cho chỉnh sửa trực tiếp
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm] = Form.useForm();
+
+  const { updateUser } = useAuth();
 
   const formatDate = (date) =>
     date ? new Date(date).toISOString().split("T")[0] : "";
@@ -90,18 +96,6 @@ const UserProfile = () => {
     fetchUserProfile();
   }, []);
 
-  const userProfile = {
-    name: user?.fullName,
-    email: user?.email,
-    phone: user?.phone,
-    dob: user?.birthDate,
-    gender: user?.gender,
-    address: user?.address,
-    joinDate: formatDate(user?.createdAt),
-    avatar:
-      avatarUrl || user?.userImageUrl || "https://www.gravatar.com/avatar",
-  };
-
   // Xử lý tải lên và cập nhật avatar
   const customUploadRequest = async (options) => {
     const { file, onSuccess, onError } = options;
@@ -125,7 +119,7 @@ const UserProfile = () => {
           userImageUrl: response.data.userImageUrl,
         });
         return;
-      } 
+      }
     } catch (error) {
       console.error("Error updating avatar:", error);
       message.error("Không thể cập nhật ảnh đại diện. Vui lòng thử lại!");
@@ -133,6 +127,89 @@ const UserProfile = () => {
     } finally {
       setAvatarLoading(false);
     }
+  };
+
+  // Hàm xử lý khi mở modal chỉnh sửa
+  const handleEditProfile = () => {
+    // Đặt giá trị ban đầu cho form chỉnh sửa
+    editForm.setFieldsValue({
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      birthDate: user?.birthDate ? dayjs(user?.birthDate) : null,
+      gender: user?.gender || "",
+      address: user?.address || "",
+    });
+
+    // Bật chế độ chỉnh sửa và đảm bảo tab thông tin cá nhân được chọn
+    setIsEditing(true);
+    setActiveTab("1");
+  };
+
+  // Thêm hàm cập nhật và hủy chỉnh sửa
+  const handleSaveProfile = async () => {
+    try {
+      const values = await editForm.validateFields();
+
+      const response = await updateUserProfileAPI(values);
+
+      if (response && response.data) {
+        message.success("Cập nhật hồ sơ thành công!");
+        setIsEditing(false);
+
+        // Cập nhật state user với thông tin mới
+        setUser({
+          ...user,
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          birthDate: values.birthDate
+            ? values.birthDate.format("YYYY-MM-DD")
+            : user?.birthDate,
+          gender: values.gender,
+          address: values.address,
+        });
+
+        updateUser({
+          ...user,
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          birthDate: values.birthDate
+            ? values.birthDate.format("YYYY-MM-DD")
+            : user?.birthDate,
+          gender: values.gender,
+          address: values.address,
+        });
+      }
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleOpenSettings = () => {
+    setIsSettingsModalOpen(true);
+    setSettingTab("password"); // Mặc định mở tab đổi mật khẩu
+  };
+  const handleSettingsModalCancel = () => {
+    setIsSettingsModalOpen(false);
+    setSettingTab("password"); // Reset tab về đổi mật khẩu khi đóng modal
+  };
+
+  const userProfile = {
+    name: user?.fullName,
+    email: user?.email,
+    phone: user?.phone,
+    dob: user?.birthDate,
+    gender: user?.gender,
+    address: user?.address,
+    joinDate: formatDate(user?.createdAt),
+    avatar:
+      avatarUrl || user?.userImageUrl || "https://www.gravatar.com/avatar",
   };
 
   const recentAppointments = [
@@ -241,213 +318,7 @@ const UserProfile = () => {
     }
   };
 
-  // Hàm xử lý khi mở modal chỉnh sửa
-  const handleEditProfile = () => {
-    // Đặt giá trị ban đầu cho form khi mở modal
-    form.setFieldsValue({
-      fullName: user?.fullName || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      // Chuyển đổi chuỗi ngày thành đối tượng dayjs
-      dob: user?.birthDate ? dayjs(user?.birthDate) : null,
-      gender: user?.gender || "",
-      address: user?.address || "",
-    });
-
-    setIsModalOpen(true);
-  };
-
-  const handleModalCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleFormSubmit = (values) => {
-    console.log("Updated profile:", values);
-    setIsModalOpen(false);
-  };
-
-  // Hàm mở modal cài đặt tài khoản
-  const handleOpenSettings = () => {
-    setSettingTab("password");
-    passwordForm.resetFields();
-    setIsSettingsModalOpen(true);
-  };
-
-  // Hàm đóng modal cài đặt tài khoản
-  const handleSettingsModalCancel = () => {
-    setIsSettingsModalOpen(false);
-  };
-
-  // Hàm xử lý đổi mật khẩu
-  const handleChangePassword = (values) => {
-    console.log("Change password:", values);
-
-    // API call để đổi mật khẩu
-    // try {
-    //   const response = await changePassword(values);
-    //   if (response.status === 200) {
-    //     message.success("Mật khẩu đã được thay đổi thành công!");
-    //     setIsSettingsModalOpen(false);
-    //   }
-    // } catch (error) {
-    //   message.error("Không thể thay đổi mật khẩu. Vui lòng thử lại.");
-    // }
-
-    message.success("Mật khẩu đã được thay đổi thành công!");
-    passwordForm.resetFields();
-    setIsSettingsModalOpen(false);
-  };
-
-  // Hàm xử lý vô hiệu hóa tài khoản
-  const handleDeactivateAccount = () => {
-    console.log("Deactivate account");
-
-    // API call để vô hiệu hóa tài khoản
-    // try {
-    //   const response = await deactivateAccount();
-    //   if (response.status === 200) {
-    //     message.success("Tài khoản đã được vô hiệu hóa.");
-    //     // Đăng xuất
-    //     // logout();
-    //     // Chuyển hướng về trang chủ
-    //     // navigate("/");
-    //   }
-    // } catch (error) {
-    //   message.error("Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.");
-    // }
-
-    message.success("Tài khoản đã được vô hiệu hóa.");
-    setIsSettingsModalOpen(false);
-  };
-
-  // Nội dung modal cài đặt tài khoản
-  const renderSettingsContent = () => {
-    switch (settingTab) {
-      case "password":
-        return (
-          <Form
-            form={passwordForm}
-            layout="vertical"
-            onFinish={handleChangePassword}
-          >
-            <Form.Item
-              name="currentPassword"
-              label="Mật khẩu hiện tại"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Nhập mật khẩu hiện tại"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="newPassword"
-              label="Mật khẩu mới"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu mới!" },
-                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Nhập mật khẩu mới"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="confirmPassword"
-              label="Xác nhận mật khẩu mới"
-              dependencies={["newPassword"]}
-              rules={[
-                { required: true, message: "Vui lòng xác nhận mật khẩu mới!" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("newPassword") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      "Mật khẩu xác nhận không khớp với mật khẩu mới!"
-                    );
-                  },
-                }),
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Xác nhận mật khẩu mới"
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Space className="w-full justify-end">
-                <Button onClick={handleSettingsModalCancel}>Hủy</Button>
-                <Button type="primary" htmlType="submit">
-                  Đổi mật khẩu
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        );
-
-      case "deactivate":
-        return (
-          <div>
-            <div className="bg-orange-50 p-4 mb-4 rounded-lg border border-orange-200">
-              <Space align="start">
-                <WarningOutlined className="text-orange-500 text-lg mt-1" />
-                <div>
-                  <Text strong className="text-orange-800">
-                    Cảnh báo: Hành động không thể hoàn tác
-                  </Text>
-                  <Paragraph className="text-orange-700 mt-2">
-                    Việc vô hiệu hóa tài khoản sẽ:
-                  </Paragraph>
-                  <ul className="list-disc ml-5 text-orange-700">
-                    <li>Ẩn tất cả thông tin cá nhân của bạn</li>
-                    <li>Hủy tất cả các cuộc hẹn sắp tới</li>
-                    <li>Xóa quyền truy cập vào hệ thống của bạn</li>
-                    <li>
-                      Lưu giữ dữ liệu y tế của bạn theo quy định pháp luật
-                    </li>
-                  </ul>
-                </div>
-              </Space>
-            </div>
-
-            <Paragraph className="mb-4">
-              Để vô hiệu hóa tài khoản của bạn, vui lòng nhấn nút "Vô hiệu hóa
-              tài khoản" bên dưới.
-            </Paragraph>
-
-            <div className="text-right">
-              <Space>
-                <Button onClick={handleSettingsModalCancel}>Hủy</Button>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn vô hiệu hóa tài khoản?"
-                  description="Hành động này không thể hoàn tác!"
-                  okText="Xác nhận"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                  icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
-                  onConfirm={handleDeactivateAccount}
-                >
-                  <Button type="primary" danger>
-                    Vô hiệu hóa tài khoản
-                  </Button>
-                </Popconfirm>
-              </Space>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
+  // Cập nhật tabItems với logic chỉnh sửa mới
   const tabItems = [
     {
       key: "1",
@@ -459,58 +330,144 @@ const UserProfile = () => {
       ),
       children: (
         <Card bordered={false}>
-          <Row gutter={[24, 16]}>
-            <Col xs={24} md={12}>
-              <List>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<UserOutlined />}
-                    title="Họ và tên"
-                    description={userProfile.name}
-                  />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<CalendarOutlined />}
-                    title="Ngày sinh"
-                    description={userProfile.dob}
-                  />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<UserOutlined />}
-                    title="Giới tính"
-                    description={userProfile.gender}
-                  />
-                </List.Item>
-              </List>
-            </Col>
-            <Col xs={24} md={12}>
-              <List>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<MailOutlined />}
-                    title="Email"
-                    description={userProfile.email}
-                  />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<PhoneOutlined />}
-                    title="Điện thoại"
-                    description={userProfile.phone}
-                  />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<HomeOutlined />}
-                    title="Địa chỉ"
-                    description={userProfile.address}
-                  />
-                </List.Item>
-              </List>
-            </Col>
-          </Row>
+          {isEditing ? (
+            // Form chỉnh sửa
+            <Form
+              form={editForm}
+              layout="vertical"
+              initialValues={{
+                fullName: user?.fullName || "",
+                email: user?.email || "",
+                phone: user?.phone || "",
+                birthDate: user?.birthDate ? dayjs(user?.birthDate) : null,
+                gender: user?.gender || "",
+                address: user?.address || "",
+              }}
+            >
+              <Row gutter={[24, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="fullName"
+                    label="Họ và tên"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập họ tên" },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item name="birthDate" label="Ngày sinh">
+                    <DatePicker
+                      className="w-full"
+                      format="YYYY-MM-DD"
+                      disabledDate={(current) => current && current > dayjs()}
+                    />
+                  </Form.Item>
+
+                  <Form.Item name="gender" label="Giới tính">
+                    <Select>
+                      <Option value="Female">Nữ</Option>
+                      <Option value="Male">Nam</Option>
+                      <Option value="Other">Khác</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập email" },
+                      { type: "email", message: "Email không hợp lệ" },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="phone"
+                    label="Điện thoại"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập số điện thoại",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item name="address" label="Địa chỉ">
+                    <Input.TextArea rows={2} />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} className="text-right">
+                  <Space>
+                    <Button onClick={handleCancelEdit}>Hủy</Button>
+                    <Button type="primary" onClick={handleSaveProfile}>
+                      Lưu thay đổi
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </Form>
+          ) : (
+            // Hiển thị thông tin
+            <Row gutter={[24, 16]}>
+              <Col xs={24} md={12}>
+                <List>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<UserOutlined />}
+                      title="Họ và tên"
+                      description={userProfile.name}
+                    />
+                  </List.Item>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<CalendarOutlined />}
+                      title="Ngày sinh"
+                      description={userProfile.dob}
+                    />
+                  </List.Item>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<UserOutlined />}
+                      title="Giới tính"
+                      description={userProfile.gender}
+                    />
+                  </List.Item>
+                </List>
+              </Col>
+              <Col xs={24} md={12}>
+                <List>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<MailOutlined />}
+                      title="Email"
+                      description={userProfile.email}
+                    />
+                  </List.Item>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<PhoneOutlined />}
+                      title="Điện thoại"
+                      description={userProfile.phone}
+                    />
+                  </List.Item>
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<HomeOutlined />}
+                      title="Địa chỉ"
+                      description={userProfile.address}
+                    />
+                  </List.Item>
+                </List>
+              </Col>
+            </Row>
+          )}
         </Card>
       ),
     },
@@ -661,6 +618,8 @@ const UserProfile = () => {
     },
   ];
 
+  const renderSettingsContent = () => {};
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -718,7 +677,6 @@ const UserProfile = () => {
               <Text type="secondary">Thành viên từ {userProfile.joinDate}</Text>
             </Col>
 
-            {/* Phần còn lại giữ nguyên */}
             <Col xs={24} md={16}>
               <Row gutter={[16, 16]}>
                 <Col xs={24}>
@@ -734,6 +692,7 @@ const UserProfile = () => {
                     icon={<EditOutlined />}
                     block
                     onClick={handleEditProfile}
+                    disabled={isEditing} // Disable nút khi đang ở chế độ chỉnh sửa
                   >
                     Chỉnh sửa hồ sơ
                   </Button>
@@ -766,80 +725,7 @@ const UserProfile = () => {
           />
         </Card>
 
-        {/* Edit Profile Modal - giữ nguyên, không thay đổi */}
-        <Modal
-          title="Chỉnh sửa hồ sơ"
-          open={isModalOpen}
-          onCancel={handleModalCancel}
-          footer={null}
-          destroyOnHidden
-        >
-          {/* phần content giữ nguyên */}
-          <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-            {/* các Form Item giữ nguyên */}
-            <Form.Item
-              name="fullName"
-              label="Họ và tên"
-              rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="phone"
-              label="Số điện thoại"
-              rules={[
-
-                { required: true, message: "Vui lòng nhập số điện thoại" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="dob" label="Ngày sinh">
-              <DatePicker
-                className="w-full"
-                format="YYYY-MM-DD"
-                disabledDate={(current) => current && current > dayjs()}
-              />
-            </Form.Item>
-
-            <Form.Item name="gender" label="Giới tính">
-              <Select>
-                <Option value="Female">Nữ</Option>
-                <Option value="Male">Nam</Option>
-                <Option value="Other">Khác</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="address" label="Địa chỉ">
-              <Input.TextArea rows={2} />
-            </Form.Item>
-
-            <Form.Item>
-              <Space className="w-full justify-end">
-                <Button onClick={handleModalCancel}>Hủy</Button>
-                <Button type="primary" htmlType="submit">
-                  Cập nhật
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        {/* Thêm Modal cài đặt tài khoản */}
+        {/* Giữ nguyên Modal cài đặt tài khoản */}
         <Modal
           title={
             <Space>
