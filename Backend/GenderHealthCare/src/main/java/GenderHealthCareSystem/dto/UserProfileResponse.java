@@ -16,5 +16,6 @@ public class UserProfileResponse {
     private String phone;
     private String address;
     private LocalDate birthDate;
+    private String userImage;
     private String email;
 }

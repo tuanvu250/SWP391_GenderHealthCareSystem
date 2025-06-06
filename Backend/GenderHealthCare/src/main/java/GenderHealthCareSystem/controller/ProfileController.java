@@ -22,12 +22,38 @@ import java.util.Optional;
 @RequestMapping("/api/profile")
 public class ProfileController {
 
-
     @Autowired
    private UserRepository userRepository;
-
     @Autowired
     private AccountRepository accountRepository;
+
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal Jwt jwt) {
+        Integer userId = ((Number) jwt.getClaim("userID")).intValue();
+
+        // Lấy Account (để lấy cả email) và Users
+        Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
+        if (optionalAcc.isEmpty())
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+
+        Account account = optionalAcc.get();
+        Users user = account.getUsers();
+
+        UserProfileResponse dto = new UserProfileResponse(
+                user.getUserId(),
+                user.getFullName(),
+                user.getGender(),
+                user.getPhone(),
+                user.getAddress(),
+                user.getBirthDate(),
+                user.getUserImageUrl(),
+                account.getEmail()
+        );
+
+        return ResponseEntity.ok(dto);
+    }
+
 
     @PutMapping("/me")
     public ResponseEntity<?> updateUserProfile(
