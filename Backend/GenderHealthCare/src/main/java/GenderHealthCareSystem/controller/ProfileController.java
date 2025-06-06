@@ -2,7 +2,9 @@ package GenderHealthCareSystem.controller;
 
 
 import GenderHealthCareSystem.dto.UserProfileResponse;
+import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.model.Users;
+import GenderHealthCareSystem.repository.AccountRepository;
 import GenderHealthCareSystem.repository.UserRepository;
 import GenderHealthCareSystem.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ public class ProfileController {
     @Autowired
    private UserRepository userRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
 
     @PutMapping("/me")
     public ResponseEntity<?> updateUserProfile(
@@ -45,6 +49,16 @@ public class ProfileController {
 
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
+
+        // Cập nhật email ở bảng Account (nếu có thay đổi)
+        if (req.getEmail() != null && !req.getEmail().isEmpty()) {
+            Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
+            if (optionalAcc.isPresent()) {
+                Account account = optionalAcc.get();
+                account.setEmail(req.getEmail());
+                accountRepository.save(account);
+            }
+        }
 
         return ResponseEntity.ok(Map.of("message", "User profile updated successfully!"));
     }
