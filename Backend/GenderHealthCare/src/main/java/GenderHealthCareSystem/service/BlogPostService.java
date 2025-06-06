@@ -4,6 +4,10 @@ import GenderHealthCareSystem.dto.BlogPostResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.repository.BlogPostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,7 +36,6 @@ public class BlogPostService {
         }
         blog.setDeleted(true);
         this.blogPostRepository.save(blog);
-
     }
 
     public void updateBlogPost(BlogPost blogPost) {
@@ -40,15 +43,6 @@ public class BlogPostService {
             throw new RuntimeException("Không tìm thấy bài viết với id: " + blogPost.getPostId());
         }
         blogPostRepository.save(blogPost);
-    }
-
-    public List<BlogPostResponse> findAllBlogPosts() {
-        List<BlogPost> blogPosts = blogPostRepository.findAll();
-        List<BlogPostResponse> responses = new ArrayList<>();
-        for (BlogPost blogPost : blogPosts) {
-            responses.add(mapToResponse(blogPost));
-        }
-        return responses;
     }
 
     public List<BlogPostResponse> findBlogPostsByAuthor(String ID) {
@@ -69,6 +63,29 @@ public class BlogPostService {
         return responses;
     }
 
+    public Page<BlogPostResponse> searchBlogPosts(String title, String tag, int page, int size, String sort) {
+        Pageable pageable;
+        if ("asc".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+        }
+
+        Page<BlogPost> blogPosts;
+        if (title != null && tag != null) {
+            blogPosts = blogPostRepository.findByTitleContainingAndTagsContaining(title, tag, pageable);
+        } else if (title != null) {
+            blogPosts = blogPostRepository.findByTitleContaining(title, pageable);
+        } else if (tag != null) {
+            blogPosts = blogPostRepository.findByTagsContaining(tag, pageable);
+        } else {
+            blogPosts = blogPostRepository.findAll(pageable);
+        }
+
+        return blogPosts.map(this::mapToResponse);
+
+    }
+
     public BlogPostResponse mapToResponse(BlogPost blogPost) {
         BlogPostResponse blogPostResponse = new BlogPostResponse();
         blogPostResponse.setPostId(blogPost.getPostId());
@@ -82,6 +99,4 @@ public class BlogPostService {
         blogPostResponse.setConsultantImageUrl(blogPost.getConsultant().getUserImageUrl());
         return blogPostResponse;
     }
-         
-
 }
