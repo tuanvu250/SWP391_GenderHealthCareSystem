@@ -15,17 +15,18 @@ import MenstrualOvulation from "../menstrualcycle/MenstrualOvulation";
 import Blog from "../blog/Blog";
 import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
+import ContactSection from "../site-info/Contact";
 // Layout component with Header
 const Layout = () => {
   return (
-    <>
-      <ScrollToTop /> {/* Component để cuộn lên đầu trang mỗi khi route thay đổi */}
+    <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       <Header />
-      <main>
-        <Outlet /> {/* Outlet sẽ render component con tương ứng với route hiện tại */}
+      <main className="flex-grow">
+        <Outlet />
       </main>
-      <Footer />    
-    </>
+      <Footer />
+    </div>
   );
 };
 
@@ -47,6 +48,7 @@ function RouteMap() {
         <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<ContactSection />} />
       </Route>
 
       {/* Routes không có Layout */}

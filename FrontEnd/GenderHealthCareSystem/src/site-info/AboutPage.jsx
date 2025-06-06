@@ -25,11 +25,11 @@ const AboutPage = () => {
           </li>
 
           <li className="hover:text-[#909497] cursor-pointer py-2 ">
-            <a onClick={() => navigate("/about")}>Chính sách</a>
+            <a onClick={() => navigate("/privacy")}>Chính sách</a>
           </li>
 
           <li className="hover:text-[#909497] cursor-pointer py-2 ">
-            <a onClick={() => navigate("/about")}>Liên hệ</a>
+            <a onClick={() => navigate("/contact")}>Liên hệ</a>
           </li>
         </ul>
       </nav>
