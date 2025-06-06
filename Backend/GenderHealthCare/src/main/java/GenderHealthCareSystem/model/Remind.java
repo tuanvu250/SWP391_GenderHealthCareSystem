@@ -36,7 +36,7 @@ public class Remind {
     @Column(name = "ReminderTime")
     private LocalTime reminderTime;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "FertilityWindow")

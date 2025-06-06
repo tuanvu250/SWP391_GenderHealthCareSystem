@@ -38,6 +38,12 @@ public class AuthService {
                 }
                 errors.append("Email đã tồn tại");
             }
+            if (usersRepository.findByPhone(request.getPhone()).isPresent()) {
+                if (errors.length() > 0) {
+                    errors.append(",");
+                }
+                errors.append("Số điện thoại đã tồn tại");
+            }
             throw new UserAlreadyExistsException(errors.toString());
         }
 
@@ -50,6 +56,7 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setRole(role);
+        user.setUserImageUrl(request.getAvatarUrl());
         usersRepository.save(user);
 
         Account account = new Account();

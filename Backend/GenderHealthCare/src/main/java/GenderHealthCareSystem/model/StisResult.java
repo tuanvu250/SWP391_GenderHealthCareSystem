@@ -27,42 +27,42 @@ public class StisResult {
     @Column(name = "ResultDate")
     private LocalDateTime resultDate;
 
-    @Column(name = "HIV_Combo", length = 20)
+    @Column(name = "HIV_Combo", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (HIV_Combo IN ('Positive','Negative','Not Tested'))
     private String hivCombo;
 
-    @Column(name = "Syphilis_RPR", length = 20)
+    @Column(name = "Syphilis_RPR", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (Syphilis_RPR IN ('Positive','Negative','Not Tested'))
     private String syphilisRpr;
 
-    @Column(name = "Chlamydia_NAAT", length = 20)
+    @Column(name = "Chlamydia_NAAT", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (Chlamydia_NAAT IN ('Positive','Negative','Not Tested'))
     private String chlamydiaNaat;
 
-    @Column(name = "Gonorrhea_NAAT", length = 20)
+    @Column(name = "Gonorrhea_NAAT", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (Gonorrhea_NAAT IN ('Positive','Negative','Not Tested'))
     private String gonorrheaNaat;
 
-    @Column(name = "HSV_IgM", length = 20)
+    @Column(name = "HSV_IgM", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (HSV_IgM IN ('Positive','Negative','Not Tested'))
     private String hsvIgm;
 
-    @Column(name = "HBsAg", length = 20)
+    @Column(name = "HBsAg", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (HBsAg IN ('Positive','Negative','Not Tested'))
     private String hbsAg;
 
-    @Column(name = "Anti_HCV", length = 20)
+    @Column(name = "Anti_HCV", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (Anti_HCV IN ('Positive','Negative','Not Tested'))
     private String antiHcv;
 
-    @Column(name = "HPV_DNA", length = 20)
+    @Column(name = "HPV_DNA", length = 20, columnDefinition = "NVARCHAR(20)")
     // CHECK (HPV_DNA IN ('Detected','Not Detected','Not Applicable'))
     private String hpvDna;
 
-    @Column(name = "ResultText", columnDefinition = "TEXT")
+    @Column(name = "ResultText", columnDefinition = "NVARCHAR(MAX)")
     private String resultText;
 
-    @Column(name = "Note", columnDefinition = "TEXT")
+    @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
     private String note;
 
     @Column(name = "CreatedAt")

@@ -4,6 +4,7 @@ import GenderHealthCareSystem.dto.JwtResponse;
 import GenderHealthCareSystem.dto.LoginRequest;
 import GenderHealthCareSystem.dto.RegisterRequest;
 import GenderHealthCareSystem.service.AuthService;
+import GenderHealthCareSystem.service.ImageService;
 import GenderHealthCareSystem.util.CustomUserDetails;
 import GenderHealthCareSystem.util.SecurityUtil;
 import jakarta.validation.Valid;
@@ -15,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -23,11 +26,13 @@ public class AuthController {
     private final AuthService authService;
     private final SecurityUtil securityUtil;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final ImageService imageService;
 
     // API đăng ký tài khoản mới
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest request) {
+    public ResponseEntity<?> register(@ModelAttribute  @Valid RegisterRequest request) throws IOException {
         // Xử lý đăng ký người dùng mới trong hệ thống
+        request.setAvatarUrl(imageService.uploadImage(request.getAvatar()));
         authService.register(request);
         return ResponseEntity.ok().body("User registered successfully");
     }

@@ -31,7 +31,7 @@ public class MenstrualCycle {
     @Column(name = "CycleLength")
     private Integer cycleLength;
 
-    @Column(name = "Note", columnDefinition = "TEXT")
+    @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
     private String note;
 
     @Column(name = "CreatedAt")
