@@ -16,6 +16,7 @@ import Blog from "../blog/Blog";
 import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
+import PrivacySection from "../site-info/Privacy";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -49,6 +50,7 @@ function RouteMap() {
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<ContactSection />} />
+        <Route path="/privacy" element={<PrivacySection />} />
       </Route>
 
       {/* Routes không có Layout */}

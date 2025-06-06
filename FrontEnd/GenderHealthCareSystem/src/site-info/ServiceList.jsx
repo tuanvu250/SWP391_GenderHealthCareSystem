@@ -1,44 +1,52 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaMicroscope, FaComments, FaCalendarCheck } from "react-icons/fa";
+import { FaCalendarAlt, FaComments, FaFileMedical, FaUserClock } from "react-icons/fa";
 
 const Services = () => {
   const navigate = useNavigate();
 
   const serviceData = [
     {
-      icon: FaMicroscope,
-      color: "text-blue-600",
+      icon: FaCalendarAlt,
+      color: "text-blue-500",
+      title: "Theo dõi chu kỳ kinh nguyệt",
+      description:
+        "Theo dõi chu kì kinh nguyệt của bạn, nhận nhắc nhở thời gian rụng trứng, khả năng mang thai, và thời gian uống thuốc tránh thai.",
+      button: "Theo dõi",
+    },
+    {
+      icon: FaUserClock,
+      color: "text-blue-500",
+      title: "Đặt lịch tư vấn với tư vấn viên",
+      description:
+        "Đặt lịch trực tuyến với tư vấn viên để trao đổi những thắc mắc và nhận lời khuyên về sức khỏe một cách riêng tư và an toàn.",
+      button: "Tư vấn",
+    },
+    {
+      icon: FaFileMedical,
+      color: "text-blue-500",
       title: "Xét nghiệm STIs",
       description:
-        "Dễ dàng tiếp cận các xét nghiệm STIs một cách riêng tư và an toàn. Nhận kết quả và tư vấn trực tuyến từ chuyên gia.",
-      action: "Tìm hiểu thêm",
+        "Đặt lịch xét nghiệm STIs và nhận kết quả online một cách nhanh chóng, bảo mật và chính xác.",
+      button: "Đặt lịch",
     },
     {
       icon: FaComments,
-      color: "text-green-600",
-      title: "Đặt câu hỏi hoặc tư vấn",
+      color: "text-blue-500",
+      title: "Đặt câu hỏi trực tuyến",
       description:
-        "Kết nối với bác sĩ hoặc chuyên gia y tế để được tư vấn trực tiếp hoặc đặt câu hỏi ẩn danh về sức khỏe.",
-      action: "Hỏi ngay",
-    },
-    {
-      icon: FaCalendarCheck,
-      color: "text-purple-600",
-      title: "Đặt lịch khám",
-      description:
-        "Chọn bác sĩ, thời gian và dịch vụ bạn cần. Đặt lịch nhanh chóng và quản lý lịch khám dễ dàng.",
-      action: "Đặt lịch",
+        "Gửi câu hỏi cho tư vấn viên về các thắc mắc về sức khỏe của bạn.",
+      button: "Đặt lịch ngay",
     },
   ];
 
   return (
-    <section className="bg-white py-12 px-4">
+    <section className="bg-[#f8fbfe] py-12 px-4">
       {/* Thanh menu */}
       <div className="px-8 pb-8 max-w-7xl mx-auto text-gray-800">
         <nav className="hidden lg:block">
           <ul className="flex space-x-8 font-medium text-[#a6acaf]">
-            <li className="hover:text-[#909497] cursor-pointer py-2 ">
+            <li className="hover:text-[#909497] cursor-pointer py-2">
               <a onClick={() => navigate("/about")}>Giới thiệu</a>
             </li>
             <li className="hover:text-[#909497] cursor-pointer py-2 text-blue-600 font-semibold border-b-2 border-blue-600">
@@ -57,24 +65,36 @@ const Services = () => {
         </nav>
       </div>
 
-      <h2 className="text-3xl font-bold text-center mb-10">Dịch vụ</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">Dịch vụ</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {serviceData.map((service, index) => {
           const Icon = service.icon;
           return (
             <div
               key={index}
-              className="bg-gray-50 p-6 rounded-2xl shadow hover:shadow-md transition"
+              className="bg-white p-6 rounded-2xl shadow hover:shadow-md transition border-t-4 border-blue-100 flex flex-col justify-between"
             >
-              <Icon className={`${service.color} text-4xl mb-4`} />
-              <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-              <p className="text-gray-600 mb-4">{service.description}</p>
-              <button className="text-blue-600 font-medium hover:underline">
-                {service.action} →
+              <div>
+                <Icon className={`${service.color} text-3xl mb-4`} />
+                <h3 className="text-lg font-bold text-gray-800 mb-2">{service.title}</h3>
+                <p className="text-gray-600 mb-6">{service.description}</p>
+              </div>
+              <button className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700 transition text-sm font-semibold">
+                {service.button} →
               </button>
             </div>
           );
         })}
+      </div>
+
+      <div className="flex justify-center mt-10">
+        <button
+          className="border border-gray-300 px-6 py-2 rounded-full hover:bg-gray-100 transition"
+          onClick={() => navigate("/servicelist")}
+        >
+          Xem tất cả dịch vụ →
+        </button>
       </div>
     </section>
   );

@@ -20,7 +20,7 @@ const ContactSection = () => {
                             <a onClick={() => navigate("/about")}>Chuyên gia</a>
                         </li>
                         <li className="hover:text-[#909497] cursor-pointer py-2 ">
-                            <a onClick={() => navigate("/about")}>Chính sách</a>
+                            <a onClick={() => navigate("/privacy")}>Chính sách</a>
                         </li>
                         <li className="hover:text-[#909497] cursor-pointer py-2 text-blue-600 font-semibold border-b-2 border-blue-600 ">
                             <a onClick={() => navigate("/contact")}>Liên hệ</a>
@@ -35,8 +35,8 @@ const ContactSection = () => {
                     <h2 className="text-3xl font-bold text-gray-900 text-center">Liên hệ</h2>
                     <p className="text-gray-700 leading-relaxed text-center">
                         Chúng tôi luôn muốn lắng nghe ý kiến của bạn! Liên hệ với chúng tôi
-                        theo địa chỉ email bên dưới nếu bạn muốn quảng cáo, góp ý nội dung
-                        hoặc phản hồi về các chính sách của chúng tôi.
+                        theo địa chỉ email bên dưới nếu bạn muốn góp ý nội dung
+                        hoặc phản hồi về các chính sách, dịch vụ của chúng tôi.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
