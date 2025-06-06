@@ -2,7 +2,7 @@ package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.PillRequest;
 import GenderHealthCareSystem.dto.PillResponse;
-import GenderHealthCareSystem.model.ApiResponse;
+import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.service.PillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

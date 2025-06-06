@@ -2,8 +2,7 @@ package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.MenstrualCycleRequest;
 import GenderHealthCareSystem.dto.MenstrualCycleResponse;
-import GenderHealthCareSystem.model.ApiResponse;
-import GenderHealthCareSystem.model.MenstrualCycle;
+import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.service.MenstrualCycleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
