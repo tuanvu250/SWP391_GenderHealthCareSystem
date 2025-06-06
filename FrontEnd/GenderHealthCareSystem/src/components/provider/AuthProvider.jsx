@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedToken = sessionStorage.getItem(TOKEN_KEY);
     const storedUser = sessionStorage.getItem(USER_KEY);
-    console.log(">>> storedToken:", storedToken);
+    //console.log(">>> storedToken:", storedToken);
     if (storedToken) {
       setToken(storedToken);
 
@@ -47,6 +47,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log("isAuthenticated state changed:", isAuthenticated);
   }, [isAuthenticated]);
+
+  const updateUser = (newUser) => {
+    const currentUser = user || {};
+
+    const updatedUser = { ...currentUser, ...newUser };
+
+    setUser(updatedUser);
+
+    sessionStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+
+    //console.log(">>> User updated:", updatedUser);
+  }
 
   const loginAction = async (userData) => {
     try {
@@ -119,6 +131,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         token,
         loading,
+        updateUser,
         loginAction,
         logoutAction,
         registerAction,

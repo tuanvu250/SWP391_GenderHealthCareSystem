@@ -74,9 +74,9 @@ export const blogHomeAPI = async () => {
 
 export const updateUserAvatarAPI = async (file) => {
   const formData = new FormData();
-  formData.append("avatar", file);
+  formData.append("file", file);
 
-  return api.post("/users/me/avatar", formData, {
+  return api.put("/profile/me/avatar", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

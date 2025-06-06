@@ -21,7 +21,9 @@ import {
   Rate,
   message,
   Popconfirm,
+  Slider,
 } from "antd";
+import ImgCrop from "antd-img-crop"; // Import component ImgCrop từ antd-img-crop
 import {
   UserOutlined,
   EditOutlined,
@@ -44,17 +46,16 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import { getUserProfile, updateUserAvatarAPI } from "../components/utils/api";
+import { useAuth } from "../components/provider/AuthProvider"; // Import hook useAuth từ AuthProvider
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
 const UserProfile = () => {
-  // Thêm state cho quản lý avatar
+  // Giữ nguyên các state hiện tại
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarLoading, setAvatarLoading] = useState(false);
-
-  // Giữ nguyên các state khác
   const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +63,8 @@ const UserProfile = () => {
   const [settingTab, setSettingTab] = useState("password");
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
+
+  const {updateUser} = useAuth();
 
   const formatDate = (date) =>
     date ? new Date(date).toISOString().split("T")[0] : "";
@@ -76,7 +79,7 @@ const UserProfile = () => {
           if (res.data.userImageUrl) {
             setAvatarUrl(res.data.userImageUrl);
           }
-          console.log(">>> User profile data:", res.data);
+          //console.log(">>> User profile data:", res.data);
         } else {
           console.error("No user profile data found");
         }
@@ -101,46 +104,28 @@ const UserProfile = () => {
 
   // Xử lý tải lên và cập nhật avatar
   const customUploadRequest = async (options) => {
-    const { file, onSuccess, onError, onProgress } = options;
+    const { file, onSuccess, onError } = options;
 
-    // Kiểm tra file trước khi tải lên
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-    if (!isJpgOrPng) {
-      message.error("Bạn chỉ có thể tải lên file JPG/PNG!");
-      onError(new Error("Bạn chỉ có thể tải lên file JPG/PNG!"));
-      return;
-    }
-
-    const isLt2M = file.size / 1024 / 1024 < 24;
-    if (!isLt2M) {
-      message.error("Kích thước ảnh phải nhỏ hơn 24MB!");
-      onError(new Error("Kích thước ảnh phải nhỏ hơn 24MB!"));
-      return;
-    }
-
-    // Bắt đầu tải lên, hiển thị trạng thái loading
+    // Kiểm tra file trước khi tải lên (không cần kiểm tra nữa vì ImgCrop đã xử lý)
     setAvatarLoading(true);
 
-    // Giả lập tiến trình tải lên
-
     try {
-      // Tạo FormData để gửi đến server
-      const formData = new FormData();
-      formData.append("avatar", file);
-
       // Gọi API để cập nhật avatar
-      const response = null;
+      const response = await updateUserAvatarAPI(file);
 
       // Nếu API trả về thành công
       if (response && response.data) {
         // Cập nhật URL avatar mới
         setAvatarUrl(response.data.userImageUrl);
-
         message.success("Cập nhật ảnh đại diện thành công!");
         onSuccess(response, file);
-      } else {
-        throw new Error("Không nhận được phản hồi từ server");
-      }
+
+        updateUser({
+          ...user,
+          userImageUrl: response.data.userImageUrl,
+        });
+        return;
+      } 
     } catch (error) {
       console.error("Error updating avatar:", error);
       message.error("Không thể cập nhật ảnh đại diện. Vui lòng thử lại!");
@@ -684,9 +669,7 @@ const UserProfile = () => {
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} md={8} className="text-center">
               <div className="relative inline-block">
-                <Badge
-                  offset={[-5, 5]}
-                >
+                <Badge offset={[-5, 5]}>
                   <Avatar
                     size={120}
                     src={userProfile.avatar}
@@ -695,24 +678,39 @@ const UserProfile = () => {
                   />
                 </Badge>
 
-                {/* Thay thế nút bấm bằng component Upload */}
-                <Upload
-                  customRequest={customUploadRequest}
-                  showUploadList={false}
-                  accept="image/png,image/jpeg"
-                  className="absolute bottom-0 right-0"
+                {/* Thay thế Upload bằng ImgCrop */}
+                <ImgCrop
+                  cropShape="round"
+                  modalTitle="Chỉnh sửa ảnh đại diện"
+                  modalOk="Cập nhật"
+                  modalCancel="Hủy"
+                  className="rounded-full"
                 >
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon={
-                      avatarLoading ? <LoadingOutlined /> : <CameraOutlined />
-                    }
-                    size="medium"
-                    className="bg-blue-500"
-                    disabled={avatarLoading}
-                  />
-                </Upload>
+                  <Upload
+                    customRequest={customUploadRequest}
+                    showUploadList={false}
+                    accept="image/png,image/jpeg"
+                    className="absolute bottom-0 right-0"
+                    beforeUpload={(file) => {
+                      const isValidSize = file.size / 1024 / 1024 < 24;
+                      if (!isValidSize) {
+                        message.error("Kích thước ảnh phải nhỏ hơn 24MB!");
+                      }
+                      return isValidSize || Upload.LIST_IGNORE;
+                    }}
+                  >
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={
+                        avatarLoading ? <LoadingOutlined /> : <CameraOutlined />
+                      }
+                      size="medium"
+                      className="bg-blue-500"
+                      disabled={avatarLoading}
+                    />
+                  </Upload>
+                </ImgCrop>
               </div>
               <Title level={3} className="mt-4 mb-1">
                 {userProfile.name}
@@ -774,6 +772,7 @@ const UserProfile = () => {
           open={isModalOpen}
           onCancel={handleModalCancel}
           footer={null}
+          destroyOnHidden
         >
           {/* phần content giữ nguyên */}
           <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
@@ -790,6 +789,7 @@ const UserProfile = () => {
               name="email"
               label="Email"
               rules={[
+
                 { required: true, message: "Vui lòng nhập email" },
                 { type: "email", message: "Email không hợp lệ" },
               ]}
@@ -801,6 +801,7 @@ const UserProfile = () => {
               name="phone"
               label="Số điện thoại"
               rules={[
+
                 { required: true, message: "Vui lòng nhập số điện thoại" },
               ]}
             >
@@ -850,6 +851,7 @@ const UserProfile = () => {
           onCancel={handleSettingsModalCancel}
           footer={null}
           width={600}
+          destroyOnHidden
         >
           <Tabs
             activeKey={settingTab}
