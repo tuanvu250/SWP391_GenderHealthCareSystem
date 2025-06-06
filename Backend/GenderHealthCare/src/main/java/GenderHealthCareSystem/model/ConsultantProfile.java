@@ -22,13 +22,13 @@ public class ConsultantProfile {
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID", unique = true)
     private Users consultant; // This links to the Users entity
 
-    @Column(name = "Introduction", columnDefinition = "TEXT")
+    @Column(name = "Introduction", columnDefinition = "NVARCHAR(MAX)")
     private String introduction;
 
-    @Column(name = "Specialization", columnDefinition = "TEXT")
+    @Column(name = "Specialization", columnDefinition = "NVARCHAR(MAX)")
     private String specialization;
 
-    @Column(name = "Languages", columnDefinition = "TEXT")
+    @Column(name = "Languages", columnDefinition = "NVARCHAR(MAX)")
     private String languages; // Could be a list of strings, stored as JSON or comma-separated
 
     @Column(name = "AvatarURL", columnDefinition = "TEXT")

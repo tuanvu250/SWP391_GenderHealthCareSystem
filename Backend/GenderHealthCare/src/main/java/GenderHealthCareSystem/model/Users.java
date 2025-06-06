@@ -23,7 +23,7 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     @JoinColumn(name = "RoleID")
     private Role role;
 
-    @Column(name = "FullName", length = 255)
+    @Column(name = "FullName", columnDefinition = "NVARCHAR(255)")
     private String fullName;
 
     @Column(name = "Phone", length = 20)
@@ -37,7 +37,7 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     @Column(name = "BirthDate")
     private LocalDate birthDate;
 
-    @Column(name = "Address", columnDefinition = "TEXT")
+    @Column(name = "Address", columnDefinition = "NVARCHAR(255)")
     private String address;
 
     @Column(name = "CreatedAt")
