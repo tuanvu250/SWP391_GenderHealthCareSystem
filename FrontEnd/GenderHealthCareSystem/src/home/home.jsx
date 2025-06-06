@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Row, Col, Card, Button, Typography, ConfigProvider, Rate, Avatar, Tag, Carousel } from "antd";
 import {
@@ -12,12 +12,14 @@ import {
   RightOutlined,
 } from '@ant-design/icons';
 import heroImg from "../assets/hero-section.png";
+import { blogHomeAPI } from "../components/utils/api";
 
 const { Title, Paragraph } = Typography;
 
 const Home = () => {
   const navigate = useNavigate();
   const carouselRef = useRef();
+  const [blogPosts, setBlogPosts] = useState([]);
   
   // Sample testimonials data
   const [testimonials] = useState([
@@ -97,75 +99,69 @@ const Home = () => {
     ? testimonials 
     : testimonials.filter(item => item.type === activeFilter);
 
+
+  useEffect(() => {
+    // Fetch latest blog posts from API
+    const fetchBlogPosts = async () => {
+      try {
+        const response = await blogHomeAPI();
+        
+        // Sửa lỗi: Truy cập đúng mảng blog posts
+        if (response && response.data && Array.isArray(response.data.data)) {
+          // Chuyển đổi dữ liệu từ API để phù hợp với cấu trúc dự kiến
+          const formattedPosts = response.data.data.map(post => {
+            // Chuyển đổi trường tags từ chuỗi thành mảng objects
+            const tagArray = post.tags ? post.tags.split(',').map(tag => ({
+              text: tag.trim(),
+              color: getTagColor(tag.trim()) // Hàm helper để gán màu cho tag
+            })) : [];
+            
+            return {
+              ...post,
+              tags: tagArray,
+              // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
+              thumbnailUrl: post.thumbnailUrl && !post.thumbnailUrl.includes('example.com') 
+                ? post.thumbnailUrl 
+                : 'https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare'
+            };
+          });
+          
+          setBlogPosts(formattedPosts);
+          //console.log(">>> Blog posts processed:", formattedPosts);
+        } else {
+          //console.error("Invalid data format:", response);
+          setBlogPosts([]); // Đặt mảng rỗng nếu không có dữ liệu hợp lệ
+        }
+      } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        setBlogPosts([]); // Khởi tạo mảng rỗng trong trường hợp lỗi
+      }
+    };
+
+    // Helper function để gán màu cho tag
+    const getTagColor = (tag) => {
+      const tagColors = {
+        'sức khỏe': 'green',
+        'giới tính': 'blue',
+        'tư vấn': 'purple',
+        'STIs': 'red',
+        'kinh nguyệt': 'pink'
+      };
+      
+      return tagColors[tag.toLowerCase()] || 'cyan'; // Trả về màu mặc định nếu không tìm thấy
+    };
+
+    fetchBlogPosts();
+  }, []);
   // Thêm state cho blog posts
-  const [blogPosts] = useState([
-    {
-      id: 1,
-      title: "Chu kỳ kinh nguyệt không đều: Nguyên nhân và giải pháp",
-      excerpt: "Tìm hiểu về các yếu tố ảnh hưởng đến chu kỳ kinh nguyệt và những cách giúp cải thiện tình trạng không đều.",
-      image: "https://img.freepik.com/free-photo/woman-suffering-from-menstrual-pain_23-2148741815.jpg",
-      tags: [
-        { color: "blue", text: "Sức khỏe phụ nữ" },
-        { color: "cyan", text: "Kinh nguyệt" }
-      ],
-      author: {
-        name: "BS. Trần Minh Hà",
-        avatar: "https://randomuser.me/api/portraits/women/22.jpg"
-      },
-      date: "15/05/2023"
-    },
-    {
-      id: 2,
-      title: "5 dấu hiệu cần đi khám sức khỏe sinh sản ngay lập tức",
-      excerpt: "Những dấu hiệu cảnh báo về vấn đề sức khỏe sinh sản không nên bỏ qua và lợi ích của việc thăm khám sớm.",
-      image: "https://img.freepik.com/free-photo/doctor-patient-medical-consultation-hospital-office_1303-21297.jpg",
-      tags: [
-        { color: "purple", text: "Sức khỏe sinh sản" },
-        { color: "green", text: "Tư vấn" }
-      ],
-      author: {
-        name: "BS. Nguyễn Văn Lâm",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg"
-      },
-      date: "02/06/2023"
-    },
-    {
-      id: 3,
-      title: "Xét nghiệm STI: Khi nào nên thực hiện và những điều cần biết",
-      excerpt: "Hướng dẫn chi tiết về các loại xét nghiệm STI, thời điểm nên thực hiện và cách đọc kết quả xét nghiệm.",
-      image: "https://img.freepik.com/free-photo/doctor-explaining-diagnosis-patient_23-2148030315.jpg",
-      tags: [
-        { color: "red", text: "STIs" },
-        { color: "orange", text: "Xét nghiệm" }
-      ],
-      author: {
-        name: "BS. Phạm Thu Hương",
-        avatar: "https://randomuser.me/api/portraits/women/45.jpg"
-      },
-      date: "20/06/2023"
-    },
-    {
-      id: 4,
-      title: "Sức khỏe giới tính: Điều cần biết về các bệnh lây truyền qua đường tình dục",
-      excerpt: "Tổng quan về các bệnh lây truyền qua đường tình dục phổ biến, cách phòng tránh và điều trị hiệu quả.",
-      image: "https://img.freepik.com/free-photo/close-up-doctor-with-stethoscope_23-2149191355.jpg",
-      tags: [
-        { color: "magenta", text: "Giáo dục giới tính" },
-        { color: "blue", text: "Phòng ngừa" }
-      ],
-      author: {
-        name: "BS. Lê Minh Quân",
-        avatar: "https://randomuser.me/api/portraits/men/55.jpg"
-      },
-      date: "05/07/2023"
-    }
-  ]);
+
+ 
 
   return (
       <>
-        {/* Banner Section styled like MedEase - Updated with px-16 */}
+        {/* Banner Section styled like MedEase - Loại bỏ container */}
         <div className="bg-gradient-to-r from-sky-50 to-blue-100 overflow-hidden md:px-16 px-4">
-          <div className="container mx-auto pt-8">
+          <div className="mx-auto pt-8">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pb-0" >
               {/* Left content */}
               <div className="w-full lg:w-1/2 space-y-6 lg:pb-12">
@@ -244,13 +240,13 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Services Section - Updated with px-16 */}
+        {/* Services Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-gradient-to-b from-white to-sky-50 relative">
           {/* Background decorations */}
           <div className="absolute top-12 right-8 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
           <div className="absolute bottom-12 left-8 w-48 h-48 bg-green-100 rounded-full opacity-30"></div>
           
-          <div className="container mx-auto relative z-10">
+          <div className="mx-auto relative z-10">
             <div className="text-center mb-16 relative">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Giải pháp sức khỏe toàn diện</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -344,9 +340,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Features or Testimonials Section - With px-16 */}
+        {/* Features or Testimonials Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-white">
-          <div className="container mx-auto">
+          <div className="mx-auto">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Tại sao chọn chúng tôi</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -403,13 +399,13 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Testimonials Section - Customer Ratings & Feedback */}
+        {/* Testimonials Section - Customer Ratings & Feedback - Loại bỏ container */}
         <div className="py-16 px-16 bg-gradient-to-b from-sky-50 to-white relative">
           {/* Background decorations */}
           <div className="absolute top-24 left-12 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
           <div className="absolute bottom-24 right-12 w-48 h-48 bg-green-100 rounded-full opacity-30"></div>
           
-          <div className="container mx-auto relative z-10">
+          <div className="mx-auto relative z-10">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Phản hồi từ người dùng</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -549,9 +545,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Latest Blog Posts Section */}
+        {/* Latest Blog Posts Section - Loại bỏ container */}
         <div className="py-16 px-16 bg-white">
-          <div className="container mx-auto">
+          <div className="mx-auto">
             <div className="text-center mb-16">
               <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">Kiến thức sức khỏe</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
@@ -567,14 +563,14 @@ const Home = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {blogPosts.map(post => (
                 <Card 
-                  key={post.id}
+                  key={post.postId}
                   hoverable 
                   className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col"
                   cover={
                     <div className="h-40 md:h-36 lg:h-32 xl:h-40 overflow-hidden">
                       <img
                         alt={post.title}
-                        src={post.image}
+                        src={post.thumbnailUrl}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -588,14 +584,14 @@ const Home = () => {
                     </div>
                     <h3 className="text-base font-bold mb-1 text-gray-800 line-clamp-2">{post.title}</h3>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">
-                      {post.excerpt}
+                      {post.content ? post.content.slice(0, 100) + '...' : 'No content available.'}
                     </p>
                     <div className="flex justify-between items-center mt-auto pt-2 border-t border-gray-100">
-                      <div className="flex items-center">
+                      {/* <div className="flex items-center">
                         <Avatar src={post.author.avatar} size="small" />
                         <span className="ml-2 text-gray-500 text-xs">{post.author.name}</span>
-                      </div>
-                      <span className="text-gray-500 text-xs">{post.date}</span>
+                      </div> */}
+                      <span className="text-gray-500 text-xs">{post.publishedAt}</span>
                     </div>
                   </div>
                 </Card>

@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../components/provider/AuthProvider";
 
 const Login = () => {
@@ -16,6 +16,11 @@ const Login = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  useEffect(() => {
+    const img = new Image();
+    img.src = imgLogin;
+  }, []);
+  
   const onFinish = async (values) => {
     setLoading(true);
     try {

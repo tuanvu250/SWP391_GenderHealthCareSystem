@@ -1,6 +1,6 @@
 package GenderHealthCareSystem.ExceptionHandler;
 
-import GenderHealthCareSystem.model.ApiResponse;
+import GenderHealthCareSystem.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleAllException(Exception exception) {
         var result = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), null,"handle unexpected error");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+    }
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<String> handleIOException(IOException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Upload failed: " + ex.getMessage());
     }
 
 }

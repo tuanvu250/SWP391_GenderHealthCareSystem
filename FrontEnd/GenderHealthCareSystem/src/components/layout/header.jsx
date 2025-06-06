@@ -8,7 +8,7 @@ import {
   CloseOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { useState} from "react";
+import { useState } from "react";
 import LogoText from "../../assets/logo-text.svg";
 import LogoSign from "../../assets/logo-sign.svg";
 import { useAuth } from "../provider/AuthProvider";
@@ -18,7 +18,7 @@ const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const auth = useAuth();
-  const user = auth.user;
+  const user = auth.user; 
   const isLoggedIn = auth.isAuthenticated;
 
   const handleLogout = () => {
@@ -30,7 +30,7 @@ const Header = () => {
   const userMenu = {
     items: [
       user && {
-        key: 'user-info',
+        key: "user-info",
         label: (
           <div className="flex items-center space-x-2 gap-2">
             <Avatar
@@ -43,47 +43,47 @@ const Header = () => {
         ),
       },
       {
-        key: 'profile',
-        label: 'Thông tin cá nhân',
-        onClick: () => navigate("/profile")
+        key: "profile",
+        label: "Thông tin cá nhân",
+        onClick: () => navigate("/profile"),
       },
       {
-        key: 'settings',
-        label: 'Cài đặt tài khoản',
-        onClick: () => navigate("/settings")
+        key: "settings",
+        label: "Cài đặt tài khoản",
+        onClick: () => navigate("/profile?openSettings=true"),
       },
       {
-        key: 'logout',
-        label: 'Đăng xuất',
-        onClick: handleLogout
-      }
-    ].filter(Boolean) // Lọc bỏ các mục null/undefined
+        key: "logout",
+        label: "Đăng xuất",
+        onClick: handleLogout,
+      },
+    ].filter(Boolean), // Lọc bỏ các mục null/undefined
   };
 
   // Định nghĩa lại servicesMenu dưới dạng object
   const servicesMenu = {
     items: [
       {
-        key: '1',
-        label: 'Xét nghiệm STIs',
-        onClick: () => navigate("/services/health-checkup")
+        key: "1",
+        label: "Xét nghiệm STIs",
+        onClick: () => navigate("/services/health-checkup"),
       },
       {
-        key: '2',
-        label: 'Đặt câu hỏi hoặc tư vấn',
-        onClick: () => navigate("/services/consultation")
+        key: "2",
+        label: "Đặt câu hỏi hoặc tư vấn",
+        onClick: () => navigate("/services/consultation"),
       },
       {
-        key: '3',
-        label: 'Đặt lịch khám',
-        onClick: () => navigate("/services/appointments")
-      }
-    ]
+        key: "3",
+        label: "Đặt lịch khám",
+        onClick: () => navigate("/services/appointments"),
+      },
+    ],
   };
 
   return (
-    <header className="bg-white py-2.5 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
-      <div className="container mx-auto flex justify-between items-center">
+    <header className="bg-white py-2.5 z-50 px-4 md:px-8 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
+      <div className="mx-auto flex justify-between items-center w-full">
         {/* Logo */}
         <a
           className="flex items-center cursor-pointer"
@@ -158,14 +158,11 @@ const Header = () => {
               </Badge>
 
               <Dropdown menu={userMenu} trigger={["click"]}>
-                <div className="flex items-center cursor-pointer gap-1">
-                  <Avatar
-                    src={user?.image}
-                    icon={!user?.image && <UserOutlined />}
-                    size="default"
-                  />
-                  <CaretDownFilled className="text-gray-500 size-2.5 ml-1 hidden sm:block" />
-                </div>
+                <Avatar
+                  src={user?.userImageUrl}
+                  icon={!user?.image && <UserOutlined />}
+                  size="large"
+                />
               </Dropdown>
             </div>
           ) : (

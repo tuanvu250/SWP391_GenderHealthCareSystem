@@ -29,13 +29,13 @@ public class Question {
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID")
     private Users consultant;
 
-    @Column(name = "Title", length = 255)
+    @Column(name = "Title", columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(name = "Content", columnDefinition = "TEXT")
+    @Column(name = "Content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
-    @Column(name = "Answer", columnDefinition = "TEXT")
+    @Column(name = "Answer", columnDefinition = "NVARCHAR(MAX)")
     private String answer;
 
     @ManyToOne(fetch = FetchType.EAGER)

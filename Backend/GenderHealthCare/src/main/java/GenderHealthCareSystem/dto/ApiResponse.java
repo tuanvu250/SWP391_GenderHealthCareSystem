@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.model;
+package GenderHealthCareSystem.dto;
 
 
 import java.time.LocalDateTime;

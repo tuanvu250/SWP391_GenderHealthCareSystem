@@ -1,4 +1,5 @@
 import { Route, Routes, Outlet } from "react-router-dom";
+import ScrollToTop from "../components/utils/ScrollToTop";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/home";
@@ -18,11 +19,12 @@ import ServiceList from "../site-info/ServiceList";
 const Layout = () => {
   return (
     <>
+      <ScrollToTop /> {/* Component để cuộn lên đầu trang mỗi khi route thay đổi */}
       <Header />
       <main>
         <Outlet /> {/* Outlet sẽ render component con tương ứng với route hiện tại */}
       </main>
-      <Footer />
+      <Footer />    
     </>
   );
 };

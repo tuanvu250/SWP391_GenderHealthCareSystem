@@ -34,14 +34,17 @@ public class Account {
     @Column(name = "Password", length = 255)
     private String password; // Ensure this is stored securely (hashed)
 
-    @Column(name = "ResetOtp", length = 10)
-    private String resetOtp;
-
+    @Column(name = "Status", length = 50)
+    private String status;
     @Column(name = "ResetOtpExpiry")
     private LocalDateTime resetOtpExpiry;
+
+    @Column(name = "Otp", length = 6)
+    private String resetOtp;
 
     @Column(name = "OtpVerified")
     private Boolean otpVerified;
 
+ 
 
 }

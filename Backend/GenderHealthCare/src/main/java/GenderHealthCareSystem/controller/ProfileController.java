@@ -1,14 +1,19 @@
 package GenderHealthCareSystem.controller;
 
-import GenderHealthCareSystem.dto.ProfileDTO;
-import GenderHealthCareSystem.dto.UpdateProfileRequest;
-import GenderHealthCareSystem.model.ConsultantProfile;
-import GenderHealthCareSystem.repository.ConsultantProfileRepository;
+
+import GenderHealthCareSystem.dto.UserProfileResponse;
+import GenderHealthCareSystem.model.Account;
+import GenderHealthCareSystem.model.Users;
+import GenderHealthCareSystem.repository.AccountRepository;
+import GenderHealthCareSystem.repository.UserRepository;
+import GenderHealthCareSystem.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -18,52 +23,110 @@ import java.util.Optional;
 public class ProfileController {
 
     @Autowired
-    private ConsultantProfileRepository consultantProfileRepository;
+   private UserRepository userRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
-    // Lấy profile theo JWT (consultantId = UserID trong Users)
+
     @GetMapping("/me")
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal Jwt jwt) {
-        Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
-        Optional<ConsultantProfile> optional = consultantProfileRepository.findByConsultant_UserId(consultantId);
-        if (optional.isEmpty())
-            return ResponseEntity.status(404).body(Map.of("message", "Profile not found!"));
+    public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal Jwt jwt) {
+        Integer userId = ((Number) jwt.getClaim("userID")).intValue();
 
-        ConsultantProfile profile = optional.get();
-        ProfileDTO dto = new ProfileDTO(
-                profile.getProfileId(),
-                profile.getAvatarUrl(),
-                profile.getExperienceYears(),
-                profile.getIntroduction(),
-                profile.getLanguages(),
-                profile.getSpecialization(),
-                profile.getConsultant() != null ? profile.getConsultant().getUserId() : null
+        // Lấy Account (để lấy cả email) và Users
+        Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
+        if (optionalAcc.isEmpty())
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+
+        Account account = optionalAcc.get();
+        Users user = account.getUsers();
+
+        UserProfileResponse dto = new UserProfileResponse(
+                user.getUserId(),
+                user.getFullName(),
+                user.getGender(),
+                user.getPhone(),
+                user.getAddress(),
+                user.getBirthDate(),
+                user.getUserImageUrl(),
+                account.getEmail()
         );
+
         return ResponseEntity.ok(dto);
     }
 
 
-    // Cập nhật profile
     @PutMapping("/me")
-    public ResponseEntity<?> updateProfile(
+    public ResponseEntity<?> updateUserProfile(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody UpdateProfileRequest req
+            @RequestBody UserProfileResponse req
     ) {
-        Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
-        Optional<ConsultantProfile> optional = consultantProfileRepository.findByConsultant_UserId(consultantId);
+        Integer userId = ((Number) jwt.getClaim("userID")).intValue();
+        Optional<Users> optional = userRepository.findById(userId);
+
         if (optional.isEmpty())
-            return ResponseEntity.status(404).body(Map.of("message", "Profile not found!"));
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
 
-        ConsultantProfile profile = optional.get();
-        if (req.getAvatarUrl() != null) profile.setAvatarUrl(req.getAvatarUrl());
-        if (req.getExperienceYears() != null) profile.setExperienceYears(req.getExperienceYears());
-        if (req.getIntroduction() != null) profile.setIntroduction(req.getIntroduction());
-        if (req.getLanguages() != null) profile.setLanguages(req.getLanguages());
-        if (req.getSpecialization() != null) profile.setSpecialization(req.getSpecialization());
+        Users user = optional.get();
+        if (req.getFullName() != null) user.setFullName(req.getFullName());
+        if (req.getGender() != null) user.setGender(req.getGender());
+        if (req.getPhone() != null) user.setPhone(req.getPhone());
+        if (req.getAddress() != null) user.setAddress(req.getAddress());
+        if (req.getBirthDate() != null) user.setBirthDate(req.getBirthDate());
 
-        consultantProfileRepository.save(profile);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "Profile updated successfully!"));
+        // Cập nhật email ở bảng Account (nếu có thay đổi)
+        if (req.getEmail() != null && !req.getEmail().isEmpty()) {
+            Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
+            if (optionalAcc.isPresent()) {
+                Account account = optionalAcc.get();
+                account.setEmail(req.getEmail());
+                accountRepository.save(account);
+            }
+        }
+
+        return ResponseEntity.ok(Map.of("message", "User profile updated successfully!"));
     }
 
-    
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    @PutMapping("/me/avatar")
+    public ResponseEntity<?> updateAvatar(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        Integer userId = ((Number) jwt.getClaim("userID")).intValue();
+        Optional<Users> optional = userRepository.findById(userId);
+
+        if (optional.isEmpty())
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+
+        Users user = optional.get();
+
+        // Nếu đã có avatar cũ, xóa nó trên Cloudinary
+        if (user.getUserImageUrl() != null) {
+            String publicId = cloudinaryService.getPublicIdFromUrl(user.getUserImageUrl());
+            if (publicId != null) {
+                cloudinaryService.deleteFile(publicId);
+            }
+        }
+
+        // Upload file lên Cloudinary 
+        String avatarUrl = cloudinaryService.uploadFile(file);
+
+        user.setUserImageUrl(avatarUrl);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Avatar updated successfully!",
+                "userImageUrl", avatarUrl
+        ));
+    }
+
 }
+
+
