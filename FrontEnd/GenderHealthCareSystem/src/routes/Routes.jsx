@@ -9,10 +9,11 @@ import ResetPassword from "../auth/ResetPassword";
 import InputMenstrualCycle from "../menstrualcycle/InputMenstrualCycle";
 import Profile from "../user/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
-import AboutPage from "../home/AboutPage";
+import AboutPage from "../site-info/AboutPage";
 import MenstrualOvulation from "../menstrualcycle/MenstrualOvulation";
 import Blog from "../blog/Blog";
-
+import MedicationReminder from "../menstrualcycle/MedicationReminder";
+import ServiceList from "../site-info/ServiceList";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -41,6 +42,8 @@ function RouteMap() {
         } />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/menstrual-ovulation" element={<MenstrualOvulation />} />
+        <Route path="/medication-reminder" element={<MedicationReminder />} />
+        <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
       </Route>
 
