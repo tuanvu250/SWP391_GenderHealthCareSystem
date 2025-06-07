@@ -56,7 +56,6 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setRole(role);
-        user.setUserImageUrl(request.getAvatarUrl());
         usersRepository.save(user);
 
         Account account = new Account();
