@@ -30,6 +30,4 @@ public class RegisterRequest {
     @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
     private Integer roleId;
-    private MultipartFile avatar; // Hình ảnh đại diện của người dùng, có thể là null nếu không có
-    private String avatarUrl; // URL của hình ảnh đại diện, có thể là null nếu không có
 }

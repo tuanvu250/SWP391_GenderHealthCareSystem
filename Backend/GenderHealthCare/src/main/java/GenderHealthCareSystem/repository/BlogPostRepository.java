@@ -15,14 +15,34 @@ import java.util.List;
 @Repository
 public interface BlogPostRepository extends JpaRepository<BlogPost, Integer> {
 
-    List<BlogPost> findByConsultant_UserId(int userId);
+    List<BlogPost> findByConsultant_UserIdAndDeletedFalse(int userId);
 
-    List<BlogPost> findTop4ByOrderByPublishedAtDesc();
+    List<BlogPost> findTop4ByDeletedFalseOrderByPublishedAtDesc();
 
-    @Query("SELECT b FROM BlogPost b WHERE b.title LIKE %:title% AND b.tags LIKE %:tags%")
-    Page<BlogPost> findByTitleContainingAndTagsContaining(@Param("title") String title, @Param("tags") String tags, Pageable pageable);
+    @Query("""
+    SELECT b FROM BlogPost b
+    WHERE b.deleted = false
+      AND (:title IS NULL OR b.title LIKE %:title%)
+      AND (:tags IS NULL OR b.tags LIKE %:tags%)
+""")
+    Page<BlogPost> searchBlogPosts(
+            @Param("title") String title,
+            @Param("tags") String tags,
+            Pageable pageable
+    );
+    @Query("""
+    SELECT b FROM BlogPost b
+    WHERE b.deleted = false
+      AND (:title IS NULL OR b.title LIKE %:title%)
+      AND (:tags IS NULL OR b.tags LIKE %:tags%)
+      AND (:consultantId IS NULL OR b.consultant.userId = :consultantId)
+""")
+    Page<BlogPost> searchBlogPostsByAuthor(
+            @Param("title") String title,
+            @Param("tags") String tags,
+            @Param("consultantId") Integer consultantId,
+            Pageable pageable
+    );
 
-    Page<BlogPost> findByTitleContaining(String title, Pageable pageable);
 
-    Page<BlogPost> findByTagsContaining(String tags, Pageable pageable);
 }

@@ -38,24 +38,36 @@ public class BlogPostService {
         this.blogPostRepository.save(blog);
     }
 
-    public void updateBlogPost(BlogPost blogPost) {
-        if (blogPost.getPostId() == null || !blogPostRepository.existsById(blogPost.getPostId())) {
-            throw new RuntimeException("Không tìm thấy bài viết với id: " + blogPost.getPostId());
+    public void updateBlogPost(int id, BlogPost updatedBlogPost) {
+        BlogPost existingBlogPost = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        // Kiểm tra quyền sửa bài viết
+        if (existingBlogPost.isDeleted()) {
+            throw new RuntimeException("Bài viết đã bị xóa, không thể sửa");
         }
-        blogPostRepository.save(blogPost);
+        existingBlogPost.setTitle(updatedBlogPost.getTitle());
+        existingBlogPost.setContent(updatedBlogPost.getContent());
+        existingBlogPost.setThumbnailUrl(updatedBlogPost.getThumbnailUrl());
+        existingBlogPost.setTags(updatedBlogPost.getTags());
+
+        blogPostRepository.save(existingBlogPost);
     }
 
-    public List<BlogPostResponse> findBlogPostsByAuthor(String ID) {
-        List<BlogPost> blogPosts = blogPostRepository.findByConsultant_UserId(Integer.parseInt(ID));
-        List<BlogPostResponse> responses = new ArrayList<>();
-        for (BlogPost blogPost : blogPosts) {
-            responses.add(mapToResponse(blogPost));
+    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, int page, int size, String sort,int Id) {
+        Pageable pageable;
+        if ("asc".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
         }
-        return responses;
+
+        Page<BlogPost> blogPosts;
+        blogPosts = this.blogPostRepository.searchBlogPostsByAuthor(title,tag, Id, pageable);
+        return blogPosts.map(this::mapToResponse);
     }
 
     public List<BlogPostResponse> findFourNewestBlogs() {
-        List<BlogPost> blogPosts = blogPostRepository.findTop4ByOrderByPublishedAtDesc();
+        List<BlogPost> blogPosts = blogPostRepository.findTop4ByDeletedFalseOrderByPublishedAtDesc();
         List<BlogPostResponse> responses = new ArrayList<>();
         for (BlogPost blogPost : blogPosts) {
             responses.add(mapToResponse(blogPost));
@@ -72,15 +84,8 @@ public class BlogPostService {
         }
 
         Page<BlogPost> blogPosts;
-        if (title != null && tag != null) {
-            blogPosts = blogPostRepository.findByTitleContainingAndTagsContaining(title, tag, pageable);
-        } else if (title != null) {
-            blogPosts = blogPostRepository.findByTitleContaining(title, pageable);
-        } else if (tag != null) {
-            blogPosts = blogPostRepository.findByTagsContaining(tag, pageable);
-        } else {
-            blogPosts = blogPostRepository.findAll(pageable);
-        }
+        blogPosts = this.blogPostRepository.searchBlogPosts(title,tag, pageable);
+
 
         return blogPosts.map(this::mapToResponse);
 

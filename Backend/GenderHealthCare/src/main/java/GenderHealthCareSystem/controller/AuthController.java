@@ -30,9 +30,8 @@ public class AuthController {
 
     // API đăng ký tài khoản mới
     @PostMapping("/register")
-    public ResponseEntity<?> register(@ModelAttribute  @Valid RegisterRequest request) throws IOException {
+    public ResponseEntity<?> register(@RequestBody  @Valid RegisterRequest request) {
         // Xử lý đăng ký người dùng mới trong hệ thống
-        request.setAvatarUrl(imageService.uploadImage(request.getAvatar()));
         authService.register(request);
         return ResponseEntity.ok().body("User registered successfully");
     }
