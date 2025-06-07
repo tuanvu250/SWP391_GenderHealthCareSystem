@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.controller;
 
 
+import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.dto.UserProfileResponse;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.model.Users;
@@ -8,6 +9,7 @@ import GenderHealthCareSystem.repository.AccountRepository;
 import GenderHealthCareSystem.repository.UserRepository;
 import GenderHealthCareSystem.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -32,23 +34,29 @@ public class ProfileController {
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal Jwt jwt) {
         Integer userId = ((Number) jwt.getClaim("userID")).intValue();
 
-        // Lấy Account (để lấy cả email) và Users
         Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
-        if (optionalAcc.isEmpty())
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+
+        if (optionalAcc.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "User not found!"));
+        }
 
         Account account = optionalAcc.get();
         Users user = account.getUsers();
 
-        UserProfileResponse dto = new UserProfileResponse(
-                user.getUserId(),
+        UserInfoResponse dto = new UserInfoResponse(
+                account.getAccountId(),
+                account.getUserName(),
+                account.getEmail(),
+                user.getRole().getRoleName(),
                 user.getFullName(),
-                user.getGender(),
                 user.getPhone(),
+                user.getGender(),
                 user.getAddress(),
-                user.getBirthDate(),
                 user.getUserImageUrl(),
-                account.getEmail()
+                user.getBirthDate(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
 
         return ResponseEntity.ok(dto);
