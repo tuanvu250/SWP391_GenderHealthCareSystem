@@ -18,7 +18,7 @@ const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const auth = useAuth();
-  const user = auth.user; 
+  const user = auth.user;
   const isLoggedIn = auth.isAuthenticated;
 
   const handleLogout = () => {
@@ -66,7 +66,7 @@ const Header = () => {
       {
         key: "1",
         label: "Xét nghiệm STIs",
-        onClick: () => navigate("/services/health-checkup"),
+        onClick: () => navigate("/sti-testing"),
       },
       {
         key: "2",
@@ -220,11 +220,13 @@ const Header = () => {
         <div className="flex flex-col h-full">
           <div className="flex-grow">
             {isLoggedIn && user && (
-              <div className="mb-6 py-4 border-b border-gray-100"
+              <div
+                className="mb-6 py-4 border-b border-gray-100"
                 onClick={() => {
                   navigate("/profile");
                   setMenuVisible(false);
-                }} >
+                }}
+              >
                 <div className="flex items-center space-x-3 mb-2 gap-2">
                   <Avatar
                     src={user.userImageUrl}
@@ -257,7 +259,10 @@ const Header = () => {
                   <li>
                     <a
                       className="block !text-gray-800 hover:text-[#0099CF] "
-                      onClick={() => navigate("/services/health-checkup")}
+                      onClick={() => {
+                        navigate("/sti-testing");
+                        setMenuVisible(false);
+                      }}
                     >
                       Xét nghiệm STIs
                     </a>

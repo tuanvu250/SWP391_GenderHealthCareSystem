@@ -17,6 +17,8 @@ import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
+import STITesting from "../services/STITesting";
+import STIBooking from "../services/STIBooking";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -44,6 +46,10 @@ function RouteMap() {
             <Profile />
           </ProtectedRoute>
         } />
+        <Route path="/sti-testing" element={<STITesting />} />
+        <Route path="/sti-booking" element={<STIBooking />} />
+        
+        {/* Các trang khác */}
         <Route path="/about" element={<AboutPage />} />
         <Route path="/menstrual-ovulation" element={<MenstrualOvulation />} />
         <Route path="/medication-reminder" element={<MedicationReminder />} />
