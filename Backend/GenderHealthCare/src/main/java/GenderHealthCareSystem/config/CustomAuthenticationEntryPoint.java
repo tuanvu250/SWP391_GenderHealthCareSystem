@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.config;
 
+import GenderHealthCareSystem.dto.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
