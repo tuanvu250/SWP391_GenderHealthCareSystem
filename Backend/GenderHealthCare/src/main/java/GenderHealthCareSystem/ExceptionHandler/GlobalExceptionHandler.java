@@ -1,6 +1,5 @@
 package GenderHealthCareSystem.ExceptionHandler;
 
-import GenderHealthCareSystem.model.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -1,14 +1,11 @@
 package GenderHealthCareSystem.controller;
 
-import GenderHealthCareSystem.model.ApiResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.service.BlogPostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
