@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { useContext, useState, useEffect } from "react";
-import { loginAPI, registerAPI } from "../utils/api";
+import { loginAPI, registerAPI, getUserProfile } from "../utils/api";
 import { message } from "antd";
 
 const TOKEN_KEY = "token";
@@ -58,7 +58,27 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
 
     //console.log(">>> User updated:", updatedUser);
-  }
+  };
+
+  const refreshUserProfile = async () => {
+    try {
+      const response = await getUserProfile();
+      if (response.data) {
+        sessionStorage.setItem(USER_KEY, JSON.stringify(response.data));
+        setUser(response.data);
+        console.log(">>> User profile refreshed:", response.data);
+        return { success: true, data: response.data };
+      }
+      return { success: false, message: "Không nhận được dữ liệu" };
+    } catch (error) {
+      console.error("Lỗi khi làm mới thông tin người dùng:", error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Không thể lấy thông tin người dùng",
+      };
+    }
+  };
 
   const loginAction = async (userData) => {
     try {
@@ -66,10 +86,10 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data && response.data.token) {
         sessionStorage.setItem(TOKEN_KEY, response.data.token);
-        sessionStorage.setItem(USER_KEY, JSON.stringify(response.data));
-
-        setUser(response.data);
         setToken(response.data.token);
+
+        refreshUserProfile();
+
         setIsAuthenticated(true);
         return { success: true, message: "Đăng nhập thành công!" };
       } else {

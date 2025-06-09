@@ -1,6 +1,5 @@
 package GenderHealthCareSystem.dto;
 
-
 import java.time.LocalDateTime;
 
 import lombok.Data;
@@ -24,4 +23,5 @@ public class ApiResponse<T> {
 
 
 }
+
 

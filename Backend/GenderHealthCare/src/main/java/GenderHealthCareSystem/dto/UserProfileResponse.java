@@ -1,5 +1,7 @@
 package GenderHealthCareSystem.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,9 +15,9 @@ public class UserProfileResponse {
     private Integer userId;
     private String fullName;
     private String gender;
-    private String phone;
     private String address;
     private LocalDate birthDate;
     private String userImage;
     private String email;
+    private String phone;
 }

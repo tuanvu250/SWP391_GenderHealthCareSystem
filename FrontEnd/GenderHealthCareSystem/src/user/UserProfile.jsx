@@ -31,22 +31,15 @@ import {
   PhoneOutlined,
   MailOutlined,
   HomeOutlined,
-  HeartOutlined,
   ClockCircleOutlined,
-  FileTextOutlined,
-  MedicineBoxOutlined,
-  NotificationOutlined,
   SettingOutlined,
-  CommentOutlined,
   LikeOutlined,
   LockOutlined,
   WarningOutlined,
-  ExclamationCircleOutlined,
   CameraOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
 import {
-  getUserProfile,
   updateUserAvatarAPI,
   updateUserProfileAPI,
 } from "../components/utils/api";
@@ -58,9 +51,7 @@ const { TextArea } = Input;
 
 const UserProfile = () => {
   // Giữ nguyên các state hiện tại
-  const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarLoading, setAvatarLoading] = useState(false);
-  const [user, setUser] = useState();
   const [activeTab, setActiveTab] = useState("1");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [settingTab, setSettingTab] = useState("password");
@@ -70,31 +61,10 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm] = Form.useForm();
 
-  const { updateUser } = useAuth();
+  const {user, updateUser } = useAuth();
 
   const formatDate = (date) =>
     date ? new Date(date).toISOString().split("T")[0] : "";
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const res = await getUserProfile();
-        if (res && res.data) {
-          setUser(res.data);
-          // Cập nhật avatarUrl khi nhận dữ liệu từ server
-          if (res.data.userImageUrl) {
-            setAvatarUrl(res.data.userImageUrl);
-          }
-          //console.log(">>> User profile data:", res.data);
-        } else {
-          console.error("No user profile data found");
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-    fetchUserProfile();
-  }, []);
 
   // Xử lý tải lên và cập nhật avatar
   const customUploadRequest = async (options) => {
@@ -110,7 +80,6 @@ const UserProfile = () => {
       // Nếu API trả về thành công
       if (response && response.data) {
         // Cập nhật URL avatar mới
-        setAvatarUrl(response.data.userImageUrl);
         message.success("Cập nhật ảnh đại diện thành công!");
         onSuccess(response, file);
 
@@ -157,19 +126,6 @@ const UserProfile = () => {
         message.success("Cập nhật hồ sơ thành công!");
         setIsEditing(false);
 
-        // Cập nhật state user với thông tin mới
-        setUser({
-          ...user,
-          fullName: values.fullName,
-          email: values.email,
-          phone: values.phone,
-          birthDate: values.birthDate
-            ? values.birthDate.format("YYYY-MM-DD")
-            : user?.birthDate,
-          gender: values.gender,
-          address: values.address,
-        });
-
         updateUser({
           ...user,
           fullName: values.fullName,
@@ -209,7 +165,7 @@ const UserProfile = () => {
     address: user?.address,
     joinDate: formatDate(user?.createdAt),
     avatar:
-      avatarUrl || user?.userImageUrl || "https://www.gravatar.com/avatar",
+      user?.userImageUrl || "https://www.gravatar.com/avatar",
   };
 
   const recentAppointments = [
@@ -324,7 +280,6 @@ const UserProfile = () => {
       key: "1",
       label: (
         <span>
-          <FileTextOutlined />
           Thông tin cá nhân
         </span>
       ),
@@ -475,7 +430,6 @@ const UserProfile = () => {
       key: "2",
       label: (
         <span>
-          <MedicineBoxOutlined />
           Lịch sử khám bệnh
         </span>
       ),
@@ -516,7 +470,6 @@ const UserProfile = () => {
       key: "3",
       label: (
         <span>
-          <HeartOutlined />
           Chu kỳ kinh nguyệt
         </span>
       ),
@@ -560,7 +513,6 @@ const UserProfile = () => {
       key: "4",
       label: (
         <span>
-          <CommentOutlined />
           Lịch sử đánh giá
         </span>
       ),
@@ -626,7 +578,7 @@ const UserProfile = () => {
         {/* Header Card */}
         <Card className="mb-6">
           <Row gutter={[24, 24]} align="middle">
-            <Col xs={24} md={8} className="text-center">
+            <Col xs={24} md={6} className="text-center">
               <div className="relative inline-block">
                 <Badge offset={[-5, 5]}>
                   <Avatar
@@ -677,7 +629,7 @@ const UserProfile = () => {
               <Text type="secondary">Thành viên từ {userProfile.joinDate}</Text>
             </Col>
 
-            <Col xs={24} md={16}>
+            <Col xs={24} md={16} className="md:mr-6">
               <Row gutter={[16, 16]}>
                 <Col xs={24}>
                   <Paragraph>
@@ -717,7 +669,7 @@ const UserProfile = () => {
         </Card>
 
         {/* Tabs */}
-        <Card>
+        <Card >
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
