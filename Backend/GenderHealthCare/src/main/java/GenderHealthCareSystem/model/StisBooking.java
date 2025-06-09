@@ -33,8 +33,7 @@ import java.time.LocalDateTime;
         private LocalDateTime bookingDate;
 
         @Column(name = "Status", length = 20)
-        // Consider using an Enum for Status
-        // CHECK (Status IN ('Pending', 'Confirmed', 'Cancelled', 'Done'))
+        // Status can be 'Confirmed', 'Cancelled', or 'Done'
         private String status;
 
         @Column(name = "PaymentStatus", length = 20)
