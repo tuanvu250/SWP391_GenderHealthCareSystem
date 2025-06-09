@@ -1,6 +1,6 @@
 package GenderHealthCareSystem.controller;
 
-import GenderHealthCareSystem.model.ApiResponse;
+import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.model.StisService;
 import GenderHealthCareSystem.service.StisServiceService;
 import lombok.RequiredArgsConstructor;
