@@ -1,5 +1,8 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.DayInfo;
+import GenderHealthCareSystem.dto.DayType;
+import GenderHealthCareSystem.dto.MenstrualCalendarResponse;
 import GenderHealthCareSystem.dto.MenstrualCycleRequest;
 import GenderHealthCareSystem.dto.MenstrualCycleResponse;
 import GenderHealthCareSystem.model.MenstrualCycle;
@@ -9,7 +12,10 @@ import GenderHealthCareSystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MenstrualCycleService {
@@ -20,8 +26,9 @@ public class MenstrualCycleService {
     @Autowired
     private UserRepository userRepository;
 
-    public MenstrualCycleResponse createMenstrualCycle(MenstrualCycleRequest request) {
-        Users user = userRepository.findById(request.getCustomerId())
+    // --- Phần code hiện tại tạo chu kỳ ---
+    public MenstrualCycleResponse createMenstrualCycle(MenstrualCycleRequest request, Integer userId) {
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         MenstrualCycle cycle = new MenstrualCycle();
@@ -34,7 +41,6 @@ public class MenstrualCycleService {
 
         MenstrualCycle savedCycle = menstrualCycleRepository.save(cycle);
 
-        // Chuyển đổi entity thành DTO để trả về
         return new MenstrualCycleResponse(
                 savedCycle.getCycleId(),
                 user.getUserId(),
@@ -43,6 +49,23 @@ public class MenstrualCycleService {
                 savedCycle.getCycleLength(),
                 savedCycle.getNote(),
                 savedCycle.getCreatedAt()
+        );
+    }
+
+    // : lấy chu kỳ gần nhất của user ---
+    public MenstrualCycleResponse getLatestCycleForUser(Integer userId) {
+        MenstrualCycle cycle = menstrualCycleRepository
+                .findFirstByCustomerUserIdOrderByStartDateDesc(userId)
+                .orElseThrow(() -> new RuntimeException("No cycle found for user " + userId));
+
+        return new MenstrualCycleResponse(
+                cycle.getCycleId(),
+                userId,
+                cycle.getStartDate(),
+                cycle.getEndDate(),
+                cycle.getCycleLength(),
+                cycle.getNote(),
+                cycle.getCreatedAt()
         );
     }
 }

@@ -21,8 +21,8 @@ public class PillService {
     @Autowired
     private UserRepository userRepository;
 
-    public PillResponse createPill(PillRequest request) {
-        Users user = userRepository.findById(request.getCustomerId())
+    public PillResponse createPill(PillRequest request, Integer userId) {
+        Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Pills pill = new Pills();
@@ -45,4 +45,5 @@ public class PillService {
                 saved.getCustomer().getUserId()
         );
     }
+
 }

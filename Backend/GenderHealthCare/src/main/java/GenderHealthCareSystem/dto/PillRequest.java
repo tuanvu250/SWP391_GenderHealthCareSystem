@@ -11,5 +11,5 @@ public class PillRequest {
     private LocalDate startDate;
     private LocalTime timeOfDay;
     private Boolean isActive;
-    private Integer CustomerId;
+//    private Integer CustomerId;
 }
