@@ -1,28 +1,49 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.StisBookingRequest;
+import GenderHealthCareSystem.dto.StisBookingResponse;
 import GenderHealthCareSystem.model.StisBooking;
+import GenderHealthCareSystem.model.StisService;
 import GenderHealthCareSystem.repository.StisBookingRepository;
+import GenderHealthCareSystem.repository.StisServiceRepository;
+import GenderHealthCareSystem.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class StisBookingService {
 
-    @Autowired
-    private StisBookingRepository stisBookingRepository;
 
-    public List<StisBooking> getAllBookings() {
-        return stisBookingRepository.findAll();
+    private final StisBookingRepository stisBookingRepository;
+    private final UserRepository userRepository;
+    private final StisServiceRepository stisServiceRepository;
+
+    public List<StisBookingResponse> getAllBookings() {
+        return stisBookingRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
-    public Optional<StisBooking> getBookingById(Integer id) {
-        return stisBookingRepository.findById(id);
+
+    public Optional<StisBookingResponse> getBookingById(Integer id) {
+        return stisBookingRepository.findById(id).stream().map(this::mapToResponse).findFirst();
     }
 
-    public StisBooking createOrUpdateBooking(StisBooking booking) {
+    public StisBooking createBooking(StisBookingRequest booking) {
+        StisBooking stisBooking = new StisBooking();
+        stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
+        stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
+        stisBooking.setBookingDate(booking.getBookingDate());
+        return stisBookingRepository.save(booking);
+    }
+
+    public StisBooking updateBooking(StisBookingRequest booking) {
+        StisBooking stisBooking = new StisBooking();
+        stisBooking.setCustomer(booking.set);
         return stisBookingRepository.save(booking);
     }
 
@@ -62,8 +83,31 @@ public class StisBookingService {
         }
     }
 
-    public List<StisBooking> getBookingHistoryByCustomer(Integer customerId) {
+    public List<StisBookingResponse> getBookingHistoryByCustomer(Integer customerId) {
         // Fetch booking history for a specific customer from the repository
-        return stisBookingRepository.findByCustomer_UserId(customerId);
+        return stisBookingRepository.findByCustomer_UserId(customerId).stream().map(this::mapToResponse).toList();
     }
+    public StisBookingResponse mapToResponse(StisBooking booking) {
+        // Map properties from StisBooking to StisBookingResponse
+        StisBookingResponse response = new StisBookingResponse();
+        response.setBookingId(booking.getBookingId());
+        response.setCustomerId(booking.getCustomer().getUserId());
+        response.setCustomerName(booking.getCustomer().getFullName());
+        response.setServiceId(booking.getStisService().getServiceId());
+        response.setServiceName(booking.getStisService().getServiceName());
+        response.setServicePrice(booking.getStisService().getPrice());
+        response.setBookingDate(booking.getBookingDate());
+        response.setStatus(booking.getStatus());
+        response.setPaymentStatus(booking.getPaymentStatus());
+        response.setPaymentMethod(booking.getPaymentMethod());
+        response.setNote(booking.getNote());
+        response.setCreatedAt(booking.getCreatedAt());
+        response.setUpdatedAt(booking.getUpdatedAt());
+        return response;
+    }
+
 }
+
+
+
+

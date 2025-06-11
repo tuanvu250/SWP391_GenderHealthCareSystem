@@ -41,6 +41,10 @@ import java.time.LocalDateTime;
         // CHECK (PaymentStatus IN ('Unpaid', 'Paid', 'Refunded'))
         private String paymentStatus;
 
+        @Column(name = "PaymentMethod", length = 50)
+        // Stores the payment method like 'Credit Card', 'PayPal', etc.
+        private String paymentMethod;
+
         @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
         private String note;
 
