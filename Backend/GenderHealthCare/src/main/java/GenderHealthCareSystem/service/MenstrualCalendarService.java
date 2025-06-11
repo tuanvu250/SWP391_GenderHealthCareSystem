@@ -15,11 +15,8 @@ import java.util.List;
 public class MenstrualCalendarService {
 
     /**
-     * Build lịch với từng ngày gán DayType
-     * @param cycleId       ID chu kỳ
-     * @param startDate     Ngày bắt đầu hành kinh
-     * @param cycleLength   Tổng độ dài chu kỳ
-     * @param menstruationDays Số ngày hành kinh (từ startDate)
+     * Dự đoán nhiều chu kỳ sinh sản bắt đầu từ startDate. Trả về danh sách các
+     * ngày để hiển thị lịch theo nhiều tháng.
      */
     public MenstrualCalendarResponse buildCalendar(
             Integer cycleId,
@@ -27,39 +24,37 @@ public class MenstrualCalendarService {
             int cycleLength,
             int menstruationDays
     ) {
-        List<DayInfo> days = new ArrayList<>(cycleLength);
+        List<DayInfo> days = new ArrayList<>();
 
-        // Tính ngày rụng trứng: thường là start + (cycleLength - 14) - 1
-        int ovulationOffset = cycleLength - 14;
-        LocalDate ovulationDate = startDate.plusDays(ovulationOffset - 1);
+        int numberOfCycles = 6; // Dự đoán 6 chu kỳ liên tiếp
+        for (int cycle = 0; cycle < numberOfCycles; cycle++) {
+            LocalDate cycleStart = startDate.plusDays(cycle * cycleLength);
+            LocalDate ovulationDate = cycleStart.plusDays(cycleLength - 14);
 
-        // Khoảng thụ thai: [ovulation -5, ovulation +1]
-        LocalDate fertileStart = ovulationDate.minusDays(5);
-        LocalDate fertileEnd   = ovulationDate.plusDays(1);
+            for (int day = 0; day < cycleLength; day++) {
+                LocalDate currentDate = cycleStart.plusDays(day);
+                DayType type = DayType.NORMAL;
 
-        for (int i = 0; i < cycleLength; i++) {
-            LocalDate date = startDate.plusDays(i);
-            DayType type = DayType.NORMAL;
-
-            // 1) Ngày hành kinh
-            if (i < menstruationDays) {
-                type = DayType.MENSTRUATION;
-            }
-            // 2) Ngày khả năng thụ thai
-            else if (!date.isBefore(fertileStart) && !date.isAfter(fertileEnd)) {
-                long dist = Math.abs(date.toEpochDay() - ovulationDate.toEpochDay());
-                if (dist <= 1) {
-                    type = DayType.HIGH_FERTILITY;
-                } else if (dist <= 3) {
-                    type = DayType.MEDIUM_FERTILITY;
+                if (day < menstruationDays) {
+                    type = DayType.MENSTRUATION;
                 } else {
-                    type = DayType.LOW_FERTILITY;
+                    long dist = Math.abs(currentDate.toEpochDay() - ovulationDate.toEpochDay());
+                    if (dist <= 1) {
+                        type = DayType.HIGH_FERTILITY;
+                    } else if (dist <= 3) {
+                        type = DayType.MEDIUM_FERTILITY;
+                    }
                 }
-            }
 
-            days.add(new DayInfo(date, type));
+                days.add(new DayInfo(currentDate, type));
+            }
         }
 
-        return new MenstrualCalendarResponse(cycleId, startDate, cycleLength, days);
+        return new MenstrualCalendarResponse(
+                cycleId,
+                startDate,
+                cycleLength,
+                days
+        );
     }
 }

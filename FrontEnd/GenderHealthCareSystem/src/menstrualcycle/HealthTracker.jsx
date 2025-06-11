@@ -8,6 +8,9 @@ export default function HealthTracker() {
   const [periodLength, setPeriodLength] = useState(5);
   const [startDate, setStartDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +22,8 @@ export default function HealthTracker() {
 
   const handleSubmit = async () => {
     if (!startDate) {
-      alert("Vui lòng chọn ngày bắt đầu kỳ kinh");
+      setPopupMessage("Vui lòng chọn ngày bắt đầu kỳ kinh");
+      setShowPopup(true);
       return;
     }
 
@@ -36,23 +40,23 @@ export default function HealthTracker() {
         note: ""
       });
 
-      // ✅ Truyền dữ liệu sang OvulationCalendar qua state
       navigate("/menstrual-ovulation", { state: { calendar: res.data } });
 
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
-        alert("Bạn chưa đăng nhập hoặc token không hợp lệ.");
+        setPopupMessage("Bạn chưa đăng nhập hoặc token không hợp lệ.");
       } else {
-        alert("Lỗi khi tính toán chu kỳ. Hãy thử lại sau.");
+        setPopupMessage("Lỗi khi tính toán chu kỳ. Hãy thử lại sau.");
       }
+      setShowPopup(true);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
+    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6 relative">
       <h2 className="text-2xl font-bold text-center">Chọn chức năng</h2>
 
       <div className="flex justify-center gap-6">
@@ -124,6 +128,21 @@ export default function HealthTracker() {
           >
             {loading ? "Đang tính..." : "Tính ngay"}
           </button>
+        </div>
+      )}
+
+      {showPopup && (
+      <div className="fixed inset-0 bg-[#00000080] backdrop-sm flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center border-t-4 border-blue-500">
+            <h3 className="text-xl font-bold text-blue-600 mb-3">Thông báo</h3>
+            <p className="text-gray-700 mb-4">{popupMessage}</p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              OK
+            </button>
+          </div>
         </div>
       )}
     </div>
