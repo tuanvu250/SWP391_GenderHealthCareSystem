@@ -48,15 +48,14 @@ public class StisBookingController {
     @PostMapping
     public ResponseEntity<ApiResponse<StisBooking>> createBooking(@RequestBody StisBookingRequest booking, @AuthenticationPrincipal Jwt jwt) {
         booking.setCustomerId(Integer.parseInt(jwt.getClaimAsString("userID")));
-        StisBooking createdBooking = stisBookingService.createOrUpdateBooking(booking);
+        StisBooking createdBooking = stisBookingService.createBooking(booking);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(HttpStatus.CREATED, "Booking created", createdBooking, null));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StisBooking>> updateBooking(@PathVariable Integer id, @RequestBody StisBooking booking) {
-        booking.setBookingId(id);
-        StisBooking updatedBooking = stisBookingService.createOrUpdateBooking(booking);
+    public ResponseEntity<ApiResponse<StisBooking>> updateBooking(@PathVariable Integer id, @RequestBody StisBookingRequest booking) {
+        StisBooking updatedBooking = stisBookingService.updateBooking(booking, id);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking updated", updatedBooking, null));
     }
 

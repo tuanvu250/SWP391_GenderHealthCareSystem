@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class StisBookingRequest {
     private Integer customerId;
     private Integer serviceId;
+    private LocalDateTime bookingDate;
     private String note;
     private String paymentMethod;
 }

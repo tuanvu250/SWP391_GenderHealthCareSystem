@@ -38,13 +38,25 @@ public class StisBookingService {
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
         stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
         stisBooking.setBookingDate(booking.getBookingDate());
-        return stisBookingRepository.save(booking);
+        stisBooking.setStatus("Pending");
+        stisBooking.setPaymentStatus("Chưa thanh toán");
+        stisBooking.setPaymentMethod(booking.getPaymentMethod());
+        stisBooking.setNote(booking.getNote());
+        stisBooking.setCreatedAt(LocalDateTime.now());
+        stisBooking.setUpdatedAt(LocalDateTime.now());
+
+        return  stisBookingRepository.save(stisBooking);
     }
 
-    public StisBooking updateBooking(StisBookingRequest booking) {
-        StisBooking stisBooking = new StisBooking();
-        stisBooking.setCustomer(booking.set);
-        return stisBookingRepository.save(booking);
+    public StisBooking updateBooking(StisBookingRequest newBooking, Integer id) {
+        StisBooking stisBooking = this.stisBookingRepository.findById(id).get();
+        if (newBooking.getBookingDate() != null) {
+            stisBooking.setBookingDate(newBooking.getBookingDate());
+        }
+        stisBooking.setPaymentMethod(newBooking.getPaymentMethod());
+        stisBooking.setNote(newBooking.getNote());
+
+        return stisBookingRepository.save(stisBooking);
     }
 
     public void deleteBooking(Integer id) {
