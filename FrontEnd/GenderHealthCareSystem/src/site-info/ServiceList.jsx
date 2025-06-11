@@ -53,7 +53,7 @@ const Services = () => {
               <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
             </li>
             <li className="hover:text-[#909497] cursor-pointer py-2">
-              <a onClick={() => navigate("/about")}>Chuyên gia</a>
+              <a onClick={() => navigate("/expert")}>Chuyên gia</a>
             </li>
             <li className="hover:text-[#909497] cursor-pointer py-2">
               <a onClick={() => navigate("/privacy")}>Chính sách</a>
