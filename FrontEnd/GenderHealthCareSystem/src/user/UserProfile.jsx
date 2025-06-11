@@ -139,7 +139,9 @@ const UserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("Validation failed:", error);
+      message.error(
+        error.response?.data?.message || "Cập nhật hồ sơ không thành công!"
+      );
     }
   };
 

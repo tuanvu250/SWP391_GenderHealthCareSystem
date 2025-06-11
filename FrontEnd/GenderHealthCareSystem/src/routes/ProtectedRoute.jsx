@@ -12,7 +12,7 @@ import { Spin } from "antd"; // Import Spin từ Ant Design
  */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   // Lấy thông tin xác thực
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, refreshUserProfile } = useAuth();
 
   if (loading) {
     return (
@@ -23,28 +23,31 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
       </div>
     );
   }
-  
+
   // Kiểm tra đã đăng nhập chưa
   if (!isAuthenticated) {
     console.log("Chưa đăng nhập, chuyển hướng đến login");
     return <Navigate to="/login" replace />;
   }
-  
+
+  console.log(">>> user:", user.role);
+
   // Nếu không cần kiểm tra role hoặc không có role nào được yêu cầu
   if (!allowedRoles || allowedRoles.length === 0) {
     return children;
   }
-  
+
   // Kiểm tra quyền truy cập dựa trên role
-  const userRole = user?.roleId; // Giả sử user object có trường roleId
+
+  const userRole = user?.role; // Giả sử user object có trường roleId
   const hasPermission = userRole && allowedRoles.includes(userRole);
-  
+
   // Nếu không có quyền truy cập, chuyển hướng về trang chủ
   if (!hasPermission) {
     console.log("Không đủ quyền truy cập");
     return <Navigate to="/" replace />;
   }
-  
+
   // Đã đăng nhập và có đủ quyền
   return children;
 };

@@ -91,5 +91,5 @@ export const updateUserProfileAPI = async (values) => {
     address: values.address,
     email: values.email,
   };
-  return api.put("/profile/me", userData);
+  return api.put("/profile/update", userData);
 };

@@ -76,7 +76,7 @@ const Header = () => {
       {
         key: "3",
         label: "Đặt lịch khám",
-        onClick: () => navigate("/services/appointments"),
+        onClick: () => navigate("/sti-booking"),
       },
     ],
   };

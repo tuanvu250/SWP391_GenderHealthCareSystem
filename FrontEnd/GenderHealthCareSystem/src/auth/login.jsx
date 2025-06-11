@@ -16,18 +16,17 @@ const Login = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
-  useEffect(() => {
-    const img = new Image();
-    img.src = imgLogin;
-  }, []);
-  
   const onFinish = async (values) => {
     setLoading(true);
     try {
       const response = await auth.loginAction(values);
       if (response.success) {
         message.success(response.message);
-        navigate("/home");
+        setTimeout(() => {
+          if (response.role === "Consultant") {
+            navigate("/dashboard");
+          } else navigate("/home");
+        }, 500) ;
       } else {
         message.error(response.message);
         form.setFieldValue("password", ""); // Clear password field on error
