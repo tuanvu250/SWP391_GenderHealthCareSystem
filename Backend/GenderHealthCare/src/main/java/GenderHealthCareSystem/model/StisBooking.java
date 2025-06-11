@@ -33,14 +33,17 @@ import java.time.LocalDateTime;
         private LocalDateTime bookingDate;
 
         @Column(name = "Status", length = 20)
-        // Consider using an Enum for Status
-        // CHECK (Status IN ('Pending', 'Confirmed', 'Cancelled', 'Done'))
+        // Status can be 'Confirmed', 'Cancelled', or 'Done'
         private String status;
 
         @Column(name = "PaymentStatus", length = 20)
         // Consider using an Enum for PaymentStatus
         // CHECK (PaymentStatus IN ('Unpaid', 'Paid', 'Refunded'))
         private String paymentStatus;
+
+        @Column(name = "PaymentMethod", length = 50)
+        // Stores the payment method like 'Credit Card', 'PayPal', etc.
+        private String paymentMethod;
 
         @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
         private String note;

@@ -39,7 +39,7 @@ public class BlogPostController {
      * @return ResponseEntity containing the status and details of the created blog post.
      * @throws IOException if there is an error processing the image file.
      */
-    @PostMapping("/new")
+    @PostMapping()
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestPart("blogPost") String blogPostJson, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal Jwt jwt) throws IOException {
         // Parse JSON string thành BlogPost object
@@ -62,7 +62,7 @@ public class BlogPostController {
      * @return ResponseEntity indicating the success status of the deletion operation.
      * @PreAuthorize Only accessible by users with 'Consultant' or 'Admin' roles.
      */
-    @DeleteMapping("/remove/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> deleteBlogPost(@PathVariable Integer id) {
         blogPostService.deleteBlogPostById(id);
@@ -79,7 +79,7 @@ public class BlogPostController {
      * @return ResponseEntity containing the status and details of the updated blog post.
      * @throws IOException if there is an error processing the image file.
      */
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,

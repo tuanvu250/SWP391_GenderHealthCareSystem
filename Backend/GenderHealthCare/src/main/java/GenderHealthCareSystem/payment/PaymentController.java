@@ -24,6 +24,9 @@ public class PaymentController {
     public ResponseEntity<String> createPayment(@RequestParam long amount,
                                                 @RequestParam String orderInfo,
                                                 HttpServletRequest request) throws Exception {
+        System.out.println(request.getParameter("bankcode"));
+        String bankCode = request.getParameter("vnp_BankCode");
+
         String paymentUrl = vnPayService.createPaymentUrl(amount, orderInfo, request.getRemoteAddr());
         return ResponseEntity.ok(paymentUrl);
     }
@@ -33,10 +36,10 @@ public class PaymentController {
         Map<String, String> fields = new HashMap<>();
         for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
             String name = e.nextElement();
+            System.out.println(request.getParameter(name));
             fields.put(name, request.getParameter(name));
         }
         String secureHash = fields.get("vnp_SecureHash");
-
         boolean valid = vnPayService.validateReturnData(new HashMap<>(fields), secureHash);
         if (valid) {
 //            String bookingId = fields.get("vnp_TxnRef");
