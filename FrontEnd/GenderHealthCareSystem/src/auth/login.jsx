@@ -9,6 +9,7 @@ import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../components/provider/AuthProvider";
+import axios from "axios";
 
 const Login = () => {
   const [form] = Form.useForm();
@@ -20,19 +21,38 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await auth.loginAction(values);
-      if (response.success) {
-        message.success(response.message);
+
+      console.log("🔐 LOGIN RESPONSE:", response);
+
+      // Kiểm tra token JWT ở nhiều trường hợp trả về
+      const jwtToken =
+        response?.access_token ||
+        response?.accessToken ||
+        response?.token ||
+        response?.data?.access_token ||
+        null;
+
+      const isValidJwt = jwtToken && jwtToken.split(".").length === 3;
+
+      if (response.success && isValidJwt) {
+        localStorage.setItem("access_token", jwtToken);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
+        message.success(response.message || "Đăng nhập thành công");
+
         setTimeout(() => {
           if (response.role === "Consultant") {
             navigate("/dashboard");
-          } else navigate("/home");
-        }, 500) ;
+          } else {
+            navigate("/home");
+          }
+        }, 500);
       } else {
-        message.error(response.message);
-        form.setFieldValue("password", ""); // Clear password field on error
+        console.warn("🚫 Token sai hoặc không phải JWT:", jwtToken);
+        message.error("Token không hợp lệ hoặc đăng nhập sai.");
+        form.setFieldValue("password", "");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
       message.error("Đăng nhập không thành công, vui lòng thử lại!");
     } finally {
       setLoading(false);
@@ -44,7 +64,6 @@ const Login = () => {
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imgLogin})` }}
     >
-      {/* Nút quay lại đã cải tiến */}
       <div className="absolute top-6 left-6">
         <Button
           type="primary"
@@ -63,17 +82,11 @@ const Login = () => {
       </div>
 
       <div className="bg-opacity-95 mx-auto w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg backdrop-blur-sm">
-        {/* Header */}
         <div className="bg-[#0099CF] px-8 py-6">
-          <h2 className="text-center text-2xl font-bold text-white">
-            Đăng nhập
-          </h2>
-          <p className="mt-1 text-center text-blue-50">
-            Chào mừng bạn quay trở lại
-          </p>
+          <h2 className="text-center text-2xl font-bold text-white">Đăng nhập</h2>
+          <p className="mt-1 text-center text-blue-50">Chào mừng bạn quay trở lại</p>
         </div>
 
-        {/* Form */}
         <div className="p-8">
           <Form
             layout="vertical"
@@ -84,9 +97,7 @@ const Login = () => {
           >
             <Form.Item
               name="username"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên đăng nhập!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
             >
               <Input
                 prefix={<UserOutlined className="mr-2 text-gray-400" />}
@@ -129,9 +140,7 @@ const Login = () => {
               </Button>
             </div>
 
-            <Divider plain className="text-gray-400">
-              Hoặc đăng nhập với
-            </Divider>
+            <Divider plain className="text-gray-400">Hoặc đăng nhập với</Divider>
 
             <div className="flex space-x-4">
               <Button

@@ -147,7 +147,7 @@ public class ProfileController {
                 cloudinaryService.deleteFile(publicId);
             }
         }
-d
+
         String avatarUrl = cloudinaryService.uploadFile(file);
 
         user.setUserImageUrl(avatarUrl);
