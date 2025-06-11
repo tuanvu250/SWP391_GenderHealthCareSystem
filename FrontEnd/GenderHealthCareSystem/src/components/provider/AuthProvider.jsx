@@ -60,13 +60,14 @@ export const AuthProvider = ({ children }) => {
     //console.log(">>> User updated:", updatedUser);
   };
 
+  
   const refreshUserProfile = async () => {
     try {
       const response = await getUserProfile();
       if (response.data) {
         sessionStorage.setItem(USER_KEY, JSON.stringify(response.data));
         setUser(response.data);
-        console.log(">>> User profile refreshed:", response.data);
+        //console.log(">>> User profile refreshed:", user);
         return { success: true, data: response.data };
       }
       return { success: false, message: "Không nhận được dữ liệu" };
@@ -91,7 +92,7 @@ export const AuthProvider = ({ children }) => {
         refreshUserProfile();
 
         setIsAuthenticated(true);
-        return { success: true, message: "Đăng nhập thành công!" };
+        return { success: true, message: "Đăng nhập thành công!", role: response.data.role};
       } else {
         setIsAuthenticated(false);
         return {
@@ -151,6 +152,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         token,
         loading,
+        refreshUserProfile,
         updateUser,
         loginAction,
         logoutAction,

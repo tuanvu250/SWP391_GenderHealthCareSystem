@@ -20,6 +20,7 @@ import PrivacySection from "../site-info/Privacy";
 import STITesting from "../services/STITesting";
 import STIBooking from "../services/STIBooking";
 import ConsultationBooking from "../services/ConsultationBooking";
+import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -42,16 +43,21 @@ function RouteMap() {
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/menstrual-cycle" element={<InputMenstrualCycle />} />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/sti-testing" element={<STITesting />} />
         <Route path="/sti-booking" element={<STIBooking />} />
-        <Route path="/services/consultation" element={<ConsultationBooking />} />
+        <Route
+          path="/services/consultation"
+          element={<ConsultationBooking />}
+        />
 
-        
         {/* Các trang khác */}
         <Route path="/about" element={<AboutPage />} />
         <Route path="/menstrual-ovulation" element={<MenstrualOvulation />} />
@@ -67,6 +73,21 @@ function RouteMap() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Routes dashboard */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles="Consultant">
+            <DashboardLayout userRole={"Consultant"}>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Dashboard</h1>
+                <p>Content goes here...</p>
+              </div>
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      ></Route>
     </Routes>
   );
 }

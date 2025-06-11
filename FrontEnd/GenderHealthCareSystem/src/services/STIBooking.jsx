@@ -53,29 +53,35 @@ const STIBooking = () => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [formData, setFormData] = useState({});
 
-  // STI Testing packages từ trang STITesting
+  // STI Testing packages từ bảng STIsService
   const testingPackages = [
     {
-      id: 1,
-      name: "Gói cơ bản",
+      serviceID: 1,
+      serviceName: "Gói xét nghiệm STI cơ bản",
+      description: "Gói xét nghiệm cơ bản cho các STI phổ biến nhất, bao gồm HIV, Giang mai, Lậu và Chlamydia",
+      duration: "2-3 ngày",
       price: 899000,
       originalPrice: 1200000,
+      discount: 25,
+      popular: false,
       tests: [
         "HIV",
         "Giang mai (Syphilis)",
         "Lậu (Gonorrhea)",
         "Chlamydia"
       ],
-      duration: "2-3 ngày",
-      popular: false,
-      description: "Gói xét nghiệm cơ bản cho các STI phổ biến nhất",
-      discount: 25
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
     },
     {
-      id: 2,
-      name: "Gói toàn diện",
+      serviceID: 2,
+      serviceName: "Gói xét nghiệm STI toàn diện",
+      description: "Gói xét nghiệm toàn diện nhất, kiểm tra đầy đủ các STI quan trọng bao gồm HIV, Hepatitis, Herpes và HPV",
+      duration: "3-5 ngày",
       price: 1599000,
       originalPrice: 2100000,
+      discount: 24,
+      popular: true,
       tests: [
         "HIV 1&2",
         "Hepatitis B & C",
@@ -85,16 +91,18 @@ const STIBooking = () => {
         "Herpes HSV 1&2",
         "HPV"
       ],
-      duration: "3-5 ngày",
-      popular: true,
-      description: "Gói xét nghiệm toàn diện nhất, kiểm tra đầy đủ các STI",
-      discount: 24
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
     },
     {
-      id: 3,
-      name: "Gói nâng cao",
+      serviceID: 3,
+      serviceName: "Gói xét nghiệm STI nâng cao",
+      description: "Gói xét nghiệm nâng cao với các STI quan trọng, bao gồm HIV, Hepatitis B và các bệnh lây truyền qua đường tình dục phổ biến",
+      duration: "2-4 ngày",
       price: 1299000,
       originalPrice: 1700000,
+      discount: 24,
+      popular: false,
       tests: [
         "HIV",
         "Hepatitis B",
@@ -103,32 +111,87 @@ const STIBooking = () => {
         "Chlamydia",
         "Herpes HSV 1&2"
       ],
-      duration: "2-4 ngày",
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
+    },
+    {
+      serviceID: 4,
+      serviceName: "Gói xét nghiệm STI cho phụ nữ",
+      description: "Gói xét nghiệm chuyên biệt cho phụ nữ, tập trung vào các STI ảnh hưởng đến sức khỏe sinh sản nữ giới",
+      duration: "2-3 ngày",
+      price: 1099000,
+      originalPrice: 1400000,
+      discount: 21,
       popular: false,
-      description: "Gói xét nghiệm nâng cao với các STI quan trọng",
-      discount: 24
+      tests: [
+        "HIV",
+        "Chlamydia",
+        "Lậu (Gonorrhea)",
+        "HPV",
+        "Herpes HSV 1&2",
+        "Trichomonas"
+      ],
+      createdAt: "2024-02-01T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
+    },
+    {
+      serviceID: 5,
+      serviceName: "Gói xét nghiệm STI khẩn cấp",
+      description: "Gói xét nghiệm nhanh với kết quả trong 24h, phù hợp cho những trường hợp cần kết quả gấp",
+      duration: "24 giờ",
+      price: 1899000,
+      originalPrice: 2300000,
+      discount: 17,
+      popular: false,
+      tests: [
+        "HIV test nhanh",
+        "Giang mai test nhanh",
+        "Hepatitis B test nhanh",
+        "Chlamydia PCR",
+        "Gonorrhea PCR"
+      ],
+      createdAt: "2024-03-01T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
     }
   ];
 
-  // Dịch vụ thêm
+  // Cập nhật additional services
   const additionalServices = [
     {
-      id: "home_sampling",
-      name: "Lấy mẫu tại nhà",
-      price: 100000,
-      description: "Nhân viên y tế đến tận nhà lấy mẫu"
-    },
-    {
-      id: "express_result",
-      name: "Xét nghiệm khẩn cấp (24h)",
-      price: 200000,
-      description: "Nhận kết quả trong vòng 24 giờ"
-    },
-    {
-      id: "doctor_consultation",
-      name: "Tư vấn bác sĩ trực tiếp",
+      serviceID: 101,
+      serviceName: "Dịch vụ lấy mẫu tại nhà",
+      description: "Nhân viên y tế chuyên nghiệp đến tận nhà lấy mẫu xét nghiệm, đảm bảo thuận tiện và riêng tư",
       price: 150000,
-      description: "Giải thích kết quả và tư vấn điều trị"
+      duration: "30 phút",
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
+    },
+    {
+      serviceID: 102,
+      serviceName: "Dịch vụ xét nghiệm khẩn cấp 24h",
+      description: "Xử lý mẫu ưu tiên để có kết quả trong vòng 24 giờ thay vì 2-5 ngày thông thường",
+      price: 300000,
+      duration: "24 giờ",
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
+    },
+    {
+      serviceID: 103,
+      serviceName: "Tư vấn bác sĩ chuyên khoa",
+      description: "Tư vấn trực tiếp với bác sĩ chuyên khoa về kết quả xét nghiệm và phương pháp điều trị",
+      price: 200000,
+      duration: "30 phút",
+      createdAt: "2024-01-15T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
+    },
+    {
+      serviceID: 104,
+      serviceName: "Dịch vụ bảo mật cao cấp",
+      description: "Bảo mật thông tin cá nhân và kết quả xét nghiệm với mức độ bảo mật cao nhất",
+      price: 100000,
+      duration: "Suốt quá trình",
+      createdAt: "2024-02-01T08:00:00Z",
+      updatedAt: "2024-06-01T10:30:00Z"
     }
   ];
 
@@ -194,17 +257,17 @@ const STIBooking = () => {
     const searchParams = new URLSearchParams(location.search);
     const packageId = searchParams.get('package');
     if (packageId) {
-      const pkg = testingPackages.find(p => p.id === parseInt(packageId));
+      const pkg = testingPackages.find(p => p.serviceID === parseInt(packageId));
       if (pkg) {
         setSelectedPackage(pkg);
         setTotalPrice(pkg.price);
-        form.setFieldsValue({ package: pkg.id });
+        form.setFieldsValue({ package: pkg.serviceID });
       }
     }
   }, [location.search]);
 
   const handlePackageSelect = (packageId) => {
-    const pkg = testingPackages.find(p => p.id === packageId);
+    const pkg = testingPackages.find(p => p.serviceID === packageId);
     setSelectedPackage(pkg);
     calculateTotal(pkg, form.getFieldValue('additionalServices') || []);
   };
@@ -218,7 +281,7 @@ const STIBooking = () => {
     
     let total = pkg.price;
     additionalServiceIds.forEach(serviceId => {
-      const service = additionalServices.find(s => s.id === serviceId);
+      const service = additionalServices.find(s => s.serviceID === serviceId);
       if (service) {
         total += service.price;
       }
@@ -302,13 +365,13 @@ const STIBooking = () => {
                 className="w-full"
                 onChange={(e) => handlePackageSelect(e.target.value)}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {testingPackages.map((pkg) => (
-                    <div key={pkg.id} className="relative">
-                      <Radio value={pkg.id} className="w-full">
+                    <div key={pkg.serviceID} className="relative">
+                      <Radio value={pkg.serviceID} className="w-full">
                         <Card 
                           className={`h-full cursor-pointer transition-all duration-300 ${
-                            selectedPackage?.id === pkg.id 
+                            selectedPackage?.serviceID === pkg.serviceID 
                               ? 'border-2 border-[#0099CF] shadow-lg' 
                               : 'border border-gray-200 hover:shadow-md'
                           } ${pkg.popular ? 'ring-2 ring-blue-100' : ''}`}
@@ -320,7 +383,7 @@ const STIBooking = () => {
                           )}
                           
                           <div className="text-center mb-4">
-                            <h3 className="text-lg font-bold mb-2">{pkg.name}</h3>
+                            <h3 className="text-lg font-bold mb-2">{pkg.serviceName}</h3>
                             <p className="text-gray-600 text-sm mb-3">{pkg.description}</p>
                             
                             <div className="mb-3">
@@ -367,14 +430,15 @@ const STIBooking = () => {
                   className="w-full"
                   onChange={handleAdditionalServicesChange}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {additionalServices.map((service) => (
-                      <div key={service.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                        <Checkbox value={service.id} className="w-full">
+                      <div key={service.serviceID} className="border rounded-lg p-4 hover:bg-gray-50">
+                        <Checkbox value={service.serviceID} className="w-full">
                           <div>
-                            <div className="font-medium">{service.name}</div>
+                            <div className="font-medium">{service.serviceName}</div>
                             <div className="text-sm text-gray-600 mb-2">{service.description}</div>
                             <div className="text-[#0099CF] font-bold">+{formatPrice(service.price)}</div>
+                            <div className="text-xs text-gray-500">Thời gian: {service.duration}</div>
                           </div>
                         </Checkbox>
                       </div>
@@ -619,7 +683,7 @@ const STIBooking = () => {
                 <div className="mb-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-bold text-lg">{selectedPackage.name}</h4>
+                      <h4 className="font-bold text-lg">{selectedPackage.serviceName}</h4>
                       <p className="text-gray-600">{selectedPackage.description}</p>
                     </div>
                     <div className="text-right">
@@ -644,10 +708,10 @@ const STIBooking = () => {
                   <div className="border-t pt-4">
                     <h5 className="font-semibold mb-2">Dịch vụ bổ sung:</h5>
                     {form.getFieldValue('additionalServices').map(serviceId => {
-                      const service = additionalServices.find(s => s.id === serviceId);
+                      const service = additionalServices.find(s => s.serviceID === serviceId);
                       return service ? (
                         <div key={serviceId} className="flex justify-between mb-1">
-                          <span>{service.name}</span>
+                          <span>{service.serviceName}</span>
                           <span className="text-[#0099CF]">+{formatPrice(service.price)}</span>
                         </div>
                       ) : null;
@@ -763,7 +827,7 @@ const STIBooking = () => {
                 <Card title="Tóm tắt đơn hàng" size="small">
                   <div className="space-y-3">
                     <div>
-                      <div className="font-medium">{selectedPackage.name}</div>
+                      <div className="font-medium">{selectedPackage.serviceName}</div>
                       <div className="text-sm text-gray-600">{selectedPackage.tests.length} xét nghiệm</div>
                     </div>
                     
@@ -773,10 +837,10 @@ const STIBooking = () => {
                     </div>
                     
                     {form.getFieldValue('additionalServices')?.map(serviceId => {
-                      const service = additionalServices.find(s => s.id === serviceId);
+                      const service = additionalServices.find(s => s.serviceID === serviceId);
                       return service ? (
                         <div key={serviceId} className="flex justify-between text-sm">
-                          <span>{service.name}:</span>
+                          <span>{service.serviceName}:</span>
                           <span>+{formatPrice(service.price)}</span>
                         </div>
                       ) : null;
@@ -848,7 +912,7 @@ const STIBooking = () => {
           
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><strong>Gói xét nghiệm:</strong> {selectedPackage?.name}</div>
+              <div><strong>Gói xét nghiệm:</strong> {selectedPackage?.serviceName}</div>
               <div><strong>Tổng chi phí:</strong> <span className="text-[#0099CF] font-bold">{formatPrice(totalPrice)}</span></div>
               <div><strong>Ngày hẹn:</strong> {form.getFieldValue('appointmentDate')?.format('DD/MM/YYYY')}</div>
               <div><strong>Giờ hẹn:</strong> {form.getFieldValue('appointmentTime')}</div>
