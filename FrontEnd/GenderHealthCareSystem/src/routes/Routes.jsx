@@ -60,7 +60,13 @@ function RouteMap() {
 
         {/* Các trang khác */}
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/menstrual-ovulation" element={<OvulationCalendar />} />
+        <Route 
+          path="menstrual-ovulation" 
+          element={
+            <ProtectedRoute>
+              <OvulationCalendar/>
+            </ProtectedRoute>
+          } />
         <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />

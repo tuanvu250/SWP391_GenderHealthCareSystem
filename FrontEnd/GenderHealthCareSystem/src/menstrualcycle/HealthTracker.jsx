@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/provider/AuthProvider';
+import { healthTrackerAPI } from '../components/utils/api';
 
 export default function HealthTracker() {
   const [selectedFunction, setSelectedFunction] = useState('cycle');
@@ -10,15 +12,10 @@ export default function HealthTracker() {
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
+  //const [isAuthenticated] = useAuth();
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-  }, []);
 
   const handleSubmit = async () => {
     if (!startDate) {
@@ -33,12 +30,14 @@ export default function HealthTracker() {
     try {
       setLoading(true);
 
-      const res = await axios.post("/api/menstrual/calculate", {
+      const userData =  {
         startDate,
         endDate: endDate.toISOString().split('T')[0],
         cycleLength,
         note: ""
-      });
+      };
+
+      const res = await healthTrackerAPI(userData);
 
       navigate("/menstrual-ovulation", { state: { calendar: res.data } });
 
