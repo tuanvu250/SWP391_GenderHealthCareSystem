@@ -21,10 +21,10 @@ public class StisService {
 
     private Integer serviceId;
 
-    @Column(name = "ServiceName", length = 255)
+    @Column(name = "ServiceName", length = 255, columnDefinition = "NVARCHAR(255)")
     private String serviceName;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "Price", precision = 10, scale = 2)

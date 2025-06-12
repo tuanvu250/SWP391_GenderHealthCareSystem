@@ -71,7 +71,7 @@ const Register = () => {
 
       {/* Form đăng ký */}
       <div className="mt-16 mb-12 bg-opacity-95 mx-auto w-full md:max-w-lg overflow-hidden rounded-xl bg-white shadow-lg backdrop-blur-sm max-w-md">
-        <div className="bg-[#2196F3] px-8 py-6">
+        <div className="bg-[#0099CF] px-8 py-6">
           <h2 className="text-center text-2xl font-bold text-white">
             Đăng ký tài khoản
           </h2>
@@ -121,8 +121,11 @@ const Register = () => {
                 <DatePicker
                   className="w-full"
                   placeholder="Chọn ngày sinh"
-                  format="DD/MM/YYYY"
+                  format="YYYY-MM-DD"
                   suffixIcon={<CalendarOutlined className="text-gray-400" />}
+                  disabledDate={(current) =>
+                    current && current >= new Date()
+                  }
                 />
               </Form.Item>
               <Form.Item

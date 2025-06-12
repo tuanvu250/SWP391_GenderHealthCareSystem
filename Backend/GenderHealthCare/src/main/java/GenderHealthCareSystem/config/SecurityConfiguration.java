@@ -6,7 +6,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -19,22 +18,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers("/", "/admins", "/login").permitAll()
-                        .requestMatchers("/users/**").hasAnyRole("Customer","Admin","Consultant","Staff","Manager")  // Chỉ user có role USER mới được truy cập /user/**
-                        .requestMatchers("/api/blog-posts/**").hasRole("Consultant")
-                        .anyRequest().permitAll()
+                .requestMatchers("/", "/admins", "/login").permitAll()
+                .requestMatchers("/users/**").hasAnyRole("Customer", "Admin", "Consultant", "Staff", "Manager") // Chỉ user có role USER mới được truy cập /user/**
+                .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .jwt(Customizer.withDefaults())
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
-
                 .exceptionHandling(
                         exceptions -> exceptions
                                 .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) //401
@@ -42,7 +38,7 @@ public class SecurityConfiguration {
 
                 .formLogin(f -> f.disable())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
         return http.build();
     }
@@ -51,6 +47,7 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     //da override
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -70,6 +67,5 @@ public class SecurityConfiguration {
         // Trả về converter để Spring Security dùng trong quá trình xác thực JWT
         return jwtAuthenticationConverter;
     }
-
 
 }

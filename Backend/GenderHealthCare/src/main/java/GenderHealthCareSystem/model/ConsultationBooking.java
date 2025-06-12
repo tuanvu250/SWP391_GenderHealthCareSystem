@@ -34,7 +34,7 @@ public class ConsultationBooking {
     @Column(name = "Status", length = 50)
     private String status; // Consider Enum
 
-    @Column(name = "Note", columnDefinition = "TEXT")
+    @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
     private String note;
 
     @Column(name = "PaymentStatus", length = 50)

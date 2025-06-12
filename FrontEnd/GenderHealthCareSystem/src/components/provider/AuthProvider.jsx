@@ -1,9 +1,8 @@
-import { createContext } from "react";
-import { useContext, useState, useEffect } from "react";
-import { loginAPI, registerAPI } from "../../util/Api";
+import { createContext, useContext, useState, useEffect } from "react";
+import { loginAPI, registerAPI, getUserProfile } from "../utils/api";
 import { message } from "antd";
 
-const TOKEN_KEY = "token";
+const TOKEN_KEY = "access_token";
 const USER_KEY = "user";
 
 const AuthContext = createContext();
@@ -17,12 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const [loading, setLoading] = useState(true);
 
+  // Load user & token từ localStorage khi khởi động
   useEffect(() => {
-    const storedToken = sessionStorage.getItem(TOKEN_KEY);
-    const storedUser = sessionStorage.getItem(USER_KEY);
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const storedUser = localStorage.getItem(USER_KEY);
 
     if (storedToken) {
       setToken(storedToken);
@@ -41,25 +40,58 @@ export const AuthProvider = ({ children }) => {
     }
 
     setLoading(false);
-    //console.log(">>> isLogin:", isAuthenticated);
   }, []);
 
   useEffect(() => {
     console.log("isAuthenticated state changed:", isAuthenticated);
   }, [isAuthenticated]);
 
+  const updateUser = (newUser) => {
+    const currentUser = user || {};
+    const updatedUser = { ...currentUser, ...newUser };
+    setUser(updatedUser);
+    localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+  };
+
+  const refreshUserProfile = async () => {
+    try {
+      const response = await getUserProfile();
+      if (response.data) {
+        localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+        setUser(response.data);
+        return { success: true, data: response.data };
+      }
+      return { success: false, message: "Không nhận được dữ liệu" };
+    } catch (error) {
+      console.error("Lỗi khi làm mới thông tin người dùng:", error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Không thể lấy thông tin người dùng",
+      };
+    }
+  };
+
   const loginAction = async (userData) => {
     try {
       const response = await loginAPI(userData);
 
       if (response.data && response.data.token) {
-        sessionStorage.setItem(TOKEN_KEY, response.data.token);
-        sessionStorage.setItem(USER_KEY, JSON.stringify(response.data));
+        // ✅ Lưu token và user vào localStorage
+        const jwt = response.data.token;
+        localStorage.setItem(TOKEN_KEY, jwt);
+        setToken(jwt);
 
-        setUser(response.data);
-        setToken(response.data.token);
+        await refreshUserProfile();
+
         setIsAuthenticated(true);
-        return { success: true, message: "Đăng nhập thành công!" };
+
+        return {
+          success: true,
+          message: "Đăng nhập thành công!",
+          token: jwt,
+          role: response.data.role,
+        };
       } else {
         setIsAuthenticated(false);
         return {
@@ -69,19 +101,19 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       setIsAuthenticated(false);
-      let message = "Đăng nhập không thành công, vui lòng thử lại!";
-      if (error.response.status === 400) {
-        message = "Tên đăng nhập hoặc mật khẩu không đúng!";
-      } else if (error.response.status === 500) {
-        message = "Lỗi máy chủ, vui lòng thử lại sau!";
+      let msg = "Đăng nhập không thành công, vui lòng thử lại!";
+      if (error.response?.status === 401) {
+        msg = "Tên đăng nhập hoặc mật khẩu không đúng!";
+      } else if (error.response?.status === 500) {
+        msg = "Lỗi máy chủ, vui lòng thử lại sau!";
       }
-      return { success: false, message: message };
+      return { success: false, message: msg };
     }
   };
 
   const logoutAction = () => {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
@@ -119,6 +151,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         token,
         loading,
+        refreshUserProfile,
+        updateUser,
         loginAction,
         logoutAction,
         registerAction,

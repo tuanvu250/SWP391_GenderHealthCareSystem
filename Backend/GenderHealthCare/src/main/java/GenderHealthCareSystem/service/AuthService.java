@@ -38,6 +38,12 @@ public class AuthService {
                 }
                 errors.append("Email đã tồn tại");
             }
+            if (usersRepository.findByPhone(request.getPhone()).isPresent()) {
+                if (errors.length() > 0) {
+                    errors.append(",");
+                }
+                errors.append("Số điện thoại đã tồn tại");
+            }
             throw new UserAlreadyExistsException(errors.toString());
         }
 
@@ -57,6 +63,7 @@ public class AuthService {
         account.setUserName(request.getUserName());
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
+        account.setStatus("ACTIVE");
         accountRepository.save(account);
     }
 }

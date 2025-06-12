@@ -8,7 +8,7 @@ import {
   CloseOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { useState} from "react";
+import { useState } from "react";
 import LogoText from "../../assets/logo-text.svg";
 import LogoSign from "../../assets/logo-sign.svg";
 import { useAuth } from "../provider/AuthProvider";
@@ -30,7 +30,7 @@ const Header = () => {
   const userMenu = {
     items: [
       user && {
-        key: 'user-info',
+        key: "user-info",
         label: (
           <div className="flex items-center space-x-2 gap-2">
             <Avatar
@@ -38,52 +38,52 @@ const Header = () => {
               icon={!user?.userImageUrl && <UserOutlined />}
               size="default"
             />
-            <span className="font-bold">{user?.username}</span>
+            <span className="font-bold">{user?.fullName}</span>
           </div>
         ),
       },
       {
-        key: 'profile',
-        label: 'Thông tin cá nhân',
-        onClick: () => navigate("/profile")
+        key: "profile",
+        label: "Thông tin cá nhân",
+        onClick: () => navigate("/profile"),
       },
       {
-        key: 'settings',
-        label: 'Cài đặt tài khoản',
-        onClick: () => navigate("/settings")
+        key: "settings",
+        label: "Cài đặt tài khoản",
+        onClick: () => navigate("/profile?openSettings=true"),
       },
       {
-        key: 'logout',
-        label: 'Đăng xuất',
-        onClick: handleLogout
-      }
-    ].filter(Boolean) // Lọc bỏ các mục null/undefined
+        key: "logout",
+        label: "Đăng xuất",
+        onClick: handleLogout,
+      },
+    ].filter(Boolean), // Lọc bỏ các mục null/undefined
   };
 
   // Định nghĩa lại servicesMenu dưới dạng object
   const servicesMenu = {
     items: [
       {
-        key: '1',
-        label: 'Xét nghiệm STIs',
-        onClick: () => navigate("/services/health-checkup")
+        key: "1",
+        label: "Xét nghiệm STIs",
+        onClick: () => navigate("/sti-testing"),
       },
       {
-        key: '2',
-        label: 'Đặt câu hỏi hoặc tư vấn',
-        onClick: () => navigate("/services/consultation")
+        key: "2",
+        label: "Đặt câu hỏi hoặc tư vấn",
+        onClick: () => navigate("/services/consultation"),
       },
       {
-        key: '3',
-        label: 'Đặt lịch khám',
-        onClick: () => navigate("/services/appointments")
-      }
-    ]
+        key: "3",
+        label: "Đặt lịch khám",
+        onClick: () => navigate("/sti-booking"),
+      },
+    ],
   };
 
   return (
-    <header className="bg-white py-2.5 z-50 px-4 sm:px-8 md:px-16 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
-      <div className="container mx-auto flex justify-between items-center">
+    <header className="bg-white py-2.5 z-50 px-4 md:px-8 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
+      <div className="mx-auto flex justify-between items-center w-full">
         {/* Logo */}
         <a
           className="flex items-center cursor-pointer"
@@ -108,7 +108,7 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => navigate("/menstrual-cycle")}>
+              <a onClick={() => navigate("/health-tracker")}>
                 Theo dõi kỳ kinh
               </a>
             </li>
@@ -158,14 +158,11 @@ const Header = () => {
               </Badge>
 
               <Dropdown menu={userMenu} trigger={["click"]}>
-                <div className="flex items-center cursor-pointer gap-1">
-                  <Avatar
-                    src={user?.image}
-                    icon={!user?.image && <UserOutlined />}
-                    size="default"
-                  />
-                  <CaretDownFilled className="text-gray-500 size-2.5 ml-1 hidden sm:block" />
-                </div>
+                <Avatar
+                  src={user?.userImageUrl}
+                  icon={!user?.image && <UserOutlined />}
+                  size="large"
+                />
               </Dropdown>
             </div>
           ) : (
@@ -216,21 +213,6 @@ const Header = () => {
         closeIcon={<CloseOutlined />}
         title={
           <div className="flex items-center">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-[#0099CF] mr-2"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M3.66898 3.92278C3.26824 4.06336 3 4.44172 3 4.86641V10.6607C3 16.2212 6.51216 21.1752 11.7592 23.0158C11.9151 23.0705 12.0849 23.0705 12.2408 23.0158C17.4878 21.1752 21 16.2212 21 10.6606V4.86641C21 4.44172 20.7318 4.06336 20.331 3.92278L12.331 1.11643C12.1167 1.04127 11.8833 1.04127 11.669 1.11643L3.66898 3.92278ZM12.3333 8.00031C12.8856 8.00031 13.3333 8.44803 13.3333 9.00031V10.567C13.3333 10.6222 13.3781 10.667 13.4333 10.667H15C15.5523 10.667 16 11.1147 16 11.667V12.3336C16 12.8859 15.5523 13.3336 15 13.3336H13.4333C13.3781 13.3336 13.3333 13.3784 13.3333 13.4336V15.0003C13.3333 15.5526 12.8856 16.0003 12.3333 16.0003H11.6667C11.1144 16.0003 10.6667 15.5526 10.6667 15.0003V13.4336C10.6667 13.3784 10.6219 13.3336 10.5667 13.3336H9C8.44772 13.3336 8 12.8859 8 12.3336V11.667C8 11.1147 8.44772 10.667 9 10.667H10.5667C10.6219 10.667 10.6667 10.6222 10.6667 10.567V9.00031C10.6667 8.44803 11.1144 8.00031 11.6667 8.00031H12.3333Z"
-                fill="currentColor"
-              />
-            </svg>
             <span className="font-bold text-lg">Menu</span>
           </div>
         }
@@ -238,16 +220,22 @@ const Header = () => {
         <div className="flex flex-col h-full">
           <div className="flex-grow">
             {isLoggedIn && user && (
-              <div className="mb-6 py-4 border-b border-gray-100">
-                <div className="flex items-center space-x-3 mb-2">
+              <div
+                className="mb-6 py-4 border-b border-gray-100"
+                onClick={() => {
+                  navigate("/profile");
+                  setMenuVisible(false);
+                }}
+              >
+                <div className="flex items-center space-x-3 mb-2 gap-2">
                   <Avatar
-                    src={user.image}
-                    icon={!user.image && <UserOutlined />}
+                    src={user.userImageUrl}
+                    icon={!user.userImageUrl && <UserOutlined />}
                     size="large"
                   />
                   <div>
                     <p className="font-medium">
-                      {user?.firtName} {user?.lastName}
+                      {user?.fullName || "Người dùng"}
                     </p>
                     <p className="text-gray-500 text-sm">Xem hồ sơ</p>
                   </div>
@@ -271,7 +259,10 @@ const Header = () => {
                   <li>
                     <a
                       className="block !text-gray-800 hover:text-[#0099CF] "
-                      onClick={() => navigate("/services/health-checkup")}
+                      onClick={() => {
+                        navigate("/sti-testing");
+                        setMenuVisible(false);
+                      }}
                     >
                       Xét nghiệm STIs
                     </a>
@@ -298,7 +289,7 @@ const Header = () => {
               <li>
                 <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => navigate("/menstrual-cycle")}
+                  onClick={() => navigate("/health-tracker")}
                 >
                   Theo dõi kỳ kinh
                 </a>

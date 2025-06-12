@@ -73,7 +73,7 @@ public class StisServiceController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
         }
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> delete(@PathVariable Integer id) {
         try {
