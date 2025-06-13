@@ -90,6 +90,11 @@ public class BlogPostService {
         return blogPosts.map(this::mapToResponse);
 
     }
+    public BlogPostResponse getBlogPostById(int id) {
+        BlogPost blogPost = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        return mapToResponse(blogPost);
+    }
 
     public BlogPostResponse mapToResponse(BlogPost blogPost) {
         BlogPostResponse blogPostResponse = new BlogPostResponse();

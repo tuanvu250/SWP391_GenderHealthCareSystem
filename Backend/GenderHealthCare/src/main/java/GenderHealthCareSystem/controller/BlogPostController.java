@@ -213,4 +213,16 @@ public class BlogPostController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Retrieves a blog post by its ID.
+     *
+     * @param id The ID of the blog post to retrieve.
+     * @return ResponseEntity containing the details of the blog post.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<BlogPostResponse>> getBlogPostById(@PathVariable Integer id) {
+        BlogPostResponse blogPost = blogPostService.getBlogPostById(id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Blog post retrieved successfully", blogPost, null);
+        return ResponseEntity.ok(response);
+    }
 }
