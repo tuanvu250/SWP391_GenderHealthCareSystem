@@ -68,7 +68,17 @@ export const resetPasswordAPI = async (values) => {
 };
 
 export const blogHomeAPI = async () => {
-  return api.get("/blog-posts/newest");
+  return api.get("/blog-posts/latest");
+};
+
+export const blogSearchAPI = async ({ title = "", page = 0, size = 8, tag = ""}) => {
+  const query = new URLSearchParams({
+    title,
+    page,
+    size,
+    tag
+  }).toString();
+  return api.get(`/blog-posts/search?${query}`);
 };
 
 export const updateUserAvatarAPI = async (file) => {

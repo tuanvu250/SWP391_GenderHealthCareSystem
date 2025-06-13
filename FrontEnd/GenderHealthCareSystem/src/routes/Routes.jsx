@@ -2,7 +2,7 @@ import { Route, Routes, Outlet } from "react-router-dom";
 import ScrollToTop from "../components/utils/ScrollToTop";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import Home from "../home/home";
+import Home from "../home/Home";
 import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
