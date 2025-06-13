@@ -93,3 +93,7 @@ export const updateUserProfileAPI = async (values) => {
   };
   return api.put("/profile/update", userData);
 };
+
+export const healthTrackerAPI = async(values) => {
+  return api.post("/menstrual/calculate", values);
+}

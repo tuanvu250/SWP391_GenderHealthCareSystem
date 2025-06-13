@@ -7,18 +7,18 @@ import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
-import InputMenstrualCycle from "../menstrualcycle/InputMenstrualCycle";
+import HealthTracker from "../menstrualcycle/HealthTracker";
 import Profile from "../user/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import AboutPage from "../site-info/AboutPage";
-import MenstrualOvulation from "../menstrualcycle/MenstrualOvulation";
+import OvulationCalendar from "../menstrualcycle/OvulationCalendar";
 import Blog from "../blog/Blog";
 import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
-import STITesting from "../services/STITesting";
-import STIBooking from "../services/STIBooking";
+import STITesting from "../services/testing/STITesting";
+import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/ConsultationBooking";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 // Layout component with Header
@@ -42,7 +42,7 @@ function RouteMap() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/menstrual-cycle" element={<InputMenstrualCycle />} />
+        <Route path="/health-tracker" element={<HealthTracker />} />
         <Route
           path="/profile"
           element={
@@ -60,7 +60,13 @@ function RouteMap() {
 
         {/* Các trang khác */}
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/menstrual-ovulation" element={<MenstrualOvulation />} />
+        <Route 
+          path="menstrual-ovulation" 
+          element={
+            <ProtectedRoute>
+              <OvulationCalendar/>
+            </ProtectedRoute>
+          } />
         <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />

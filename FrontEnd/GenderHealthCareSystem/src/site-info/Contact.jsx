@@ -17,7 +17,7 @@ const ContactSection = () => {
                             <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
                         </li>
                         <li className="hover:text-[#909497] cursor-pointer py-2 ">
-                            <a onClick={() => navigate("/about")}>Chuyên gia</a>
+                            <a onClick={() => navigate("/expert")}>Chuyên gia</a>
                         </li>
                         <li className="hover:text-[#909497] cursor-pointer py-2 ">
                             <a onClick={() => navigate("/privacy")}>Chính sách</a>
@@ -30,7 +30,7 @@ const ContactSection = () => {
             </div>
 
             {/* Nội dung LIÊN HỆ */}
-            <section className="bg-white px-4">
+            <section className="bg-white px-4 mb-10">
                 <div className="max-w-4xl mx-auto px-6 space-y-10">
                     <h2 className="text-3xl font-bold text-gray-900 text-center">Liên hệ</h2>
                     <p className="text-gray-700 leading-relaxed text-center">
