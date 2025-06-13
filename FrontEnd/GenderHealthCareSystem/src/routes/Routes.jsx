@@ -17,8 +17,8 @@ import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
-import STITesting from "../services/STITesting";
-import STIBooking from "../services/STIBooking";
+import STITesting from "../services/testing/STITesting";
+import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/ConsultationBooking";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 // Layout component with Header
