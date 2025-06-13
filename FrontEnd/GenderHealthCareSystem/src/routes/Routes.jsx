@@ -17,6 +17,7 @@ import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
+import ExpertSection from "../site-info/Expert";
 import STITesting from "../services/testing/STITesting";
 import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/ConsultationBooking";
@@ -72,6 +73,7 @@ function RouteMap() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<ContactSection />} />
         <Route path="/privacy" element={<PrivacySection />} />
+        <Route path="/expert" element={<ExpertSection />} />
       </Route>
 
       {/* Routes không có Layout */}
