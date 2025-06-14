@@ -86,6 +86,7 @@ const HomeBlog = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {blogPosts.map((post) => (
             <Card
+              onClick={() => navigate(`/blog/${post.postId}`)}
               key={post.postId}
               hoverable
               className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col"
@@ -99,7 +100,7 @@ const HomeBlog = () => {
                 </div>
               }
             >
-              <div className="flex flex-col flex-grow p-4">
+              <div className="flex flex-col flex-grow p-2">
                 <div className="flex flex-wrap gap-1 mb-2">
                   {post.tags.map((tag, index) => (
                     <Tag key={index} color={tag.color} className="text-xs">

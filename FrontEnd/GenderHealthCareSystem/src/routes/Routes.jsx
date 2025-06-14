@@ -13,6 +13,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import AboutPage from "../site-info/AboutPage";
 import OvulationCalendar from "../menstrualcycle/OvulationCalendar";
 import Blog from "../blog/Blog";
+import BlogDetail from "../blog/BlogDetail";
 import MedicationReminder from "../menstrualcycle/MedicationReminder";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
@@ -22,6 +23,7 @@ import STITesting from "../services/testing/STITesting";
 import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/ConsultationBooking";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
+import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -71,6 +73,7 @@ function RouteMap() {
         <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:postId" element={<BlogDetail />} />
         <Route path="/contact" element={<ContactSection />} />
         <Route path="/privacy" element={<PrivacySection />} />
         <Route path="/expert" element={<ExpertSection />} />
@@ -84,18 +87,16 @@ function RouteMap() {
 
       {/* Routes dashboard */}
       <Route
-        path="/dashboard"
+        path="/consultant/dashboard"
         element={
           <ProtectedRoute allowedRoles="Consultant">
-            <DashboardLayout userRole={"Consultant"}>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Dashboard</h1>
-                <p>Content goes here...</p>
-              </div>
-            </DashboardLayout>
+            <DashboardLayout userRole={"Consultant"}/>
           </ProtectedRoute>
         }
-      ></Route>
+      >
+        <Route index element={<h1>Dashboard</h1>} />
+        <Route path="manage-blog" element={<ManageMyBlog />} />
+      </Route>
     </Routes>
   );
 }
