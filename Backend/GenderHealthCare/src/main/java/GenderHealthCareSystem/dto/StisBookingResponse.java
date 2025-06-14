@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.dto;
 
+import GenderHealthCareSystem.model.StisBookingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class StisBookingResponse {
     private String serviceName;
     private BigDecimal servicePrice;
     private LocalDateTime bookingDate;
-    private String status;
+    private StisBookingStatus status;
     private String paymentStatus;
     private String paymentMethod;
     private String note;
