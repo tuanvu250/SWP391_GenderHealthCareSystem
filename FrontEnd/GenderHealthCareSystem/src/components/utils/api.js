@@ -71,15 +71,20 @@ export const blogHomeAPI = async () => {
   return api.get("/blog-posts/latest");
 };
 
-export const blogSearchAPI = async ({ title = "", page = 0, size = 8, tag = ""}) => {
+export const blogSearchAPI = async ({ title = "", page = 0, size = 8, tag = "", sort = ""}) => {
   const query = new URLSearchParams({
     title,
     page,
     size,
-    tag
+    tag,
+    sort,
   }).toString();
   return api.get(`/blog-posts/search?${query}`);
 };
+
+export const blogDetailAPI = async (id) => {
+  return api.get(`/blog-posts/${id}`);
+}
 
 export const updateUserAvatarAPI = async (file) => {
   const formData = new FormData();
