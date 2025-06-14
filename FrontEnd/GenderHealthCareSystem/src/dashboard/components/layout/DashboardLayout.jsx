@@ -3,8 +3,9 @@ import { Layout } from "antd";
 import { useAuth } from "../../../components/provider/AuthProvider";
 import HeaderDashboard from "./HeaderDashboard";
 import Sidebar from "./Sidebar";
+import { Outlet } from "react-router-dom";
 
-const DashboardLayout = ({ children, userRole }) => {
+const DashboardLayout = ({ userRole }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState("dashboard");
   const { user} = useAuth();
@@ -25,7 +26,7 @@ const DashboardLayout = ({ children, userRole }) => {
         />
         
         <Layout.Content className="p-6 bg-gray-50">
-          {children}
+          <Outlet />
         </Layout.Content>
       </Layout>
     </Layout>
