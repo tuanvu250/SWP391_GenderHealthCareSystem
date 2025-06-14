@@ -1,7 +1,7 @@
 package GenderHealthCareSystem.dto;
 
+import GenderHealthCareSystem.model.Pills.NotificationFrequency;
 import lombok.Data;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -11,5 +11,6 @@ public class PillRequest {
     private LocalDate startDate;
     private LocalTime timeOfDay;
     private Boolean isActive;
-//    private Integer CustomerId;
+    private NotificationFrequency notificationFrequency;
+
 }
