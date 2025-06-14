@@ -66,27 +66,22 @@ public class BlogPostController {
         return ResponseEntity.ok().body(response);
     }
 
-    /**
-     * Updates an existing blog post.
-     *
-     * @param id           The ID of the blog post to be updated.
-     * @param blogPostJson JSON string representing the updated blog post details.
-     * @param image        (Optional) New image file to be used as the thumbnail for the blog post.
-     * @return ResponseEntity containing the status and details of the updated blog post.
-     * @throws IOException if there is an error processing the image file.
-     */
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,
-            @RequestPart("blogPost") String blogPostJson,
+            @RequestPart("tags") String tags,
+            @RequestPart("title") String title,
+            @RequestPart("content") String content,
             @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
-        // Parse JSON string to BlogPost object
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules(); // To handle LocalDateTime parsing
-        BlogPost updatedBlogPost = objectMapper.readValue(blogPostJson, BlogPost.class);
+        BlogPost updatedBlogPost = new BlogPost();
+        updatedBlogPost.setTags(tags);
+        updatedBlogPost.setTitle(title);
+        updatedBlogPost.setContent(content);
+        // Extract user ID and role from JWT claims
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
         String role = jwt.getClaimAsString("role");
         // Update thumbnail if a new image is provided
