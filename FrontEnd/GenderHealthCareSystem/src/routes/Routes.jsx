@@ -20,8 +20,10 @@ import PrivacySection from "../site-info/Privacy";
 import ExpertSection from "../site-info/Expert";
 import STITesting from "../services/testing/STITesting";
 import STIBooking from "../services/testing/STIBooking";
-import ConsultationBooking from "../services/ConsultationBooking";
+import ConsultationBooking from "../services/consultant/ConsultationBooking";
+import Consultation from "../services/consultant/Consultation";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
+Consultation
 // Layout component with Header
 const Layout = () => {
   return (
@@ -55,8 +57,12 @@ function RouteMap() {
         <Route path="/sti-testing" element={<STITesting />} />
         <Route path="/sti-booking" element={<STIBooking />} />
         <Route
-          path="/services/consultation"
+          path="/services/consultationbooking"
           element={<ConsultationBooking />}
+        />
+        <Route
+          path="/services/consultation"
+          element={<Consultation />}
         />
 
         {/* Các trang khác */}
