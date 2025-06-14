@@ -132,11 +132,13 @@ public class BlogPostController {
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort,
             @AuthenticationPrincipal Jwt jwt
     ) {
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
-        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, page, size, sort, userId);
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, orderBy, page, size, sort, userId);
 
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
@@ -161,7 +163,6 @@ public class BlogPostController {
     }
 
 
-
     /**
      * Searches for blog posts based on title, tags, and publication date.
      *
@@ -178,9 +179,11 @@ public class BlogPostController {
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort
     ) {
-        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, page, size, sort);
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, orderBy, page, size, sort);
 
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
@@ -214,7 +217,7 @@ public class BlogPostController {
     public ResponseEntity<ApiResponse<BlogPostResponse>> getBlogPostById(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
         boolean increaseViewCount = false; // Default to true, can be modified based on requirements
         if (jwt == null) {
-            increaseViewCount= true; // If no JWT is present, we assume the request is from an unauthenticated user
+            increaseViewCount = true; // If no JWT is present, we assume the request is from an unauthenticated user
         } else if (jwt.getClaimAsString("role").equals("Customer")) {
             increaseViewCount = true; // If the user is a customer, we also increase the view count
 
