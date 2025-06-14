@@ -21,6 +21,7 @@ public class BlogPostService {
     public void saveBlogPost(BlogPost blogPost) {
         blogPost.setDeleted(false);
         blogPost.setPublishedAt(java.time.LocalDateTime.now());
+        blogPost.setViewCount(0);
         this.blogPostRepository.save(blogPost);
     }
 
@@ -53,12 +54,12 @@ public class BlogPostService {
         blogPostRepository.save(existingBlogPost);
     }
 
-    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, int page, int size, String sort,int Id) {
+    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, String orderBy, int page, int size, String sort,int Id) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
         } else {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
         }
 
         Page<BlogPost> blogPosts;
@@ -75,12 +76,12 @@ public class BlogPostService {
         return responses;
     }
 
-    public Page<BlogPostResponse> searchBlogPosts(String title, String tag, int page, int size, String sort) {
+    public Page<BlogPostResponse> searchBlogPosts(String title, String tag, String orderBy, int page, int size, String sort) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
         } else {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
         }
 
         Page<BlogPost> blogPosts;
@@ -90,9 +91,13 @@ public class BlogPostService {
         return blogPosts.map(this::mapToResponse);
 
     }
-    public BlogPostResponse getBlogPostById(int id) {
+    public BlogPostResponse getBlogPostById(int id,boolean increaseViewCount) {
         BlogPost blogPost = blogPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        if (increaseViewCount) {
+            blogPost.setViewCount(blogPost.getViewCount() + 1);
+            blogPostRepository.save(blogPost);
+        }
         return mapToResponse(blogPost);
     }
 
@@ -107,6 +112,7 @@ public class BlogPostService {
         blogPostResponse.setConsultantId(blogPost.getConsultant().getUserId());
         blogPostResponse.setConsultantName(blogPost.getConsultant().getFullName());
         blogPostResponse.setConsultantImageUrl(blogPost.getConsultant().getUserImageUrl());
+        blogPostResponse.setViewCount(blogPost.getViewCount());
         return blogPostResponse;
     }
 }

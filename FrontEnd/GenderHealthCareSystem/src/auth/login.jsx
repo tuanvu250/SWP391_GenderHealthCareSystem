@@ -24,7 +24,7 @@ const Login = () => {
         message.success(response.message);
         setTimeout(() => {
           if (response.role === "Consultant") {
-            navigate("/dashboard");
+            navigate("/consultant/dashboard");
           } else navigate("/home");
         }, 500) ;
       } else {
