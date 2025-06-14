@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "Pill_Schedules")
@@ -29,4 +30,11 @@ public class PillSchedule {
 
     @Column(name = "HasTaken")
     private Boolean hasTaken;
+    @Column(name = "ConfirmToken", length = 36, unique = true, nullable = false)
+    private String confirmToken;
+
+    @PrePersist
+    public void generateToken() {
+        this.confirmToken = UUID.randomUUID().toString();
+}
 }

@@ -32,6 +32,7 @@ public class PillService {
         pill.setIsActive(request.getIsActive());
         pill.setCreatedAt(LocalDateTime.now());
         pill.setCustomer(user);
+        pill.setNotificationFrequency(request.getNotificationFrequency());
 
         Pills saved = pillRepository.save(pill);
 
@@ -42,7 +43,8 @@ public class PillService {
                 saved.getTimeOfDay(),
                 saved.getIsActive(),
                 saved.getCreatedAt(),
-                saved.getCustomer().getUserId()
+                saved.getCustomer().getUserId(),
+                saved.getNotificationFrequency().name()
         );
     }
 
