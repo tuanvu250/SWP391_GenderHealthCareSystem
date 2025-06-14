@@ -30,22 +30,18 @@ public class BlogPostController {
     private final UserService userService;
     private final ImageService imageService;
 
-    /**
-     * Creates a new blog post and saves it to the database.
-     *
-     * @param blogPostJson JSON string representing the blog post details.
-     * @param image        Image file to be used as the thumbnail for the blog post.
-     * @param jwt          Authenticated user's JWT, used to identify the blog post author.
-     * @return ResponseEntity containing the status and details of the created blog post.
-     * @throws IOException if there is an error processing the image file.
-     */
     @PostMapping()
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
-    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestPart("blogPost") String blogPostJson, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal Jwt jwt) throws IOException {
-        // Parse JSON string thành BlogPost object
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules(); // để parse LocalDateTime
-        BlogPost blogPost = objectMapper.readValue(blogPostJson, BlogPost.class);
+    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestPart("tags") String tags,
+                                                         @RequestPart("title") String title,
+                                                         @RequestPart("content") String content,
+                                                         @RequestPart("image") MultipartFile image,
+                                                         @AuthenticationPrincipal Jwt jwt) throws IOException {
+
+        BlogPost blogPost = new BlogPost();
+        blogPost.setTags(tags);
+        blogPost.setTitle(title);
+        blogPost.setContent(content);
         System.out.println(Integer.parseInt(jwt.getClaimAsString("userID")));
         blogPost.setConsultant(this.userService.getUserById(Integer.parseInt(jwt.getClaimAsString("userID"))));
         blogPost.setThumbnailUrl(this.imageService.uploadImage(image));
