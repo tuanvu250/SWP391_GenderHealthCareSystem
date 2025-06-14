@@ -211,8 +211,15 @@ public class BlogPostController {
      * @return ResponseEntity containing the details of the blog post.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BlogPostResponse>> getBlogPostById(@PathVariable Integer id) {
-        BlogPostResponse blogPost = blogPostService.getBlogPostById(id);
+    public ResponseEntity<ApiResponse<BlogPostResponse>> getBlogPostById(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
+        boolean increaseViewCount = false; // Default to true, can be modified based on requirements
+        if (jwt == null) {
+            increaseViewCount= true; // If no JWT is present, we assume the request is from an unauthenticated user
+        } else if (jwt.getClaimAsString("role").equals("Customer")) {
+            increaseViewCount = true; // If the user is a customer, we also increase the view count
+
+        }
+        BlogPostResponse blogPost = blogPostService.getBlogPostById(id, increaseViewCount);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post retrieved successfully", blogPost, null);
         return ResponseEntity.ok(response);
     }

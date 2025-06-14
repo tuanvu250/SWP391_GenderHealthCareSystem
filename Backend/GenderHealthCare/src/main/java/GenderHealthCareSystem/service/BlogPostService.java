@@ -21,6 +21,7 @@ public class BlogPostService {
     public void saveBlogPost(BlogPost blogPost) {
         blogPost.setDeleted(false);
         blogPost.setPublishedAt(java.time.LocalDateTime.now());
+        blogPost.setViewCount(0);
         this.blogPostRepository.save(blogPost);
     }
 
@@ -90,9 +91,13 @@ public class BlogPostService {
         return blogPosts.map(this::mapToResponse);
 
     }
-    public BlogPostResponse getBlogPostById(int id) {
+    public BlogPostResponse getBlogPostById(int id,boolean increaseViewCount) {
         BlogPost blogPost = blogPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        if (increaseViewCount) {
+            blogPost.setViewCount(blogPost.getViewCount() + 1);
+            blogPostRepository.save(blogPost);
+        }
         return mapToResponse(blogPost);
     }
 
@@ -107,6 +112,7 @@ public class BlogPostService {
         blogPostResponse.setConsultantId(blogPost.getConsultant().getUserId());
         blogPostResponse.setConsultantName(blogPost.getConsultant().getFullName());
         blogPostResponse.setConsultantImageUrl(blogPost.getConsultant().getUserImageUrl());
+        blogPostResponse.setViewCount(blogPost.getViewCount());
         return blogPostResponse;
     }
 }
