@@ -1,7 +1,7 @@
-import { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-
-const advisors = [
+const experts = [
   {
     name: "BS. Nguyễn Thị Minh Trang",
     specialty: "Sản – Sức khỏe giới tính",
@@ -94,36 +94,64 @@ const advisors = [
   },
 ];
 
-export default function ConsultationBooking() {
-  const [selected, setSelected] = useState(null);
+const ExpertSection = () => {
+  const navigate = useNavigate();
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">Đặt lịch tư vấn cùng chuyên gia</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {advisors.map((advisor, index) => (
-          <div
-            key={index}
-            className="bg-white shadow-md rounded-2xl overflow-hidden border hover:shadow-lg transition duration-300"
-          >
-            <img src={advisor.image} alt={advisor.name} className="w-full h-60 object-cover" />
-            <div className="p-4">
-              <h2 className="text-xl font-semibold">{advisor.name}</h2>
-              <p className="text-indigo-600 font-medium">{advisor.specialty}</p>
-              <p className="text-gray-600 mt-1 text-sm">{advisor.desc}</p>
-              <button
-                onClick={() => setSelected(advisor.name)}
-                className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-              >
-                Đặt lịch
-              </button>
-              {selected === advisor.name && (
-                <p className="mt-2 text-green-600 text-sm">✔ Đã chọn chuyên gia này</p>
-              )}
+      <>
+        {/* Navbar */}
+        <div className="px-8 py-12 max-w-7xl mx-auto text-gray-800">
+          <nav className="hidden lg:block">
+            <ul className="flex space-x-8 font-medium text-[#a6acaf]">
+              <li className="hover:text-[#909497] cursor-pointer py-2">
+                <a onClick={() => navigate("/about")}>Giới thiệu</a>
+              </li>
+              <li className="hover:text-[#909497] cursor-pointer py-2">
+                <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
+              </li>
+              <li className="text-blue-600 font-semibold border-b-2 border-blue-600 py-2 cursor-pointer">
+                <a onClick={() => navigate("/expert")}>Chuyên gia</a>
+              </li>
+              <li className="hover:text-[#909497] cursor-pointer py-2">
+                <a onClick={() => navigate("/privacy")}>Chính sách</a>
+              </li>
+              <li className="hover:text-[#909497] cursor-pointer py-2">
+                <a onClick={() => navigate("/contact")}>Liên hệ</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* Experts content */}
+        <section className="bg-white px-4 py-12">
+          <div className="max-w-7xl mx-auto px-6 space-y-10 text-gray-800">
+            <h2 className="text-3xl font-bold text-center text-gray-900">
+              Đội ngũ chuyên gia về sức khỏe giới tính
+            </h2>
+            <p className="text-center text-gray-600 max-w-3xl mx-auto">
+              Gender Healthcare quy tụ đội ngũ bác sĩ, chuyên gia hàng đầu trong lĩnh vực sức khỏe giới tính, LGBTQ+ và chăm sóc sinh sản.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {experts.map((expert, index) => (
+                  <div key={index} className="bg-gray-50 rounded-xl p-6 shadow hover:shadow-md transition duration-300">
+                    <img
+                        src={expert.image}
+                        alt={expert.name}
+                        className="w-24 h-24 rounded-full object-cover mb-4 mx-auto"
+                    />
+                    <h3 className="text-lg font-semibold text-center text-gray-900">
+                      {expert.name}
+                    </h3>
+                    <p className="text-center text-sm text-blue-600 mb-2">{expert.specialty}</p>
+                    <p className="text-sm text-gray-700 text-center">{expert.desc}</p>
+                  </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-    </div>
+        </section>
+      </>
   );
-}
+};
+
+export default ExpertSection;
