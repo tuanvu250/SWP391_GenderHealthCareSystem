@@ -28,6 +28,7 @@ import {
 } from "@ant-design/icons";
 import { FaUserMd, FaUserTie, FaUserShield, FaCrown } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const { Sider } = Layout;
 
@@ -439,6 +440,7 @@ const Sidebar = ({
   };
 
   const menuItems = getMenuItems(userRole);
+  const [isMobile, setIsMobile] = useState(false);
 
   return (
     <Sider

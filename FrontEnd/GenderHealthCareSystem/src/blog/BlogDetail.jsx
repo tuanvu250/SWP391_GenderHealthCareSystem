@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Markdown from "react-markdown";
 import {
   Typography,
   Avatar,
@@ -38,14 +39,14 @@ const BlogDetail = () => {
   // Dữ liệu mẫu cho bài viết chi tiết
   const getTagColor = (tag) => {
     const tagColors = {
-      "sức khỏe": "green",
-      "giới tính": "blue",
-      "tư vấn": "purple",
-      STIs: "red",
-      "kinh nguyệt": "pink",
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
+      "STIs": "red",
+      "Kinh nguyệt": "pink",
     };
 
-    return tagColors[tag.toLowerCase()] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
+    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
   };
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const BlogDetail = () => {
         if (response && response.data) {
           const post = response.data.data;
           const tagArray = post.tags
-            ? post.tags.split(",").map((tag) => ({
+            ? post.tags.split(", ").map((tag) => ({
                 text: tag.trim(),
                 color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
               }))
@@ -76,7 +77,7 @@ const BlogDetail = () => {
           setLoading(false);
         }
         // Scroll to top when page loads
-        //window.scrollTo(0, 0);
+        window.scrollTo(0, 0);
       }, 500);
     };
 
@@ -186,7 +187,7 @@ const BlogDetail = () => {
           {/* Nội dung bài viết */}
           <div
             className="prose max-w-none mt-8 blog-content"
-          >{blog.content}</div>
+          > <Markdown>{blog.content}</Markdown></div>
 
           {/* Chia sẻ bài viết */}
           <Divider />
