@@ -53,6 +53,10 @@ public class StisBookingService {
     public Optional<StisBookingResponse> getBookingById(Integer id) {
         return stisBookingRepository.findById(id).stream().map(this::mapToResponse).findFirst();
     }
+    public Optional<StisBooking> getBookingByIdNotForResponse(Integer id) {
+        return stisBookingRepository.findById(id);
+    }
+
 
     public StisBooking createBooking(StisBookingRequest booking) {
         StisBooking stisBooking = new StisBooking();
@@ -112,6 +116,14 @@ public class StisBookingService {
         if (bookingOptional.isPresent()) {
             StisBooking booking = bookingOptional.get();
             booking.setStatus(StisBookingStatus.CANCELLED);
+            stisBookingRepository.save(booking);
+        }
+    }
+    public void markBookingPaymentStatusAsCompleted(Integer id) {
+        Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
+        if (bookingOptional.isPresent()) {
+            StisBooking booking = bookingOptional.get();
+            booking.setPaymentStatus("Đã thanh toán");
             stisBookingRepository.save(booking);
         }
     }
