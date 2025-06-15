@@ -39,23 +39,23 @@ const Blog = () => {
   const [totalPosts, setTotalPosts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [allTags, setAllTags] = useState([
-    { value: "sức khỏe", label: "Sức Khỏe", color: "green" },
-    { value: "giới tính", label: "Giới Tính", color: "blue" },
-    { value: "tư vấn", label: "Tư Vấn", color: "purple" },
+    { value: "Sức khỏe", label: "Sức Khỏe", color: "green" },
+    { value: "Giới tính", label: "Giới tính", color: "blue" },
+    { value: "Tư vấn", label: "Tư vấn", color: "purple" },
     { value: "STIs", label: "STIs", color: "red" },
-    { value: "kinh nguyệt", label: "Kinh Nguyệt", color: "pink" },
+    { value: "Kinh nguyệt", label: "Kinh nguyệt", color: "pink" },
   ]);
 
   const getTagColor = (tag) => {
     const tagColors = {
-      "sức khỏe": "green",
-      "giới tính": "blue",
-      "tư vấn": "purple",
-      "STIs": "red",
-      "kinh nguyệt": "pink",
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
+      STIs: "red",
+      "Kinh nguyệt": "pink",
     };
 
-    return tagColors[tag.toLowerCase()] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
+    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
   };
 
   const fetchBlogPosts = async () => {
@@ -68,10 +68,7 @@ const Blog = () => {
         sort: sortOrder,
       });
 
-      if (
-        response &&
-        response.data
-      ) {
+      if (response && response.data) {
         setTotalPosts(response.data.data.totalElements);
         setTotalPages(response.data.data.totalPages);
 
@@ -96,6 +93,10 @@ const Blog = () => {
         });
 
         setBlogPosts(formattedPosts);
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
       }
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -257,7 +258,7 @@ const Blog = () => {
                     />
                   </div>
                 }
-                onClick={() =>  navigate(`/blog/${post.postId}`)}
+                onClick={() => navigate(`/blog/${post.postId}`)}
               >
                 <div className="flex flex-col flex-grow p-2">
                   <div className="flex flex-wrap gap-1 mb-2">
