@@ -145,7 +145,7 @@ const Blog = () => {
         </div>
 
         {/* Search & Filter Section */}
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+        <div className="bg-white p-4 rounded-xl shadow-sm mb-8 md:sticky top-15 z-10">
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} md={10}>
               <Search
