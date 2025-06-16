@@ -56,7 +56,11 @@ function RouteMap() {
           }
         />
         <Route path="/sti-testing" element={<STITesting />} />
-        <Route path="/sti-booking" element={<STIBooking />} />
+        <Route path="/sti-booking" element={
+          <ProtectedRoute>
+            <STIBooking />
+          </ProtectedRoute>
+        } />
         <Route
           path="/services/consultationbooking"
           element={<ConsultationBooking />}

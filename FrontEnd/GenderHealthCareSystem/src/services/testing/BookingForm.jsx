@@ -11,10 +11,13 @@ import {
   Col,
   Input,
   Divider,
+  Space,
 } from "antd";
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  DollarCircleOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -174,6 +177,50 @@ const BookingForm = ({
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+        </Col>
+        
+        {/* Thêm phương thức thanh toán */}
+        <Col xs={24}>
+          <Divider />
+          <h3 className="text-lg font-semibold mb-4">Phương thức thanh toán</h3>
+          <Form.Item 
+            name="paymentMethod" 
+            rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán!" }]}
+          >
+            <Radio.Group className="w-full">
+              <Space direction="vertical" className="w-full">
+                <Card 
+                  className="w-full cursor-pointer hover:border-blue-500 mb-2"
+                  bodyStyle={{ padding: "16px" }}
+                >
+                  <Radio value="cash" className="w-full">
+                    <div className="flex items-center">
+                      <DollarCircleOutlined className="mr-2 text-lg text-green-600" />
+                      <div>
+                        <div className="font-medium">Thanh toán tiền mặt</div>
+                        <div className="text-gray-500 text-sm">Thanh toán trực tiếp tại cơ sở khi đến xét nghiệm</div>
+                      </div>
+                    </div>
+                  </Radio>
+                </Card>
+                
+                <Card 
+                  className="w-full cursor-pointer hover:border-blue-500"
+                  bodyStyle={{ padding: "16px" }}
+                >
+                  <Radio value="bank_transfer" className="w-full">
+                    <div className="flex items-center">
+                      <BankOutlined className="mr-2 text-lg text-blue-600" />
+                      <div>
+                        <div className="font-medium">Chuyển khoản ngân hàng</div>
+                        <div className="text-gray-500 text-sm">Thanh toán bằng VNPay (ATM/Visa/MasterCard/QR Code)</div>
+                      </div>
+                    </div>
+                  </Radio>
+                </Card>
+              </Space>
+            </Radio.Group>
           </Form.Item>
         </Col>
         
