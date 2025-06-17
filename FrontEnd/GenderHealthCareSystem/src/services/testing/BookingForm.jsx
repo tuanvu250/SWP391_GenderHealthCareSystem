@@ -60,12 +60,11 @@ const BookingForm = ({
                   onClick={() => handlePackageSelect(pkg)}
                 >
                   <Card
-                    className={`h-full cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                    className={`h-full cursor-pointer transition-all duration-300 hover:shadow-lg p-[24px] ${
                       isSelected
                         ? "border-2 border-[#0099CF] shadow-md"
                         : "border border-gray-200"
                     }`}
-                    bodyStyle={{ padding: "24px" }}
                   >
                     {/* Selected indicator */}
                     {isSelected && (
@@ -191,8 +190,7 @@ const BookingForm = ({
             <Radio.Group className="w-full">
               <Space direction="vertical" className="w-full">
                 <Card 
-                  className="w-full cursor-pointer hover:border-blue-500 mb-2"
-                  bodyStyle={{ padding: "16px" }}
+                  className="w-full cursor-pointer hover:border-blue-500 mb-2 p-[16px]"
                 >
                   <Radio value="cash" className="w-full">
                     <div className="flex items-center">
@@ -206,10 +204,9 @@ const BookingForm = ({
                 </Card>
                 
                 <Card 
-                  className="w-full cursor-pointer hover:border-blue-500"
-                  bodyStyle={{ padding: "16px" }}
+                  className="w-full cursor-pointer hover:border-blue-500 p-[16px]"
                 >
-                  <Radio value="bank_transfer" className="w-full">
+                  <Radio value="vnpay" className="w-full">
                     <div className="flex items-center">
                       <BankOutlined className="mr-2 text-lg text-blue-600" />
                       <div>
@@ -223,21 +220,12 @@ const BookingForm = ({
             </Radio.Group>
           </Form.Item>
         </Col>
-        
-        <Col xs={24}>
-          <Form.Item name="medicalHistory" label="Tiểu sử bệnh">
-            <TextArea
-              rows={3}
-              placeholder="Vui lòng ghi rõ các bệnh nền hoặc các triệu chứng bất thường bạn đang gặp phải (nếu có)"
-            />
-          </Form.Item>
-        </Col>
 
         <Col xs={24}>
           <Form.Item name="notes" label="Ghi chú thêm">
             <TextArea
               rows={3}
-              placeholder="Có thông tin gì đặc biệt bạn muốn chúng tôi biết?"
+              placeholder="Có thông tin gì đặc biệt bạn muốn chúng tôi biết? Tiểu sử bệnh hoặc các triệu chứng bất thường bạn đang gặp phải (nếu có)"
             />
           </Form.Item>
         </Col>

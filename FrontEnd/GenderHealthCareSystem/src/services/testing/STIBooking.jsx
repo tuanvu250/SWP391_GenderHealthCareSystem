@@ -115,12 +115,12 @@ const STIBooking = () => {
 
   // Các khung giờ làm việc
   const workingHours = [
-    { value: "08:00 - 09:00", label: "08:00 - 09:00" },
-    { value: "09:00 - 10:00", label: "09:00 - 10:00" },
-    { value: "10:00 - 11:00", label: "10:00 - 11:00" },
-    { value: "13:30 - 14:30", label: "13:30 - 14:30" },
-    { value: "14:30 - 15:30", label: "14:30 - 15:30" },
-    { value: "15:30 - 16:30", label: "15:30 - 16:30" },
+    { value: "08:00", label: "08:00 - 09:00" },
+    { value: "09:00", label: "09:00 - 10:00" },
+    { value: "10:00", label: "10:00 - 11:00" },
+    { value: "13:00", label: "13:00 - 14:00" },
+    { value: "14:00", label: "14:00 - 15:00" },
+    { value: "15:00", label: "15:00 - 16:00" },
   ];
 
   // Format giá tiền
@@ -244,12 +244,6 @@ const STIBooking = () => {
   const renderPaymentStep = () => {
     return (
       <div>
-        <Alert
-          message="Chọn phương thức thanh toán"
-          type="info"
-          showIcon
-          className="mb-8"
-        />
         
         {/* Thông tin gói đã chọn */}
         <div className="mb-8 bg-gray-50 p-4 rounded-md">
