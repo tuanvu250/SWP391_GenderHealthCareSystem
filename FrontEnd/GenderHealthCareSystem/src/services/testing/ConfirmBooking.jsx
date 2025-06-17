@@ -1,8 +1,12 @@
 // src/services/STIBooking/ConfirmBooking.jsx
 import React from "react";
 import { Card, Alert, Row, Col, Tag, Divider } from "antd";
+import { DollarCircleOutlined, BankOutlined } from "@ant-design/icons";
 
 const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPrice }) => {
+  // Lấy phương thức thanh toán đã chọn
+  const paymentMethod = form.getFieldValue("paymentMethod");
+
   return (
     <div className="space-y-6">
       <Alert
@@ -41,6 +45,22 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
               <div>
                 <strong>Giờ xét nghiệm:</strong>{" "}
                 {form.getFieldValue("appointmentTime")}
+              </div>
+              
+              {/* Phương thức thanh toán */}
+              <div>
+                <strong>Phương thức thanh toán:</strong>{" "}
+                {paymentMethod === "cash" ? (
+                  <span className="flex items-center mt-1">
+                    <DollarCircleOutlined className="text-green-600 mr-1" /> Thanh toán tiền mặt tại cơ sở
+                  </span>
+                ) : paymentMethod === "credit card" ? (
+                  <span className="flex items-center mt-1">
+                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua ngân hàng
+                  </span>
+                ) : (
+                  <span className="text-orange-500">Chưa chọn</span>
+                )}
               </div>
             </div>
           </Col>

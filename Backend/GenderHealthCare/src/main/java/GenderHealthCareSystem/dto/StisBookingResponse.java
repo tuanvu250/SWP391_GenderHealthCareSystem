@@ -1,6 +1,12 @@
 package GenderHealthCareSystem.dto;
 
 import GenderHealthCareSystem.model.StisBookingStatus;
+import GenderHealthCareSystem.model.StisFeedback;
+import GenderHealthCareSystem.model.StisInvoice;
+import GenderHealthCareSystem.model.StisResult;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +29,9 @@ public class StisBookingResponse {
     private LocalDate bookingDate;
     private LocalTime bookingTimeStart;
     private LocalTime bookingTimeEnd;
+    private Integer stisResultID;
+    private Integer stisInvoiceID;
+    private Integer stisFeedbackID;
     private StisBookingStatus status;
     private String paymentStatus;
     private String paymentMethod;

@@ -86,6 +86,9 @@ public class StisBookingService {
 
         return stisBookingRepository.save(stisBooking);
     }
+    public void saveBooking(StisBooking booking) {
+        stisBookingRepository.save(booking);
+    }
 
     public void deleteBooking(Integer id) {
         Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
@@ -158,6 +161,9 @@ public class StisBookingService {
         response.setServiceId(booking.getStisService().getServiceId());
         response.setServiceName(booking.getStisService().getServiceName());
         response.setServicePrice(booking.getStisService().getPrice());
+        response.setStisInvoiceID(booking.getStisInvoice() != null ? booking.getStisInvoice().getInvoiceId() : null);
+        response.setStisResultID(booking.getStisResult() != null ? booking.getStisResult().getResultId() : null);
+        response.setStisFeedbackID(booking.getStisFeedback() != null ? booking.getStisFeedback().getFeedbackId() : null);
         response.setBookingDate(booking.getBookingDate().toLocalDate());
         response.setBookingTimeStart(booking.getBookingDate().toLocalTime());
         response.setBookingTimeEnd(booking.getBookingDate().toLocalTime().plusHours(1));
@@ -167,6 +173,7 @@ public class StisBookingService {
         response.setNote(booking.getNote());
         response.setCreatedAt(booking.getCreatedAt());
         response.setUpdatedAt(booking.getUpdatedAt());
+
         return response;
     }
 

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { use } from "react";
 
 const api = axios.create({
   baseURL: "/api",
@@ -18,6 +19,9 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+{
+  /*Auth*/
+}
 export const registerAPI = async (values) => {
   const userData = {
     fullName: values.fullName,
@@ -66,6 +70,9 @@ export const resetPasswordAPI = async (values) => {
   return api.post("/auth/reset-password", userData);
 };
 
+{
+  /*Blog*/
+}
 export const blogHomeAPI = async () => {
   return api.get("/blog-posts/latest");
 };
@@ -146,6 +153,9 @@ export const updateBlogAPI = async (postId, values) => {
   });
 };
 
+{
+  /*User Profile*/
+}
 export const updateUserAvatarAPI = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -169,6 +179,26 @@ export const updateUserProfileAPI = async (values) => {
   return api.put("/profile/update", userData);
 };
 
+{
+  /*Health Tracker*/
+}
+
 export const healthTrackerAPI = async (values) => {
   return api.post("/menstrual/calculate", values);
+};
+
+{
+  /*Booking Stis*/
+}
+export const bookStisAPI = async (values) => {
+  const bookingData = {
+    serviceId: values.packageId,
+    bookingDate: values.appointmentDate,
+    bookingTime: values.appointmentTime,
+    note: values.notes,
+    paymentMethod: values.paymentMethod,
+  };
+
+  //console.log(">>> Booking Data:", bookingData);
+  return api.post("/stis-bookings", bookingData);
 };
