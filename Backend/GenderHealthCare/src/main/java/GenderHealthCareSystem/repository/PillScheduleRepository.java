@@ -21,6 +21,9 @@ public interface PillScheduleRepository extends JpaRepository<PillSchedule, Inte
     // Lấy lịch trước ngày hôm nay mà chưa đánh dấu (dùng finalize)
     List<PillSchedule> findByPillDateBeforeAndHasTakenFalse(LocalDate date);
 
+    List<PillSchedule> findByPill_Customer_UserId(Integer userId);
+
+
     // API cho Web reminder: lấy reminder hằng ngày
     List<PillSchedule> findByPill_Customer_UserIdAndPillDateAndHasTakenFalse(Integer userId, LocalDate date);
 }

@@ -1,51 +1,66 @@
 package GenderHealthCareSystem.service;
 
-import GenderHealthCareSystem.dto.PillRequest;
-import GenderHealthCareSystem.dto.PillResponse;
+                import GenderHealthCareSystem.dto.PillRequest;
+                import GenderHealthCareSystem.dto.PillResponse;
 
-import GenderHealthCareSystem.model.Pills;
-import GenderHealthCareSystem.model.Users;
-import GenderHealthCareSystem.repository.PillRepository;
-import GenderHealthCareSystem.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+                import GenderHealthCareSystem.model.Pills;
+                import GenderHealthCareSystem.model.Users;
+                import GenderHealthCareSystem.repository.PillRepository;
+                import GenderHealthCareSystem.repository.UserRepository;
+                import GenderHealthCareSystem.service.PillScheduleService;
+                import org.springframework.beans.factory.annotation.Autowired;
+                import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+                import java.time.LocalDateTime;
 
-@Service
-public class PillService {
+                @Service
+                public class PillService {
 
-    @Autowired
-    private PillRepository pillRepository;
+                    @Autowired
+                    private PillRepository pillRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+                    @Autowired
+                    private UserRepository userRepository;
 
-    public PillResponse createPill(PillRequest request, Integer userId) {
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                    @Autowired
+                    private PillScheduleService scheduleService;
 
-        Pills pill = new Pills();
-        pill.setPillType(request.getPillType());
-        pill.setStartDate(request.getStartDate());
-        pill.setTimeOfDay(request.getTimeOfDay());
-        pill.setIsActive(request.getIsActive());
-        pill.setCreatedAt(LocalDateTime.now());
-        pill.setCustomer(user);
-        pill.setNotificationFrequency(request.getNotificationFrequency());
+                    /**
+                     * Tạo mới thuốc và lưu vào DB
+                     *
+                     * @param request  thông tin thuốc từ client
+                     * @param userId   ID của người dùng
+                     * @return thông tin thuốc đã được lưu
+                     */
 
-        Pills saved = pillRepository.save(pill);
+                    public PillResponse createPill(PillRequest request, Integer userId) {
+                        Users user = userRepository.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new PillResponse(
-                saved.getPillId(),
-                saved.getPillType(),
-                saved.getStartDate(),
-                saved.getTimeOfDay(),
-                saved.getIsActive(),
-                saved.getCreatedAt(),
-                saved.getCustomer().getUserId(),
-                saved.getNotificationFrequency().name()
-        );
-    }
+                        Pills pill = new Pills();
+                        pill.setPillType(request.getPillType());
+                        pill.setStartDate(request.getStartDate());
+                        pill.setTimeOfDay(request.getTimeOfDay());
+                        pill.setIsActive(request.getIsActive());
+                        pill.setCreatedAt(LocalDateTime.now());
+                        pill.setCustomer(user);
+                        pill.setNotificationFrequency(request.getNotificationFrequency());
 
-}
+                        Pills saved = pillRepository.save(pill);
+
+                        // Generate pill schedule after saving the pill
+                        scheduleService.generateSchedule(saved);
+
+                        return new PillResponse(
+                                saved.getPillId(),
+                                saved.getPillType(),
+                                saved.getStartDate(),
+                                saved.getTimeOfDay(),
+                                saved.getIsActive(),
+                                saved.getCreatedAt(),
+                                saved.getCustomer().getUserId(),
+                                saved.getNotificationFrequency().name()
+                        );
+                    }
+
+                }

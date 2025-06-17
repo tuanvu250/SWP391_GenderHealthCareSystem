@@ -21,14 +21,14 @@ public class ReminderService {
         return scheduleRepo
                 .findByPill_Customer_UserIdAndPillDateAndHasTakenFalse(userId, today)
                 .stream()
-                .map(sch -> {
-                    PillScheduleResponse dto = new PillScheduleResponse();
-                    dto.setScheduleId(sch.getScheduleId());
-                    dto.setPillDate(sch.getPillDate());
-                    dto.setTimeOfDay(sch.getPill().getTimeOfDay());
-                    dto.setPillType(sch.getPill().getPillType());
-                    return dto;
-                })
+                .map(sch -> new PillScheduleResponse(
+                        sch.getScheduleId(),
+                        sch.getPillDate(),
+                        sch.getPill().getTimeOfDay(),
+                        sch.getPill().getPillType(),
+                        sch.getHasTaken(),
+                        sch.getIsPlacebo()
+                ))
                 .collect(Collectors.toList());
     }
 
