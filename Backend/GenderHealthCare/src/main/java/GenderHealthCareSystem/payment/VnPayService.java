@@ -18,8 +18,8 @@ public class VnPayService {
     @Autowired
     private VnPayConfig config;
 
-    public String createPaymentUrl(long amount, String orderInfo, String ip) throws UnsupportedEncodingException {
-        String vnp_TxnRef = String.valueOf(System.currentTimeMillis());//sua thanh booking id
+    public String createPaymentUrl(long amount, String orderInfo, String bookingID, String ip) throws UnsupportedEncodingException {
+        String vnp_TxnRef = bookingID;//sua thanh booking id
         String vnp_CreateDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         Map<String, String> params = new HashMap<>();
 //        params.put("vnp_BankCode", "NCB");
