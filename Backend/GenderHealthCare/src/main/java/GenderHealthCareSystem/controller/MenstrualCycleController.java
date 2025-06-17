@@ -51,7 +51,7 @@ public class MenstrualCycleController {
 
             // Tính toán lịch từ dữ liệu người dùng nhập
             MenstrualCalendarResponse calendar = calendarService.buildCalendar(
-                    null, // ❌ bỏ cycleId để tránh phụ thuộc
+                    null, //  bỏ cycleId để tránh phụ thuộc
                     saved.getStartDate(),
                     saved.getCycleLength(),
                     menstruationDays

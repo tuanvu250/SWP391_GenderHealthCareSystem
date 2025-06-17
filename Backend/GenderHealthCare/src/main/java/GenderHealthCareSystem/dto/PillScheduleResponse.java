@@ -15,5 +15,6 @@ public class PillScheduleResponse {
     private LocalDate pillDate;
     private LocalTime timeOfDay;
     private String pillType;
-
+    private Boolean hasTaken;
+    private Boolean isPlacebo;
 }
