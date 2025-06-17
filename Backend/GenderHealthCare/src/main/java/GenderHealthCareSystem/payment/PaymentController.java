@@ -26,7 +26,7 @@ public class PaymentController {
                                                 HttpServletRequest request) throws Exception {
         System.out.println(request.getParameter("bankcode"));
         String bankCode = request.getParameter("vnp_BankCode");
-
+        System.out.println(request.getRemoteAddr());
         String paymentUrl = vnPayService.createPaymentUrl(amount, orderInfo, request.getRemoteAddr());
         return ResponseEntity.ok(paymentUrl);
     }
@@ -43,17 +43,17 @@ public class PaymentController {
         boolean valid = vnPayService.validateReturnData(new HashMap<>(fields), secureHash);
         if (valid) {
 //            String bookingId = fields.get("vnp_TxnRef");
-//
-//            StisBooking booking = stisBookingRepository.findById(Integer.parseInt(bookingId)).orElseThrow();
+//            String transactionId = fields.get("vnp_TransactionNo");
 //
 //            StisInvoice invoice = new StisInvoice();
-//            invoice.setStisBooking(booking);
+//            invoice.setStisBooking(stisBookingService.getBookingByIdNotForResponse(Integer.parseInt(bookingId)).get());
+//            invoice.setTransactionId(transactionId);
 //            invoice.setTotalAmount(new BigDecimal(fields.get("vnp_Amount")).divide(BigDecimal.valueOf(100))); // VNPay trả *100
 //            invoice.setPaymentMethod("VNPay");
 //            invoice.setPaidAt(LocalDateTime.now());
 //
-//            stisInvoiceRepository.save(invoice);
-
+//            stisInvoiceService.saveInvoice(invoice);
+//            stisBookingService.markBookingPaymentStatusAsCompleted(Integer.parseInt(bookingId));
             return ResponseEntity.ok("Payment valid: " + fields.get("vnp_ResponseCode"));
         } else {
             return ResponseEntity.badRequest().body("Invalid payment signature");

@@ -36,6 +36,8 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
+import { useAuth } from "../../components/provider/AuthProvider";
+import LoginRequiredModal from "../../components/common/LoginRequiredModal";
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
@@ -44,9 +46,19 @@ const { Option } = Select;
 
 const STITesting = () => {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(0);
+  const { user } = useAuth();
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [form] = Form.useForm();
+  const [isLoginModal, setIsLoginModal] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+
+  const handleUserService = () => {
+    if (!user) {
+      setIsLoginModal(true);
+    } else {
+      navigate("/sti-booking");
+    }
+  };
 
   // STI Testing packages data - Chỉ còn 2 gói
   const testingPackages = [
@@ -242,10 +254,14 @@ const STITesting = () => {
                   type="primary"
                   size="large"
                   className="h-12 px-8 rounded-full shadow-md"
-                  onClick={() => navigate("/sti-booking")}
+                  onClick={handleUserService}
                 >
                   Đặt lịch ngay
                 </Button>
+                <LoginRequiredModal
+                  open={isLoginModal}
+                  onClose={() => setIsLoginModal(false)}
+                />
 
                 <Button
                   size="large"

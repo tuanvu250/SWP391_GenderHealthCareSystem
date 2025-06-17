@@ -31,7 +31,10 @@ public class StisService {
     private BigDecimal price;
 
     @Column(name = "Duration")
-    private Integer duration; // Assuming duration is in minutes or a defined unit
+    private String duration; // Assuming duration is in minutes or a defined unit
+
+    @Column(name = "Tests", columnDefinition = "NVARCHAR(MAX)")
+    private String tests;
 
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;

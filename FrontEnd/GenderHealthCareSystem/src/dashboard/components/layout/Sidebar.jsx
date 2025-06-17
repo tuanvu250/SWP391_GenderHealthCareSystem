@@ -24,119 +24,96 @@ import {
   EditOutlined,
   CheckCircleOutlined,
   SendOutlined,
-  SwapOutlined
+  SwapOutlined,
 } from "@ant-design/icons";
 import { FaUserMd, FaUserTie, FaUserShield, FaCrown } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const { Sider } = Layout;
 
-const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }) => {
-  
+const Sidebar = ({
+  collapsed,
+  onCollapse,
+  selectedMenu,
+  onMenuSelect,
+  userRole,
+}) => {
   // Menu items cho từng role
   const getMenuItems = (role) => {
     switch (role) {
-      case 'Consultant':
+      case "Consultant":
         return [
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan"
+            label: "Tổng quan",
           },
           {
             key: "profile",
             icon: <UserOutlined />,
-            label: "Hồ sơ tư vấn viên"
+            label: "Hồ sơ tư vấn viên",
           },
           {
             key: "appointments",
             icon: <CalendarOutlined />,
-            label: "Lịch hẹn tư vấn"
+            label: "Lịch hẹn tư vấn",
           },
           {
             key: "questions",
             icon: <MessageOutlined />,
-            label: "Câu hỏi chuyên môn"
+            label: "Câu hỏi chuyên môn",
           },
           {
             key: "reviews",
             icon: <StarOutlined />,
-            label: "Đánh giá và phản hồi"
+            label: "Đánh giá và phản hồi",
           },
           {
             key: "blog-management",
             icon: <EditOutlined />,
-            label: "Quản lý Blog",
-            children: [
-              {
-                key: "my-blogs",
-                label: "Bài viết của tôi"
-              },
-              {
-                key: "create-blog",
-                label: "Tạo bài viết mới"
-              }
-            ]
+            label: (
+              <Link to={"/consultant/dashboard/manage-blog"}>Quản lý Blog</Link>
+            ),
           },
           {
             key: "availability",
             icon: <CalendarOutlined />,
-            label: "Lịch làm việc"
+            label: "Lịch làm việc",
           },
           {
             key: "earnings",
             icon: <BankOutlined />,
-            label: "Thu nhập"
+            label: "Thu nhập",
           },
           {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt"
-          }
+            label: "Cài đặt",
+          },
         ];
 
-      case 'Staff':
+      case "Staff":
         return [
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan"
+            label: "Tổng quan",
           },
           {
             key: "appointments",
             icon: <CalendarOutlined />,
-            label: "Quản lý lịch hẹn"
+            label: "Quản lý lịch hẹn",
           },
           {
             key: "patients",
             icon: <TeamOutlined />,
-            label: "Quản lý bệnh nhân"
+            label: "Quản lý bệnh nhân",
           },
           {
             key: "sti-test-management",
             icon: <MedicineBoxOutlined />,
-            label: "Quản lý xét nghiệm STI",
-            children: [
-              {
-                key: "pending-tests",
-                label: "Chờ xử lý"
-              },
-              {
-                key: "in-progress-tests",
-                label: "Đang xét nghiệm"
-              },
-              {
-                key: "input-test-results",
-                label: "Nhập kết quả xét nghiệm"
-              },
-              {
-                key: "completed-tests",
-                label: "Hoàn thành"
-              },
-              {
-                key: "test-results",
-                label: "Xem kết quả xét nghiệm"
-              }
-            ]
+            label: <Link to={"/staff/dashboard/manage-booking-stis"}>Quản lý xét nghiệm STI</Link>,
           },
           {
             key: "customer-support",
@@ -145,60 +122,60 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "general-questions",
-                label: "Câu hỏi thường gặp"
+                label: "Câu hỏi thường gặp",
               },
               {
                 key: "technical-support",
-                label: "Hỗ trợ kỹ thuật"
+                label: "Hỗ trợ kỹ thuật",
               },
               {
                 key: "forward-questions",
-                label: "Chuyển câu hỏi chuyên môn"
+                label: "Chuyển câu hỏi chuyên môn",
               },
               {
                 key: "chat-support",
-                label: "Chat trực tuyến"
-              }
-            ]
+                label: "Chat trực tuyến",
+              },
+            ],
           },
           {
             key: "reports",
             icon: <FileTextOutlined />,
-            label: "Báo cáo"
+            label: "Báo cáo",
           },
           {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt"
-          }
+            label: "Cài đặt",
+          },
         ];
 
-      case 'Manager':
+      case "Manager":
         return [
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan"
+            label: "Tổng quan",
           },
           {
             key: "analytics",
             icon: <BarChartOutlined />,
-            label: "Phân tích dữ liệu"
+            label: "Phân tích dữ liệu",
           },
           {
             key: "staff-management",
             icon: <TeamOutlined />,
-            label: "Quản lý nhân viên"
+            label: "Quản lý nhân viên",
           },
           {
             key: "consultant-management",
             icon: <UserOutlined />,
-            label: "Quản lý consultant"
+            label: "Quản lý consultant",
           },
           {
             key: "service-management",
             icon: <MedicineBoxOutlined />,
-            label: "Quản lý dịch vụ"
+            label: "Quản lý dịch vụ",
           },
           {
             key: "blog-oversight",
@@ -207,46 +184,46 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "approve-blogs",
-                label: "Duyệt bài viết"
+                label: "Duyệt bài viết",
               },
               {
                 key: "blog-performance",
-                label: "Hiệu suất bài viết"
+                label: "Hiệu suất bài viết",
               },
               {
                 key: "content-guidelines",
-                label: "Hướng dẫn nội dung"
-              }
-            ]
+                label: "Hướng dẫn nội dung",
+              },
+            ],
           },
           {
             key: "financial",
             icon: <BankOutlined />,
-            label: "Tài chính"
+            label: "Tài chính",
           },
           {
             key: "quality-control",
             icon: <StarOutlined />,
-            label: "Kiểm soát chất lượng"
+            label: "Kiểm soát chất lượng",
           },
           {
             key: "reports",
             icon: <FileTextOutlined />,
-            label: "Báo cáo quản lý"
+            label: "Báo cáo quản lý",
           },
           {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt"
-          }
+            label: "Cài đặt",
+          },
         ];
 
-      case 'Admin':
+      case "Admin":
         return [
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan hệ thống"
+            label: "Tổng quan hệ thống",
           },
           {
             key: "user-management",
@@ -255,25 +232,25 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "all-users",
-                label: "Tất cả người dùng"
+                label: "Tất cả người dùng",
               },
               {
                 key: "consultants",
-                label: "Consultant"
+                label: "Consultant",
               },
               {
                 key: "staff",
-                label: "Nhân viên"
+                label: "Nhân viên",
               },
               {
                 key: "managers",
-                label: "Quản lý"
+                label: "Quản lý",
               },
               {
                 key: "customers",
-                label: "Khách hàng"
-              }
-            ]
+                label: "Khách hàng",
+              },
+            ],
           },
           {
             key: "content-management",
@@ -282,17 +259,17 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "blog-administration",
-                label: "Quản trị Blog"
+                label: "Quản trị Blog",
               },
               {
                 key: "content-moderation",
-                label: "Kiểm duyệt nội dung"
+                label: "Kiểm duyệt nội dung",
               },
               {
                 key: "seo-management",
-                label: "Quản lý SEO"
-              }
-            ]
+                label: "Quản lý SEO",
+              },
+            ],
           },
           {
             key: "system-config",
@@ -301,17 +278,17 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "general-settings",
-                label: "Cài đặt chung"
+                label: "Cài đặt chung",
               },
               {
                 key: "payment-settings",
-                label: "Cài đặt thanh toán"
+                label: "Cài đặt thanh toán",
               },
               {
                 key: "notification-settings",
-                label: "Cài đặt thông báo"
-              }
-            ]
+                label: "Cài đặt thông báo",
+              },
+            ],
           },
           {
             key: "security",
@@ -320,17 +297,17 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "access-logs",
-                label: "Nhật ký truy cập"
+                label: "Nhật ký truy cập",
               },
               {
                 key: "permissions",
-                label: "Phân quyền"
+                label: "Phân quyền",
               },
               {
                 key: "audit-trail",
-                label: "Kiểm toán"
-              }
-            ]
+                label: "Kiểm toán",
+              },
+            ],
           },
           {
             key: "system-monitoring",
@@ -339,17 +316,17 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "performance",
-                label: "Hiệu suất"
+                label: "Hiệu suất",
               },
               {
                 key: "error-logs",
-                label: "Nhật ký lỗi"
+                label: "Nhật ký lỗi",
               },
               {
                 key: "api-monitoring",
-                label: "Giám sát API"
-              }
-            ]
+                label: "Giám sát API",
+              },
+            ],
           },
           {
             key: "database",
@@ -358,17 +335,17 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "backup",
-                label: "Sao lưu"
+                label: "Sao lưu",
               },
               {
                 key: "maintenance",
-                label: "Bảo trì"
+                label: "Bảo trì",
               },
               {
                 key: "migrations",
-                label: "Migration"
-              }
-            ]
+                label: "Migration",
+              },
+            ],
           },
           {
             key: "integrations",
@@ -377,28 +354,28 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
             children: [
               {
                 key: "third-party",
-                label: "Bên thứ 3"
+                label: "Bên thứ 3",
               },
               {
                 key: "apis",
-                label: "API Management"
+                label: "API Management",
               },
               {
                 key: "webhooks",
-                label: "Webhooks"
-              }
-            ]
+                label: "Webhooks",
+              },
+            ],
           },
           {
             key: "maintenance",
             icon: <ToolOutlined />,
-            label: "Bảo trì hệ thống"
+            label: "Bảo trì hệ thống",
           },
           {
             key: "compliance",
             icon: <SafetyOutlined />,
-            label: "Tuân thủ & Quy định"
-          }
+            label: "Tuân thủ & Quy định",
+          },
         ];
 
       default:
@@ -406,30 +383,42 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan"
-          }
+            label: "Tổng quan",
+          },
         ];
     }
   };
 
-
   // Title cho từng role
   const getRoleTitle = (role) => {
     switch (role) {
-      case 'consultant':
-        return "Consultant Panel";
-      case 'staff':
-        return "Staff Panel";
-      case 'manager':
-        return "Manager Panel";
-      case 'admin':
-        return "Admin Panel";
+      case "Consultant":
+        return "Trang Tư Vấn Viên";
+      case "Staff":
+        return "Trang Nhân Viên";
+      case "Manager":
+        return "Trang Quản Lý";
+      case "Admin":
+        return "Trang Quản Trị";
       default:
-        return "Dashboard";
+        return "Bảng Điều Khiển";
     }
   };
 
+  const siderStyle = {
+    overflow: "auto",
+    height: "100vh",
+    position: "sticky",
+    insetInlineStart: 0,
+    top: 0,
+    bottom: 0,
+    scrollbarWidth: "none",
+    scrollbarGutter: "stable",
+    msOverFlowStyle: "none",
+  };
+
   const menuItems = getMenuItems(userRole);
+  const [isMobile, setIsMobile] = useState(false);
 
   return (
     <Sider
@@ -438,6 +427,7 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
       onCollapse={onCollapse}
       theme="light"
       width={280}
+      style={siderStyle}
       className="shadow-sm"
     >
       {/* Header */}
@@ -448,7 +438,7 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
           </div>
         )}
       </div>
-      
+
       {/* Menu */}
       <Menu
         mode="inline"
@@ -457,7 +447,7 @@ const Sidebar = ({ collapsed, onCollapse, selectedMenu, onMenuSelect, userRole }
         onClick={({ key }) => onMenuSelect(key)}
         className="border-r-0 h-full"
         style={{
-          fontSize: '14px'
+          fontSize: "14px",
         }}
       />
     </Sider>

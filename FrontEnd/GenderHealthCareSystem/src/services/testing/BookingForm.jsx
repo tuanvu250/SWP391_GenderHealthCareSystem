@@ -11,10 +11,13 @@ import {
   Col,
   Input,
   Divider,
+  Space,
 } from "antd";
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  DollarCircleOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -57,12 +60,11 @@ const BookingForm = ({
                   onClick={() => handlePackageSelect(pkg)}
                 >
                   <Card
-                    className={`h-full cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                    className={`h-full cursor-pointer transition-all duration-300 hover:shadow-lg p-[24px] ${
                       isSelected
                         ? "border-2 border-[#0099CF] shadow-md"
                         : "border border-gray-200"
                     }`}
-                    bodyStyle={{ padding: "24px" }}
                   >
                     {/* Selected indicator */}
                     {isSelected && (
@@ -177,12 +179,45 @@ const BookingForm = ({
           </Form.Item>
         </Col>
         
+        {/* Thêm phương thức thanh toán */}
         <Col xs={24}>
-          <Form.Item name="medicalHistory" label="Tiểu sử bệnh">
-            <TextArea
-              rows={3}
-              placeholder="Vui lòng ghi rõ các bệnh nền hoặc các triệu chứng bất thường bạn đang gặp phải (nếu có)"
-            />
+          <Divider />
+          <h3 className="text-lg font-semibold mb-4">Phương thức thanh toán</h3>
+          <Form.Item 
+            name="paymentMethod" 
+            rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán!" }]}
+          >
+            <Radio.Group className="w-full">
+              <Space direction="vertical" className="w-full">
+                <Card 
+                  className="w-full cursor-pointer hover:border-blue-500 mb-2 p-[16px]"
+                >
+                  <Radio value="cash" className="w-full">
+                    <div className="flex items-center">
+                      <DollarCircleOutlined className="mr-2 text-lg text-green-600" />
+                      <div>
+                        <div className="font-medium">Thanh toán tiền mặt</div>
+                        <div className="text-gray-500 text-sm">Thanh toán trực tiếp tại cơ sở khi đến xét nghiệm</div>
+                      </div>
+                    </div>
+                  </Radio>
+                </Card>
+                
+                <Card 
+                  className="w-full cursor-pointer hover:border-blue-500 p-[16px]"
+                >
+                  <Radio value="vnpay" className="w-full">
+                    <div className="flex items-center">
+                      <BankOutlined className="mr-2 text-lg text-blue-600" />
+                      <div>
+                        <div className="font-medium">Chuyển khoản ngân hàng</div>
+                        <div className="text-gray-500 text-sm">Thanh toán bằng VNPay (ATM/Visa/MasterCard/QR Code)</div>
+                      </div>
+                    </div>
+                  </Radio>
+                </Card>
+              </Space>
+            </Radio.Group>
           </Form.Item>
         </Col>
 
@@ -190,7 +225,7 @@ const BookingForm = ({
           <Form.Item name="notes" label="Ghi chú thêm">
             <TextArea
               rows={3}
-              placeholder="Có thông tin gì đặc biệt bạn muốn chúng tôi biết?"
+              placeholder="Có thông tin gì đặc biệt bạn muốn chúng tôi biết? Tiểu sử bệnh hoặc các triệu chứng bất thường bạn đang gặp phải (nếu có)"
             />
           </Form.Item>
         </Col>

@@ -32,30 +32,30 @@ const Blog = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
-  const [sortOrder, setSortOrder] = useState("newest");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 8; // Điều chỉnh số lượng bài hiển thị để chia hết cho 4
   const [blogPosts, setBlogPosts] = useState([]);
   const [totalPosts, setTotalPosts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [allTags, setAllTags] = useState([
-    { value: "sức khỏe", label: "Sức Khỏe", color: "green" },
-    { value: "giới tính", label: "Giới Tính", color: "blue" },
-    { value: "tư vấn", label: "Tư Vấn", color: "purple" },
+    { value: "Sức khỏe", label: "Sức Khỏe", color: "green" },
+    { value: "Giới tính", label: "Giới tính", color: "blue" },
+    { value: "Tư vấn", label: "Tư vấn", color: "purple" },
     { value: "STIs", label: "STIs", color: "red" },
-    { value: "kinh nguyệt", label: "Kinh Nguyệt", color: "pink" },
+    { value: "Kinh nguyệt", label: "Kinh nguyệt", color: "pink" },
   ]);
 
   const getTagColor = (tag) => {
     const tagColors = {
-      "sức khỏe": "green",
-      "giới tính": "blue",
-      "tư vấn": "purple",
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
       STIs: "red",
-      "kinh nguyệt": "pink",
+      "Kinh nguyệt": "pink",
     };
 
-    return tagColors[tag.toLowerCase()] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
+    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
   };
 
   const fetchBlogPosts = async () => {
@@ -65,13 +65,10 @@ const Blog = () => {
         page: currentPage - 1, // API thường sử dụng chỉ số trang bắt đầu từ 0
         size: postsPerPage,
         tag: selectedTags.join(", "), // Chuyển đổi mảng tags thành chuỗi
+        sort: sortOrder,
       });
 
-      if (
-        response &&
-        response.data &&
-        Array.isArray(response.data.data.content)
-      ) {
+      if (response && response.data) {
         setTotalPosts(response.data.data.totalElements);
         setTotalPages(response.data.data.totalPages);
 
@@ -95,20 +92,11 @@ const Blog = () => {
           };
         });
 
-        if (sortOrder === "oldest") {
-          // Sắp xếp bài viết theo ngày đăng cũ nhất trước
-          formattedPosts.sort(
-            (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt)
-          );
-        } else {
-          // Sắp xếp bài viết theo ngày đăng mới nhất trước
-          formattedPosts.sort(
-            (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
-          );
-        }
-
         setBlogPosts(formattedPosts);
-        console.log(">>> Blog posts processed:", formattedPosts);
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
       }
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -127,7 +115,6 @@ const Blog = () => {
 
   // Xử lý thay đổi tags
   const handleTagChange = (values) => {
-    console.log(">>> Selected tags:", values.join(","));
     setSelectedTags(values);
   };
 
@@ -158,7 +145,7 @@ const Blog = () => {
         </div>
 
         {/* Search & Filter Section */}
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+        <div className="bg-white p-4 rounded-xl shadow-sm mb-8 md:sticky top-15 z-10">
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} md={10}>
               <Search
@@ -202,8 +189,8 @@ const Blog = () => {
                 defaultValue="newest"
                 size="large"
               >
-                <Option value="newest">Mới nhất trước</Option>
-                <Option value="oldest">Cũ nhất trước</Option>
+                <Option value="desc">Mới nhất trước</Option>
+                <Option value="asc">Cũ nhất trước</Option>
               </Select>
             </Col>
           </Row>
@@ -271,8 +258,9 @@ const Blog = () => {
                     />
                   </div>
                 }
+                onClick={() => navigate(`/blog/${post.postId}`)}
               >
-                <div className="flex flex-col flex-grow p-4">
+                <div className="flex flex-col flex-grow p-2">
                   <div className="flex flex-wrap gap-1 mb-2">
                     {post.tags.map((tag, index) => (
                       <Tag key={index} color={tag.color} className="text-xs">

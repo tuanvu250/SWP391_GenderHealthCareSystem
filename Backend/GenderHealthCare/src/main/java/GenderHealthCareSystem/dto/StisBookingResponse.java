@@ -1,11 +1,14 @@
 package GenderHealthCareSystem.dto;
 
+import GenderHealthCareSystem.model.StisBookingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +20,10 @@ public class StisBookingResponse {
     private Integer serviceId;
     private String serviceName;
     private BigDecimal servicePrice;
-    private LocalDateTime bookingDate;
-    private String status;
+    private LocalDate bookingDate;
+    private LocalTime bookingTimeStart;
+    private LocalTime bookingTimeEnd;
+    private StisBookingStatus status;
     private String paymentStatus;
     private String paymentMethod;
     private String note;
