@@ -25,11 +25,15 @@ public class StisInvoice {
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private StisBooking stisBooking;
 
+    @Column(name = "TransactionId")
+    private String transactionId;
+
     @Column(name = "TotalAmount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
     @Column(name = "PaymentMethod", length = 50)
     private String paymentMethod;
+
 
     @Column(name = "PaidAt")
     private LocalDateTime paidAt;

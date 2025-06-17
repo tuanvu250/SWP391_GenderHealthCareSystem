@@ -53,12 +53,17 @@ public class StisBookingService {
     public Optional<StisBookingResponse> getBookingById(Integer id) {
         return stisBookingRepository.findById(id).stream().map(this::mapToResponse).findFirst();
     }
+    public Optional<StisBooking> getBookingByIdNotForResponse(Integer id) {
+        return stisBookingRepository.findById(id);
+    }
+
 
     public StisBooking createBooking(StisBookingRequest booking) {
         StisBooking stisBooking = new StisBooking();
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
         stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
-        stisBooking.setBookingDate(booking.getBookingDate());
+        LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
+        stisBooking.setBookingDate(bookingDate);
         stisBooking.setStatus(StisBookingStatus.PENDING);
         stisBooking.setPaymentStatus("Chưa thanh toán");
         stisBooking.setPaymentMethod(booking.getPaymentMethod());
@@ -71,8 +76,10 @@ public class StisBookingService {
 
     public StisBooking updateBooking(StisBookingRequest newBooking, Integer id) {
         StisBooking stisBooking = this.stisBookingRepository.findById(id).get();
-        if (newBooking.getBookingDate() != null) {
-            stisBooking.setBookingDate(newBooking.getBookingDate());
+        if (newBooking.getBookingDate() != null && newBooking.getBookingTime() != null) {
+            LocalDateTime bookingDate = LocalDateTime.of(newBooking.getBookingDate(), newBooking.getBookingTime());
+
+            stisBooking.setBookingDate(bookingDate);
         }
         stisBooking.setPaymentMethod(newBooking.getPaymentMethod());
         stisBooking.setNote(newBooking.getNote());
@@ -115,6 +122,14 @@ public class StisBookingService {
             stisBookingRepository.save(booking);
         }
     }
+    public void markBookingPaymentStatusAsCompleted(Integer id) {
+        Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
+        if (bookingOptional.isPresent()) {
+            StisBooking booking = bookingOptional.get();
+            booking.setPaymentStatus("Đã thanh toán");
+            stisBookingRepository.save(booking);
+        }
+    }
 
 //    public List<StisBookingResponse> getBookingHistoryByCustomer(Integer customerId) {
 //        // Fetch booking history for a specific customer from the repository
@@ -143,7 +158,9 @@ public class StisBookingService {
         response.setServiceId(booking.getStisService().getServiceId());
         response.setServiceName(booking.getStisService().getServiceName());
         response.setServicePrice(booking.getStisService().getPrice());
-        response.setBookingDate(booking.getBookingDate());
+        response.setBookingDate(booking.getBookingDate().toLocalDate());
+        response.setBookingTimeStart(booking.getBookingDate().toLocalTime());
+        response.setBookingTimeEnd(booking.getBookingDate().toLocalTime().plusHours(1));
         response.setStatus(booking.getStatus());
         response.setPaymentStatus(booking.getPaymentStatus());
         response.setPaymentMethod(booking.getPaymentMethod());

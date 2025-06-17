@@ -113,29 +113,7 @@ const Sidebar = ({
           {
             key: "sti-test-management",
             icon: <MedicineBoxOutlined />,
-            label: "Quản lý xét nghiệm STI",
-            children: [
-              {
-                key: "pending-tests",
-                label: "Chờ xử lý",
-              },
-              {
-                key: "in-progress-tests",
-                label: "Đang xét nghiệm",
-              },
-              {
-                key: "input-test-results",
-                label: "Nhập kết quả xét nghiệm",
-              },
-              {
-                key: "completed-tests",
-                label: "Hoàn thành",
-              },
-              {
-                key: "test-results",
-                label: "Xem kết quả xét nghiệm",
-              },
-            ],
+            label: <Link to={"/staff/dashboard/manage-booking-stis"}>Quản lý xét nghiệm STI</Link>,
           },
           {
             key: "customer-support",
