@@ -1,5 +1,5 @@
 import { Route, Routes, Outlet } from "react-router-dom";
-import ScrollToTop from "../components/utils/ScrollToTop";
+import ScrollToTop from "../components/layout/ScrollToTop";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/Home";
@@ -25,6 +25,7 @@ import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
+import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -56,7 +57,11 @@ function RouteMap() {
           }
         />
         <Route path="/sti-testing" element={<STITesting />} />
-        <Route path="/sti-booking" element={<STIBooking />} />
+        <Route path="/sti-booking" element={
+          <ProtectedRoute>
+            <STIBooking />
+          </ProtectedRoute>
+        } />
         <Route
           path="/services/consultationbooking"
           element={<ConsultationBooking />}
@@ -101,6 +106,18 @@ function RouteMap() {
       >
         <Route index element={<h1>Dashboard</h1>} />
         <Route path="manage-blog" element={<ManageMyBlog />} />
+      </Route>
+
+      <Route
+        path="/staff/dashboard"
+        element={
+          <ProtectedRoute allowedRoles="Staff">
+            <DashboardLayout userRole={"Staff"}/>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<h1>Dashboard</h1>} />
+        <Route path="manage-booking-stis" element={<ManageBookingStis />} />
       </Route>
     </Routes>
   );
