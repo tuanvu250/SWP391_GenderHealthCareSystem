@@ -26,6 +26,7 @@ import Consultation from "../services/consultant/Consultation";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
+import BookingResult from "../services/BookingResult";
 // Layout component with Header
 const Layout = () => {
   return (
@@ -80,6 +81,7 @@ function RouteMap() {
               <OvulationCalendar/>
             </ProtectedRoute>
           } />
+        <Route path="/booking-result" element={<BookingResult />} />
         <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
