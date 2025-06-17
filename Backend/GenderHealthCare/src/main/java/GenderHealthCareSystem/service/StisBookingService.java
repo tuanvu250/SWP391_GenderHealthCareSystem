@@ -62,7 +62,8 @@ public class StisBookingService {
         StisBooking stisBooking = new StisBooking();
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
         stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
-        stisBooking.setBookingDate(booking.getBookingDate());
+        LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
+        stisBooking.setBookingDate(bookingDate);
         stisBooking.setStatus(StisBookingStatus.PENDING);
         stisBooking.setPaymentStatus("Chưa thanh toán");
         stisBooking.setPaymentMethod(booking.getPaymentMethod());
@@ -75,8 +76,10 @@ public class StisBookingService {
 
     public StisBooking updateBooking(StisBookingRequest newBooking, Integer id) {
         StisBooking stisBooking = this.stisBookingRepository.findById(id).get();
-        if (newBooking.getBookingDate() != null) {
-            stisBooking.setBookingDate(newBooking.getBookingDate());
+        if (newBooking.getBookingDate() != null && newBooking.getBookingTime() != null) {
+            LocalDateTime bookingDate = LocalDateTime.of(newBooking.getBookingDate(), newBooking.getBookingTime());
+
+            stisBooking.setBookingDate(bookingDate);
         }
         stisBooking.setPaymentMethod(newBooking.getPaymentMethod());
         stisBooking.setNote(newBooking.getNote());

@@ -26,7 +26,7 @@ public class PaymentController {
                                                 HttpServletRequest request) throws Exception {
         System.out.println(request.getParameter("bankcode"));
         String bankCode = request.getParameter("vnp_BankCode");
-
+        System.out.println(request.getRemoteAddr());
         String paymentUrl = vnPayService.createPaymentUrl(amount, orderInfo, request.getRemoteAddr());
         return ResponseEntity.ok(paymentUrl);
     }
