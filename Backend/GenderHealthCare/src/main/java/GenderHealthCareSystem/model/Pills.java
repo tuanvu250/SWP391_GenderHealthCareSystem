@@ -14,6 +14,7 @@
     @NoArgsConstructor
     @AllArgsConstructor
     public class Pills {
+        public enum NotificationFrequency { DAILY, WEEKLY }
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +39,10 @@
 
         @Column(name = "CreatedAt")
         private LocalDateTime createdAt;
+
+        @Enumerated(EnumType.STRING)
+        @Column(name = "NotificationFrequency")
+        private NotificationFrequency notificationFrequency = NotificationFrequency.DAILY;
     //
     //    @OneToMany(mappedBy = "pill", cascade = CascadeType.ALL, orphanRemoval = true)
     //    private List<PillSchedule> pillSchedules;

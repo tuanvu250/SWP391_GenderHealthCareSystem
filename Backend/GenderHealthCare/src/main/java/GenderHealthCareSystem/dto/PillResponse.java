@@ -19,4 +19,6 @@ public class PillResponse {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private Integer customerId;
+    private String notificationFrequency;
+
 }
