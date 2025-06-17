@@ -23,7 +23,7 @@ import {
 import { formatDateTime } from "../../../components/utils/formatTime";
 import BlogModal from "../../components/modal/BlogModal";
 import { viewMyBlogsAPI } from "../../../components/utils/api";
-import { deleteBlogAPI } from "../../../components/utils/api";
+import ViewBlogModal from "../../components/modal/ViewBlogModal";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -41,6 +41,8 @@ const ManageMyBlog = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentBlog, setCurrentBlog] = useState(null);
   const [statusFilter, setStatusFilter] = useState([]);
+  const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState(null);
 
   // Danh sách tags
   const tagOptions = [
@@ -146,6 +148,17 @@ const ManageMyBlog = () => {
     }
   };
 
+  // Mở modal xem chi tiết blog
+  const handleViewBlog = (postId) => {
+    const blog = blogList.find((blog) => blog.postId === postId);
+    if (blog) {
+      setSelectedBlog(blog);
+      setViewBlogModalVisible(true);
+    } else {
+      message.error("Không tìm thấy thông tin bài viết");
+    }
+  };
+
   // Mở modal thêm blog mới
   const handleAddNew = () => {
     setCurrentBlog(null);
@@ -244,7 +257,7 @@ const ManageMyBlog = () => {
             {" "}
             {/* Tooltip hiển thị toàn bộ tiêu đề khi hover */}
             <a
-              href={`/blog/${record.postId}`}
+              onClick={() => handleViewBlog(record.postId)}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium hover:text-blue-500"
@@ -475,6 +488,13 @@ const ManageMyBlog = () => {
         onCancel={() => setModalVisible(false)}
         onSuccess={handleModalSuccess}
         blog={currentBlog}
+      />
+
+      {/* Modal xem chi tiết blog */}
+      <ViewBlogModal
+        visible={viewBlogModalVisible}
+        onClose={() => setViewBlogModalVisible(false)}
+        blog={selectedBlog}
       />
     </div>
   );

@@ -22,10 +22,10 @@ const Login = () => {
       const response = await auth.loginAction(values);
       if (response.success) {
         message.success(response.message);
-        setTimeout(() => {
-          if (response.role === "Consultant") {
-            navigate("/consultant/dashboard");
-          } else navigate("/home");
+        setTimeout(() => {      
+          if (response.role === "Customer") {
+            navigate("/home");
+          } else navigate(`/${response.role.toLowerCase()}/dashboard`);
         }, 500) ;
       } else {
         message.error(response.message);
