@@ -239,7 +239,7 @@ export default function OvulationCalendar() {
 
         <div className="mt-8 flex justify-center gap-4">
           <button
-              onClick={() => navigate("/health-tracker")}
+              onClick={() => navigate("/menstrual-tracker")}
               className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
           >
             ← Quay lại theo dõi sức khỏe

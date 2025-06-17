@@ -7,48 +7,59 @@ import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
-import HealthTracker from "../menstrualcycle/HealthTracker";
+
 import Profile from "../user/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
-import AboutPage from "../site-info/AboutPage";
-import OvulationCalendar from "../menstrualcycle/OvulationCalendar";
+
+
+import PillTracker from "../healthtracker/PillTracker";
+import MenstrualTracker from "../healthtracker/MenstrualTracker";
+import OvulationCalendar from "../healthtracker/OvulationCalendar";
+import PillScheduleCalendar from "../healthtracker/PillScheduleCalendar";
+
 import Blog from "../blog/Blog";
 import BlogDetail from "../blog/BlogDetail";
-import MedicationReminder from "../menstrualcycle/MedicationReminder";
+
+import AboutPage from "../site-info/AboutPage";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
 import ExpertSection from "../site-info/Expert";
+
 import STITesting from "../services/testing/STITesting";
 import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
+
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
 import BookingResult from "../services/BookingResult";
-// Layout component with Header
-const Layout = () => {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <ScrollToTop />
-      <Header />
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
-  );
-};
+
+import MinhTrang from "../site-info/Expert-info/MinhTrang";
+import PeriodHistory from "../healthtracker/PeriodHistory";
+
+// Layout có Header/Footer
+const Layout = () => (
+  <div className="flex flex-col min-h-screen">
+    <ScrollToTop />
+    <Header />
+    <main className="flex-grow">
+      <Outlet />
+    </main>
+    <Footer />
+  </div>
+);
 
 function RouteMap() {
   return (
     <Routes>
-      {/* Routes với Layout (có Header/Footer) */}
+      {/* Các route có layout Header/Footer */}
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/health-tracker" element={<HealthTracker />} />
+        <Route path="/pill-tracker" element={<PillTracker />} />
+        <Route path="/menstrual-tracker" element={<MenstrualTracker />} />
         <Route
           path="/profile"
           element={
@@ -58,51 +69,59 @@ function RouteMap() {
           }
         />
         <Route path="/sti-testing" element={<STITesting />} />
-        <Route path="/sti-booking" element={
-          <ProtectedRoute>
-            <STIBooking />
-          </ProtectedRoute>
-        } />
         <Route
-          path="/services/consultationbooking"
-          element={<ConsultationBooking />}
-        />
-        <Route
-          path="/services/consultation"
-          element={<Consultation />}
-        />
-
-        {/* Các trang khác */}
-        <Route path="/about" element={<AboutPage />} />
-        <Route 
-          path="menstrual-ovulation" 
+          path="/sti-booking"
           element={
             <ProtectedRoute>
-              <OvulationCalendar/>
+              <STIBooking />
             </ProtectedRoute>
-          } />
+          }
+        />
+        <Route path="/services/consultationbooking" element={<ConsultationBooking />} />
+        <Route path="/services/consultation" element={<Consultation />} />
+
+        {/* Trang thông tin */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route
+          path="/menstrual-ovulation"
+          element={
+            <ProtectedRoute>
+              <OvulationCalendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pill-schedule"
+          element={
+            <ProtectedRoute>
+              <PillScheduleCalendar />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/period-history" element={<PeriodHistory />} />
         <Route path="/booking-result" element={<BookingResult />} />
-        <Route path="/medication-reminder" element={<MedicationReminder />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:postId" element={<BlogDetail />} />
         <Route path="/contact" element={<ContactSection />} />
         <Route path="/privacy" element={<PrivacySection />} />
         <Route path="/expert" element={<ExpertSection />} />
+        <Route path="/expert/0" element={<MinhTrang />} />
       </Route>
 
-      {/* Routes không có Layout */}
+      {/* Các route không có Layout */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Routes dashboard */}
+      {/* Dashboard cho Consultant */}
       <Route
         path="/consultant/dashboard"
         element={
           <ProtectedRoute allowedRoles="Consultant">
-            <DashboardLayout userRole={"Consultant"}/>
+            <DashboardLayout userRole="Consultant" />
           </ProtectedRoute>
         }
       >
@@ -110,11 +129,12 @@ function RouteMap() {
         <Route path="manage-blog" element={<ManageMyBlog />} />
       </Route>
 
+      {/* Dashboard cho Staff */}
       <Route
         path="/staff/dashboard"
         element={
           <ProtectedRoute allowedRoles="Staff">
-            <DashboardLayout userRole={"Staff"}/>
+            <DashboardLayout userRole="Staff" />
           </ProtectedRoute>
         }
       >

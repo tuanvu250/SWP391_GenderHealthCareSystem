@@ -80,7 +80,20 @@ const Header = () => {
       },
     ],
   };
-
+  const healthTracker = {
+    items: [
+      {
+        key: "1",
+        label: "Theo dõi chu kì kinh nguyệt",
+        onClick: () => navigate("/menstrual-tracker"),
+      },
+      {
+        key: "2",
+        label: "Theo dõi lịch uống thuốc",
+        onClick: () => navigate("/pill-tracker"),
+      },
+    ],
+  };
   return (
     <header className="bg-white py-2.5 z-50 px-4 md:px-8 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
       <div className="mx-auto flex justify-between items-center w-full">
@@ -108,9 +121,12 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => navigate("/health-tracker")}>
-                Theo dõi kỳ kinh
-              </a>
+              <Dropdown menu={healthTracker} trigger={["hover"]}>
+                <a className="flex items-center space-x-1">
+                  <span>Sức khỏe</span>
+                  <CaretDownFilled className="text-gray-500 size-2.5 ml-1" />
+                </a>
+              </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => navigate("/about")}>Giới thiệu</a>

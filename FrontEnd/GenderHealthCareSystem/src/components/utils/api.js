@@ -202,3 +202,15 @@ export const bookStisAPI = async (values) => {
   //console.log(">>> Booking Data:", bookingData);
   return api.post("/stis-bookings", bookingData);
 };
+
+export const getAllPillSchedules = () => {
+  return api.get('/pills/schedule/all');
+};
+
+export const markPillTaken = (scheduleId, taken) => {
+  return api.post(`/pills/schedule/${scheduleId}/mark?taken=${taken}`);
+};
+
+export const pillAPI = (values) => {
+  return api.post('/pills', values);
+};

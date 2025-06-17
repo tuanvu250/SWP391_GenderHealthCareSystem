@@ -1,3 +1,4 @@
+import { Button } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +8,7 @@ const experts = [
     specialty: "Sản – Sức khỏe giới tính",
     desc: "Hơn 10 năm kinh nghiệm tại Bệnh viện Từ Dũ.",
     image: "https://hthaostudio.com/wp-content/uploads/2022/08/Anh-profile-bac-si-min.jpg",
+
   },
   {
     name: "TS. Lê Anh Tuấn",
@@ -98,59 +100,74 @@ const ExpertSection = () => {
   const navigate = useNavigate();
 
   return (
-      <>
-        {/* Navbar */}
-        <div className="px-8 py-12 max-w-7xl mx-auto text-gray-800">
-          <nav className="hidden lg:block">
-            <ul className="flex space-x-8 font-medium text-[#a6acaf]">
-              <li className="hover:text-[#909497] cursor-pointer py-2">
-                <a onClick={() => navigate("/about")}>Giới thiệu</a>
-              </li>
-              <li className="hover:text-[#909497] cursor-pointer py-2">
-                <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
-              </li>
-              <li className="text-blue-600 font-semibold border-b-2 border-blue-600 py-2 cursor-pointer">
-                <a onClick={() => navigate("/expert")}>Chuyên gia</a>
-              </li>
-              <li className="hover:text-[#909497] cursor-pointer py-2">
-                <a onClick={() => navigate("/privacy")}>Chính sách</a>
-              </li>
-              <li className="hover:text-[#909497] cursor-pointer py-2">
-                <a onClick={() => navigate("/contact")}>Liên hệ</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
+    <>
+      {/* Navbar */}
+      <div className="px-8 py-12 max-w-7xl mx-auto text-gray-800">
+        <nav className="hidden lg:block">
+          <ul className="flex space-x-8 font-medium text-[#a6acaf]">
+            <li className="hover:text-[#909497] cursor-pointer py-2">
+              <a onClick={() => navigate("/about")}>Giới thiệu</a>
+            </li>
+            <li className="hover:text-[#909497] cursor-pointer py-2">
+              <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
+            </li>
+            <li className="text-blue-600 font-semibold border-b-2 border-blue-600 py-2 cursor-pointer">
+              <a onClick={() => navigate("/expert")}>Chuyên gia</a>
+            </li>
+            <li className="hover:text-[#909497] cursor-pointer py-2">
+              <a onClick={() => navigate("/privacy")}>Chính sách</a>
+            </li>
+            <li className="hover:text-[#909497] cursor-pointer py-2">
+              <a onClick={() => navigate("/contact")}>Liên hệ</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
 
-        {/* Experts content */}
-        <section className="bg-white px-4 py-12">
-          <div className="max-w-7xl mx-auto px-6 space-y-10 text-gray-800">
-            <h2 className="text-3xl font-bold text-center text-gray-900">
-              Đội ngũ chuyên gia về sức khỏe giới tính
-            </h2>
-            <p className="text-center text-gray-600 max-w-3xl mx-auto">
-              Gender Healthcare quy tụ đội ngũ bác sĩ, chuyên gia hàng đầu trong lĩnh vực sức khỏe giới tính, LGBTQ+ và chăm sóc sinh sản.
-            </p>
+      {/* Experts content */}
+      <section className="bg-white px-4 py-12">
+        <div className="max-w-7xl mx-auto px-6 space-y-10 text-gray-800">
+          <h2 className="text-3xl font-bold text-center text-gray-900">
+            Đội ngũ chuyên gia về sức khỏe giới tính
+          </h2>
+          <p className="text-center text-gray-600 max-w-3xl mx-auto">
+            Gender Healthcare quy tụ đội ngũ bác sĩ, chuyên gia hàng đầu trong lĩnh vực sức khỏe giới tính, LGBTQ+ và chăm sóc sinh sản.
+          </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {experts.map((expert, index) => (
-                  <div key={index} className="bg-gray-50 rounded-xl p-6 shadow hover:shadow-md transition duration-300">
-                    <img
-                        src={expert.image}
-                        alt={expert.name}
-                        className="w-24 h-24 rounded-full object-cover mb-4 mx-auto"
-                    />
-                    <h3 className="text-lg font-semibold text-center text-gray-900">
-                      {expert.name}
-                    </h3>
-                    <p className="text-center text-sm text-blue-600 mb-2">{expert.specialty}</p>
-                    <p className="text-sm text-gray-700 text-center">{expert.desc}</p>
-                  </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {experts.map((expert, index) => (
+              <div
+                key={index}
+                className="bg-gray-50 rounded-xl p-6 shadow hover:shadow-md transition duration-300"
+              >
+                <img
+                  src={expert.image}
+                  alt={expert.name}
+                  className="w-24 h-24 rounded-full object-cover mb-4 mx-auto"
+                />
+                <h3 className="text-lg font-semibold text-center text-gray-900">
+                  {expert.name}
+                </h3>
+                <p className="text-center text-sm text-blue-600 mb-2">
+                  {expert.specialty}
+                </p>
+                <p className="text-sm text-gray-700 text-center">{expert.desc}</p>
+                <div className="flex justify-center">
+                  <Button
+                    type="primary"
+                    className="mt-4"
+                    onClick={() => navigate(`/expert/${index}`)}
+                  >
+                    Thông tin chi tiết
+                  </Button>
+                </div>
+              </div>
+
+            ))}
           </div>
-        </section>
-      </>
+        </div>
+      </section>
+    </>
   );
 };
 
