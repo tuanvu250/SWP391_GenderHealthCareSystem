@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Steps,
@@ -9,16 +9,14 @@ import {
   Typography,
   Spin,
 } from "antd";
-import {
-  MedicineBoxOutlined,
-  CheckOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
+import { MedicineBoxOutlined, CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/provider/AuthProvider";
 import BookingForm from "./BookingForm";
 import ConfirmBooking from "./ConfirmBooking";
 import dayjs from "dayjs";
+import { bookStisAPI } from "../../components/utils/api";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -40,7 +38,7 @@ const STIBooking = () => {
     appointmentDate: null,
     appointmentTime: null,
     paymentMethod: null,
-    notes: ""
+    notes: "",
   });
 
   // Các bước đặt lịch
@@ -65,6 +63,7 @@ const STIBooking = () => {
 
   // Thông tin khách hàng
   const userInfo = {
+    id: user?.id,
     fullName: user?.fullName,
     phone: user?.phone,
     email: user?.email,
@@ -118,19 +117,13 @@ const STIBooking = () => {
 
   // Khung giờ làm việc
   const workingHours = [
-    { value: "08:00 - 08:30", label: "08:00 - 08:30" },
-    { value: "08:30 - 09:00", label: "08:30 - 09:00" },
-    { value: "09:00 - 09:30", label: "09:00 - 09:30" },
-    { value: "09:30 - 10:00", label: "09:30 - 10:00" },
-    { value: "10:00 - 10:30", label: "10:00 - 10:30" },
-    { value: "10:30 - 11:00", label: "10:30 - 11:00" },
-    { value: "13:30 - 14:00", label: "13:30 - 14:00" },
-    { value: "14:00 - 14:30", label: "14:00 - 14:30" },
-    { value: "14:30 - 15:00", label: "14:30 - 15:00" },
-    { value: "15:00 - 15:30", label: "15:00 - 15:30" },
-    { value: "15:30 - 16:00", label: "15:30 - 16:00" },
-    { value: "16:00 - 16:30", label: "16:00 - 16:30" },
-    { value: "16:30 - 17:00", label: "16:30 - 17:00" },
+    { value: "08:00", label: "08:00 - 09:00" },
+    { value: "09:00", label: "09:00 - 10:00" },
+    { value: "10:00", label: "10:00 - 11:00" },
+    { value: "13:00", label: "13:00 - 14:00" },
+    { value: "14:00", label: "14:00 - 15:00" },
+    { value: "15:00", label: "15:00 - 16:00" },
+    { value: "16:00", label: "16:00 - 17:00" },
   ];
 
   // Disable các ngày trong quá khứ và cuối tuần
@@ -189,8 +182,6 @@ const STIBooking = () => {
       const currentValues = form.getFieldsValue(true);
       const allValues = { ...formData, ...currentValues };
 
-      console.log("All form data:", allValues);
-
       setIsSubmitting(true);
 
       // Data chuẩn bị gửi cho API
@@ -199,23 +190,20 @@ const STIBooking = () => {
         appointmentDate: allValues.appointmentDate.format("YYYY-MM-DD"),
         appointmentTime: allValues.appointmentTime,
         paymentMethod: allValues.paymentMethod,
-        medicalHistory: allValues.medicalHistory || "",
-        notes: allValues.notes || "",
-        userId: user?.id || 0, // Thêm ? để tránh lỗi nếu user là null
+        notes: allValues.notes,
       };
 
-      console.log("Dữ liệu đặt lịch:", bookingData);
+      //console.log("Dữ liệu đặt lịch:", bookingData);
 
       // Mô phỏng API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await bookStisAPI(bookingData);
 
       if (allValues.paymentMethod === "cash") {
         // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
         setBookingSuccess(true);
-      } else if (allValues.paymentMethod === "vnpay") {
-        // Nếu thanh toán VNPay, chuyển đến hàm xử lý thanh toán
-        await handleVNPayPayment(bookingData);
+      } else if (allValues.paymentMethod === "credit card") {
+        await handlePayment(bookingData);
       }
     } catch (error) {
       console.error("Error during booking:", error);
@@ -225,34 +213,31 @@ const STIBooking = () => {
     }
   };
 
-  // Xử lý thanh toán VNPay
-  const handleVNPayPayment = async (bookingData) => {
+  const handlePayment = async (bookingData) => {
     try {
-      console.log("Gọi API thanh toán VNPay với dữ liệu:", bookingData);
 
-      // Mô phỏng API call VNPay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await axios.get("/payment/vn-pay", {
+        params: {
+          amount: totalPrice, 
+          orderInfo: `Thanh toán xét nghiệm STI ${Date.now()}`,
+        },
+        responseType: 'text', // Để nhận về URL
+        maxRedirects: 0, // Không tự động chuyển hướng
+      });
 
       // Mô phỏng trả về URL thanh toán từ API
-      const paymentUrl = `https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=${
-        totalPrice * 100
-      }&vnp_TxnRef=STI${Date.now()}&vnp_OrderInfo=Thanh+toan+xet+nghiem+STI`;
 
-      setPaymentUrl(paymentUrl);
       setIsConfirmModalOpen(false);
 
-      // Trong môi trường thực tế, chúng ta sẽ chuyển hướng đến URL thanh toán
-      // window.location.href = paymentUrl;
-
       // Mô phỏng thanh toán thành công
-      message.success("Đang chuyển hướng đến trang thanh toán VNPay...");
+      message.success("Đang chuyển hướng đến trang thanh toán ...");
 
       // Giả lập thanh toán thành công sau 3 giây
       setTimeout(() => {
-        setBookingSuccess(true);
+        window.location.href = response.data;
       }, 3000);
     } catch (error) {
-      console.error("Error processing VNPay payment:", error);
+      console.error("Error processing payment:", error);
       message.error("Có lỗi xảy ra khi xử lý thanh toán, vui lòng thử lại.");
     }
   };
@@ -363,7 +348,6 @@ const STIBooking = () => {
           {renderStepContent()}
           {renderNavigationButtons()}
         </Form>
-
       </div>
 
       {/* Modal xác nhận đặt lịch */}
@@ -393,7 +377,7 @@ const STIBooking = () => {
                 <span className="font-bold">
                   {form.getFieldValue("paymentMethod") === "cash"
                     ? "Tiền mặt tại cơ sở"
-                    : "Thanh toán qua VNPay"}
+                    : "Thanh toán qua ngân hàng"}
                 </span>
               </p>
             </div>
@@ -416,7 +400,6 @@ const STIBooking = () => {
         </div>
       </Modal>
 
-      {/* Modal thanh toán VNPay - Trong thực tế sẽ redirect đến trang VNPay */}
       {paymentUrl && (
         <Modal
           title="Đang chuyển hướng đến cổng thanh toán"
@@ -428,7 +411,7 @@ const STIBooking = () => {
           <div className="text-center py-6">
             <Spin size="large" />
             <div className="mt-4">
-              <p>Đang chuyển hướng đến cổng thanh toán VNPay...</p>
+              <p>Đang chuyển hướng đến cổng thanh toán...</p>
               <p className="text-gray-500 text-sm mt-2">
                 Vui lòng không đóng trình duyệt trong quá trình thanh toán
               </p>

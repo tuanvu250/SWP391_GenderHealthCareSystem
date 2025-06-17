@@ -54,9 +54,9 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
                   <span className="flex items-center mt-1">
                     <DollarCircleOutlined className="text-green-600 mr-1" /> Thanh toán tiền mặt tại cơ sở
                   </span>
-                ) : paymentMethod === "vnpay" ? (
+                ) : paymentMethod === "credit card" ? (
                   <span className="flex items-center mt-1">
-                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua VNPay
+                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua ngân hàng
                   </span>
                 ) : (
                   <span className="text-orange-500">Chưa chọn</span>

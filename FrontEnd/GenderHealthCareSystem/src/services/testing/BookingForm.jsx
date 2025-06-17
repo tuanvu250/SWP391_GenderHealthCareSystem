@@ -229,13 +229,13 @@ const BookingForm = ({
               <Card
                 className="w-full cursor-pointer hover:border-blue-500 p-[16px]"
               >
-                <Radio value="vnpay" className="w-full">
+                <Radio value="credit card" className="w-full">
                   <div className="flex items-center">
                     <BankOutlined className="mr-2 text-lg text-blue-600" />
                     <div>
                       <div className="font-medium">Thanh toán trực tuyến</div>
                       <div className="text-gray-500 text-sm">
-                        Thanh toán bằng VNPay (ATM/Visa/MasterCard/QR Code)
+                        Thanh toán bằng ATM/Visa/MasterCard/QR Code
                       </div>
                     </div>
                   </div>
