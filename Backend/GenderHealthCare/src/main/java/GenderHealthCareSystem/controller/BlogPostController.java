@@ -184,7 +184,7 @@ public class BlogPostController {
     ) {
         System.out.println("orderBy: " + orderBy);
         Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, orderBy, page, size, sort);
-
+        System.out.println("title: " + title);
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
                 blogPosts.getNumber(),
