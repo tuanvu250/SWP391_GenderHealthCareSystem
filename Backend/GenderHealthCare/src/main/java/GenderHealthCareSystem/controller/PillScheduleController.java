@@ -64,7 +64,7 @@ public class PillScheduleController {
         }
 
         sch.setHasTaken(true);
-        sch.setConfirmToken(null);
+        //sch.setConfirmToken(null);
         repo.save(sch);
 
         String html = "<h3>✅ Bạn đã xác nhận uống ngày " + sch.getPillDate() + " thành công!</h3>";
