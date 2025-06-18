@@ -16,7 +16,7 @@ import BookingForm from "./BookingForm";
 import ConfirmBooking from "./ConfirmBooking";
 import dayjs from "dayjs";
 import { bookStisAPI } from "../../components/utils/api";
-import axios from "axios";
+import { paymentAPI } from "../../components/utils/api";
 
 const { Title, Text } = Typography;
 
@@ -218,17 +218,11 @@ const STIBooking = () => {
   const handlePayment = async (bookingID) => {
     try {
 
-      const response = await axios.get("/payment/vn-pay", {
-        params: {
-          amount: totalPrice, 
-          orderInfo: `Thanh toán xét nghiệm STI ${Date.now()}`,
-          bookingID: bookingID
-        },
-        responseType: 'text', // Để nhận về URL
-        maxRedirects: 0, // Không tự động chuyển hướng
-      });
+      const response = await paymentAPI(totalPrice, "Đặt lịch xét nghiệm STI", bookingID);
 
-      // Mô phỏng trả về URL thanh toán từ API
+      localStorage.setItem("bookingID", bookingID);
+      localStorage.setItem("amount", totalPrice);
+      localStorage.setItem("orderInfo", "Đặt lịch xét nghiệm STI");
 
       setIsConfirmModalOpen(false);
 

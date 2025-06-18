@@ -12,7 +12,7 @@ import { Spin } from "antd"; // Import Spin từ Ant Design
  */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   // Lấy thông tin xác thực
-  const { user, isAuthenticated, loading, refreshUserProfile } = useAuth();
+  const { user, isAuthenticated, loading} = useAuth();
 
   if (loading) {
     return (
@@ -29,8 +29,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     console.log("Chưa đăng nhập, chuyển hướng đến login");
     return <Navigate to="/login" replace />;
   }
-
-  console.log(">>> user:", user.role);
 
   // Nếu không cần kiểm tra role hoặc không có role nào được yêu cầu
   if (!allowedRoles || allowedRoles.length === 0) {

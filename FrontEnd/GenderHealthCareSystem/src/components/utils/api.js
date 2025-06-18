@@ -203,8 +203,24 @@ export const bookStisAPI = async (values) => {
   return api.post("/stis-bookings", bookingData);
 };
 
+export const paymentAPI = async (amount, orderInfo, bookingID) => {
+  return api.get("/payment/vn-pay", {
+    params: {
+      amount,
+      orderInfo,
+      bookingID,
+    },
+    responseType: "text", // Để nhận về URL
+    maxRedirects: 0,
+  });
+};
+
+export const createInvoiceAPI = async (query) => {
+  return api.get(`/payment/create-invoice?${query}`);
+};
+
 export const getAllPillSchedules = () => {
-  return api.get('/pills/schedule/all');
+  return api.get("/pills/schedule/all");
 };
 
 export const markPillTaken = (scheduleId, taken) => {
@@ -212,5 +228,5 @@ export const markPillTaken = (scheduleId, taken) => {
 };
 
 export const pillAPI = (values) => {
-  return api.post('/pills', values);
+  return api.post("/pills", values);
 };
