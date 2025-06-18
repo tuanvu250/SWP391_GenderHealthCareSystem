@@ -51,7 +51,6 @@ const HomeBlog = () => {
           });
 
           setBlogPosts(formattedPosts);
-          console.log(">>> Blog posts processed:", formattedPosts);
         } else {
           //console.error("Invalid data format:", response);
           setBlogPosts([]); // Đặt mảng rỗng nếu không có dữ liệu hợp lệ

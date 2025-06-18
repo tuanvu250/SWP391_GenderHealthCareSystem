@@ -45,7 +45,7 @@ const Header = () => {
       {
         key: "profile",
         label: "Thông tin cá nhân",
-        onClick: () => navigate("/profile"),
+        onClick: () => navigate("/user/profile"),
       },
       {
         key: "settings",
@@ -70,16 +70,11 @@ const Header = () => {
       },
       {
         key: "2",
-        label: "Đặt lịch khám",
-        onClick: () => navigate("/sti-booking"),
-      },
-      {
-        key: "3",
         label: "Đặt lịch tư vấn",
         onClick: () => navigate("/services/consultation"),
       },
       {
-        key: "4",
+        key: "3",
         label: "Đặt câu hỏi trực tuyến",
         onClick: () => navigate("/services/asking"),
       },
@@ -244,7 +239,7 @@ const Header = () => {
               <div
                 className="mb-6 py-4 border-b border-gray-100"
                 onClick={() => {
-                  navigate("/profile");
+                  navigate("/user/profile");
                   setMenuVisible(false);
                 }}
               >
@@ -294,14 +289,6 @@ const Header = () => {
                       onClick={() => navigate("/services/consultation")}
                     >
                       Đặt câu hỏi hoặc tư vấn
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="block !text-gray-800 hover:text-[#0099CF]"
-                      onClick={() => navigate("/services/appointments")}
-                    >
-                      Đặt lịch khám
                     </a>
                   </li>
                 </ul>

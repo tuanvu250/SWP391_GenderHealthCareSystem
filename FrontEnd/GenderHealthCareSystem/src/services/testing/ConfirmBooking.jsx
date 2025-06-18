@@ -84,9 +84,9 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
                 <div className="text-xl font-bold text-[#0099CF]">
                   {formatPrice(selectedPackage.price)}
                 </div>
-                <div className="text-gray-500 line-through text-sm">
+                {/* <div className="text-gray-500 line-through text-sm">
                   {formatPrice(selectedPackage.originalPrice)}
-                </div>
+                </div> */}
               </div>
             </div>
 
