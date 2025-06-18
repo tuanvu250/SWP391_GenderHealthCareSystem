@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   Button,
   Steps,
@@ -17,6 +17,7 @@ import ConfirmBooking from "./ConfirmBooking";
 import dayjs from "dayjs";
 import { bookStisAPI } from "../../components/utils/api";
 import { paymentAPI } from "../../components/utils/api";
+import { getSTISPackagesAPI } from "../../components/utils/api";
 
 const { Title, Text } = Typography;
 
@@ -31,6 +32,34 @@ const STIBooking = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
+  const [testingPackages, setTestingPackages] = useState([]);
+  const [cashPayment, setCashPayment] = useState(false);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await getSTISPackagesAPI();
+        if (response && response.data) {
+          // Assuming response.data is an array of packages
+          const packages = response.data.data.map((pkg) => ({
+            id: pkg.serviceId,
+            name: pkg.serviceName,
+            price: pkg.price,
+            tests: pkg.tests.split(", "),
+            duration: pkg.duration,
+            description: pkg.description,
+          }));
+          setTestingPackages(packages);
+        } else {
+          console.error("No data found for testing packages");
+        }
+      } catch (error) {
+        console.error("Error fetching testing packages:", error);
+        message.error("Không thể tải gói xét nghiệm. Vui lòng thử lại sau.");
+      }
+    };
+    fetchPackages();
+  }, []);
 
   // Thêm các state để lưu trữ dữ liệu form
   const [formData, setFormData] = useState({
@@ -70,50 +99,6 @@ const STIBooking = () => {
     birthDate: dayjs(user.birthDate),
     gender: user?.gender,
   };
-
-  // Danh sách gói dịch vụ
-  const testingPackages = [
-    {
-      id: 1,
-      name: "Gói xét nghiệm STI cơ bản",
-      serviceName: "Gói xét nghiệm STI cơ bản",
-      description:
-        "Kiểm tra các bệnh lây nhiễm qua đường tình dục phổ biến nhất.",
-      price: 899000,
-      originalPrice: 1200000,
-      tests: [
-        "Chlamydia",
-        "Gonorrhea",
-        "HIV",
-        "Syphilis",
-        "Hepatitis B",
-        "Hepatitis C",
-      ],
-      duration: "2-3 ngày làm việc",
-    },
-    {
-      id: 2,
-      name: "Gói xét nghiệm STI toàn diện",
-      serviceName: "Gói xét nghiệm STI toàn diện",
-      description:
-        "Kiểm tra toàn diện các bệnh lây nhiễm qua đường tình dục, bao gồm cả các loại ít phổ biến hơn.",
-      price: 1599000,
-      originalPrice: 1800000,
-      tests: [
-        "Chlamydia",
-        "Gonorrhea",
-        "HIV",
-        "Syphilis",
-        "Hepatitis B",
-        "Hepatitis C",
-        "HPV",
-        "Herpes",
-        "Mycoplasma",
-        "Trichomonas",
-      ],
-      duration: "3-5 ngày làm việc",
-    },
-  ];
 
   // Khung giờ làm việc
   const workingHours = [
@@ -195,15 +180,15 @@ const STIBooking = () => {
 
       //console.log("Dữ liệu đặt lịch:", bookingData);
 
+      console.log(">>> Submitting booking data:", allValues.paymentMethod);
+
       // Mô phỏng API call
       const response = await bookStisAPI(bookingData);
-
-
 
       if (allValues.paymentMethod === "cash") {
         // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
-        setBookingSuccess(true);
+        setCashPayment(true);
       } else if (allValues.paymentMethod === "credit card") {
         await handlePayment(response.data.data.bookingId);
       }
@@ -217,8 +202,11 @@ const STIBooking = () => {
 
   const handlePayment = async (bookingID) => {
     try {
-
-      const response = await paymentAPI(totalPrice, "Đặt lịch xét nghiệm STI", bookingID);
+      const response = await paymentAPI(
+        totalPrice,
+        "Đặt lịch xét nghiệm STI",
+        bookingID
+      );
 
       localStorage.setItem("bookingID", bookingID);
       localStorage.setItem("amount", totalPrice);
@@ -414,6 +402,31 @@ const STIBooking = () => {
               </p>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {cashPayment && (
+        <Modal
+          open={cashPayment}
+          footer={null}
+          closable={false}
+          centered>
+          <Result
+            status="success"
+            title="Đặt lịch thành công!"
+            subTitle="Cảm ơn bạn đã đặt lịch xét nghiệm STI. Chúng tôi sẽ liên hệ với bạn sớm nhất."
+            extra={[
+              <Button
+                key="history"
+                onClick={() => navigate("/user/history-testing")}
+              >
+                Xem lịch sử xét nghiệm
+              </Button>,
+              <Button type="primary" key="home" onClick={() => navigate("/")}>
+                Về trang chủ
+              </Button>,
+            ]}
+          />
         </Modal>
       )}
     </div>

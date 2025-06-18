@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Row,
@@ -38,6 +38,7 @@ import {
 import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../components/provider/AuthProvider";
 import LoginRequiredModal from "../../components/common/LoginRequiredModal";
+import { getSTISPackagesAPI } from "../../components/utils/api";
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
@@ -47,10 +48,10 @@ const { Option } = Select;
 const STITesting = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [isLoginModal, setIsLoginModal] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [testingPackages, setTestingPackages] = useState([]);
 
   const handleUserService = () => {
     if (!user) {
@@ -60,37 +61,38 @@ const STITesting = () => {
     }
   };
 
-  // STI Testing packages data - Chỉ còn 2 gói
-  const testingPackages = [
-    {
-      id: 1,
-      name: "Gói cơ bản",
-      price: "899,000",
-      originalPrice: "1,200,000",
-      tests: ["HIV", "Giang mai (Syphilis)", "Lậu (Gonorrhea)", "Chlamydia"],
-      duration: "2-3 ngày",
-      popular: false,
-      description: "Gói xét nghiệm cơ bản cho các STI phổ biến nhất",
-    },
-    {
-      id: 2,
-      name: "Gói tổng quát",
-      price: "1,599,000",
-      originalPrice: "2,100,000",
-      tests: [
-        "HIV 1&2",
-        "Hepatitis B & C",
-        "Giang mai (Syphilis)",
-        "Lậu (Gonorrhea)",
-        "Chlamydia",
-        "Herpes HSV 1&2",
-        "HPV",
-      ],
-      duration: "3-5 ngày",
-      popular: true,
-      description: "Gói xét nghiệm toàn diện nhất, kiểm tra đầy đủ các STI",
-    },
-  ];
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+  };
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await getSTISPackagesAPI();
+        if (response && response.data) {
+          // Assuming response.data is an array of packages
+          const packages = response.data.data.map((pkg) => ({
+            id: pkg.serviceId,
+            name: pkg.serviceName,
+            price: pkg.price,
+            tests: pkg.tests.split(", "),
+            duration: pkg.duration,
+            description: pkg.description,
+          }));
+          setTestingPackages(packages);
+        } else {
+          console.error("No data found for testing packages");
+        }
+      } catch (error) {
+        console.error("Error fetching testing packages:", error);
+        message.error("Không thể tải gói xét nghiệm. Vui lòng thử lại sau.");
+      }
+    };
+    fetchPackages();
+  }, []);
 
   // Process steps
   const processSteps = [
@@ -207,19 +209,6 @@ const STITesting = () => {
       package: packageData.name,
       price: packageData.price,
     });
-  };
-
-  const handleBookingSubmit = async (values) => {
-    try {
-      console.log("Booking data:", values);
-      message.success(
-        "Đặt lịch xét nghiệm thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h."
-      );
-      setIsBookingModalOpen(false);
-      form.resetFields();
-    } catch (error) {
-      message.error("Có lỗi xảy ra, vui lòng thử lại!");
-    }
   };
 
   return (
@@ -354,10 +343,7 @@ const STITesting = () => {
                   <div className="text-center mb-6">
                     <div className="mb-4">
                       <span className="text-3xl font-bold text-[#0099CF]">
-                        {pkg.price}đ
-                      </span>
-                      <span className="text-gray-500 line-through ml-2 text-sm">
-                        {pkg.originalPrice}đ
+                        {formatPrice(pkg.price)}
                       </span>
                     </div>
                     <div className="inline-flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 py-2 px-4 rounded-full">
@@ -370,9 +356,7 @@ const STITesting = () => {
                   <div className="mb-6 flex-grow">
                     <div className="flex items-center gap-2 mb-3">
                       <div
-                        className={`w-1 h-5 ${
-                          pkg.popular ? "bg-[#0099CF]" : "bg-green-500"
-                        } rounded-full`}
+                        className={`w-1 h-5 bg-[#0099CF] rounded-full`}
                       ></div>
                       <h4 className="font-semibold text-gray-800">
                         Bao gồm các xét nghiệm:
@@ -395,11 +379,7 @@ const STITesting = () => {
                         {pkg.tests.map((test, index) => (
                           <div key={index} className="flex items-start">
                             <CheckCircleOutlined
-                              className={`text-base mt-0.5 mr-2 flex-shrink-0 ${
-                                pkg.popular
-                                  ? "text-[#0099CF]"
-                                  : "text-green-500"
-                              }`}
+                              className={`text-base mt-0.5 mr-2 flex-shrink-0 text-[#0099CF]`}
                             />
                             <span className="text-sm text-gray-700">
                               {test}
@@ -412,18 +392,19 @@ const STITesting = () => {
 
                   {/* Action button */}
                   <Button
-                    type={pkg.popular ? "primary" : "default"}
+                    type={"default"}
                     block
                     size="large"
-                    className={`rounded-full h-12 text-base font-medium mt-auto ${
-                      pkg.popular
-                        ? "bg-[#0099CF] hover:bg-[#008BBB]"
-                        : "border-[#0099CF] text-[#0099CF] hover:text-[#008BBB] hover:border-[#008BBB]"
-                    }`}
-                    onClick={() => handleBooking(pkg)}
+                    className={`rounded-full h-12 text-base font-medium mt-auto
+                        border-[#0099CF] text-[#0099CF] hover:text-[#008BBB] hover:border-[#008BBB]`}
+                    onClick={handleUserService}
                   >
                     Đặt gói này ngay
                   </Button>
+                  <LoginRequiredModal
+                    open={isLoginModal}
+                    onClose={() => setIsLoginModal(false)}
+                  />
                 </div>
               </div>
             ))}
@@ -587,110 +568,6 @@ const STITesting = () => {
           </div>
         </div>
       </div>
-
-      {/* Booking Modal */}
-      <Modal
-        title="Đặt lịch xét nghiệm STI"
-        open={isBookingModalOpen}
-        onCancel={() => setIsBookingModalOpen(false)}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleBookingSubmit}
-          className="mt-4"
-        >
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="fullName"
-                label="Họ và tên"
-                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="phone"
-                label="Số điện thoại"
-                rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Vui lòng nhập email" },
-                  { type: "email", message: "Email không hợp lệ" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="package"
-                label="Gói xét nghiệm"
-                rules={[
-                  { required: true, message: "Vui lòng chọn gói xét nghiệm" },
-                ]}
-              >
-                <Select>
-                  {testingPackages.map((pkg) => (
-                    <Option key={pkg.id} value={pkg.name}>
-                      {pkg.name} - {pkg.price}đ
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="preferredDate"
-                label="Ngày mong muốn"
-                rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
-              >
-                <DatePicker className="w-full" />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item
-                name="location"
-                label="Địa điểm lấy mẫu"
-                rules={[{ required: true, message: "Vui lòng chọn địa điểm" }]}
-              >
-                <Select>
-                  <Option value="lab">Tại phòng lab</Option>
-                  <Option value="home">Tại nhà (phụ phí 100,000đ)</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item name="notes" label="Ghi chú">
-                <Input.TextArea
-                  rows={3}
-                  placeholder="Ghi chú thêm (không bắt buộc)"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <div className="flex gap-4 justify-end mt-6">
-            <Button onClick={() => setIsBookingModalOpen(false)}>Hủy</Button>
-            <Button type="primary" htmlType="submit">
-              Xác nhận đặt lịch
-            </Button>
-          </div>
-        </Form>
-      </Modal>
     </>
   );
 };

@@ -190,6 +190,11 @@ export const healthTrackerAPI = async (values) => {
 {
   /*Booking Stis*/
 }
+
+export const getSTISPackagesAPI = async () => {
+  return api.get("/stis-services");
+}
+
 export const bookStisAPI = async (values) => {
   const bookingData = {
     serviceId: values.packageId,
@@ -213,6 +218,21 @@ export const paymentAPI = async (amount, orderInfo, bookingID) => {
     responseType: "text", // Để nhận về URL
     maxRedirects: 0,
   });
+};
+
+export const historyBookingAPI = async ({
+  page = 0,
+  size = 5,
+  status = "",
+  sort = "",
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+    status,
+    sort,
+  }).toString();
+  return api.get(`/stis-bookings/history?${query}`);
 };
 
 export const createInvoiceAPI = async (query) => {

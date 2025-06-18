@@ -1,5 +1,6 @@
 import { Route, Routes, Outlet } from "react-router-dom";
 import ScrollToTop from "../components/layout/ScrollToTop";
+import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/Home";
@@ -8,8 +9,9 @@ import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
 
-import Profile from "../user/UserProfile";
-import ProtectedRoute from "./ProtectedRoute";
+import ProfileLayout from "../user/ProfileLayout";
+import Profile from "../user/Profile";
+import HistoryTesting from "../user/HistoryTesting";
 
 
 import PillTracker from "../healthtracker/PillTracker";
@@ -61,13 +63,18 @@ function RouteMap() {
         <Route path="/pill-tracker" element={<PillTracker />} />
         <Route path="/menstrual-tracker" element={<MenstrualTracker />} />
         <Route
-          path="/profile"
+          path="/user"
           element={
             <ProtectedRoute>
-              <Profile />
+              <ProfileLayout/>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Profile />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="history-testing" element={<HistoryTesting />} />
+        </Route>
+
         <Route path="/sti-testing" element={<STITesting />} />
         <Route
           path="/sti-booking"
@@ -77,7 +84,10 @@ function RouteMap() {
             </ProtectedRoute>
           }
         />
-        <Route path="/services/consultationbooking" element={<ConsultationBooking />} />
+        <Route
+          path="/services/consultationbooking"
+          element={<ConsultationBooking />}
+        />
         <Route path="/services/consultation" element={<Consultation />} />
 
         {/* Trang thông tin */}
