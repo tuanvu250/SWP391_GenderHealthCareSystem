@@ -196,14 +196,16 @@ const STIBooking = () => {
       //console.log("Dữ liệu đặt lịch:", bookingData);
 
       // Mô phỏng API call
-      await bookStisAPI(bookingData);
+      const response = await bookStisAPI(bookingData);
+
+
 
       if (allValues.paymentMethod === "cash") {
         // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
         setBookingSuccess(true);
       } else if (allValues.paymentMethod === "credit card") {
-        await handlePayment(bookingData);
+        await handlePayment(response.data.data.bookingId);
       }
     } catch (error) {
       console.error("Error during booking:", error);
@@ -213,13 +215,14 @@ const STIBooking = () => {
     }
   };
 
-  const handlePayment = async (bookingData) => {
+  const handlePayment = async (bookingID) => {
     try {
 
       const response = await axios.get("/payment/vn-pay", {
         params: {
           amount: totalPrice, 
           orderInfo: `Thanh toán xét nghiệm STI ${Date.now()}`,
+          bookingID: bookingID
         },
         responseType: 'text', // Để nhận về URL
         maxRedirects: 0, // Không tự động chuyển hướng
