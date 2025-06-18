@@ -70,13 +70,18 @@ const Header = () => {
       },
       {
         key: "2",
-        label: "Đặt câu hỏi hoặc tư vấn",
-        onClick: () => navigate("/services/consultation"),
+        label: "Đặt lịch khám",
+        onClick: () => navigate("/sti-booking"),
       },
       {
         key: "3",
-        label: "Đặt lịch khám",
-        onClick: () => navigate("/sti-booking"),
+        label: "Đặt lịch tư vấn",
+        onClick: () => navigate("/services/consultation"),
+      },
+      {
+        key: "4",
+        label: "Đặt câu hỏi trực tuyến",
+        onClick: () => navigate("/services/asking"),
       },
     ],
   };
@@ -89,7 +94,7 @@ const Header = () => {
       },
       {
         key: "2",
-        label: "Theo dõi lịch uống thuốc",
+        label: "Theo dõi lịch uống thuốc tránh thai",
         onClick: () => navigate("/pill-tracker"),
       },
     ],
