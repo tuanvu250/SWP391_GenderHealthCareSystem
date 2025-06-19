@@ -7,6 +7,7 @@ import GenderHealthCareSystem.service.AuthService;
 import GenderHealthCareSystem.service.ImageService;
 import GenderHealthCareSystem.util.CustomUserDetails;
 import GenderHealthCareSystem.util.SecurityUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -68,5 +69,9 @@ public class AuthController {
                 userDetails.getAccount().getEmail(),
                 userDetails.getAccount().getUsers().getRole().getRoleName()
         ));
+    }
+    @GetMapping("/google")
+    public void redirectToGoogle(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google");
     }
 }
