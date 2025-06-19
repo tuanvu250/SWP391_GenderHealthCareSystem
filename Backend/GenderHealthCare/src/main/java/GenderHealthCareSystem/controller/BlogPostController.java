@@ -58,7 +58,7 @@ public class BlogPostController {
      * @return ResponseEntity indicating the success status of the deletion operation.
      * @PreAuthorize Only accessible by users with 'Consultant' or 'Admin' roles.
      */
-    @DeleteMapping("/{id}/delete")
+    @PutMapping("/{id}/delete")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> deleteBlogPost(@PathVariable Integer id) {
         blogPostService.deleteBlogPostById(id);

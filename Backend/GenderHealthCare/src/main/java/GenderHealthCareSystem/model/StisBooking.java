@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.model;
 
 
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

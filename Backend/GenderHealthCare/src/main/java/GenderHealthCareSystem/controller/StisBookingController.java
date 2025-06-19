@@ -5,7 +5,7 @@ import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisBookingRequest;
 import GenderHealthCareSystem.dto.StisBookingResponse;
 import GenderHealthCareSystem.model.StisBooking;
-import GenderHealthCareSystem.model.StisBookingStatus;
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.service.StisBookingService;
 import GenderHealthCareSystem.util.PageResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 import static GenderHealthCareSystem.util.PageResponseUtil.mapToPageResponse;
