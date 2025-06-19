@@ -43,8 +43,8 @@ public class BlogPost {
     @Column(name = "ViewCount")
     private long viewCount;
 
-    @Column(name = "Deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
-    private boolean deleted = false;
+    @Column(name = "Status" , length = 20, columnDefinition = "NVARCHAR(20)")
+    private String status; // e.g., "Pending", "Published", "Deleted"
 
 
 }
