@@ -58,17 +58,23 @@ public class BlogPostController {
      * @return ResponseEntity indicating the success status of the deletion operation.
      * @PreAuthorize Only accessible by users with 'Consultant' or 'Admin' roles.
      */
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
+    @DeleteMapping("/{id}/delete")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Manager') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> deleteBlogPost(@PathVariable Integer id) {
         blogPostService.deleteBlogPostById(id);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post deleted successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
-
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('Staff') ")
+    public ResponseEntity<ApiResponse<?>> approveBlogPost(@PathVariable Integer id) {
+        blogPostService.approveBlogPost(id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Blog post approved successfully", null, null);
+        return ResponseEntity.ok().body(response);
+    }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,
             @RequestPart("tags") String tags,
@@ -184,6 +190,41 @@ public class BlogPostController {
     ) {
         System.out.println("orderBy: " + orderBy);
         Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, orderBy, page, size, sort);
+        System.out.println("title: " + title);
+        PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
+                blogPosts.getContent(),
+                blogPosts.getNumber(),
+                blogPosts.getSize(),
+                blogPosts.getTotalElements(),
+                blogPosts.getTotalPages(),
+                blogPosts.isFirst(),
+                blogPosts.isLast(),
+                blogPosts.hasNext(),
+                blogPosts.hasPrevious()
+        );
+
+        ApiResponse<PageResponse<BlogPostResponse>> response = new ApiResponse<>(
+                HttpStatus.OK,
+                "Search results retrieved successfully",
+                pageResponse,
+                null
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('Staff')")
+    @GetMapping("/staff/search")
+    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForstaff(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
+            @RequestParam(defaultValue = "desc") String sort
+    ) {
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPostsForManager(title, tag, orderBy, page, size, sort);
         System.out.println("title: " + title);
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),

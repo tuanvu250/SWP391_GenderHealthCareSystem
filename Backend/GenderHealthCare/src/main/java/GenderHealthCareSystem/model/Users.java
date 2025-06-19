@@ -48,6 +48,8 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     @Column(name = "UserImageUrl")
     private String userImageUrl;
 
+    @Column(name = "Provider", length = 50)
+    private String provider;
 
 
     // Relationships to other tables if needed (e.g., @OneToMany for bookings)
