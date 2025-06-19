@@ -258,11 +258,6 @@ const BlogModal = ({ visible, onCancel, onSuccess, blog = null }) => {
                     uploadButton
                   )}
                 </Upload>
-                {imageFile && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    {imageFile.name ? `Tệp: ${imageFile.name}` : ""}
-                  </div>
-                )}
               </div>
 
               {imageUrl && (

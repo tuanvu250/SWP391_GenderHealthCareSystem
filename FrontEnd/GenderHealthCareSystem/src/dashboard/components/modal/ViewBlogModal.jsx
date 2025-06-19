@@ -127,8 +127,6 @@ const ViewBlogModal = ({ visible, onClose, blog }) => {
         </Button>,
       ]}
       centered
-      bodyStyle={{ padding: "20px" }}
-      destroyOnClose={true}
     >
       {renderModalContent()}
     </Modal>

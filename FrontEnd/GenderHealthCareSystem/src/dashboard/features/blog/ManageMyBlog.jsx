@@ -55,8 +55,8 @@ const ManageMyBlog = () => {
 
   // Cấu hình trạng thái bài viết - Đã bỏ trạng thái "draft"
   const statusConfig = {
-    pending: {
-      status: "processing",
+    PENDING: {
+      status: "PENDING",
       text: "Chờ duyệt",
       color: "#1890ff",
       badgeColor: "blue",
@@ -303,57 +303,58 @@ const ManageMyBlog = () => {
       width: 100,
       sorter: (a, b) => a.views - b.views,
     },
-    // {
-    //   title: "Trạng thái",
     //   dataIndex: "status",
-    //   key: "status",
-    //   width: 150,
-    //   render: (status, record) => {
-    //     const config = statusConfig[status];
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 150,
+      render: (status, record) => {
+        const config = statusConfig[status];
 
-    //     return (
-    //       <div className="flex items-center flex-wrap">
-    //         <Tooltip title={config.description}>
-    //           <Badge
-    //             status={config.status}
-    //             text={
-    //               <span style={{ color: config.color }}>{config.text}</span>
-    //             }
-    //           />
-    //         </Tooltip>
+        return (
+          <div className="flex items-center flex-wrap">
+            <Tooltip title={config.description}>
+              <Badge
+                status={config.status}
+                text={
+                  <span style={{ color: config.color }}>{config.text}</span>
+                }
+              />
+            </Tooltip>
 
-    //         {/* Hiện nút xem lý do nếu bài viết bị từ chối */}
-    //         {status === "rejected" && record.rejectionReason && (
-    //           <Button
-    //             type="link"
-    //             size="small"
-    //             className="ml-2 p-0"
-    //             onClick={() =>
-    //               handleViewRejectionReason(record.rejectionReason)
-    //             }
-    //           >
-    //             Xem lý do
-    //           </Button>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    //   filters: [
-    //     { text: "Chờ duyệt", value: "pending" },
-    //     { text: "Đã duyệt", value: "approved" },
-    //     { text: "Bị từ chối", value: "rejected" },
-    //   ],
-    //   onFilter: (value, record) => record.status === value,
-    //   sorter: (a, b) => {
-    //     // Thứ tự ưu tiên: Chờ duyệt -> Bị từ chối -> Đã duyệt
-    //     const order = { pending: 0, rejected: 1, approved: 2 };
-    //     return order[a.status] - order[b.status];
-    //   },
-    // },
+            {/* Hiện nút xem lý do nếu bài viết bị từ chối */}
+            {status === "rejected" && record.rejectionReason && (
+              <Button
+                type="link"
+                size="small"
+                className="ml-2 p-0"
+                onClick={() =>
+                  handleViewRejectionReason(record.rejectionReason)
+                }
+              >
+                Xem lý do
+              </Button>
+            )}
+          </div>
+        );
+      },
+      filters: [
+        { text: "Chờ duyệt", value: "pending" },
+        { text: "Đã duyệt", value: "approved" },
+        { text: "Bị từ chối", value: "rejected" },
+      ],
+      onFilter: (value, record) => record.status === value,
+      sorter: (a, b) => {
+        // Thứ tự ưu tiên: Chờ duyệt -> Bị từ chối -> Đã duyệt
+        const order = { pending: 0, rejected: 1, approved: 2 };
+        return order[a.status] - order[b.status];
+      },
+    },
     {
       title: "Thao tác",
       key: "action",
-      width: 180,
+      width: 120,
       render: (_, record) => (
         <Space size="small">
           {record.status === "approved" && (
@@ -493,6 +494,7 @@ const ManageMyBlog = () => {
       {/* Modal xem chi tiết blog */}
       <ViewBlogModal
         visible={viewBlogModalVisible}
+        open={viewBlogModalVisible} 
         onClose={() => setViewBlogModalVisible(false)}
         blog={selectedBlog}
       />
