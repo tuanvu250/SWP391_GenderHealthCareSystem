@@ -59,14 +59,14 @@ public class BlogPostController {
      * @PreAuthorize Only accessible by users with 'Consultant' or 'Admin' roles.
      */
     @DeleteMapping("/{id}/delete")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Manager') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> deleteBlogPost(@PathVariable Integer id) {
         blogPostService.deleteBlogPostById(id);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post deleted successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasRole('Staff') ")
     public ResponseEntity<ApiResponse<?>> approveBlogPost(@PathVariable Integer id) {
         blogPostService.approveBlogPost(id);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post approved successfully", null, null);
@@ -74,7 +74,7 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,
             @RequestPart("tags") String tags,
@@ -213,9 +213,9 @@ public class BlogPostController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('Manager')")
-    @GetMapping("/manager/search")
-    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForManager(
+    @PreAuthorize("hasRole('Staff')")
+    @GetMapping("/staff/search")
+    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForstaff(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
