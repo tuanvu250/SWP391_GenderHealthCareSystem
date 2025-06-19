@@ -110,7 +110,7 @@ const BookingResult = () => {
               type="primary"
               key="dashboard"
               size="large"
-              onClick={() => navigate("/dashboard/appointments")}
+              onClick={() => navigate("/user/history-testing")}
             >
               Xem lịch sử đặt lịch
             </Button>,

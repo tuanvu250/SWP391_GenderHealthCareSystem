@@ -74,6 +74,7 @@ const HistoryTesting = () => {
           paymentMethod: item.paymentMethod,
         }));
 
+        console.log("Booking history data:", data);
         setBookings(data);
       } catch (error) {
         console.error("Error fetching booking history:", error);
@@ -173,7 +174,7 @@ const HistoryTesting = () => {
   // Render trạng thái thanh toán
   const renderPaymentStatus = (paymentStatus) => {
     switch (paymentStatus) {
-      case "paid":
+      case "Ðã thanh toán":
         return (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Đã thanh toán
@@ -295,7 +296,7 @@ const HistoryTesting = () => {
                 </Button>
               )}
 
-            {record.paymentStatus === "paid" && (
+            {record.paymentStatus === "Ðã thanh toán" && (
               <Button
                 type="default"
                 size="small"
@@ -494,7 +495,7 @@ const HistoryTesting = () => {
               HÓA ĐƠN THANH TOÁN
             </Title>
             <div className="text-gray-500">
-              Ngày: {dayjs(selectedBooking.bookingDate).format("DD/MM/YYYY")}
+              Ngày: {selectedBooking.bookingDate}
             </div>
           </div>
 
