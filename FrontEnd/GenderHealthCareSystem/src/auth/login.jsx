@@ -39,6 +39,19 @@ const Login = () => {
     }
   };
 
+  const loginWithGoogle = () => {
+    setLoading(true);
+    
+    // Frontend URL để Google callback lại
+    const redirectUri = encodeURIComponent('http://localhost:5173/login/oauth2/code/google');
+    
+    // URL OAuth của backend
+    const googleAuthUrl = `http://localhost:8080/oauth2/authorization/google?redirect_uri=${redirectUri}`;
+    
+    // Chuyển hướng browser đến trang xác thực Google
+    window.location.href = googleAuthUrl;
+  }
+
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
@@ -137,6 +150,7 @@ const Login = () => {
               <Button
                 icon={<GoogleOutlined />}
                 className="flex h-12 flex-1 items-center justify-center rounded-md border border-gray-300 hover:border-gray-400"
+                onClick={() => loginWithGoogle()}
               >
                 Google
               </Button>

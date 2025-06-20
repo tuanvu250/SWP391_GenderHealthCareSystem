@@ -114,6 +114,10 @@ export const postBlogAPI = async (values) => {
   });
 };
 
+export const aproveBlogAPI = async (postId) => {
+  return api.put(`/blog-posts/${postId}/approve`);
+};
+
 export const viewMyBlogsAPI = async ({
   page = 0,
   size = 10,

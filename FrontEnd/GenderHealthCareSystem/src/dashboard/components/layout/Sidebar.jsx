@@ -180,21 +180,7 @@ const Sidebar = ({
           {
             key: "blog-oversight",
             icon: <BookOutlined />,
-            label: "Giám sát Blog",
-            children: [
-              {
-                key: "approve-blogs",
-                label: "Duyệt bài viết",
-              },
-              {
-                key: "blog-performance",
-                label: "Hiệu suất bài viết",
-              },
-              {
-                key: "content-guidelines",
-                label: "Hướng dẫn nội dung",
-              },
-            ],
+            label: <Link to={"/manager/dashboard/manage-blog"}>Giám sát Blog</Link>,
           },
           {
             key: "financial",

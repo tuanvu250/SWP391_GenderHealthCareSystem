@@ -11,6 +11,7 @@ import {
   Tooltip,
   Badge,
   Card,
+  Modal,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,16 +20,23 @@ import {
   SearchOutlined,
   EyeOutlined,
   FilterOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import { formatDateTime } from "../../../components/utils/formatTime";
 import BlogModal from "../../components/modal/BlogModal";
 import { viewMyBlogsAPI } from "../../../components/utils/api";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
+import { useAuth } from "../../../components/provider/AuthProvider";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
+const { TextArea } = Input;
 
 const ManageMyBlog = () => {
+  const { user } = useAuth(); // Lấy thông tin user hiện tại
+  const isConsultant = user?.role === "Consultant";
+
   const [blogList, setBlogList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -43,6 +51,11 @@ const ManageMyBlog = () => {
   const [statusFilter, setStatusFilter] = useState([]);
   const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+
+  // State cho modal từ chối
+  const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [blogToReject, setBlogToReject] = useState(null);
 
   // Danh sách tags
   const tagOptions = [
@@ -181,7 +194,7 @@ const ManageMyBlog = () => {
   const handleDelete = async (blogId) => {
     try {
       setLoading(true);
-      await deleteBlogAPI(blogId);
+      //await deleteBlogAPI(blogId);
       setTimeout(() => {
         fetchBlogList();
         message.success("Xóa bài viết thành công!");
@@ -190,6 +203,55 @@ const ManageMyBlog = () => {
     } catch (error) {
       console.error("Error deleting blog:", error);
       message.error("Xóa bài viết thất bại");
+      setLoading(false);
+    }
+  };
+
+  // Hàm xử lý duyệt bài viết
+  const handleApprove = async (blogId) => {
+    try {
+      setLoading(true);
+      // Gọi API duyệt bài viết
+      //await approveBlogAPI(blogId);
+      setTimeout(() => {
+        fetchBlogList();
+        message.success("Duyệt bài viết thành công!");
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error approving blog:", error);
+      message.error("Duyệt bài viết thất bại");
+      setLoading(false);
+    }
+  };
+
+  // Hàm mở modal từ chối bài viết
+  const openRejectModal = (blog) => {
+    setBlogToReject(blog);
+    setRejectionReason("");
+    setRejectionModalVisible(true);
+  };
+
+  // Hàm xử lý từ chối bài viết
+  const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      message.error("Vui lòng nhập lý do từ chối");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Gọi API từ chối bài viết
+      //await rejectBlogAPI(blogToReject.postId, rejectionReason);
+      setRejectionModalVisible(false);
+      setTimeout(() => {
+        fetchBlogList();
+        message.success("Đã từ chối bài viết");
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error rejecting blog:", error);
+      message.error("Từ chối bài viết thất bại");
       setLoading(false);
     }
   };
@@ -253,18 +315,13 @@ const ManageMyBlog = () => {
       width: "300px",
       render: (text, record) => (
         <div className="">
-          <Tooltip title={text}>
-            {" "}
-            {/* Tooltip hiển thị toàn bộ tiêu đề khi hover */}
-            <a
-              onClick={() => handleViewBlog(record.postId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium hover:text-blue-500"
-            >
-              {text}
-            </a>
-          </Tooltip>
+          <a
+            onClick={() => handleViewBlog(record.postId)}
+            className="font-medium hover:text-blue-500"
+            title={text} // Sử dụng HTML title thay vì Tooltip
+          >
+            {text}
+          </a>
         </div>
       ),
     },
@@ -303,7 +360,6 @@ const ManageMyBlog = () => {
       width: 100,
       sorter: (a, b) => a.views - b.views,
     },
-    //   dataIndex: "status",
     {
       title: "Trạng thái",
       dataIndex: "status",
@@ -313,25 +369,16 @@ const ManageMyBlog = () => {
         const config = statusConfig[status];
 
         return (
-          <div className="flex items-center flex-wrap">
-            <Tooltip title={config.description}>
-              <Badge
-                status={config.status}
-                text={
-                  <span style={{ color: config.color }}>{config.text}</span>
-                }
-              />
-            </Tooltip>
-
-            {/* Hiện nút xem lý do nếu bài viết bị từ chối */}
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-flex items-center" title={config.description}>
+              <span style={{ color: config.color }}>{config.text}</span>
+            </div>
             {status === "rejected" && record.rejectionReason && (
               <Button
                 type="link"
                 size="small"
-                className="ml-2 p-0"
-                onClick={() =>
-                  handleViewRejectionReason(record.rejectionReason)
-                }
+                className="p-0"
+                onClick={() => handleViewRejectionReason(record.rejectionReason)}
               >
                 Xem lý do
               </Button>
@@ -354,35 +401,54 @@ const ManageMyBlog = () => {
     {
       title: "Thao tác",
       key: "action",
-      width: 120,
+      width: 150,
       render: (_, record) => (
         <Space size="small">
-          {record.status === "approved" && (
-            <Tooltip title="Xem bài viết">
+          {/* Hiển thị button xem bài viết cho tất cả */}
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleViewBlog(record.postId)}
+            title="Xem bài viết"
+          />
+
+          {/* Chỉ hiển thị chức năng duyệt/từ chối cho người không phải Consultant */}
+          {!isConsultant && record.status === "pending" && (
+            <>
               <Button
-                icon={<EyeOutlined />}
-                href={`/blog/${record.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                onClick={() => handleApprove(record.postId)}
+                title="Duyệt bài viết"
               />
-            </Tooltip>
+              <Button
+                danger
+                icon={<CloseCircleOutlined />}
+                onClick={() => openRejectModal(record)}
+                title="Từ chối bài viết"
+              />
+            </>
           )}
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Xóa bài viết"
-            description="Bạn có chắc chắn muốn xóa bài viết này?"
-            onConfirm={() => handleDelete(record.postId)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+
+          {/* Chỉ hiển thị chức năng sửa/xóa cho Consultant */}
+          {isConsultant && (
+            <>
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+                title="Chỉnh sửa"
+              />
+              <Popconfirm
+                title="Xóa bài viết"
+                description="Bạn có chắc chắn muốn xóa bài viết này?"
+                onConfirm={() => handleDelete(record.postId)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+              >
+                <Button danger icon={<DeleteOutlined />} title="Xóa" />
+              </Popconfirm>
+            </>
+          )}
         </Space>
       ),
     },
@@ -394,13 +460,21 @@ const ManageMyBlog = () => {
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <Title level={4} className="mb-1">
-              Quản lý bài viết của tôi
+              Quản lý bài viết {isConsultant ? "của tôi" : ""}
             </Title>
-            <Text type="secondary">Thêm và quản lý nội dung blog của bạn</Text>
+            <Text type="secondary">
+              {isConsultant
+                ? "Thêm và quản lý nội dung blog của bạn"
+                : "Quản lý và phê duyệt nội dung blog"}
+            </Text>
           </div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-            Tạo bài viết mới
-          </Button>
+
+          {/* Chỉ hiển thị nút "Tạo bài viết mới" cho Consultant */}
+          {isConsultant && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+              Tạo bài viết mới
+            </Button>
+          )}
         </div>
 
         <div className="mb-6 flex flex-col sm:flex-row justify-between gap-4">
@@ -476,28 +550,51 @@ const ManageMyBlog = () => {
           loading={loading}
           pagination={pagination}
           onChange={handleTableChange}
-          //tableLayout="fixed"
           size="middle"
-          scroll={{ x: "max-content" }} // Cho phép cuộn ngang nếu cần
+          scroll={{ x: "max-content" }}
           className="break-words"
         />
       </Card>
 
-      {/* Modal đa năng cho cả thêm và chỉnh sửa blog */}
-      <BlogModal
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onSuccess={handleModalSuccess}
-        blog={currentBlog}
-      />
+      {/* Modal đa năng cho cả thêm và chỉnh sửa blog - chỉ hiển thị cho Consultant */}
+      {isConsultant && (
+        <BlogModal
+          visible={modalVisible}
+          open={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          onSuccess={handleModalSuccess}
+          blog={currentBlog}
+        />
+      )}
 
       {/* Modal xem chi tiết blog */}
       <ViewBlogModal
         visible={viewBlogModalVisible}
-        open={viewBlogModalVisible} 
+        open={viewBlogModalVisible}
         onClose={() => setViewBlogModalVisible(false)}
         blog={selectedBlog}
       />
+
+      {/* Modal từ chối bài viết */}
+      <Modal
+        title="Từ chối bài viết"
+        open={rejectionModalVisible}
+        onCancel={() => setRejectionModalVisible(false)}
+        onOk={handleReject}
+        okText="Từ chối"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+      >
+        <div className="mb-2">
+          <Text>Vui lòng nhập lý do từ chối bài viết này:</Text>
+        </div>
+        <TextArea
+          rows={4}
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+          placeholder="Nhập lý do từ chối..."
+        />
+      </Modal>
     </div>
   );
 };

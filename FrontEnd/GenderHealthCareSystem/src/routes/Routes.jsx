@@ -140,6 +140,19 @@ function RouteMap() {
                 <Route path="manage-blog" element={<ManageMyBlog/>}/>
             </Route>
 
+            {/* Dashboard cho Manager */}
+            <Route
+                path="/manager/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles="Manager">
+                        <DashboardLayout userRole="Manager"/>
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<h1>Dashboard</h1>}/>
+                <Route path="manage-blog" element={<ManageMyBlog/>}/>
+            </Route>
+
             {/* Dashboard cho Staff */}
             <Route
                 path="/staff/dashboard"
