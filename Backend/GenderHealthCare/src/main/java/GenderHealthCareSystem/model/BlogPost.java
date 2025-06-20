@@ -43,11 +43,6 @@ public class BlogPost {
     @Column(name = "ViewCount")
     private long viewCount;
 
-    @Column(name = "LikeCount")
-    private long likeCount;
-
-    @Column(name = "DislikeCount")
-    private long dislikeCount;
 
     @Column(name = "Status" , length = 20, columnDefinition = "NVARCHAR(20)")
     private String status; // e.g., "Pending", "Published", "Deleted"
