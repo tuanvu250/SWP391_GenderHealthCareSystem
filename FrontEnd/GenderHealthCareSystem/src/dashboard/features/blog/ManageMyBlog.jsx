@@ -26,6 +26,9 @@ import {
 import { formatDateTime } from "../../../components/utils/formatTime";
 import BlogModal from "../../components/modal/BlogModal";
 import { viewMyBlogsAPI } from "../../../components/utils/api";
+import { viewAllBlogsAPI } from "../../../components/utils/api";
+import { deleteBlogAPI } from "../../../components/utils/api";
+import { approveBlogAPI } from "../../../components/utils/api";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
 import { useAuth } from "../../../components/provider/AuthProvider";
 
@@ -69,13 +72,13 @@ const ManageMyBlog = () => {
   // Cấu hình trạng thái bài viết - Đã bỏ trạng thái "draft"
   const statusConfig = {
     PENDING: {
-      status: "PENDING",
+      status: "pending",
       text: "Chờ duyệt",
       color: "#1890ff",
       badgeColor: "blue",
       description: "Bài viết đang chờ phê duyệt từ quản trị viên",
     },
-    approved: {
+    PUBLISHED: {
       status: "success",
       text: "Đã duyệt",
       color: "#52c41a",
@@ -112,14 +115,21 @@ const ManageMyBlog = () => {
   const fetchBlogList = async () => {
     setLoading(true);
     try {
-      const response = await viewMyBlogsAPI({
-        page: pagination.current - 1,
-        size: pagination.pageSize,
-        title: searchText,
-        tag: selectedTags.join(", "),
-        //status: statusFilter.join(', ')
-      });
-
+      const response = isConsultant
+      ? await viewMyBlogsAPI({
+          page: pagination.current - 1,
+          size: pagination.pageSize,
+          title: searchText,
+          tag: selectedTags.join(", "),
+          //status: statusFilter.join(', ')
+        })
+      : await viewAllBlogsAPI({
+          page: pagination.current - 1,
+          size: pagination.pageSize,
+          title: searchText,
+          tag: selectedTags.join(", "),
+          //status: statusFilter.join(', ')
+        })
       if (response && response.data) {
         setTimeout(() => {
           const formattedPosts = response.data.data.content.map((post) => {
@@ -194,7 +204,7 @@ const ManageMyBlog = () => {
   const handleDelete = async (blogId) => {
     try {
       setLoading(true);
-      //await deleteBlogAPI(blogId);
+      await deleteBlogAPI(blogId);
       setTimeout(() => {
         fetchBlogList();
         message.success("Xóa bài viết thành công!");
@@ -211,8 +221,7 @@ const ManageMyBlog = () => {
   const handleApprove = async (blogId) => {
     try {
       setLoading(true);
-      // Gọi API duyệt bài viết
-      //await approveBlogAPI(blogId);
+      await approveBlogAPI(blogId);
       setTimeout(() => {
         fetchBlogList();
         message.success("Duyệt bài viết thành công!");
@@ -370,7 +379,10 @@ const ManageMyBlog = () => {
 
         return (
           <div className="flex flex-wrap gap-2">
-            <div className="inline-flex items-center" title={config.description}>
+            <div
+              className="inline-flex items-center"
+              title={config.description}
+            >
               <span style={{ color: config.color }}>{config.text}</span>
             </div>
             {status === "rejected" && record.rejectionReason && (
@@ -378,7 +390,9 @@ const ManageMyBlog = () => {
                 type="link"
                 size="small"
                 className="p-0"
-                onClick={() => handleViewRejectionReason(record.rejectionReason)}
+                onClick={() =>
+                  handleViewRejectionReason(record.rejectionReason)
+                }
               >
                 Xem lý do
               </Button>
@@ -412,7 +426,7 @@ const ManageMyBlog = () => {
           />
 
           {/* Chỉ hiển thị chức năng duyệt/từ chối cho người không phải Consultant */}
-          {!isConsultant && record.status === "pending" && (
+          {!isConsultant && record.status === "PENDING" && (
             <>
               <Button
                 type="primary"
@@ -471,7 +485,11 @@ const ManageMyBlog = () => {
 
           {/* Chỉ hiển thị nút "Tạo bài viết mới" cho Consultant */}
           {isConsultant && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddNew}
+            >
               Tạo bài viết mới
             </Button>
           )}

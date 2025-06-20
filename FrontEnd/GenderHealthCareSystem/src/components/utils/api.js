@@ -137,6 +137,29 @@ export const viewMyBlogsAPI = async ({
   return api.get(`/blog-posts/my-posts?${query}`);
 };
 
+export const viewAllBlogsAPI = async ({
+  page = 0,
+  size = 10,
+  title = "",
+  tag = "",
+  sort = "",
+  orderBy = "",
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+    title,
+    tag,
+    sort,
+    orderBy,
+  }).toString();
+  return api.get(`/blog-posts/manager/search?${query}`);
+};
+
+export const approveBlogAPI = async (postId) => {
+  return api.put(`/blog-posts/${postId}/approve`);
+};
+
 export const deleteBlogAPI = async (postId) => {
   return api.delete(`/blog-posts/${postId}`);
 };
