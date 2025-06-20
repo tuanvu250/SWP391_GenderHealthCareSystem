@@ -33,4 +33,8 @@ public class StisFeedback {
 
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ServiceID", referencedColumnName = "ServiceID")
+    private StisService stisService;
 }
