@@ -21,5 +21,7 @@ public class BlogPostResponse {
     private String content;
     private String thumbnailUrl;
     private LocalDateTime publishedAt;
+    private long viewCount;
+    private String status;
     private String tags;
 }

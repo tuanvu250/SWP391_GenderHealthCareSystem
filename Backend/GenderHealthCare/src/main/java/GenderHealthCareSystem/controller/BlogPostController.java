@@ -30,22 +30,18 @@ public class BlogPostController {
     private final UserService userService;
     private final ImageService imageService;
 
-    /**
-     * Creates a new blog post and saves it to the database.
-     *
-     * @param blogPostJson JSON string representing the blog post details.
-     * @param image        Image file to be used as the thumbnail for the blog post.
-     * @param jwt          Authenticated user's JWT, used to identify the blog post author.
-     * @return ResponseEntity containing the status and details of the created blog post.
-     * @throws IOException if there is an error processing the image file.
-     */
     @PostMapping()
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
-    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestPart("blogPost") String blogPostJson, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal Jwt jwt) throws IOException {
-        // Parse JSON string thành BlogPost object
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules(); // để parse LocalDateTime
-        BlogPost blogPost = objectMapper.readValue(blogPostJson, BlogPost.class);
+    public ResponseEntity<ApiResponse<?>> createBlogPost(@RequestPart("tags") String tags,
+                                                         @RequestPart("title") String title,
+                                                         @RequestPart("content") String content,
+                                                         @RequestPart("image") MultipartFile image,
+                                                         @AuthenticationPrincipal Jwt jwt) throws IOException {
+
+        BlogPost blogPost = new BlogPost();
+        blogPost.setTags(tags);
+        blogPost.setTitle(title);
+        blogPost.setContent(content);
         System.out.println(Integer.parseInt(jwt.getClaimAsString("userID")));
         blogPost.setConsultant(this.userService.getUserById(Integer.parseInt(jwt.getClaimAsString("userID"))));
         blogPost.setThumbnailUrl(this.imageService.uploadImage(image));
@@ -62,35 +58,36 @@ public class BlogPostController {
      * @return ResponseEntity indicating the success status of the deletion operation.
      * @PreAuthorize Only accessible by users with 'Consultant' or 'Admin' roles.
      */
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
+    @PutMapping("/{id}/delete")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Manager') or hasRole('Staff')")
     public ResponseEntity<ApiResponse<?>> deleteBlogPost(@PathVariable Integer id) {
         blogPostService.deleteBlogPostById(id);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post deleted successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('Manager') ")
+    public ResponseEntity<ApiResponse<?>> approveBlogPost(@PathVariable Integer id) {
+        blogPostService.approveBlogPost(id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Blog post approved successfully", null, null);
+        return ResponseEntity.ok().body(response);
+    }
 
-    /**
-     * Updates an existing blog post.
-     *
-     * @param id           The ID of the blog post to be updated.
-     * @param blogPostJson JSON string representing the updated blog post details.
-     * @param image        (Optional) New image file to be used as the thumbnail for the blog post.
-     * @return ResponseEntity containing the status and details of the updated blog post.
-     * @throws IOException if there is an error processing the image file.
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,
-            @RequestPart("blogPost") String blogPostJson,
+            @RequestPart("tags") String tags,
+            @RequestPart("title") String title,
+            @RequestPart("content") String content,
             @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
-        // Parse JSON string to BlogPost object
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules(); // To handle LocalDateTime parsing
-        BlogPost updatedBlogPost = objectMapper.readValue(blogPostJson, BlogPost.class);
+        BlogPost updatedBlogPost = new BlogPost();
+        updatedBlogPost.setTags(tags);
+        updatedBlogPost.setTitle(title);
+        updatedBlogPost.setContent(content);
+        // Extract user ID and role from JWT claims
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
         String role = jwt.getClaimAsString("role");
         // Update thumbnail if a new image is provided
@@ -141,11 +138,13 @@ public class BlogPostController {
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort,
             @AuthenticationPrincipal Jwt jwt
     ) {
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
-        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, page, size, sort, userId);
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, orderBy, page, size, sort, userId);
 
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
@@ -170,7 +169,6 @@ public class BlogPostController {
     }
 
 
-
     /**
      * Searches for blog posts based on title, tags, and publication date.
      *
@@ -187,10 +185,12 @@ public class BlogPostController {
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort
     ) {
-        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, page, size, sort);
-
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPosts(title, tag, orderBy, page, size, sort);
+        System.out.println("title: " + title);
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
                 blogPosts.getNumber(),
@@ -213,4 +213,58 @@ public class BlogPostController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('Manager')")
+    @GetMapping("/manager/search")
+    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForManager(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
+            @RequestParam(defaultValue = "desc") String sort
+    ) {
+        System.out.println("orderBy: " + orderBy);
+        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPostsForManager(title, tag, orderBy, page, size, sort);
+        System.out.println("title: " + title);
+        PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
+                blogPosts.getContent(),
+                blogPosts.getNumber(),
+                blogPosts.getSize(),
+                blogPosts.getTotalElements(),
+                blogPosts.getTotalPages(),
+                blogPosts.isFirst(),
+                blogPosts.isLast(),
+                blogPosts.hasNext(),
+                blogPosts.hasPrevious()
+        );
+
+        ApiResponse<PageResponse<BlogPostResponse>> response = new ApiResponse<>(
+                HttpStatus.OK,
+                "Search results retrieved successfully",
+                pageResponse,
+                null
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Retrieves a blog post by its ID.
+     *
+     * @param id The ID of the blog post to retrieve.
+     * @return ResponseEntity containing the details of the blog post.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<BlogPostResponse>> getBlogPostById(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
+        boolean increaseViewCount = false; // Default to true, can be modified based on requirements
+        if (jwt == null) {
+            increaseViewCount = true; // If no JWT is present, we assume the request is from an unauthenticated user
+        } else if (jwt.getClaimAsString("role").equals("Customer")) {
+            increaseViewCount = true; // If the user is a customer, we also increase the view count
+
+        }
+        BlogPostResponse blogPost = blogPostService.getBlogPostById(id, increaseViewCount);
+        var response = new ApiResponse<>(HttpStatus.OK, "Blog post retrieved successfully", blogPost, null);
+        return ResponseEntity.ok(response);
+    }
 }

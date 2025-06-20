@@ -25,7 +25,7 @@ const HeaderDashboard = ({ user = {} }) => {
   const handleLogout = () => {
     return () => {
       auth.logoutAction();
-      navigate("/home");
+      navigate("/");
     };
   }
 

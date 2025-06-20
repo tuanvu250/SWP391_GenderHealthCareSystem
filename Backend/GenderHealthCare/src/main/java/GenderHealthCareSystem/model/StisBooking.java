@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.model;
 
 
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,9 +33,9 @@ import java.time.LocalDateTime;
         @Column(name = "BookingDate")
         private LocalDateTime bookingDate;
 
+        @Enumerated(EnumType.STRING)
         @Column(name = "Status", length = 20)
-        // Status can be 'Confirmed', 'Cancelled', or 'Done'
-        private String status;
+        private StisBookingStatus status;
 
         @Column(name = "PaymentStatus", length = 20)
         // Consider using an Enum for PaymentStatus

@@ -45,7 +45,7 @@ const Header = () => {
       {
         key: "profile",
         label: "Thông tin cá nhân",
-        onClick: () => navigate("/profile"),
+        onClick: () => navigate("/user/profile"),
       },
       {
         key: "settings",
@@ -70,17 +70,30 @@ const Header = () => {
       },
       {
         key: "2",
-        label: "Đặt câu hỏi hoặc tư vấn",
+        label: "Đặt lịch tư vấn",
         onClick: () => navigate("/services/consultation"),
       },
       {
         key: "3",
-        label: "Đặt lịch khám",
-        onClick: () => navigate("/sti-booking"),
+        label: "Đặt câu hỏi trực tuyến",
+        onClick: () => navigate("/services/asking"),
       },
     ],
   };
-
+  const healthTracker = {
+    items: [
+      {
+        key: "1",
+        label: "Theo dõi chu kì kinh nguyệt",
+        onClick: () => navigate("/menstrual-tracker"),
+      },
+      {
+        key: "2",
+        label: "Theo dõi lịch uống thuốc tránh thai",
+        onClick: () => navigate("/pill-tracker"),
+      },
+    ],
+  };
   return (
     <header className="bg-white py-2.5 z-50 px-4 md:px-8 text-gray-800 shadow-sm sticky top-0 border-b border-gray-100">
       <div className="mx-auto flex justify-between items-center w-full">
@@ -108,9 +121,12 @@ const Header = () => {
               </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
-              <a onClick={() => navigate("/health-tracker")}>
-                Theo dõi kỳ kinh
-              </a>
+              <Dropdown menu={healthTracker} trigger={["hover"]}>
+                <a className="flex items-center space-x-1">
+                  <span>Sức khỏe</span>
+                  <CaretDownFilled className="text-gray-500 size-2.5 ml-1" />
+                </a>
+              </Dropdown>
             </li>
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => navigate("/about")}>Giới thiệu</a>
@@ -223,7 +239,7 @@ const Header = () => {
               <div
                 className="mb-6 py-4 border-b border-gray-100"
                 onClick={() => {
-                  navigate("/profile");
+                  navigate("/user/profile");
                   setMenuVisible(false);
                 }}
               >
@@ -273,14 +289,6 @@ const Header = () => {
                       onClick={() => navigate("/services/consultation")}
                     >
                       Đặt câu hỏi hoặc tư vấn
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="block !text-gray-800 hover:text-[#0099CF]"
-                      onClick={() => navigate("/services/appointments")}
-                    >
-                      Đặt lịch khám
                     </a>
                   </li>
                 </ul>

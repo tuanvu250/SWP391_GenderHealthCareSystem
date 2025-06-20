@@ -41,7 +41,7 @@ const ContactSection = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div>
-                            <h3 className="text-xl font-semibold text-blue-700 mb-2">Địa chỉ</h3>
+                            <h3 className="text-xl font-semibold text-black mb-2">Địa chỉ</h3>
                             <address className="not-italic text-gray-700 leading-relaxed mb-6">
                                 D. D1, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh
                             </address>
@@ -62,7 +62,7 @@ const ContactSection = () => {
                         </div>
 
                         <div>
-                            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+                            <h3 className="text-xl font-semibold text-black-700 mb-2">
                                 Thông tin liên hệ
                             </h3>
                             <p className="text-gray-700 mb-1">

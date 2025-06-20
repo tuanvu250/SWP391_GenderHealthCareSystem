@@ -1,95 +1,177 @@
-import { Route, Routes, Outlet } from "react-router-dom";
-import ScrollToTop from "../components/utils/ScrollToTop";
+import {Route, Routes, Outlet} from "react-router-dom";
+import ScrollToTop from "../components/layout/ScrollToTop";
+import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import Home from "../home/home";
+import Home from "../home/Home";
+
 import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
-import HealthTracker from "../menstrualcycle/HealthTracker";
-import Profile from "../user/UserProfile";
-import ProtectedRoute from "./ProtectedRoute";
-import AboutPage from "../site-info/AboutPage";
-import OvulationCalendar from "../menstrualcycle/OvulationCalendar";
+import OauthRedirect from "../auth/OauthRedirect";
+import GoogleSignupComplete from "../auth/GoogleSignupComplete";
+
+import ProfileLayout from "../user/ProfileLayout";
+import Profile from "../user/Profile";
+import HistoryTesting from "../user/HistoryTesting";
+
+
+import PillTracker from "../healthtracker/PillTracker";
+import MenstrualTracker from "../healthtracker/MenstrualTracker";
+import OvulationCalendar from "../healthtracker/OvulationCalendar";
+import PillScheduleCalendar from "../healthtracker/PillScheduleCalendar";
+
 import Blog from "../blog/Blog";
-import MedicationReminder from "../menstrualcycle/MedicationReminder";
+import BlogDetail from "../blog/BlogDetail";
+
+import AboutPage from "../site-info/AboutPage";
 import ServiceList from "../site-info/ServiceList";
 import ContactSection from "../site-info/Contact";
 import PrivacySection from "../site-info/Privacy";
-import STITesting from "../services/STITesting";
-import STIBooking from "../services/STIBooking";
-import ConsultationBooking from "../services/ConsultationBooking";
+import ExpertSection from "../site-info/Expert";
+
+import STITesting from "../services/testing/STITesting";
+import STIBooking from "../services/testing/STIBooking";
+import ConsultationBooking from "../services/consultant/ConsultationBooking";
+import Consultation from "../services/consultant/Consultation";
+import AskingSection from "../services/asking/AskingSection";
+
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
-// Layout component with Header
-const Layout = () => {
-  return (
+import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
+import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
+import BookingResult from "../services/BookingResult";
+
+import MinhTrang from "../site-info/Expert-info/MinhTrang";
+import PeriodHistory from "../healthtracker/PeriodHistory";
+
+// Layout có Header/Footer
+const Layout = () => (
     <div className="flex flex-col min-h-screen">
-      <ScrollToTop />
-      <Header />
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      <Footer />
+        <ScrollToTop/>
+        <Header/>
+        <main className="flex-grow">
+            <Outlet/>
+        </main>
+        <Footer/>
     </div>
-  );
-};
+);
 
 function RouteMap() {
-  return (
-    <Routes>
-      {/* Routes với Layout (có Header/Footer) */}
-      <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/health-tracker" element={<HealthTracker />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/sti-testing" element={<STITesting />} />
-        <Route path="/sti-booking" element={<STIBooking />} />
-        <Route
-          path="/services/consultation"
-          element={<ConsultationBooking />}
-        />
+    return (
+        <Routes>
+            {/* Các route có layout Header/Footer */}
+            <Route element={<Layout/>}>
+                <Route path="/" element={<Home/>}/>
+                <Route path="/home" element={<Home/>}/>
+                <Route path="/pill-tracker" element={<PillTracker/>}/>
+                <Route path="/menstrual-tracker" element={<MenstrualTracker/>}/>
+                <Route
+                    path="/user"
+                    element={
+                        <ProtectedRoute>
+                            <ProfileLayout/>
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<Profile/>}/>
+                    <Route path="profile" element={<Profile/>}/>
+                    <Route path="history-testing" element={<HistoryTesting/>}/>
+                </Route>
 
-        {/* Các trang khác */}
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/menstrual-ovulation" element={<OvulationCalendar />} />
-        <Route path="/medication-reminder" element={<MedicationReminder />} />
-        <Route path="/servicelist" element={<ServiceList />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/contact" element={<ContactSection />} />
-        <Route path="/privacy" element={<PrivacySection />} />
-      </Route>
+                <Route path="/sti-testing" element={<STITesting/>}/>
+                <Route
+                    path="/sti-booking"
+                    element={
+                        <ProtectedRoute>
+                            <STIBooking/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/services/consultationbooking"
+                    element={<ConsultationBooking/>}
+                />
+                <Route path="/services/consultation" element={<Consultation/>}/>
+                <Route path="/services/asking" element={<AskingSection/>}/>
+                {/* Trang thông tin */}
+                <Route path="/about" element={<AboutPage/>}/>
+                <Route
+                    path="/menstrual-ovulation"
+                    element={
+                        <ProtectedRoute>
+                            <OvulationCalendar/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/pill-schedule"
+                    element={
+                        <ProtectedRoute>
+                            <PillScheduleCalendar/>
+                        </ProtectedRoute>
+                    }
+                />
 
-      {/* Routes không có Layout */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/period-history" element={<PeriodHistory/>}/>
+                <Route path="/booking-result" element={<BookingResult/>}/>
+                <Route path="/servicelist" element={<ServiceList/>}/>
+                <Route path="/blog" element={<Blog/>}/>
+                <Route path="/blog/:postId" element={<BlogDetail/>}/>
+                <Route path="/contact" element={<ContactSection/>}/>
+                <Route path="/privacy" element={<PrivacySection/>}/>
+                <Route path="/expert" element={<ExpertSection/>}/>
+                <Route path="/expert/0" element={<MinhTrang/>}/>
+            </Route>
 
-      {/* Routes dashboard */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute allowedRoles="Consultant">
-            <DashboardLayout userRole={"Consultant"}>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Dashboard</h1>
-                <p>Content goes here...</p>
-              </div>
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      ></Route>
-    </Routes>
-  );
+            {/* Các route không có Layout */}
+            <Route path="/login" element={<Login/>}/>
+            <Route path="/register" element={<Register/>}/>
+            <Route path="/forgot-password" element={<ForgotPassword/>}/>
+            <Route path="/reset-password" element={<ResetPassword/>}/>
+            <Route path="/oauth2/redirect" element={<OauthRedirect/>}/>
+            <Route path="/google-signup-complete" element={<GoogleSignupComplete/>}/>
+
+            {/* Dashboard cho Consultant */}
+            <Route
+                path="/consultant/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles="Consultant">
+                        <DashboardLayout userRole="Consultant"/>
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<h1>Dashboard</h1>}/>
+                <Route path="manage-blog" element={<ManageMyBlog/>}/>
+            </Route>
+
+            {/* Dashboard cho Manager */}
+            <Route
+                path="/manager/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles="Manager">
+                        <DashboardLayout userRole="Manager"/>
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<h1>Dashboard</h1>}/>
+                <Route path="manage-blog" element={<ManageMyBlog/>}/>
+            </Route>
+
+            {/* Dashboard cho Staff */}
+            <Route
+                path="/staff/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles="Staff">
+                        <DashboardLayout userRole="Staff"/>
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<h1>Dashboard</h1>}/>
+                <Route path="manage-booking-stis" element={<ManageBookingStis/>}/>
+            </Route>
+        </Routes>
+    );
 }
 
 export default RouteMap;

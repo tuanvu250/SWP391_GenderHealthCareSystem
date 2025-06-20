@@ -1,3 +1,4 @@
+import { Button } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +8,7 @@ const experts = [
     specialty: "Sản – Sức khỏe giới tính",
     desc: "Hơn 10 năm kinh nghiệm tại Bệnh viện Từ Dũ.",
     image: "https://hthaostudio.com/wp-content/uploads/2022/08/Anh-profile-bac-si-min.jpg",
+
   },
   {
     name: "TS. Lê Anh Tuấn",
@@ -134,7 +136,10 @@ const ExpertSection = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {experts.map((expert, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-6 shadow hover:shadow-md transition duration-300">
+              <div
+                key={index}
+                className="bg-gray-50 rounded-xl p-6 shadow hover:shadow-md transition duration-300"
+              >
                 <img
                   src={expert.image}
                   alt={expert.name}
@@ -143,9 +148,21 @@ const ExpertSection = () => {
                 <h3 className="text-lg font-semibold text-center text-gray-900">
                   {expert.name}
                 </h3>
-                <p className="text-center text-sm text-blue-600 mb-2">{expert.specialty}</p>
+                <p className="text-center text-sm text-blue-600 mb-2">
+                  {expert.specialty}
+                </p>
                 <p className="text-sm text-gray-700 text-center">{expert.desc}</p>
+                <div className="flex justify-center">
+                  <Button
+                    type="primary"
+                    className="mt-4"
+                    onClick={() => navigate(`/expert/${index}`)}
+                  >
+                    Thông tin chi tiết
+                  </Button>
+                </div>
               </div>
+
             ))}
           </div>
         </div>

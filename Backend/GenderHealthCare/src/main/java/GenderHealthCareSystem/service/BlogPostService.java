@@ -19,8 +19,9 @@ public class BlogPostService {
     private final BlogPostRepository blogPostRepository;
 
     public void saveBlogPost(BlogPost blogPost) {
-        blogPost.setDeleted(false);
+        blogPost.setStatus("PENDING");
         blogPost.setPublishedAt(java.time.LocalDateTime.now());
+        blogPost.setViewCount(0);
         this.blogPostRepository.save(blogPost);
     }
 
@@ -30,19 +31,30 @@ public class BlogPostService {
     }
 
     public void deleteBlogPostById(int id) {
-        BlogPost blog= blogPostRepository.findById(id).get();
+        BlogPost blog = blogPostRepository.findById(id).get();
         if (blog == null) {
             throw new RuntimeException("Không tìm thấy bài viết với id: " + id);
         }
-        blog.setDeleted(true);
+        blog.setStatus("DELETED");
         this.blogPostRepository.save(blog);
     }
+
+    public void approveBlogPost(int id) {
+        BlogPost blog = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        if ("DELETED".equals(blog.getStatus())) {
+            throw new RuntimeException("Bài viết này đã bị xóa và không thể được phê duyệt.");
+        }
+        blog.setStatus("PUBLISHED");
+        blogPostRepository.save(blog);
+    }
+    
 
     public void updateBlogPost(int id, BlogPost updatedBlogPost) {
         BlogPost existingBlogPost = blogPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
         // Kiểm tra quyền sửa bài viết
-        if (existingBlogPost.isDeleted()) {
+        if ("DELETED".equals(existingBlogPost.getStatus())) {
             throw new RuntimeException("Bài viết đã bị xóa, không thể sửa");
         }
         existingBlogPost.setTitle(updatedBlogPost.getTitle());
@@ -53,12 +65,12 @@ public class BlogPostService {
         blogPostRepository.save(existingBlogPost);
     }
 
-    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, int page, int size, String sort,int Id) {
+    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, String orderBy, int page, int size, String sort,int Id) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
         } else {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
         }
 
         Page<BlogPost> blogPosts;
@@ -67,7 +79,7 @@ public class BlogPostService {
     }
 
     public List<BlogPostResponse> findFourNewestBlogs() {
-        List<BlogPost> blogPosts = blogPostRepository.findTop4ByDeletedFalseOrderByPublishedAtDesc();
+        List<BlogPost> blogPosts = blogPostRepository.findTop4ByStatusOrderByPublishedAtDesc("PUBLISHED");
         List<BlogPostResponse> responses = new ArrayList<>();
         for (BlogPost blogPost : blogPosts) {
             responses.add(mapToResponse(blogPost));
@@ -75,12 +87,12 @@ public class BlogPostService {
         return responses;
     }
 
-    public Page<BlogPostResponse> searchBlogPosts(String title, String tag, int page, int size, String sort) {
+    public Page<BlogPostResponse> searchBlogPosts(String title, String tag, String orderBy, int page, int size, String sort) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").ascending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
         } else {
-            pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
         }
 
         Page<BlogPost> blogPosts;
@@ -89,6 +101,30 @@ public class BlogPostService {
 
         return blogPosts.map(this::mapToResponse);
 
+    }
+    public Page<BlogPostResponse> searchBlogPostsForManager(String title, String tag, String orderBy, int page, int size, String sort) {
+        Pageable pageable;
+        if ("asc".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(orderBy).descending());
+        }
+
+        Page<BlogPost> blogPosts;
+        blogPosts = this.blogPostRepository.searchBlogPostsForManager(title,tag, pageable);
+
+
+        return blogPosts.map(this::mapToResponse);
+
+    }
+    public BlogPostResponse getBlogPostById(int id,boolean increaseViewCount) {
+        BlogPost blogPost = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        if (increaseViewCount) {
+            blogPost.setViewCount(blogPost.getViewCount() + 1);
+            blogPostRepository.save(blogPost);
+        }
+        return mapToResponse(blogPost);
     }
 
     public BlogPostResponse mapToResponse(BlogPost blogPost) {
@@ -102,6 +138,8 @@ public class BlogPostService {
         blogPostResponse.setConsultantId(blogPost.getConsultant().getUserId());
         blogPostResponse.setConsultantName(blogPost.getConsultant().getFullName());
         blogPostResponse.setConsultantImageUrl(blogPost.getConsultant().getUserImageUrl());
+        blogPostResponse.setViewCount(blogPost.getViewCount());
+        blogPostResponse.setStatus(blogPost.getStatus());
         return blogPostResponse;
     }
 }

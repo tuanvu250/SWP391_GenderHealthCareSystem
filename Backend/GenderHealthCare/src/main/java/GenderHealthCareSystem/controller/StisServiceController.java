@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.dto.StisServiceRequest;
 import GenderHealthCareSystem.model.StisService;
 import GenderHealthCareSystem.service.StisServiceService;
 import lombok.RequiredArgsConstructor;
@@ -41,16 +42,20 @@ public class StisServiceController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<StisService>> create(@RequestBody StisService req) {
-        StisService created = service.create(req);
+    public ResponseEntity<ApiResponse<StisService>> create(@RequestBody StisServiceRequest req) {
+        StisService toSave = new StisService();
+        toSave.setServiceName(req.getServiceName());
+        toSave.setDescription(req.getDescription());
+        toSave.setPrice(req.getPrice());
+        toSave.setDuration(req.getDuration());
+        toSave.setTests(req.getTests());
+        StisService created = service.create(toSave);
         ApiResponse<StisService> res = new ApiResponse<>(
-                HttpStatus.CREATED,
-                "Tạo mới dịch vụ thành công",
-                created,
-                null
+                HttpStatus.CREATED, "Tạo mới dịch vụ thành công", created, null
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StisService>> update(@PathVariable Integer id, @RequestBody StisService req) {

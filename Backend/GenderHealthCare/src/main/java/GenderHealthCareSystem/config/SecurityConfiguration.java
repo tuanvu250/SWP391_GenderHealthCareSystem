@@ -1,5 +1,8 @@
 package GenderHealthCareSystem.config;
 
+import GenderHealthCareSystem.service.CustomOAuth2UserService;
+import GenderHealthCareSystem.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -8,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
@@ -16,20 +20,28 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final SecurityUtil jwtService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                .requestMatchers("/", "/admins", "/login").permitAll()
-                .requestMatchers("/users/**").hasAnyRole("Customer", "Admin", "Consultant", "Staff", "Manager") // Chỉ user có role USER mới được truy cập /user/**
-                .anyRequest().permitAll()
+                        .requestMatchers("/", "/admins", "/login").permitAll()
+                        .requestMatchers("/users/**").hasAnyRole("Customer", "Admin", "Consultant", "Staff", "Manager") // Chỉ user có role USER mới được truy cập /user/**
+                        .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(Customizer.withDefaults())
-                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                )
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .exceptionHandling(
                         exceptions -> exceptions
@@ -38,7 +50,7 @@ public class SecurityConfiguration {
 
                 .formLogin(f -> f.disable())
                 .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
         return http.build();
     }

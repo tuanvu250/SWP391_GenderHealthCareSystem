@@ -30,7 +30,7 @@ const PrivacySection = () => {
             </div>
 
             {/* Chính sách content */}
-            <section className="bg-white px-4 padding-bottom: 10px">
+            <section className="bg-white px-4 mb-20">
                 <div className="max-w-4xl mx-auto px-6 space-y-10">
                     <h2 className="text-3xl font-bold text-gray-900 text-center">Chính sách</h2>
 

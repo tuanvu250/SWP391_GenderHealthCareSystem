@@ -1,19 +1,24 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisBookingRequest;
 import GenderHealthCareSystem.dto.StisBookingResponse;
 import GenderHealthCareSystem.model.StisBooking;
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.service.StisBookingService;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
+
+import static GenderHealthCareSystem.util.PageResponseUtil.mapToPageResponse;
 
 @RestController
 @RequestMapping("/api/stis-bookings")
@@ -21,11 +26,21 @@ public class StisBookingController {
 
     @Autowired
     private StisBookingService stisBookingService;
+    private PageResponseUtil pageResponseUtil;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StisBookingResponse>>> getAllBookings() {
-        List<StisBookingResponse> bookings = stisBookingService.getAllBookings();
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched all bookings", bookings, null));
+    public ResponseEntity<ApiResponse<PageResponse<StisBookingResponse>>> SearchBooking(@RequestParam(required = false) String name,
+                                                                                        @RequestParam(required = false) Integer serviceId,
+                                                                                        @RequestParam(required = false) String status,
+                                                                                        @RequestParam(defaultValue = "0") int page,
+                                                                                        @RequestParam(defaultValue = "5") int size,
+                                                                                        @RequestParam(defaultValue = "desc") String sort) {
+        StisBookingStatus statusValue = null;
+        if (status != null && !status.isBlank()) {
+            statusValue = StisBookingStatus.valueOf(status.toUpperCase());
+        }
+        Page<StisBookingResponse> bookings = stisBookingService.findStisBooking(name, serviceId, statusValue, page, size, sort);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched all bookings", mapToPageResponse(bookings), null));
     }
 
     @GetMapping("/{id}")
@@ -38,11 +53,22 @@ public class StisBookingController {
                     .body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Booking not found", null, "NOT_FOUND"));
         }
     }
+
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<List<StisBookingResponse>>> getBookingHistoryByCustomer(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiResponse<PageResponse<StisBookingResponse>>> getBookingHistoryByCustomer(@RequestParam(required = false) Integer serviceId,
+                                                                                                      @RequestParam(required = false) String status,
+                                                                                                      @RequestParam(defaultValue = "0") int page,
+                                                                                                      @RequestParam(defaultValue = "5") int size,
+                                                                                                      @RequestParam(defaultValue = "desc") String sort,
+                                                                                                      @AuthenticationPrincipal Jwt jwt) {
         // Fetch booking history for a specific customer
-        List<StisBookingResponse> bookingHistory = stisBookingService.getBookingHistoryByCustomer(Integer.parseInt(jwt.getClaimAsString("userID")));
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched booking history", bookingHistory, null));
+        int customerId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        StisBookingStatus statusValue = null;
+        if (status != null && !status.isBlank()) {
+            statusValue = StisBookingStatus.valueOf(status.toUpperCase());
+        }
+        Page<StisBookingResponse> bookingHistory = stisBookingService.GetHistory(customerId, serviceId, statusValue, page, size, sort);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched booking history", mapToPageResponse(bookingHistory), null));
     }
 
     @PostMapping
@@ -77,15 +103,15 @@ public class StisBookingController {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as cancelled", null, null));
     }
 
-    @PutMapping("/{id}/mark-done")
-    public ResponseEntity<ApiResponse<Void>> markBookingAsDone(@PathVariable Integer id) {
-        stisBookingService.markBookingAsDone(id);
+    @PutMapping("/{id}/mark-completed")
+    public ResponseEntity<ApiResponse<Void>> markBookingAsCompleted(@PathVariable Integer id) {
+        stisBookingService.markBookingAsCompleted(id);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as done", null, null));
     }
 
 
-
 }
+
 
 
 
