@@ -29,17 +29,20 @@ public class MenstrualCalendarController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid JWT");
         }
 
-        Integer userId;
+        int userId;
         try {
             userId = Integer.parseInt(jwt.getClaimAsString("userID"));
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body("Invalid userID format");
         }
 
+        // Retrieve the latest updated cycle for the user
         var cycle = cycleService.getLatestCycleForUser(userId);
 
+        // Calculate menstruation days based on the latest cycle
         int menstruationDays = (int) (cycle.getEndDate().toEpochDay() - cycle.getStartDate().toEpochDay()) + 1;
 
+        // Build the calendar based on the latest cycle
         MenstrualCalendarResponse cal = calendarService.buildCalendar(
                 cycle.getCycleId(),
                 cycle.getStartDate(),

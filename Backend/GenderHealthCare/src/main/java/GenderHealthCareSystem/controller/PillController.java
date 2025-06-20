@@ -3,6 +3,7 @@ package GenderHealthCareSystem.controller;
 import GenderHealthCareSystem.dto.PillRequest;
 import GenderHealthCareSystem.dto.PillResponse;
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.model.Pills;
 import GenderHealthCareSystem.service.PillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,23 @@ public class PillController {
                 null
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/update-frequency")
+    public ResponseEntity<ApiResponse<Void>> updateNotificationFrequency(
+            @RequestParam Integer pillId,
+            @RequestParam Pills.NotificationFrequency frequency,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        pillService.updateNotificationFrequencyByUser(pillId, frequency, userId);
+        ApiResponse<Void> response = new ApiResponse<>(
+                HttpStatus.OK,
+                "Notification frequency updated successfully",
+                null,
+                null
+        );
+        return ResponseEntity.ok(response);
     }
 
 }
