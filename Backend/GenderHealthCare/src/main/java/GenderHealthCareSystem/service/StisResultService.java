@@ -2,7 +2,7 @@ package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.StisResultRequest;
 import GenderHealthCareSystem.model.StisBooking;
-import GenderHealthCareSystem.model.StisBookingStatus;
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisResult;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisResultRepository;
