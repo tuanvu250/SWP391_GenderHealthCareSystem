@@ -32,20 +32,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         CustomOAuth2User userDetails = (CustomOAuth2User) authentication.getPrincipal();
 
         String token = jwtService.createToken(authentication);
-        JwtResponse jwtResponse = new JwtResponse(token,
-                userDetails.getAccount().getAccountId(),
-                userDetails.getName(),
-                userDetails.getAccount().getUsers().getFullName(),
-                userDetails.getAccount().getUsers().getUserImageUrl(),
-                userDetails.getAccount().getUsers().getGender(),
-                userDetails.getAccount().getEmail(),
-                userDetails.getAccount().getUsers().getRole().getRoleName()
-        );
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(jwtResponse);
-        // Trả về JWT dưới dạng JSON
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(json);
+        String redirectUrl = "http://localhost:5173/oauth2/redirect?token=" + token;
+        response.sendRedirect(redirectUrl);
     }
 }

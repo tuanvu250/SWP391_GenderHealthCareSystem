@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.model;
+package GenderHealthCareSystem.enums;
 
 public enum StisBookingStatus {
     PENDING,

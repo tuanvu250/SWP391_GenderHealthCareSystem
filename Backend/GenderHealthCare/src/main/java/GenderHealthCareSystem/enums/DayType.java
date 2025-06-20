@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.dto;
+package GenderHealthCareSystem.enums;
 
 public enum DayType {
     MENSTRUATION, // Ngày hành kinh
