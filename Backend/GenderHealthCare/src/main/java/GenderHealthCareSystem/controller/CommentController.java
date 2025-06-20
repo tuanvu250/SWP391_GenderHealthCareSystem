@@ -1,11 +1,16 @@
 package GenderHealthCareSystem.controller;
 
+import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.dto.CommentRequest;
+import GenderHealthCareSystem.dto.CommentResponse;
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.model.Comment;
 import GenderHealthCareSystem.service.BlogPostService;
 import GenderHealthCareSystem.service.CommentService;
 import GenderHealthCareSystem.service.UserService;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +32,7 @@ public class CommentController {
 
     @PostMapping
     @PreAuthorize("hasRole('Customer')")
-    public ResponseEntity<Comment> createComment(@RequestBody CommentRequest commentRequest, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(@RequestBody CommentRequest commentRequest, @AuthenticationPrincipal Jwt jwt) {
         String userID = jwt.getClaimAsString("userID");
         Comment comment = new Comment();
         comment.setCreatedAt(LocalDateTime.now());
@@ -35,25 +40,28 @@ public class CommentController {
         comment.setBlogPost(blogPostService.findBlogPostById(commentRequest.getBlogPostId()));
         comment.setContent(commentRequest.getContent());
         comment.setStatus("VISIBLE"); //
-        Comment savedComment = commentService.saveComment(comment);
-        return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
+        CommentResponse savedComment = commentService.saveComment(comment);
+        return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.CREATED, "Comment created successfully", savedComment, null));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Comment>> getAllComments() {
-        List<Comment> comments = commentService.getAllComments();
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
+
 
     @GetMapping("{blogId}")
-    public ResponseEntity<List<Comment>> getCommentsByBlogId(@PathVariable Integer blogId) {
-        List<Comment> comments = commentService.getCommentsByBlogId(blogId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<PageResponse<CommentResponse>>> getCommentsByBlogId(@PathVariable Integer blogId,
+                                                                         @RequestParam(defaultValue = "0") int page,
+                                                                         @RequestParam(defaultValue = "5") int size,
+                                                                         @RequestParam(defaultValue = "desc") String sort) {
+        Page<CommentResponse> comments = commentService.searchCommentByPostId(page,size,sort,blogId);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.OK, "Comments retrieved successfully", PageResponseUtil.mapToPageResponse(comments), null),
+                HttpStatus.OK
+        );
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCommentById(@PathVariable Integer id) {
-        commentService.deleteCommentById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> HideComment(@PathVariable Integer id) {
+        commentService.HideComment(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    
 }

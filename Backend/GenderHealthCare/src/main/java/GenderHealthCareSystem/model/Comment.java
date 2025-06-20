@@ -33,6 +33,8 @@ public class Comment {
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
+    @Column(name = "UpdatedAt")
+    private LocalDateTime updatedAt;
     @Column(name = "Status", length = 20, columnDefinition = "NVARCHAR(20)")
     private String status; // e.g., "Visible", "Hidden", "Deleted"
 }
