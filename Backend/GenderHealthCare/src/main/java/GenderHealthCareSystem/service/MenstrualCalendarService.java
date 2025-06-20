@@ -1,7 +1,7 @@
 package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.DayInfo;
-import GenderHealthCareSystem.dto.DayType;
+import GenderHealthCareSystem.enums.DayType;
 import GenderHealthCareSystem.dto.MenstrualCalendarResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

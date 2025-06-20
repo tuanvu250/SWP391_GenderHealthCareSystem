@@ -1,17 +1,13 @@
 package GenderHealthCareSystem.service;
 
-import GenderHealthCareSystem.dto.BlogPostResponse;
 import GenderHealthCareSystem.dto.StisBookingRequest;
 import GenderHealthCareSystem.dto.StisBookingResponse;
-import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.model.StisBooking;
-import GenderHealthCareSystem.model.StisBookingStatus;
-import GenderHealthCareSystem.model.StisService;
+import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisServiceRepository;
 import GenderHealthCareSystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service

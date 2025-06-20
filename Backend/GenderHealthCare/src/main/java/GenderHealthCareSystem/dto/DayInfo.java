@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.dto;
 
+import GenderHealthCareSystem.enums.DayType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
