@@ -45,6 +45,10 @@ export const loginAPI = async (values) => {
   return api.post("/auth/login", userData);
 };
 
+export const getUserByIdAPI = async (userId) => {
+  return api.get(`/users/${userId}`);
+}
+
 //data của người dùng
 export const getUserProfile = async () => {
   return api.get("/users/me");
@@ -265,6 +269,35 @@ export const historyBookingAPI = async ({
 export const createInvoiceAPI = async (query) => {
   return api.get(`/payment/create-invoice?${query}`);
 };
+
+export const cancelBookingAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-cancelled`);
+};
+
+export const manageBookingsAPI = async ({
+  name = "",
+  page = 0,
+  size = 10,
+  status = "",
+  sort = "",
+}) => {
+  const query = new URLSearchParams({
+    name,
+    page,
+    size,
+    status,
+    sort,
+  }).toString();
+  return api.get(`/stis-bookings?${query}`);
+};
+
+export const markConfirmedBookingStisAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-confirmed`);
+}
+
+export const markCompletedBookingStisAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-completed`);
+}
 
 export const getAllPillSchedules = () => {
   return api.get("/pills/schedule/all");
