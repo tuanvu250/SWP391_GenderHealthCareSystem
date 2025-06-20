@@ -66,7 +66,7 @@ public class BlogPostController {
         return ResponseEntity.ok().body(response);
     }
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasRole('Staff') ")
+    @PreAuthorize("hasRole('Manager') ")
     public ResponseEntity<ApiResponse<?>> approveBlogPost(@PathVariable Integer id) {
         blogPostService.approveBlogPost(id);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post approved successfully", null, null);
@@ -74,7 +74,7 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('Consultant') or hasRole('Staff')")
+    @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
             @PathVariable Integer id,
             @RequestPart("tags") String tags,
@@ -213,9 +213,9 @@ public class BlogPostController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('Staff')")
-    @GetMapping("/staff/search")
-    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForstaff(
+    @PreAuthorize("hasRole('Manager')")
+    @GetMapping("/manager/search")
+    public ResponseEntity<ApiResponse<PageResponse<BlogPostResponse>>> searchBlogPostsForManager(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
