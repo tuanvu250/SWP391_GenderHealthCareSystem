@@ -43,7 +43,7 @@ const Login = () => {
     setLoading(true);
     
     // Frontend URL để Google callback lại
-    const redirectUri = encodeURIComponent('http://localhost:5173/login/oauth2/code/google');
+    const redirectUri = encodeURIComponent('http://localhost:5173/login/oauth2/');
     
     // URL OAuth của backend
     const googleAuthUrl = `http://localhost:8080/oauth2/authorization/google?redirect_uri=${redirectUri}`;

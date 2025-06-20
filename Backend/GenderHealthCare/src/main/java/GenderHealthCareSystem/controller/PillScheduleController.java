@@ -72,4 +72,18 @@ public class PillScheduleController {
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
     }
+
+    /**
+     * ✅ DELETE /api/pills/schedule/{scheduleId}/delete
+     * Xóa lịch uống thuốc không cần thiết
+     */
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteSchedule(
+            @RequestParam Integer scheduleId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        repo.deleteById(scheduleId);
+        return ResponseEntity.noContent().build();
+    }
 }

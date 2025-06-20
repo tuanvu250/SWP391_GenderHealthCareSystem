@@ -4,10 +4,13 @@ import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/Home";
+
 import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
 import ResetPassword from "../auth/ResetPassword";
+import OauthRedirect from "../auth/OauthRedirect";
+import GoogleSignupComplete from "../auth/GoogleSignupComplete";
 
 import ProfileLayout from "../user/ProfileLayout";
 import Profile from "../user/Profile";
@@ -126,6 +129,8 @@ function RouteMap() {
             <Route path="/register" element={<Register/>}/>
             <Route path="/forgot-password" element={<ForgotPassword/>}/>
             <Route path="/reset-password" element={<ResetPassword/>}/>
+            <Route path="/oauth2/redirect" element={<OauthRedirect/>}/>
+            <Route path="/google-signup-complete" element={<GoogleSignupComplete/>}/>
 
             {/* Dashboard cho Consultant */}
             <Route

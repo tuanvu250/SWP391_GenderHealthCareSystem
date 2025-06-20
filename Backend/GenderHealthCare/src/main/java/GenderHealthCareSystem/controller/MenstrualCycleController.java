@@ -64,4 +64,41 @@ public class MenstrualCycleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống");
         }
     }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateCycle(
+            @RequestBody MenstrualCycleRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        if (jwt == null || jwt.getClaimAsString("userID") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
+        }
+
+        Integer userId;
+        try {
+            userId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("userID không hợp lệ trong token");
+        }
+
+        try {
+            // Save the updated cycle and recalculate predictions
+            MenstrualCycleResponse updated = cycleService.updateMenstrualCycle(request, userId);
+
+            // Recalculate the calendar based on the updated cycle
+            int menstruationDays = (int) (updated.getEndDate().toEpochDay() - updated.getStartDate().toEpochDay()) + 1;
+            MenstrualCalendarResponse calendar = calendarService.buildCalendar(
+                    updated.getCycleId(),
+                    updated.getStartDate(),
+                    updated.getCycleLength(),
+                    menstruationDays
+            );
+
+            return ResponseEntity.ok(calendar);
+
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật chu kỳ cho userID={}", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống");
+        }
+    }
 }
