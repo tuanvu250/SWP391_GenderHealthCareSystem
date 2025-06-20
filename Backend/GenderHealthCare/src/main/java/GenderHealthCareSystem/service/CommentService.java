@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.model.Comment;
+import GenderHealthCareSystem.repository.BlogPostRepository;
 import GenderHealthCareSystem.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,10 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final BlogPostRepository blogPostRepository;
 
     public Comment saveComment(Comment comment) {
+
         return commentRepository.save(comment);
     }
 
