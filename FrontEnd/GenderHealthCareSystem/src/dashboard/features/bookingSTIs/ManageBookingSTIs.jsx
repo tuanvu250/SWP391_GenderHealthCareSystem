@@ -84,11 +84,11 @@ const ManageBookingStis = () => {
 
   // Cấu hình trạng thái thanh toán
   const paymentStatusConfig = {
-    "Đã thanh toán": {
+    PAID: {
       text: "Đã thanh toán",
       color: "green",
     },
-    "Chua thanh toán": {
+    UNPAID: {
       text: "Chưa thanh toán",
       color: "orange",
     },
