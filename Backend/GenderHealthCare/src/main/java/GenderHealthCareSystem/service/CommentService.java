@@ -56,7 +56,7 @@ public class CommentService {
     public void HideComment(Integer id, Integer userId, String role) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
-        if (comment.getUser().getUserId().equals(userId) || "Staff".equals(role) || "Manager".equals(role)) {
+        if (comment.getUser().getUserId().equals(userId) || "Staff".equals(role) || "Manager".equals(role)||"Consultant".equals(role)) {
             comment.setStatus("HIDDEN");
             commentRepository.save(comment);
         } else {
