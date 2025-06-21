@@ -62,12 +62,12 @@ const ManageBookingStis = () => {
     },
     CONFIRMED: {
       text: "Đã xác nhận",
-      color: "green",
+      color: "purple",
       icon: <CheckCircleOutlined />,
     },
     COMPLETED: {
       text: "Hoàn thành",
-      color: "purple",
+      color: "green",
       icon: <CheckCircleOutlined />,
     },
     CANCELLED: {
@@ -181,6 +181,7 @@ const ManageBookingStis = () => {
   const handleConfirm = async (bookingId) => {
     try {
       await markConfirmedBookingStisAPI(bookingId);
+      loadData();
       message.success("Lịch đã được xác nhận thành công");
     } catch (error) {
       console.error("Error confirming booking:", error);
@@ -191,8 +192,8 @@ const ManageBookingStis = () => {
   const handleComplete = async (bookingId) => {
     try {
       await markCompletedBookingStisAPI(bookingId);
-      message.success("Lịch đã được đánh dấu hoàn thành");
       loadData();
+      message.success("Lịch đã được đánh dấu hoàn thành");
     } catch (error) {
       console.error("Error completing booking:", error);
       message.error("Không thể đánh dấu lịch hẹn là hoàn thành");

@@ -7,9 +7,8 @@ import {
   Space,
   Divider,
   Button,
-  Card,
-  Row,
-  Col,
+  Dropdown,
+  Popconfirm,
   Breadcrumb,
   Spin,
   Image,
@@ -31,13 +30,21 @@ import {
   LikeOutlined,
   LikeFilled,
   CommentOutlined,
-  CopyOutlined,
+  EllipsisOutlined,
   MessageOutlined,
   SendOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { blogDetailAPI } from "../components/utils/api";
+import {
+  blogDetailAPI,
+  getCommentsBlogAPI,
+  likeBlogAPI,
+  postCommentBlogAPI,
+} from "../components/utils/api";
 import { formatDateTime } from "../components/utils/formatTime";
+import { useAuth } from "../components/provider/AuthProvider";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -45,6 +52,7 @@ const { TextArea } = Input;
 const BlogDetail = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState([]);
@@ -53,110 +61,14 @@ const BlogDetail = () => {
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [shareMenuVisible, setShareMenuVisible] = useState(false);
   const [commentForm] = Form.useForm();
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      name: "Nguyễn Văn A",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-      content: "Bài viết rất hữu ích, cảm ơn tác giả đã chia sẻ thông tin!",
-      date: "2025-06-18T09:12:00Z",
-      likes: 5,
-      liked: false,
-    },
-    {
-      id: 2,
-      name: "Trần Thị B",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lily",
-      content:
-        "Tôi đã áp dụng những kiến thức này và thấy rất hiệu quả. Mong tác giả chia sẻ thêm về chủ đề này.",
-      date: "2025-06-17T14:30:00Z",
-      likes: 3,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Phạm Văn C",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-      content:
-        "Bài viết rất dễ hiểu. Tôi còn có thắc mắc là việc kiểm tra sức khỏe thường xuyên nên thực hiện theo định kỳ như thế nào?",
-      date: "2025-06-15T08:45:00Z",
-      likes: 2,
-      liked: false,
-    }
-  ]);
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentInputValue, setCommentInputValue] = useState("");
+
+  // State cho việc sửa comment
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentValue, setEditCommentValue] = useState("");
 
   // Dữ liệu mẫu cho bài viết chi tiết
   const getTagColor = (tag) => {
@@ -171,54 +83,69 @@ const BlogDetail = () => {
     return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
   };
 
+  const fetchBlog = async () => {
+    setLoading(true);
+    // Trong thực tế, bạn sẽ gọi API với ID từ params
+    const response = await blogDetailAPI(postId);
+    if (response && response.data) {
+      const post = response.data.data;
+      const tagArray = post.tags
+        ? post.tags.split(", ").map((tag) => ({
+            text: tag.trim(),
+            color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+          }))
+        : [];
+
+      setBlog({
+        ...post,
+        tags: tagArray,
+        // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
+        thumbnailUrl:
+          post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
+            ? post.thumbnailUrl
+            : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
+      });
+      setLikeCount(post.likeCount || 0);
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await getCommentsBlogAPI(postId);
+      const data = response.data.data.content;
+      setComments(data || []);
+      console.log(">>> Comments fetched successfully:", data);
+      console.log(">>> user:", user);
+    } catch (error) {
+      console.error("Error fetching comments:", error.message);
+      message.error("Không thể tải bình luận, vui lòng thử lại sau.");
+    }
+  };
+
   useEffect(() => {
-    // Giả lập API call
-    const fetchBlog = () => {
-      setLoading(true);
-      // Trong thực tế, bạn sẽ gọi API với ID từ params
-      setTimeout(async () => {
-        const response = await blogDetailAPI(postId);
-        if (response && response.data) {
-          const post = response.data.data;
-          const tagArray = post.tags
-            ? post.tags.split(", ").map((tag) => ({
-                text: tag.trim(),
-                color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
-              }))
-            : [];
-
-          setBlog({
-            ...post,
-            tags: tagArray,
-            // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
-            thumbnailUrl:
-              post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
-                ? post.thumbnailUrl
-                : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
-          });
-          setLoading(false);
-        }
-        // Scroll to top when page loads
-        window.scrollTo(0, 0);
-      }, 500);
-    };
-
     fetchBlog();
+    fetchComments();
+    window.scrollTo(0, 0);
   }, [postId]);
 
   const handleGoBack = () => {
     navigate(-1); // Quay lại trang trước đó
   };
 
-  const handleLike = () => {
-    // Trong thực tế, bạn sẽ gọi API để like/unlike
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
-    // Giả lập API call
-    // api.likePost(blog.id, !liked)
+  const handleLike = async () => {
+    try {
+      if (!liked) {
+        await likeBlogAPI(postId);
+        setLikeCount(likeCount + 1);
+      }
+      setLiked(true);
+    } catch (error) {
+      console.error("Error liking blog post:", error.message);
+    }
   };
 
-  // Hàm xử lý comment
+  // Hàm xử lý modal comment
   const handleComment = () => {
     setCommentModalOpen(true);
   };
@@ -251,69 +178,77 @@ const BlogDetail = () => {
     );
   };
 
-  // Thêm hàm xử lý gửi comment
-  const handleSubmitCommentText = () => {
-    if (!commentText.trim()) {
-      message.warning("Vui lòng nhập nội dung bình luận");
-      return;
-    }
-
-    // Tạo comment mới
-    const newComment = {
-      id: comments.length + 1,
-      name: "User", // Trong thực tế lấy từ thông tin đăng nhập
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
-      content: commentText,
-      date: new Date().toISOString(),
-      likes: 0,
-      liked: false,
-    };
-
-    // Thêm comment vào danh sách
-    setComments([newComment, ...comments]);
-    setCommentText(""); // Reset input
-    message.success("Đã đăng bình luận thành công!");
-  };
-
-  // Thêm hàm xử lý like comment
-  const handleLikeComment = (commentId) => {
-    setComments(
-      comments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            liked: !comment.liked,
-            likes: comment.liked ? comment.likes - 1 : comment.likes + 1,
-          };
-        }
-        return comment;
-      })
-    );
-  };
-
   // Hàm xử lý gửi bình luận từ modal
-  const handleSubmitModalComment = () => {
+  const handleSubmitModalComment = async () => {
     if (!commentInputValue.trim()) {
       message.warning("Vui lòng nhập nội dung bình luận");
       return;
     }
-
     // Tạo comment mới
-    const newComment = {
-      id: comments.length + 1,
-      name: "User", // Trong thực tế lấy từ thông tin đăng nhập
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
-      content: commentInputValue,
-      date: new Date().toISOString(),
-      likes: 0,
-      liked: false,
-    };
+    try {
+      await postCommentBlogAPI(postId, commentInputValue);
+      // Thêm comment vào danh sách
+      fetchComments();
+      setCommentInputValue(""); // Reset input
+      message.success("Đã đăng bình luận thành công!");
+      setCommentModalOpen(false);
+    } catch (error) {
+      console.error("Error submitting comment:", error.message);
+      message.error("Không thể đăng bình luận, vui lòng thử lại sau.");
+    }
+  };
 
-    // Thêm comment vào danh sách
-    setComments([newComment, ...comments]);
-    setCommentInputValue(""); // Reset input
-    message.success("Đã đăng bình luận thành công!");
-    setCommentModalOpen(false);
+  // Hàm bắt đầu chỉnh sửa comment
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.commentId);
+    setEditCommentValue(comment.content);
+  };
+
+  // Hàm lưu comment đã chỉnh sửa
+  const handleSaveComment = async (commentId) => {
+    if (!editCommentValue.trim()) {
+      message.warning("Bình luận không được để trống");
+      return;
+    }
+
+    try {
+      // Gọi API cập nhật comment (cần thêm API này)
+      // await updateCommentBlogAPI(commentId, editCommentValue);
+
+      // Cập nhật lại danh sách comments
+      message.success("Đã cập nhật bình luận");
+      setEditingCommentId(null);
+      fetchComments();
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      message.error("Không thể cập nhật bình luận");
+    }
+  };
+
+  // Hàm hủy chỉnh sửa
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditCommentValue("");
+  };
+
+  // Hàm xóa comment
+  const handleDeleteComment = async (commentId) => {
+    try {
+      // Gọi API xóa comment (cần thêm API này)
+      // await deleteCommentBlogAPI(commentId);
+
+      // Cập nhật lại danh sách comments
+      message.success("Đã xóa bình luận");
+      fetchComments();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      message.error("Không thể xóa bình luận");
+    }
+  };
+
+  // Hàm kiểm tra xem comment có phải của người đang đăng nhập không
+  const isCommentOwner = (comment) => {
+    return user && user.userId === comment.userID;
   };
 
   if (loading) {
@@ -430,7 +365,13 @@ const BlogDetail = () => {
                 className="flex items-center gap-2"
               >
                 {liked ? "Đã thích" : "Thích"}{" "}
-                <span className="text-sm text-gray-500">{likeCount}</span>
+                <span
+                  className={`text-sm ${
+                    liked ? "text-white" : "text-gray-500"
+                  }`}
+                >
+                  {likeCount}
+                </span>
               </Button>
 
               <Button
@@ -441,6 +382,7 @@ const BlogDetail = () => {
                 className="flex items-center gap-2"
               >
                 Bình luận
+                <span className="text-sm text-gray-500">{comments.length}</span>
               </Button>
             </div>
 
@@ -516,7 +458,6 @@ const BlogDetail = () => {
           </Row>
         </div> */}
 
-        {/* Nút quay lại cuối trang */}
         <div className="text-center mb-8">
           <Button type="primary" onClick={() => navigate("/blog")}>
             Xem tất cả bài viết
@@ -535,50 +476,136 @@ const BlogDetail = () => {
           className="comment-modal"
           width={800}
           footer={null}
-          bodyStyle={{
+          styles={{
             maxHeight: "70vh",
             overflowY: "auto",
           }}
+          centered
         >
-          {/* Danh sách bình luận */}
-          <List
-            itemLayout="horizontal"
-            dataSource={comments}
-            renderItem={(comment) => (
-              <List.Item
-                key={comment.id}
-                actions={[
-                  <Button
-                    key="reply"
-                    type="text"
-                    size="small"
-                    icon={<MessageOutlined />}
-                    onClick={() => message.info("Chức năng sắp ra mắt!")}
-                  >
-                    Trả lời
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar src={comment.avatar} />}
-                  title={
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{comment.name}</span>
-                      <span className="text-xs text-gray-500">
-                        {formatDateTime(comment.date)}
-                      </span>
-                    </div>
-                  }
-                  description={comment.content}
-                />
-              </List.Item>
-            )}
-          />
+          {comments.length > 0 ? (
+            <List
+              itemLayout="horizontal"
+              dataSource={comments}
+              renderItem={(comment) => (
+                <List.Item
+                  key={comment.commentId}
+                  actions={[
+                    <Button
+                      key="reply"
+                      type="text"
+                      size="small"
+                      icon={<MessageOutlined />}
+                      onClick={() => message.info("Chức năng sắp ra mắt!")}
+                    >
+                      Trả lời
+                    </Button>,
+
+                    // Nút 3 chấm chỉ hiển thị cho comment của mình
+                    isCommentOwner(comment) && (
+                      <Dropdown
+                        key="more"
+                        menu={{
+                          items: [
+                            {
+                              key: "edit",
+                              icon: <EditOutlined />,
+                              label: "Chỉnh sửa",
+                              onClick: () => handleEditComment(comment),
+                            },
+                            {
+                              key: "delete",
+                              icon: <DeleteOutlined />,
+                              label: "Xóa",
+                              danger: true,
+                              onClick: () => {
+                                Modal.confirm({
+                                  title: "Xóa bình luận",
+                                  content:
+                                    "Bạn có chắc chắn muốn xóa bình luận này không?",
+                                  okText: "Xóa",
+                                  okType: "danger",
+                                  cancelText: "Hủy",
+                                  onOk: () =>
+                                    handleDeleteComment(comment.commentId),
+                                });
+                              },
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}
+                        placement="bottomRight"
+                      >
+                        <Button
+                          type="text"
+                          icon={<EllipsisOutlined />}
+                          size="small"
+                        />
+                      </Dropdown>
+                    ),
+                  ].filter(Boolean)} // Lọc bỏ các giá trị falsy
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={comment.userImageUrl} />}
+                    title={
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {comment.userFullName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDateTime(
+                            comment.updatedAt || comment.createdAt
+                          )}
+                        </span>
+                        {comment.updatedAt &&
+                          comment.updatedAt !== comment.createdAt && (
+                            <span className="text-xs text-gray-400 italic">
+                              (đã chỉnh sửa)
+                            </span>
+                          )}
+                      </div>
+                    }
+                    description={
+                      editingCommentId === comment.commentId ? (
+                        <div className="mt-2">
+                          <Input.TextArea
+                            value={editCommentValue}
+                            onChange={(e) =>
+                              setEditCommentValue(e.target.value)
+                            }
+                            autoSize={{ minRows: 2, maxRows: 4 }}
+                            className="mb-2"
+                          />
+                          <Space className="mt-2">
+                            <Button
+                              size="small"
+                              type="primary"
+                              onClick={() =>
+                                handleSaveComment(comment.commentId)
+                              }
+                            >
+                              Lưu
+                            </Button>
+                            <Button size="small" onClick={handleCancelEdit}>
+                              Hủy
+                            </Button>
+                          </Space>
+                        </div>
+                      ) : (
+                        <div>{comment.content}</div>
+                      )
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div className="text-center text-gray-500">
+              <Text>Chưa có bình luận nào.</Text>
+            </div>
+          )}
           {/* Bình luận */}
-          <div
-            className="flex items-center gap-4 mt-4 sticky bottom-0 bg-white pt-4 rounded-lg shadow-lg m-0"
-          >
-            <Avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" />
+          <div className="flex items-center gap-4 mt-4 sticky bottom-0 bg-white p-2 rounded-lg shadow-lg m-0">
+            <Avatar src={user.userImageUrl} size="large" />
             <div className="flex-1 flex items-center">
               <Input.TextArea
                 placeholder="Viết bình luận..."
@@ -601,6 +628,8 @@ const BlogDetail = () => {
             </div>
           </div>
         </Modal>
+
+        {/* Modal chia sẻ */}
       </div>
     </div>
   );

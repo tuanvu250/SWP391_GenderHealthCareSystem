@@ -165,7 +165,7 @@ const HistoryTesting = () => {
     switch (status) {
       case "PENDING":
         return (
-          <Tag icon={<ClockCircleOutlined />} color="warning">
+          <Tag icon={<ClockCircleOutlined />} color="blue">
             Đang xử lý
           </Tag>
         );
@@ -179,6 +179,12 @@ const HistoryTesting = () => {
         return (
           <Tag icon={<CloseCircleOutlined />} color="error">
             Đã hủy
+          </Tag>
+        );
+      case "CONFIRMED":
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="purple">
+            Đã xác nhận
           </Tag>
         );
       default:
