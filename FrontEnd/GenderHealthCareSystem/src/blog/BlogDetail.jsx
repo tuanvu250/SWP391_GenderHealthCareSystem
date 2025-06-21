@@ -39,6 +39,8 @@ import {
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   blogDetailAPI,
+  deleteCommentBlogAPI,
+  editCommentBlogAPI,
   getCommentsBlogAPI,
   likeBlogAPI,
   postCommentBlogAPI,
@@ -115,8 +117,6 @@ const BlogDetail = () => {
       const response = await getCommentsBlogAPI(postId);
       const data = response.data.data.content;
       setComments(data || []);
-      console.log(">>> Comments fetched successfully:", data);
-      console.log(">>> user:", user);
     } catch (error) {
       console.error("Error fetching comments:", error.message);
       message.error("Không thể tải bình luận, vui lòng thử lại sau.");
@@ -212,15 +212,12 @@ const BlogDetail = () => {
     }
 
     try {
-      // Gọi API cập nhật comment (cần thêm API này)
-      // await updateCommentBlogAPI(commentId, editCommentValue);
-
-      // Cập nhật lại danh sách comments
+      await editCommentBlogAPI(commentId, editCommentValue);
       message.success("Đã cập nhật bình luận");
       setEditingCommentId(null);
       fetchComments();
     } catch (error) {
-      console.error("Error updating comment:", error);
+      console.error("Error updating comment:", error.message);
       message.error("Không thể cập nhật bình luận");
     }
   };
@@ -234,14 +231,12 @@ const BlogDetail = () => {
   // Hàm xóa comment
   const handleDeleteComment = async (commentId) => {
     try {
-      // Gọi API xóa comment (cần thêm API này)
-      // await deleteCommentBlogAPI(commentId);
-
+      await deleteCommentBlogAPI(commentId);
       // Cập nhật lại danh sách comments
       message.success("Đã xóa bình luận");
       fetchComments();
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      console.error("Error deleting comment:", error.response.message);
       message.error("Không thể xóa bình luận");
     }
   };
@@ -604,6 +599,7 @@ const BlogDetail = () => {
             </div>
           )}
           {/* Bình luận */}
+          {user && (
           <div className="flex items-center gap-4 mt-4 sticky bottom-0 bg-white p-2 rounded-lg shadow-lg m-0">
             <Avatar src={user.userImageUrl} size="large" />
             <div className="flex-1 flex items-center">
@@ -626,7 +622,7 @@ const BlogDetail = () => {
                 onClick={handleSubmitModalComment}
               />
             </div>
-          </div>
+          </div> )}
         </Modal>
 
         {/* Modal chia sẻ */}

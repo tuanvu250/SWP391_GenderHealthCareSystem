@@ -186,7 +186,7 @@ export const updateBlogAPI = async (postId, values) => {
 
 export const getCommentsBlogAPI = async (postId) => {
   return api.get(`/comments/${postId}`);
-}
+};
 
 export const postCommentBlogAPI = async (postId, content) => {
   const values = {
@@ -196,9 +196,23 @@ export const postCommentBlogAPI = async (postId, content) => {
   return api.post(`/comments`, values);
 };
 
+export const editCommentBlogAPI = async (commentId, content) => {
+  const values = {
+    blogPostId: commentId,
+    content
+  }
+  return api.put(`/comments/${commentId}`, values);
+}
+
+export const deleteCommentBlogAPI = async (commentId) => {
+  return api.put(`/comments/${commentId}/hide`);
+}
+
 export const likeBlogAPI = async (postId) => {
   return api.put(`/blog-posts/${postId}/like`);
 }
+
+
 
 {
   /*User Profile*/

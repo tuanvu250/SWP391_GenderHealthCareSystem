@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import Markdown from "react-markdown";
 import {
   Typography,
@@ -8,23 +8,26 @@ import {
   Divider,
   Button,
   Modal,
-  Spin,
+  List,
+  message
 } from "antd";
-import {
-  CalendarOutlined,
-} from "@ant-design/icons";
+import { CalendarOutlined } from "@ant-design/icons";
 import { formatDateTime } from "../../../components/utils/formatTime";
+import { deleteCommentBlogAPI, getCommentsBlogAPI } from "../../../components/utils/api";
+import { useState, useEffect } from "react";
 
 const { Title, Text, Paragraph } = Typography;
 
 const ViewBlogModal = ({ visible, onClose, blog }) => {
   // Hàm lấy màu cho tag
+  const [comments, setComments] = useState([]);
+
   const getTagColor = (tag) => {
     const tagColors = {
       "Sức khỏe": "green",
       "Giới tính": "blue",
       "Tư vấn": "purple",
-      "STIs": "red",
+      STIs: "red",
       "Kinh nguyệt": "pink",
     };
 
@@ -49,6 +52,33 @@ const ViewBlogModal = ({ visible, onClose, blog }) => {
             : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
       }
     : null;
+
+  const fetchComments = async () => {
+    try {
+      const response = await getCommentsBlogAPI(blog.postId);
+      const data = response.data.data.content;
+      setComments(data || []);
+    } catch (error) {
+      //console.error("Error fetching comments:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [blog]);
+
+  const handleDeleteComment = async (commentId) => {
+      try {
+        console.log(">>> ID: ", commentId)
+        await deleteCommentBlogAPI(commentId);
+        // Cập nhật lại danh sách comments
+        message.success("Đã xóa bình luận");
+        fetchComments();
+      } catch (error) {
+        console.error("Error deleting comment:", error.message);
+        message.error("Không thể xóa bình luận");
+      }
+    };  
 
   // Render nội dung modal
   const renderModalContent = () => {
@@ -109,15 +139,65 @@ const ViewBlogModal = ({ visible, onClose, blog }) => {
         <div className="prose max-w-none mt-6 blog-content">
           <Markdown>{processedBlog.content}</Markdown>
         </div>
+
+        {/* Bình luận */}
+        <Divider className="my-6" />
+        <Title level={4} className="mb-4">
+          Bình luận ({comments.length})
+        </Title>
+        {comments.length > 0 ? (
+          <List
+            itemLayout="horizontal"
+            dataSource={comments}
+            renderItem={(comment) => (
+              <List.Item
+                key={comment.commentId}
+                actions={[
+                  <Button
+                    type="text"
+                    onClick={() => handleDeleteComment(comment.commentId)}
+                    danger
+                    size="small" 
+                  >
+                    Ẩn bình luận
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar src={comment.userImageUrl} />}
+                  title={
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {comment.userFullName}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatDateTime(comment.updatedAt || comment.createdAt)}
+                      </span>
+                      {comment.updatedAt &&
+                        comment.updatedAt !== comment.createdAt && (
+                          <span className="text-xs text-gray-400 italic">
+                            (đã chỉnh sửa)
+                          </span>
+                        )}
+                    </div>
+                  }
+                  description={
+                    <Paragraph className="mb-0">{comment.content}</Paragraph>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        ) : (
+          <Text type="secondary">Chưa có bình luận nào.</Text>
+        )}
       </div>
     );
   };
 
   return (
     <Modal
-      title={
-        <div className="text-xl font-bold">Chi tiết bài viết</div>
-      }
+      title={<div className="text-xl font-bold">Chi tiết bài viết</div>}
       open={visible}
       onCancel={onClose}
       width={800}
