@@ -40,7 +40,7 @@ const ManageBookingStis = () => {
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState([]);
+  const [statusFilter, setStatusFilter] = useState();
   const [paymentFilter, setPaymentFilter] = useState([]);
   const [dateRange, setDateRange] = useState([]);
   const [pagination, setPagination] = useState({
@@ -62,12 +62,12 @@ const ManageBookingStis = () => {
     },
     CONFIRMED: {
       text: "Đã xác nhận",
-      color: "green",
+      color: "purple",
       icon: <CheckCircleOutlined />,
     },
     COMPLETED: {
       text: "Hoàn thành",
-      color: "purple",
+      color: "green",
       icon: <CheckCircleOutlined />,
     },
     CANCELLED: {
@@ -84,11 +84,11 @@ const ManageBookingStis = () => {
 
   // Cấu hình trạng thái thanh toán
   const paymentStatusConfig = {
-    "Đã thanh toán": {
+    PAID: {
       text: "Đã thanh toán",
       color: "green",
     },
-    "Chua thanh toán": {
+    UNPAID: {
       text: "Chưa thanh toán",
       color: "orange",
     },
@@ -136,7 +136,7 @@ const ManageBookingStis = () => {
         name: searchText,
         page: pagination.current - 1,
         size: pagination.pageSize,
-        //status: statusFilter.join(","),
+        status: statusFilter
         //sort: "bookingDate,desc",
       });
       setPagination({
@@ -164,8 +164,6 @@ const ManageBookingStis = () => {
           customerId: booking.customerId,
         }))
       );
-
-      console.log(">>> Bookings loaded:", response.data.data.content);
     } catch (error) {
       console.error("Error loading bookings:", error);
       message.error("Không thể tải dữ liệu đặt lịch");
@@ -181,6 +179,7 @@ const ManageBookingStis = () => {
   const handleConfirm = async (bookingId) => {
     try {
       await markConfirmedBookingStisAPI(bookingId);
+      loadData();
       message.success("Lịch đã được xác nhận thành công");
     } catch (error) {
       console.error("Error confirming booking:", error);
@@ -191,8 +190,8 @@ const ManageBookingStis = () => {
   const handleComplete = async (bookingId) => {
     try {
       await markCompletedBookingStisAPI(bookingId);
-      message.success("Lịch đã được đánh dấu hoàn thành");
       loadData();
+      message.success("Lịch đã được đánh dấu hoàn thành");
     } catch (error) {
       console.error("Error completing booking:", error);
       message.error("Không thể đánh dấu lịch hẹn là hoàn thành");
@@ -266,8 +265,6 @@ const ManageBookingStis = () => {
       width: 150,
       render: (status) => {
         const config = paymentStatusConfig[status];
-        console.log(">>> Payment status config:", config);
-        console.log(">>> Payment status:", status);
         return <Tag color={config.color}>{config.text}</Tag>;
       },
     },
@@ -374,10 +371,10 @@ const ManageBookingStis = () => {
         <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4">
             <Search
-              placeholder="Tìm kiếm theo tên hoặc ID"
+              placeholder="Tìm kiếm theo tên khách hàng"
               allowClear
               onSearch={handleSearch}
-              style={{ width: 250 }}
+              style={{ width: 300 }}
             />
 
             <RangePicker
@@ -389,17 +386,18 @@ const ManageBookingStis = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Select
-              mode="multiple"
+              mode="single"
               placeholder="Lọc trạng thái đặt lịch"
               style={{ minWidth: 200 }}
-              allowClear
               onChange={handleStatusFilterChange}
+              defaultValue={""}
             >
-              <Option value="pending">Chờ xác nhận</Option>
-              <Option value="confirmed">Đã xác nhận</Option>
-              <Option value="completed">Hoàn thành</Option>
-              <Option value="cancelled">Đã hủy</Option>
+              <Option value="PENDING">Chờ xác nhận</Option>
+              <Option value="CONFIRMED">Đã xác nhận</Option>
+              <Option value="COMPLETED">Hoàn thành</Option>
+              <Option value="CANCELLED">Đã hủy</Option>
               <Option value="no_show">Không đến</Option>
+              <Option value="" >Tất cả</Option>
             </Select>
 
             {/* <Select

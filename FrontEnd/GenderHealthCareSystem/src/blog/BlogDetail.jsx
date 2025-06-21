@@ -7,12 +7,17 @@ import {
   Space,
   Divider,
   Button,
-  Card,
-  Row,
-  Col,
+  Dropdown,
+  Popconfirm,
   Breadcrumb,
   Spin,
   Image,
+  message,
+  Tooltip,
+  Modal,
+  Form,
+  Input,
+  List,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -22,19 +27,50 @@ import {
   FacebookOutlined,
   TwitterOutlined,
   LinkedinOutlined,
+  LikeOutlined,
+  LikeFilled,
+  CommentOutlined,
+  EllipsisOutlined,
+  MessageOutlined,
+  SendOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { blogDetailAPI } from "../components/utils/api";
+import {
+  blogDetailAPI,
+  deleteCommentBlogAPI,
+  editCommentBlogAPI,
+  getCommentsBlogAPI,
+  likeBlogAPI,
+  postCommentBlogAPI,
+} from "../components/utils/api";
 import { formatDateTime } from "../components/utils/formatTime";
+import { useAuth } from "../components/provider/AuthProvider";
 
 const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 const BlogDetail = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState([]);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(blog?.likeCount || 0);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [shareMenuVisible, setShareMenuVisible] = useState(false);
+  const [commentForm] = Form.useForm();
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [commentInputValue, setCommentInputValue] = useState("");
+
+  // State cho việc sửa comment
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentValue, setEditCommentValue] = useState("");
 
   // Dữ liệu mẫu cho bài viết chi tiết
   const getTagColor = (tag) => {
@@ -42,50 +78,172 @@ const BlogDetail = () => {
       "Sức khỏe": "green",
       "Giới tính": "blue",
       "Tư vấn": "purple",
-      "STIs": "red",
+      STIs: "red",
       "Kinh nguyệt": "pink",
     };
 
     return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
   };
 
+  const fetchBlog = async () => {
+    setLoading(true);
+    // Trong thực tế, bạn sẽ gọi API với ID từ params
+    const response = await blogDetailAPI(postId);
+    if (response && response.data) {
+      const post = response.data.data;
+      const tagArray = post.tags
+        ? post.tags.split(", ").map((tag) => ({
+            text: tag.trim(),
+            color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+          }))
+        : [];
+
+      setBlog({
+        ...post,
+        tags: tagArray,
+        // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
+        thumbnailUrl:
+          post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
+            ? post.thumbnailUrl
+            : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
+      });
+      setLikeCount(post.likeCount || 0);
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await getCommentsBlogAPI(postId);
+      const data = response.data.data.content;
+      setComments(data || []);
+    } catch (error) {
+      console.error("Error fetching comments:", error.message);
+      message.error("Không thể tải bình luận, vui lòng thử lại sau.");
+    }
+  };
+
   useEffect(() => {
-    // Giả lập API call
-    const fetchBlog = () => {
-      setLoading(true);
-      // Trong thực tế, bạn sẽ gọi API với ID từ params
-      setTimeout(async () => {
-        const response = await blogDetailAPI(postId);
-        if (response && response.data) {
-          const post = response.data.data;
-          const tagArray = post.tags
-            ? post.tags.split(", ").map((tag) => ({
-                text: tag.trim(),
-                color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
-              }))
-            : [];
-
-          setBlog( {
-            ...post,
-            tags: tagArray,
-            // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
-            thumbnailUrl:
-              post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
-                ? post.thumbnailUrl
-                : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
-          });
-          setLoading(false);
-        }
-        // Scroll to top when page loads
-        window.scrollTo(0, 0);
-      }, 500);
-    };
-
     fetchBlog();
+    fetchComments();
+    window.scrollTo(0, 0);
   }, [postId]);
 
   const handleGoBack = () => {
     navigate(-1); // Quay lại trang trước đó
+  };
+
+  const handleLike = async () => {
+    try {
+      if (!liked) {
+        await likeBlogAPI(postId);
+        setLikeCount(likeCount + 1);
+      }
+      setLiked(true);
+    } catch (error) {
+      console.error("Error liking blog post:", error.message);
+    }
+  };
+
+  // Hàm xử lý modal comment
+  const handleComment = () => {
+    setCommentModalOpen(true);
+  };
+
+  // Hàm xử lý chia sẻ
+  const handleShare = () => {
+    setShareMenuVisible(!shareMenuVisible);
+  };
+
+  // Hàm xử lý gửi comment
+  const handleSubmitComment = (values) => {
+    // Trong thực tế, bạn sẽ gọi API để gửi comment
+    console.log("Comment submitted:", values);
+    message.success("Bình luận của bạn đã được gửi!");
+    commentForm.resetFields();
+    setCommentModalVisible(false);
+  };
+
+  // Hàm xử lý sao chép link
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(
+      function () {
+        message.success("Đã sao chép liên kết!");
+        setShareMenuVisible(false);
+      },
+      function () {
+        message.error("Không thể sao chép liên kết!");
+      }
+    );
+  };
+
+  // Hàm xử lý gửi bình luận từ modal
+  const handleSubmitModalComment = async () => {
+    if (!commentInputValue.trim()) {
+      message.warning("Vui lòng nhập nội dung bình luận");
+      return;
+    }
+    // Tạo comment mới
+    try {
+      await postCommentBlogAPI(postId, commentInputValue);
+      // Thêm comment vào danh sách
+      fetchComments();
+      setCommentInputValue(""); // Reset input
+      message.success("Đã đăng bình luận thành công!");
+      setCommentModalOpen(false);
+    } catch (error) {
+      console.error("Error submitting comment:", error.message);
+      message.error("Không thể đăng bình luận, vui lòng thử lại sau.");
+    }
+  };
+
+  // Hàm bắt đầu chỉnh sửa comment
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.commentId);
+    setEditCommentValue(comment.content);
+  };
+
+  // Hàm lưu comment đã chỉnh sửa
+  const handleSaveComment = async (commentId) => {
+    if (!editCommentValue.trim()) {
+      message.warning("Bình luận không được để trống");
+      return;
+    }
+
+    try {
+      await editCommentBlogAPI(commentId, editCommentValue);
+      message.success("Đã cập nhật bình luận");
+      setEditingCommentId(null);
+      fetchComments();
+    } catch (error) {
+      console.error("Error updating comment:", error.message);
+      message.error("Không thể cập nhật bình luận");
+    }
+  };
+
+  // Hàm hủy chỉnh sửa
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditCommentValue("");
+  };
+
+  // Hàm xóa comment
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteCommentBlogAPI(commentId);
+      // Cập nhật lại danh sách comments
+      message.success("Đã xóa bình luận");
+      fetchComments();
+    } catch (error) {
+      console.error("Error deleting comment:", error.response.message);
+      message.error("Không thể xóa bình luận");
+    }
+  };
+
+  // Hàm kiểm tra xem comment có phải của người đang đăng nhập không
+  const isCommentOwner = (comment) => {
+    return user && user.userId === comment.userID;
   };
 
   if (loading) {
@@ -185,20 +343,73 @@ const BlogDetail = () => {
           </div>
 
           {/* Nội dung bài viết */}
-          <div
-            className="prose max-w-none mt-8 blog-content"
-          > <Markdown>{blog.content}</Markdown></div>
+          <div className="prose max-w-none mt-8 blog-content">
+            {" "}
+            <Markdown>{blog.content}</Markdown>
+          </div>
 
-          {/* Chia sẻ bài viết */}
+          {/* Thích, bình luận và chia sẻ bài viết */}
           <Divider />
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <Text strong>Chia sẻ bài viết này:</Text>
-            <Space className="mt-2 sm:mt-0">
-              <Button icon={<FacebookOutlined />} shape="circle" />
-              <Button icon={<TwitterOutlined />} shape="circle" />
-              <Button icon={<LinkedinOutlined />} shape="circle" />
-              <Button icon={<ShareAltOutlined />} shape="circle" />
-            </Space>
+            <div className="flex items-center gap-4">
+              <Button
+                icon={liked ? <LikeFilled /> : <LikeOutlined />}
+                onClick={handleLike}
+                type={liked ? "primary" : "default"}
+                size="middle"
+                className="flex items-center gap-2"
+              >
+                {liked ? "Đã thích" : "Thích"}{" "}
+                <span
+                  className={`text-sm ${
+                    liked ? "text-white" : "text-gray-500"
+                  }`}
+                >
+                  {likeCount}
+                </span>
+              </Button>
+
+              <Button
+                icon={<CommentOutlined />}
+                onClick={handleComment}
+                type="default"
+                size="middle"
+                className="flex items-center gap-2"
+              >
+                Bình luận
+                <span className="text-sm text-gray-500">{comments.length}</span>
+              </Button>
+            </div>
+
+            <div className="flex gap-2 mt-4 sm:mt-0">
+              <Button
+                icon={<FacebookOutlined />}
+                shape="circle"
+                onClick={() =>
+                  window.open(
+                    "https://www.facebook.com/sharer/sharer.php?u=" +
+                      window.location.href,
+                    "_blank"
+                  )
+                }
+              />
+              <Button
+                icon={<TwitterOutlined />}
+                shape="circle"
+                onClick={() =>
+                  window.open(
+                    "https://twitter.com/intent/tweet?url=" +
+                      window.location.href,
+                    "_blank"
+                  )
+                }
+              />
+              <Button
+                icon={<ShareAltOutlined />}
+                shape="circle"
+                onClick={handleShare}
+              />
+            </div>
           </div>
         </div>
 
@@ -242,12 +453,179 @@ const BlogDetail = () => {
           </Row>
         </div> */}
 
-        {/* Nút quay lại cuối trang */}
         <div className="text-center mb-8">
           <Button type="primary" onClick={() => navigate("/blog")}>
             Xem tất cả bài viết
           </Button>
         </div>
+
+        {/* Modal bình luận */}
+        <Modal
+          title={
+            <div className="text-xl font-bold">
+              Bình luận ({comments.length})
+            </div>
+          }
+          open={commentModalOpen}
+          onCancel={() => setCommentModalOpen(false)}
+          className="comment-modal"
+          width={800}
+          footer={null}
+          styles={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+          }}
+          centered
+        >
+          {comments.length > 0 ? (
+            <List
+              itemLayout="horizontal"
+              dataSource={comments}
+              renderItem={(comment) => (
+                <List.Item
+                  key={comment.commentId}
+                  actions={[
+                    <Button
+                      key="reply"
+                      type="text"
+                      size="small"
+                      icon={<MessageOutlined />}
+                      onClick={() => message.info("Chức năng sắp ra mắt!")}
+                    >
+                      Trả lời
+                    </Button>,
+
+                    // Nút 3 chấm chỉ hiển thị cho comment của mình
+                    isCommentOwner(comment) && (
+                      <Dropdown
+                        key="more"
+                        menu={{
+                          items: [
+                            {
+                              key: "edit",
+                              icon: <EditOutlined />,
+                              label: "Chỉnh sửa",
+                              onClick: () => handleEditComment(comment),
+                            },
+                            {
+                              key: "delete",
+                              icon: <DeleteOutlined />,
+                              label: "Xóa",
+                              danger: true,
+                              onClick: () => {
+                                Modal.confirm({
+                                  title: "Xóa bình luận",
+                                  content:
+                                    "Bạn có chắc chắn muốn xóa bình luận này không?",
+                                  okText: "Xóa",
+                                  okType: "danger",
+                                  cancelText: "Hủy",
+                                  onOk: () =>
+                                    handleDeleteComment(comment.commentId),
+                                });
+                              },
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}
+                        placement="bottomRight"
+                      >
+                        <Button
+                          type="text"
+                          icon={<EllipsisOutlined />}
+                          size="small"
+                        />
+                      </Dropdown>
+                    ),
+                  ].filter(Boolean)} // Lọc bỏ các giá trị falsy
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={comment.userImageUrl} />}
+                    title={
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {comment.userFullName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDateTime(
+                            comment.updatedAt || comment.createdAt
+                          )}
+                        </span>
+                        {comment.updatedAt &&
+                          comment.updatedAt !== comment.createdAt && (
+                            <span className="text-xs text-gray-400 italic">
+                              (đã chỉnh sửa)
+                            </span>
+                          )}
+                      </div>
+                    }
+                    description={
+                      editingCommentId === comment.commentId ? (
+                        <div className="mt-2">
+                          <Input.TextArea
+                            value={editCommentValue}
+                            onChange={(e) =>
+                              setEditCommentValue(e.target.value)
+                            }
+                            autoSize={{ minRows: 2, maxRows: 4 }}
+                            className="mb-2"
+                          />
+                          <Space className="mt-2">
+                            <Button
+                              size="small"
+                              type="primary"
+                              onClick={() =>
+                                handleSaveComment(comment.commentId)
+                              }
+                            >
+                              Lưu
+                            </Button>
+                            <Button size="small" onClick={handleCancelEdit}>
+                              Hủy
+                            </Button>
+                          </Space>
+                        </div>
+                      ) : (
+                        <div>{comment.content}</div>
+                      )
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          ) : (
+            <div className="text-center text-gray-500">
+              <Text>Chưa có bình luận nào.</Text>
+            </div>
+          )}
+          {/* Bình luận */}
+          {user && (
+          <div className="flex items-center gap-4 mt-4 sticky bottom-0 bg-white p-2 rounded-lg shadow-lg m-0">
+            <Avatar src={user.userImageUrl} size="large" />
+            <div className="flex-1 flex items-center">
+              <Input.TextArea
+                placeholder="Viết bình luận..."
+                value={commentInputValue}
+                onChange={(e) => setCommentInputValue(e.target.value)}
+                autoSize={{ minRows: 1, maxRows: 3 }}
+                style={{ flex: 1, marginRight: "8px" }}
+                onPressEnter={(e) => {
+                  if (!e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitModalComment();
+                  }
+                }}
+              />
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={handleSubmitModalComment}
+              />
+            </div>
+          </div> )}
+        </Modal>
+
+        {/* Modal chia sẻ */}
       </div>
     </div>
   );

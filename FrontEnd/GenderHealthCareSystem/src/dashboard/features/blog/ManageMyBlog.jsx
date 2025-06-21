@@ -370,6 +370,12 @@ const ManageMyBlog = () => {
       sorter: (a, b) => a.views - b.views,
     },
     {
+      title: "Lượt thích",
+      dataIndex: "likeCount",
+      key: "likeCount",
+      width: 100
+    },
+    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -416,6 +422,7 @@ const ManageMyBlog = () => {
       title: "Thao tác",
       key: "action",
       width: 150,
+      fixed: "right",
       render: (_, record) => (
         <Space size="small">
           {/* Hiển thị button xem bài viết cho tất cả */}

@@ -1,6 +1,5 @@
 package GenderHealthCareSystem.controller;
 
-
 import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.dto.UserProfileResponse;
 import GenderHealthCareSystem.model.Account;
@@ -25,10 +24,9 @@ import java.util.Optional;
 public class ProfileController {
 
     @Autowired
-   private UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
     private AccountRepository accountRepository;
-
 
     @GetMapping("/me")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal Jwt jwt) {
@@ -45,6 +43,7 @@ public class ProfileController {
         Users user = account.getUsers();
 
         UserInfoResponse dto = new UserInfoResponse(
+                user.getUserId(),
                 account.getAccountId(),
                 account.getUserName(),
                 account.getEmail(),
@@ -56,24 +55,20 @@ public class ProfileController {
                 user.getUserImageUrl(),
                 user.getBirthDate(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+                user.getUpdatedAt());
 
         return ResponseEntity.ok(dto);
     }
 
-
     @PutMapping("/update")
     public ResponseEntity<?> updateUserProfile(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody UserProfileResponse req
-    ) {
+            @RequestBody UserProfileResponse req) {
         Integer userId = ((Number) jwt.getClaim("userID")).intValue();
         Optional<Users> optional = userRepository.findById(userId);
 
         if (optional.isEmpty())
             return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
-
 
         if (req.getEmail() != null && !req.getEmail().isEmpty()) {
             // Kiểm tra định dạng email
@@ -102,11 +97,16 @@ public class ProfileController {
         }
 
         Users user = optional.get();
-        if (req.getFullName() != null) user.setFullName(req.getFullName());
-        if (req.getGender() != null) user.setGender(req.getGender());
-        if (req.getPhone() != null) user.setPhone(req.getPhone());
-        if (req.getAddress() != null) user.setAddress(req.getAddress());
-        if (req.getBirthDate() != null) user.setBirthDate(req.getBirthDate());
+        if (req.getFullName() != null)
+            user.setFullName(req.getFullName());
+        if (req.getGender() != null)
+            user.setGender(req.getGender());
+        if (req.getPhone() != null)
+            user.setPhone(req.getPhone());
+        if (req.getAddress() != null)
+            user.setAddress(req.getAddress());
+        if (req.getBirthDate() != null)
+            user.setBirthDate(req.getBirthDate());
 
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
@@ -130,8 +130,7 @@ public class ProfileController {
     @PutMapping("/me/avatar")
     public ResponseEntity<?> updateAvatar(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
+            @RequestParam("file") MultipartFile file) throws IOException {
         Integer userId = ((Number) jwt.getClaim("userID")).intValue();
         Optional<Users> optional = userRepository.findById(userId);
 
@@ -156,10 +155,7 @@ public class ProfileController {
 
         return ResponseEntity.ok(Map.of(
                 "message", "Avatar updated successfully!",
-                "userImageUrl", avatarUrl
-        ));
+                "userImageUrl", avatarUrl));
     }
 
 }
-
-

@@ -40,8 +40,8 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
   const renderBookingStatus = (status) => {
     const statusConfig = {
       PENDING: { color: "blue", label: "Chờ xác nhận" },
-      CONFIRMED: { color: "green", label: "Đã xác nhận" },
-      COMPLETED: { color: "purple", label: "Hoàn thành" },
+      CONFIRMED: { color: "purple", label: "Đã xác nhận" },
+      COMPLETED: { color: "green", label: "Hoàn thành" },
       CANCELLED: { color: "red", label: "Đã hủy" },
       no_show: { color: "orange", label: "Không đến" },
     };
@@ -53,8 +53,8 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
   // Hàm render trạng thái thanh toán
   const renderPaymentStatus = (status) => {
     const statusConfig = {
-      "Đã thanh toán": { color: "green", label: "Đã thanh toán" },
-      "Chua thanh toán": { color: "red", label: "Chưa thanh toán" },
+      PAID: { color: "green", label: "Đã thanh toán" },
+      UNPAID: { color: "red", label: "Chưa thanh toán" },
     };
 
     const config = statusConfig[status] || { color: "default", label: status };
