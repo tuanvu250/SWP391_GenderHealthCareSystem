@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.StisResultRequest;
+import GenderHealthCareSystem.dto.StisResultResponse;
 import GenderHealthCareSystem.model.StisResult;
 import GenderHealthCareSystem.service.StisResultService;
 import lombok.RequiredArgsConstructor;
@@ -25,4 +26,13 @@ public class StisResultController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
+
+    @GetMapping("/by-booking/{bookingId}")
+    public ResponseEntity<?> getResultByBooking(@PathVariable Integer bookingId) {
+        return stisResultService.getResultByBookingId(bookingId)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy kết quả cho booking này!"));
+    }
 }
+

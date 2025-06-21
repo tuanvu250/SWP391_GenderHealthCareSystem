@@ -26,7 +26,8 @@ import {
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
 import { historyBookingAPI } from "../components/utils/api";
-import { paymentAPI } from "../components/utils/api"; 
+import { paymentAPI } from "../components/utils/api";
+import { cancelBookingAPI } from "../components/utils/api";
 
 const { Title, Text } = Typography;
 
@@ -45,45 +46,45 @@ const HistoryTesting = () => {
   });
 
   // Fetch booking history
+  const fetchBookingHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await historyBookingAPI({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        status: "",
+        sort: "",
+      });
+      setPagination({
+        ...pagination,
+        total: response.data.data.totalElements,
+      });
+      const data = response.data.data.content.map((item) => ({
+        ...item,
+        id: item.bookingId,
+        serviceName: item.serviceName,
+        price: item.servicePrice,
+        bookingDate: dayjs(item.updatedAt).format("DD/MM/YYYY"),
+        appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
+        appointmentTime: `${item.bookingTimeStart} - ${item.bookingTimeEnd}`,
+        notes: item.notem,
+        paymentStatus: item.paymentStatus,
+        status: item.status,
+        testingStatus: item.status,
+        paymentMethod: item.paymentMethod,
+      }));
+
+      console.log("Booking history data:", data);
+      setBookings(data);
+    } catch (error) {
+      console.error("Error fetching booking history:", error);
+      message.error("Không thể tải lịch sử đặt lịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBookingHistory = async () => {
-      try {
-        setLoading(true);
-        const response = await historyBookingAPI({
-          page: pagination.current - 1,
-          size: pagination.pageSize,
-          status: "",
-          sort: "",
-        });
-        setPagination({
-          ...pagination,
-          total: response.data.data.totalElements,
-        });
-        const data = response.data.data.content.map((item) => ({
-          ...item,
-          id: item.bookingId,
-          serviceName: item.serviceName,
-          price: item.servicePrice,
-          bookingDate: dayjs(item.updatedAt).format("DD/MM/YYYY"),
-          appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
-          appointmentTime: `${item.bookingTimeStart} - ${item.bookingTimeEnd}`,
-          notes: item.notem,
-          paymentStatus: item.paymentStatus,
-          status: item.status,
-          testingStatus: item.status,
-          paymentMethod: item.paymentMethod,
-        }));
-
-        console.log("Booking history data:", data);
-        setBookings(data);
-      } catch (error) {
-        console.error("Error fetching booking history:", error);
-        message.error("Không thể tải lịch sử đặt lịch");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBookingHistory();
   }, [pagination.current]);
 
@@ -128,6 +129,20 @@ const HistoryTesting = () => {
     }
   };
 
+  const handleCancel = async (bookingId) => {
+    try {
+      await cancelBookingAPI(bookingId);
+      // Giả lập hủy thành công sau 2 giây
+      setTimeout(() => {
+        fetchBookingHistory();
+        message.success("Đã hủy đặt lịch thành công!");
+      }, 200);
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      message.error("Có lỗi xảy ra khi hủy đặt lịch, vui lòng thử lại.");
+    }
+  };
+
   // Xử lý xem hóa đơn
   const handleViewReceipt = (record) => {
     setSelectedBooking(record);
@@ -148,19 +163,19 @@ const HistoryTesting = () => {
   // Render trạng thái đặt lịch
   const renderStatus = (status) => {
     switch (status) {
-      case "in_progress":
+      case "PENDING":
         return (
           <Tag icon={<ClockCircleOutlined />} color="warning">
             Đang xử lý
           </Tag>
         );
-      case "completed":
+      case "COMPLETED":
         return (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Hoàn thành
           </Tag>
         );
-      case "cancelled":
+      case "CANCELLED":
         return (
           <Tag icon={<CloseCircleOutlined />} color="error">
             Đã hủy
@@ -180,10 +195,10 @@ const HistoryTesting = () => {
             Đã thanh toán
           </Tag>
         );
-      case "pending":
+      case "Chua thanh toán":
         return (
           <Tag icon={<ClockCircleOutlined />} color="warning">
-            Chờ thanh toán
+            Chưa thanh toán
           </Tag>
         );
       default:
@@ -326,11 +341,25 @@ const HistoryTesting = () => {
           {record.testingStatus === "completed" && (
             <Tooltip title="Xem kết quả xét nghiệm">
               <Button
-                icon={<FileSearchOutlined />}
-                type="primary"
+                type="text"
                 ghost
                 onClick={() => handleViewResult(record)}
-              />
+              >
+                Xem kết quả
+              </Button>
+            </Tooltip>
+          )}
+
+          {record.status !== "CANCELLED" && (
+            <Tooltip title="Hủy đặt lịch">
+              <Button
+                size="large"
+                type="text"
+                danger
+                onClick={() => handleCancel(record.id)}
+              >
+                Hủy
+              </Button>
             </Tooltip>
           )}
         </Space>
@@ -377,9 +406,7 @@ const HistoryTesting = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Text type="secondary">Ngày đặt lịch</Text>
-              <div>
-                {selectedBooking.bookingDate}
-              </div>
+              <div>{selectedBooking.bookingDate}</div>
             </div>
             <div>
               <Text type="secondary">Thời gian đặt</Text>
@@ -390,9 +417,7 @@ const HistoryTesting = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Text type="secondary">Ngày hẹn</Text>
-              <div>
-                {selectedBooking.appointmentDate}
-              </div>
+              <div>{selectedBooking.appointmentDate}</div>
             </div>
             <div>
               <Text type="secondary">Giờ hẹn</Text>
@@ -432,7 +457,6 @@ const HistoryTesting = () => {
                   type="primary"
                   icon={<CreditCardOutlined />}
                   onClick={() => handlePayment(selectedBooking.id)}
-                  loading={processingPayment}
                 >
                   Thanh toán ngay
                 </Button>
@@ -750,7 +774,6 @@ const HistoryTesting = () => {
       {renderDetailModal()}
       {renderReceiptModal()}
       {renderTestResultModal()}
-
     </Card>
   );
 };

@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.StisResultRequest;
+import GenderHealthCareSystem.dto.StisResultResponse;
 import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisResult;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -60,10 +62,34 @@ public class StisResultService {
         result.setCreatedAt(LocalDateTime.now());
         result.setUpdatedAt(LocalDateTime.now());
         stisResultRepository.save(result);
-
         booking.setStatus(StisBookingStatus.COMPLETED);
         stisBookingRepository.save(booking);
-
         return result;
     }
+
+    public StisResultResponse mapToResponse(StisResult entity) {
+        StisResultResponse res = new StisResultResponse();
+        res.setResultId(entity.getResultId());
+        res.setBookingId(entity.getStisBooking().getBookingId());
+        res.setResultDate(entity.getResultDate());
+        res.setHivCombo(entity.getHivCombo());
+        res.setSyphilisRpr(entity.getSyphilisRpr());
+        res.setChlamydiaNaat(entity.getChlamydiaNaat());
+        res.setGonorrheaNaat(entity.getGonorrheaNaat());
+        res.setHsvIgm(entity.getHsvIgm());
+        res.setHbsAg(entity.getHbsAg());
+        res.setAntiHcv(entity.getAntiHcv());
+        res.setHpvDna(entity.getHpvDna());
+        res.setResultText(entity.getResultText());
+        res.setNote(entity.getNote());
+        res.setCreatedAt(entity.getCreatedAt());
+        res.setUpdatedAt(entity.getUpdatedAt());
+        return res;
+    }
+
+    public Optional<StisResultResponse> getResultByBookingId(Integer bookingId) {
+        return stisResultRepository.findByStisBooking_BookingId(bookingId)
+                .map(this::mapToResponse);
+    }
 }
+

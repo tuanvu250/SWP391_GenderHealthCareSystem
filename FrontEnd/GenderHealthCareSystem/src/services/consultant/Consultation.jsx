@@ -36,13 +36,19 @@ export default function Consultation() {
 
                         <div className="flex gap-4 pt-4">
                             <button
-                                className="bg-[#0099CF] text-white font-semibold h-12 px-8 rounded-full shadow-md hover:bg-[#0088bb] transition"
+                                className="h-10 px-6 rounded-md bg-[#0099CF] text-white font-medium shadow-sm hover:bg-[#0088bb] transition"
                                 onClick={() => navigate("/services/consultationbooking")}
+
                             >
                                 Đặt lịch ngay
                             </button>
+                            <button
+                                className="h-10 px-6 rounded-md bg-white text-[#0099CF] font-medium border border-[#0099CF] shadow-sm hover:border-[#0088bb] hover:text-[#0088bb] transition"
+                                onClick={() => navigate("/history-consultant")}
+                            >
+                                Xem lịch sử
+                            </button>
                         </div>
-
                         <div className="flex items-center gap-6 mt-8">
                             <div className="flex items-center gap-2">
                                 <span>💻</span>

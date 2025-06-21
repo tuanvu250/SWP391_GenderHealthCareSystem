@@ -1,4 +1,4 @@
-import {Route, Routes, Outlet} from "react-router-dom";
+import { Route, Routes, Outlet } from "react-router-dom";
 import ScrollToTop from "../components/layout/ScrollToTop";
 import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
@@ -36,6 +36,7 @@ import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
 import AskingSection from "../services/asking/AskingSection";
+import MyBookings from "../services/consultant/BookingHistory";
 
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
@@ -48,12 +49,12 @@ import PeriodHistory from "../healthtracker/PeriodHistory";
 // Layout có Header/Footer
 const Layout = () => (
     <div className="flex flex-col min-h-screen">
-        <ScrollToTop/>
-        <Header/>
+        <ScrollToTop />
+        <Header />
         <main className="flex-grow">
-            <Outlet/>
+            <Outlet />
         </main>
-        <Footer/>
+        <Footer />
     </div>
 );
 
@@ -61,46 +62,47 @@ function RouteMap() {
     return (
         <Routes>
             {/* Các route có layout Header/Footer */}
-            <Route element={<Layout/>}>
-                <Route path="/" element={<Home/>}/>
-                <Route path="/home" element={<Home/>}/>
-                <Route path="/pill-tracker" element={<PillTracker/>}/>
-                <Route path="/menstrual-tracker" element={<MenstrualTracker/>}/>
+            <Route element={<Layout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/pill-tracker" element={<PillTracker />} />
+                <Route path="/menstrual-tracker" element={<MenstrualTracker />} />
                 <Route
                     path="/user"
                     element={
                         <ProtectedRoute>
-                            <ProfileLayout/>
+                            <ProfileLayout />
                         </ProtectedRoute>
                     }
                 >
-                    <Route index element={<Profile/>}/>
-                    <Route path="profile" element={<Profile/>}/>
-                    <Route path="history-testing" element={<HistoryTesting/>}/>
+                    <Route index element={<Profile />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="history-testing" element={<HistoryTesting />} />
                 </Route>
 
-                <Route path="/sti-testing" element={<STITesting/>}/>
+                <Route path="/sti-testing" element={<STITesting />} />
                 <Route
                     path="/sti-booking"
                     element={
                         <ProtectedRoute>
-                            <STIBooking/>
+                            <STIBooking />
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="/services/consultationbooking"
-                    element={<ConsultationBooking/>}
+                    element={<ConsultationBooking />}
                 />
-                <Route path="/services/consultation" element={<Consultation/>}/>
-                <Route path="/services/asking" element={<AskingSection/>}/>
+                <Route path="history-consultant" element={<MyBookings />} />
+                <Route path="/services/consultation" element={<Consultation />} />
+                <Route path="/services/asking" element={<AskingSection />} />
                 {/* Trang thông tin */}
-                <Route path="/about" element={<AboutPage/>}/>
+                <Route path="/about" element={<AboutPage />} />
                 <Route
                     path="/menstrual-ovulation"
                     element={
                         <ProtectedRoute>
-                            <OvulationCalendar/>
+                            <OvulationCalendar />
                         </ProtectedRoute>
                     }
                 />
@@ -108,41 +110,41 @@ function RouteMap() {
                     path="/pill-schedule"
                     element={
                         <ProtectedRoute>
-                            <PillScheduleCalendar/>
+                            <PillScheduleCalendar />
                         </ProtectedRoute>
                     }
                 />
 
-                <Route path="/period-history" element={<PeriodHistory/>}/>
-                <Route path="/booking-result" element={<BookingResult/>}/>
-                <Route path="/servicelist" element={<ServiceList/>}/>
-                <Route path="/blog" element={<Blog/>}/>
-                <Route path="/blog/:postId" element={<BlogDetail/>}/>
-                <Route path="/contact" element={<ContactSection/>}/>
-                <Route path="/privacy" element={<PrivacySection/>}/>
-                <Route path="/expert" element={<ExpertSection/>}/>
-                <Route path="/expert/0" element={<MinhTrang/>}/>
+                <Route path="/period-history" element={<PeriodHistory />} />
+                <Route path="/booking-result" element={<BookingResult />} />
+                <Route path="/servicelist" element={<ServiceList />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:postId" element={<BlogDetail />} />
+                <Route path="/contact" element={<ContactSection />} />
+                <Route path="/privacy" element={<PrivacySection />} />
+                <Route path="/expert" element={<ExpertSection />} />
+                <Route path="/expert/0" element={<MinhTrang />} />
             </Route>
 
             {/* Các route không có Layout */}
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/register" element={<Register/>}/>
-            <Route path="/forgot-password" element={<ForgotPassword/>}/>
-            <Route path="/reset-password" element={<ResetPassword/>}/>
-            <Route path="/oauth2/redirect" element={<OauthRedirect/>}/>
-            <Route path="/google-signup-complete" element={<GoogleSignupComplete/>}/>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/oauth2/redirect" element={<OauthRedirect />} />
+            <Route path="/google-signup-complete" element={<GoogleSignupComplete />} />
 
             {/* Dashboard cho Consultant */}
             <Route
                 path="/consultant/dashboard"
                 element={
                     <ProtectedRoute allowedRoles="Consultant">
-                        <DashboardLayout userRole="Consultant"/>
+                        <DashboardLayout userRole="Consultant" />
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
-                <Route path="manage-blog" element={<ManageMyBlog/>}/>
+                <Route index element={<h1>Dashboard</h1>} />
+                <Route path="manage-blog" element={<ManageMyBlog />} />
             </Route>
 
             {/* Dashboard cho Manager */}
@@ -150,12 +152,12 @@ function RouteMap() {
                 path="/manager/dashboard"
                 element={
                     <ProtectedRoute allowedRoles="Manager">
-                        <DashboardLayout userRole="Manager"/>
+                        <DashboardLayout userRole="Manager" />
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
-                <Route path="manage-blog" element={<ManageMyBlog/>}/>
+                <Route index element={<h1>Dashboard</h1>} />
+                <Route path="manage-blog" element={<ManageMyBlog />} />
             </Route>
 
             {/* Dashboard cho Staff */}
@@ -163,12 +165,12 @@ function RouteMap() {
                 path="/staff/dashboard"
                 element={
                     <ProtectedRoute allowedRoles="Staff">
-                        <DashboardLayout userRole="Staff"/>
+                        <DashboardLayout userRole="Staff" />
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
-                <Route path="manage-booking-stis" element={<ManageBookingStis/>}/>
+                <Route index element={<h1>Dashboard</h1>} />
+                <Route path="manage-booking-stis" element={<ManageBookingStis />} />
             </Route>
         </Routes>
     );
