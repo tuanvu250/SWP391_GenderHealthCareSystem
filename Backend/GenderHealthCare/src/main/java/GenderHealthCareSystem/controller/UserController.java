@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 public class UserController {
     public final UserService userService;
-    public  final AccountService accountService;
+    public final AccountService accountService;
 
     @PostMapping("/create")
     public String createUser(@RequestBody Users user) {
@@ -43,6 +43,7 @@ public class UserController {
         Users user = accountService.findByUserId(Integer.parseInt(accountId)).getUsers();
 
         return new UserInfoResponse(
+                user.getUserId(),
                 Integer.parseInt(accountId),
                 username,
                 email,
@@ -54,7 +55,6 @@ public class UserController {
                 user.getUserImageUrl(),
                 user.getBirthDate(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+                user.getUpdatedAt());
     }
 }
