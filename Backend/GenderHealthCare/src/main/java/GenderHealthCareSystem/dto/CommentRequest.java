@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ public class CommentRequest {
     @NotNull
     private Integer blogPostId;
 
-    @NotNull
+    @NotBlank
     @Size(max = 5000, message = "Content must not exceed 5000 characters.")
     private String content;
 

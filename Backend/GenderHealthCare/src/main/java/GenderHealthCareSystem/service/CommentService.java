@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.BlogPostResponse;
+import GenderHealthCareSystem.dto.CommentRequest;
 import GenderHealthCareSystem.dto.CommentResponse;
 import GenderHealthCareSystem.model.BlogPost;
 import GenderHealthCareSystem.model.Comment;
@@ -26,6 +27,18 @@ public class CommentService {
         comment.setStatus("VISIBLE");
         return mapToCommentResponse(commentRepository.save(comment));
     }
+    public CommentResponse UpdateComment(CommentRequest updatedComment, int commentId, int userId) {
+        Comment existingComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + commentId));
+        // Update the content of the existing comment
+        if (!existingComment.getUser().getUserId().equals(userId) ) {
+            throw new RuntimeException("You do not have permission to update this comment");
+        }
+        existingComment.setContent(updatedComment.getContent());
+        existingComment.setUpdatedAt(java.time.LocalDateTime.now());
+
+        return mapToCommentResponse(commentRepository.save(existingComment));
+    }
 
     public Page<CommentResponse> searchCommentByPostId(int page, int size, String sort, int BlogId) {
         Pageable pageable;
@@ -40,15 +53,16 @@ public class CommentService {
         return comments.map(this::mapToCommentResponse);
     }
 
-    public void HideComment(Integer id) {
-        if (!commentRepository.existsById(id)) {
-            throw new RuntimeException("Comment not found with id: " + id);
+    public void HideComment(Integer id, Integer userId, String role) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
+        if (comment.getUser().getUserId().equals(userId) || "Staff".equals(role) || "Manager".equals(role)) {
+            comment.setStatus("HIDDEN");
+            commentRepository.save(comment);
+        } else {
+            throw new RuntimeException("You do not have permission to hide this comment");
         }
-        commentRepository.findById(id).get().setStatus("HIDDEN");
-    }
 
-    public List<Comment> getCommentsByBlogId(Integer blogId) {
-        return commentRepository.findByBlogPost_PostIdAndStatus(blogId, "visible");
     }
 
     public CommentResponse mapToCommentResponse(Comment comment) {

@@ -9,6 +9,7 @@ import GenderHealthCareSystem.service.BlogPostService;
 import GenderHealthCareSystem.service.CommentService;
 import GenderHealthCareSystem.service.UserService;
 import GenderHealthCareSystem.util.PageResponseUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -44,24 +45,40 @@ public class CommentController {
         return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.CREATED, "Comment created successfully", savedComment, null));
     }
 
+    @PutMapping("/{commentId}")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<ApiResponse<CommentResponse>> updateComment(@RequestBody @Valid CommentRequest commentRequest,
+                                                                      @PathVariable Integer commentId,
+                                                                      @AuthenticationPrincipal Jwt jwt) {
+        String userID = jwt.getClaimAsString("userID");
+        CommentResponse savedComment = commentService.UpdateComment(commentRequest, commentId, Integer.parseInt(userID));
+        return ResponseEntity.ok().body(new ApiResponse<>(HttpStatus.OK, "Comment Updated successfully", savedComment, null));
+    }
 
 
     @GetMapping("{blogId}")
     public ResponseEntity<ApiResponse<PageResponse<CommentResponse>>> getCommentsByBlogId(@PathVariable Integer blogId,
-                                                                         @RequestParam(defaultValue = "0") int page,
-                                                                         @RequestParam(defaultValue = "5") int size,
-                                                                         @RequestParam(defaultValue = "desc") String sort) {
-        Page<CommentResponse> comments = commentService.searchCommentByPostId(page,size,sort,blogId);
+                                                                                          @RequestParam(defaultValue = "0") int page,
+                                                                                          @RequestParam(defaultValue = "5") int size,
+                                                                                          @RequestParam(defaultValue = "desc") String sort) {
+        Page<CommentResponse> comments = commentService.searchCommentByPostId(page, size, sort, blogId);
         return new ResponseEntity<>(
                 new ApiResponse<>(HttpStatus.OK, "Comments retrieved successfully", PageResponseUtil.mapToPageResponse(comments), null),
                 HttpStatus.OK
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> HideComment(@PathVariable Integer id) {
-        commentService.HideComment(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PutMapping("/{id}/hide")
+    public ResponseEntity<ApiResponse<String>> HideComment(@PathVariable Integer id,
+                                                           @AuthenticationPrincipal Jwt jwt) {
+
+        String userID = jwt.getClaimAsString("userID");
+        String role = jwt.getClaimAsString("role");
+        commentService.HideComment(id, Integer.parseInt(userID), role);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.OK, "Comment hidden successfully", null, null),
+                HttpStatus.OK
+        );
     }
-    
+
 }

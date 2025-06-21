@@ -60,7 +60,7 @@ public class StisBookingService {
         LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
         stisBooking.setBookingDate(bookingDate);
         stisBooking.setStatus(StisBookingStatus.PENDING);
-        stisBooking.setPaymentStatus("Chưa thanh toán");
+        stisBooking.setPaymentStatus("Unpaid");
         stisBooking.setPaymentMethod(booking.getPaymentMethod());
         stisBooking.setNote(booking.getNote());
         stisBooking.setCreatedAt(LocalDateTime.now());
@@ -124,7 +124,7 @@ public class StisBookingService {
         Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
         if (bookingOptional.isPresent()) {
             StisBooking booking = bookingOptional.get();
-            booking.setPaymentStatus("Đã thanh toán");
+            booking.setPaymentStatus("PAID");
             stisBookingRepository.save(booking);
         }
     }
