@@ -97,7 +97,7 @@ public class PaymentController {
             invoice.setPaymentMethod("VNPay");
             invoice.setPaidAt(LocalDateTime.now());
             StisInvoice stisInvoice= stisInvoiceService.saveInvoice(invoice);
-            stisBooking.setPaymentStatus("Đã thanh toán");
+            stisBooking.setPaymentStatus("PAID");
             stisBooking.setStisInvoice(stisInvoice);
             this.stisBookingService.saveBooking(stisBooking);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Invoice is created successfully", null, null));
