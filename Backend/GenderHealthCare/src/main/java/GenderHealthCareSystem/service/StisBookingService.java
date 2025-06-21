@@ -60,7 +60,7 @@ public class StisBookingService {
         LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
         stisBooking.setBookingDate(bookingDate);
         stisBooking.setStatus(StisBookingStatus.PENDING);
-        stisBooking.setPaymentStatus("Unpaid");
+        stisBooking.setPaymentStatus("UNPAID");
         stisBooking.setPaymentMethod(booking.getPaymentMethod());
         stisBooking.setNote(booking.getNote());
         stisBooking.setCreatedAt(LocalDateTime.now());
