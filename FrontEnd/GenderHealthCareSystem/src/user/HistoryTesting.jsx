@@ -189,13 +189,13 @@ const HistoryTesting = () => {
   // Render trạng thái thanh toán
   const renderPaymentStatus = (paymentStatus) => {
     switch (paymentStatus) {
-      case "Ðã thanh toán":
+      case "PAID":
         return (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Đã thanh toán
           </Tag>
         );
-      case "Chua thanh toán":
+      case "UNPAID":
         return (
           <Tag icon={<ClockCircleOutlined />} color="warning">
             Chưa thanh toán
@@ -297,7 +297,7 @@ const HistoryTesting = () => {
           <div>{renderPaymentMethod(record.paymentMethod)}</div>
           <div className="mt-1">
             {record.paymentMethod === "credit card" &&
-              record.paymentStatus === "Chua thanh toán" && (
+              record.paymentStatus === "UNPAID" && (
                 <Button
                   type="primary"
                   size="small"
@@ -311,7 +311,7 @@ const HistoryTesting = () => {
                 </Button>
               )}
 
-            {record.paymentStatus === "Ðã thanh toán" && (
+            {record.paymentStatus === "PAID" && (
               <Button
                 type="default"
                 size="small"
