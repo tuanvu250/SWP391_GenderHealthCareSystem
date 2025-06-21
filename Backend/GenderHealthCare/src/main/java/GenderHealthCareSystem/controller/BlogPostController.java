@@ -73,6 +73,7 @@ public class BlogPostController {
         return ResponseEntity.ok().body(response);
     }
 
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Consultant') or hasRole('Manager')")
     public ResponseEntity<ApiResponse<?>> updateBlogPost(
@@ -266,5 +267,12 @@ public class BlogPostController {
         BlogPostResponse blogPost = blogPostService.getBlogPostById(id, increaseViewCount);
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post retrieved successfully", blogPost, null);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/like")
+    public ResponseEntity<ApiResponse<?>> increaseLikeCount(@PathVariable Integer id) {
+        blogPostService.increaseLikeCount(id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Like count increased successfully", null, null);
+        return ResponseEntity.ok().body(response);
     }
 }
