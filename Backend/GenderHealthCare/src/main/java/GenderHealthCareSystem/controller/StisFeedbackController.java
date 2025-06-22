@@ -1,10 +1,10 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.StisFeedbackRequest;
-import GenderHealthCareSystem.model.StisFeedback;
+import GenderHealthCareSystem.dto.StisFeedbackResponse;
 import GenderHealthCareSystem.service.StisFeedbackService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,18 +15,25 @@ import java.util.List;
 public class StisFeedbackController {
     private final StisFeedbackService feedbackService;
 
+    // Create
     @PostMapping
     public ResponseEntity<?> addFeedback(@RequestBody StisFeedbackRequest req) {
         try {
-            return ResponseEntity.ok(feedbackService.createFeedback(req));
+            return ResponseEntity.ok(feedbackService.createFeedbackResponse(req));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
+    // Read
     @GetMapping("/by-service/{serviceId}")
-    public ResponseEntity<List<StisFeedback>> getByService(@PathVariable Integer serviceId) {
-        return ResponseEntity.ok(feedbackService.getByService(serviceId));
+    public ResponseEntity<List<StisFeedbackResponse>> getByService(@PathVariable Integer serviceId) {
+        return ResponseEntity.ok(feedbackService.getByServiceResponse(serviceId));
+    }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<List<StisFeedbackResponse>> getByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(feedbackService.getByUserResponse(userId));
     }
 
     @GetMapping("/average/{serviceId}")
@@ -34,15 +41,17 @@ public class StisFeedbackController {
         return ResponseEntity.ok(feedbackService.getAvgRating(serviceId));
     }
 
+    // Update
     @PutMapping("/update/{feedbackId}")
     public ResponseEntity<?> updateFeedback(@PathVariable Integer feedbackId, @RequestBody StisFeedbackRequest req) {
         try {
-            return ResponseEntity.ok(feedbackService.updateFeedback(feedbackId, req));
+            return ResponseEntity.ok(feedbackService.updateFeedbackResponse(feedbackId, req));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
+    // Delete
     @DeleteMapping("/delete/{feedbackId}")
     public ResponseEntity<?> deleteFeedback(@PathVariable Integer feedbackId) {
         try {
