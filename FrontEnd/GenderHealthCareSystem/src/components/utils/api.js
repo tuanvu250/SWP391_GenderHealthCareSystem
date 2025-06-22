@@ -296,6 +296,15 @@ export const historyBookingAPI = async ({
   return api.get(`/stis-bookings/history?${query}`);
 };
 
+export const postFeedbackTestingAPI = async (bookingId, rating, comment) => {
+  const feedbackData = {
+    bookingId,
+    rating,
+    comment,
+  };
+  return api.post("/stis-feedback", feedbackData);
+}
+
 export const createInvoiceAPI = async (query) => {
   return api.get(`/payment/create-invoice?${query}`);
 };

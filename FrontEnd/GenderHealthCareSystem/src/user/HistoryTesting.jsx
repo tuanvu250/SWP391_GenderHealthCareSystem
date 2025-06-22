@@ -11,6 +11,9 @@ import {
   Modal,
   Spin,
   message,
+  Rate,
+  Input,
+  Form,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -22,10 +25,11 @@ import {
   FileSearchOutlined,
   InfoCircleOutlined,
   MedicineBoxOutlined,
+  StarFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
-import { historyBookingAPI } from "../components/utils/api";
+import { historyBookingAPI, postFeedbackTestingAPI } from "../components/utils/api";
 import { paymentAPI } from "../components/utils/api";
 import { cancelBookingAPI } from "../components/utils/api";
 
@@ -39,11 +43,16 @@ const HistoryTesting = () => {
   const [viewReceipt, setViewReceipt] = useState(false);
   const [viewResult, setViewResult] = useState(false);
   const [viewDetail, setViewDetail] = useState(false);
+  const [openFeedback, setOpenFeedback] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
     total: 0,
   });
+  // Thêm state mới cho feedback
+  const [feedbackForm] = Form.useForm();
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   // Fetch booking history
   const fetchBookingHistory = async () => {
@@ -73,8 +82,6 @@ const HistoryTesting = () => {
         testingStatus: item.status,
         paymentMethod: item.paymentMethod,
       }));
-
-      console.log("Booking history data:", data);
       setBookings(data);
     } catch (error) {
       console.error("Error fetching booking history:", error);
@@ -147,6 +154,34 @@ const HistoryTesting = () => {
   const handleViewReceipt = (record) => {
     setSelectedBooking(record);
     setViewReceipt(true);
+  };
+
+  const handleFeedback = (record) => {
+    setSelectedBooking(record);
+    setOpenFeedback(true);
+    // Reset form khi mở modal
+    if (feedbackForm) {
+      feedbackForm.resetFields();
+      setFeedbackRating(5);
+    }
+  };
+
+  // Thêm hàm xử lý gửi đánh giá
+  const handleSubmitFeedback = async () => {
+    try {
+      setSubmittingFeedback(true);
+
+      const values = await feedbackForm.validateFields();
+      // Validate form
+      await postFeedbackTestingAPI(selectedBooking.id, feedbackRating, values.content);
+
+      setOpenFeedback(false);
+      setSubmittingFeedback(false); 
+      message.success("Cảm ơn bạn đã gửi đánh giá!");
+    } catch (error) {
+      setSubmittingFeedback(false);
+      console.error("Error submitting feedback:", error);
+    }
   };
 
   // Xử lý xem kết quả xét nghiệm
@@ -334,6 +369,7 @@ const HistoryTesting = () => {
     {
       title: "Hành động",
       key: "action",
+      width: 200,
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem chi tiết">
@@ -344,29 +380,44 @@ const HistoryTesting = () => {
             />
           </Tooltip>
 
-          {record.testingStatus === "completed" && (
-            <Tooltip title="Xem kết quả xét nghiệm">
-              <Button
-                type="text"
-                ghost
-                onClick={() => handleViewResult(record)}
-              >
-                Xem kết quả
-              </Button>
-            </Tooltip>
-          )}
-
-          {record.status !== "CANCELLED" && (
+          {record.status !== "CANCELLED" && record.status !== "COMPLETED" && (
             <Tooltip title="Hủy đặt lịch">
               <Button
-                size="large"
+                size="small"
                 type="text"
-                danger
+                color="red"
+                variant="filled"
                 onClick={() => handleCancel(record.id)}
               >
                 Hủy
               </Button>
             </Tooltip>
+          )}
+          {record.status === "COMPLETED" && (
+            <div className="flex flex-col gap-1.5">
+              <Tooltip title="Đánh giá dịch vụ">
+                <Button
+                  size="small"
+                  type="text"
+                  onClick={() => handleFeedback(record)}
+                  color="cyan"
+                  variant="filled"
+                >
+                  Đánh giá
+                </Button>
+              </Tooltip>
+              <Tooltip title="Xem kết quả xét nghiệm">
+                <Button
+                  size="small"
+                  type="text"
+                  onClick={() => handleViewResult(record)}
+                  color="pink"
+                  variant="filled"
+                >
+                  Xem kết quả
+                </Button>
+              </Tooltip>
+            </div>
           )}
         </Space>
       ),
@@ -743,6 +794,105 @@ const HistoryTesting = () => {
     </Modal>
   );
 
+  // Modal đánh giá dịch vụ - cập nhật lại hoàn toàn
+  const renderFeedbackModal = () => (
+    <Modal
+      title={<span className="text-lg">Đánh giá dịch vụ</span>}
+      open={openFeedback}
+      footer={[
+        <Button key="cancel" onClick={() => setOpenFeedback(false)}>
+          Hủy
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          loading={submittingFeedback}
+          onClick={handleSubmitFeedback}
+        >
+          Gửi đánh giá
+        </Button>,
+      ]}
+      onCancel={() => setOpenFeedback(false)}
+      width={500}
+      destroyOnHidden 
+    >
+      {selectedBooking && (
+        <div className="space-y-6">
+          <div className="text-center pb-4 border-b">
+            <Title level={4} className="mb-1">
+              Đánh giá dịch vụ
+            </Title>
+            <Text type="secondary">
+              Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Hãy đánh giá trải nghiệm của bạn!
+            </Text>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <Text strong>Dịch vụ:</Text>
+              <div className="font-medium">{selectedBooking.serviceName}</div>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <Text strong>Ngày sử dụng:</Text>
+              <div>{selectedBooking.appointmentDate}</div>
+            </div>
+          </div>
+
+          <Form form={feedbackForm} layout="vertical">
+            <div className="space-y-4">
+              <div className="text-center">
+                <Text strong>Mức độ hài lòng của bạn:</Text>
+                <div className="mt-2">
+                  <Rate
+                    value={feedbackRating}
+                    onChange={setFeedbackRating}
+                    character={<StarFilled />}
+                    className="text-2xl text-yellow-400"
+                    allowClear={false}
+                  />
+                  <div className="mt-2">
+                    {feedbackRating === 5 && <Text type="success">Rất hài lòng</Text>}
+                    {feedbackRating === 4 && <Text type="success">Hài lòng</Text>}
+                    {feedbackRating === 3 && <Text>Bình thường</Text>}
+                    {feedbackRating === 2 && <Text type="warning">Không hài lòng</Text>}
+                    {feedbackRating === 1 && <Text type="danger">Rất không hài lòng</Text>}
+                  </div>
+                </div>
+              </div>
+
+              <Form.Item
+                name="content"
+                label="Nhận xét của bạn:"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập nhận xét của bạn",
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ của chúng tôi..."
+                  rows={4}
+                  showCount
+                  maxLength={500}
+                />
+              </Form.Item>
+
+              <div className="border-t pt-4 text-gray-500 text-sm">
+                <p className="mb-1">
+                  <InfoCircleOutlined className="mr-1" />
+                  Đánh giá của bạn giúp chúng tôi cải thiện dịch vụ tốt hơn.
+                </p>
+              </div>
+            </div>
+          </Form>
+        </div>
+      )}
+    </Modal>
+  );
+
+  // Render giao diện chính
+
   return (
     <Card className="shadow-sm">
       <div className="mb-4">
@@ -768,6 +918,8 @@ const HistoryTesting = () => {
           pagination={pagination}
           onChange={handleTableChange}
           className="mt-4"
+          scroll={{ x: 1200 }}
+
         />
       ) : (
         <Empty
@@ -780,6 +932,7 @@ const HistoryTesting = () => {
       {renderDetailModal()}
       {renderReceiptModal()}
       {renderTestResultModal()}
+      {renderFeedbackModal()} {/* Modal đánh giá đã được cập nhật */}
     </Card>
   );
 };

@@ -15,7 +15,7 @@ import GoogleSignupComplete from "../auth/GoogleSignupComplete";
 import ProfileLayout from "../user/ProfileLayout";
 import Profile from "../user/Profile";
 import HistoryTesting from "../user/HistoryTesting";
-
+import HistoryFeedbackTesting from "../user/HistoryFeebackTesting";
 
 import PillTracker from "../healthtracker/PillTracker";
 import MenstrualTracker from "../healthtracker/MenstrualTracker";
@@ -81,6 +81,7 @@ function RouteMap() {
                     <Route index element={<Profile />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="history-testing" element={<HistoryTesting />} />
+                    <Route path="history-feedback-testing" element={<HistoryFeedbackTesting />} />
                 </Route>
 
                 <Route path="/sti-testing" element={<STITesting />} />

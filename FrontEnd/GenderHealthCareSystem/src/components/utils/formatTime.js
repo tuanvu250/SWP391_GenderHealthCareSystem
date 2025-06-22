@@ -13,5 +13,5 @@ export  function formatDateTime (isoString) {
       hour12: false,
     });
 
-    return `${timeFormatter.format(date)} ${dateFormatter.format(date)}`;
+    return `${timeFormatter.format(date)} - ${dateFormatter.format(date)}`;
   };
