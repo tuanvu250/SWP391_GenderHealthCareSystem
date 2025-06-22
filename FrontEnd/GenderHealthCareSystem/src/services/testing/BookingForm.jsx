@@ -45,7 +45,7 @@ const BookingForm = ({
       email: user.email,
       phone: user.phone,
       birthDate: user.birthDate ? dayjs(user.birthDate) : null,
-      gender: user.gender || "male",
+      gender: user.gender,
     });
   }, [form, user]);
 

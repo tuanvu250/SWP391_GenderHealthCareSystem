@@ -12,7 +12,7 @@ import {
   message
 } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
-import { formatDateTime } from "../../../components/utils/formatTime";
+import { formatDateTime } from "../../../components/utils/format";
 import { deleteCommentBlogAPI, getCommentsBlogAPI } from "../../../components/utils/api";
 import { useState, useEffect } from "react";
 

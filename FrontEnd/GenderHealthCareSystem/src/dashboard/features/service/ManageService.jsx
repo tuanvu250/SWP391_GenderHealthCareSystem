@@ -28,6 +28,7 @@ import {
   EyeOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import { formatPrice } from "../../../components/utils/format"; // Import hàm định dạng giá
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -178,14 +179,6 @@ const mockServices = [
 // Component xem chi tiết dịch vụ
 const ServiceDetailModal = ({ open, onCancel, service }) => {
   if (!service) return null;
-
-  // Format giá tiền
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
 
   // Hiển thị tên các xét nghiệm
   const testNames = {

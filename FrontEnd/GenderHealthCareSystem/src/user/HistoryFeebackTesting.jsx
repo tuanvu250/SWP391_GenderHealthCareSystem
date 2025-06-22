@@ -22,7 +22,7 @@ import {
   ExclamationCircleOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import formatDateTime from "../components/utils/formatTime"; // Giả định bạn đã có hàm này
+import { formatDateTime } from "../components/utils/format";
 // Import các API cần thiết (giả định)
 // import { getFeedbackHistoryAPI, updateFeedbackAPI, deleteFeedbackAPI } from '../api/feedbackAPI';
 

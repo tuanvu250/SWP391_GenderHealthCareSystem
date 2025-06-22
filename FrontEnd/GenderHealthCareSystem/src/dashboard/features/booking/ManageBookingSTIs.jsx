@@ -30,6 +30,7 @@ import {
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
 import { getUserByIdAPI } from "../../../components/utils/api";
 import ResultStisModal from "../../components/modal/ResultStisModal";
+import { formatPrice } from "../../../components/utils/format"; // Import hàm định dạng giá
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -92,14 +93,6 @@ const ManageBookingStis = () => {
       text: "Chưa thanh toán",
       color: "orange",
     },
-  };
-
-  // Format giá tiền
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
   };
 
   // Xử lý tìm kiếm

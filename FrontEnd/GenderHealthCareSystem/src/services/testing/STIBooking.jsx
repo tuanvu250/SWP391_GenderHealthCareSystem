@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { bookStisAPI } from "../../components/utils/api";
 import { paymentAPI } from "../../components/utils/api";
 import { getSTISPackagesAPI } from "../../components/utils/api";
+import { formatPrice } from "../../components/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -81,14 +82,6 @@ const STIBooking = () => {
       icon: <CheckOutlined />,
     },
   ];
-
-  // Format giá tiền
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
 
   // Thông tin khách hàng
   const userInfo = {

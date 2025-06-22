@@ -12,6 +12,7 @@ import {
   Badge,
   Card,
   Modal,
+  Avatar,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,11 +20,10 @@ import {
   DeleteOutlined,
   SearchOutlined,
   EyeOutlined,
-  FilterOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
-import { formatDateTime } from "../../../components/utils/formatTime";
+import { formatDateTime } from "../../../components/utils/format";
 import BlogModal from "../../components/modal/BlogModal";
 import { viewMyBlogsAPI } from "../../../components/utils/api";
 import { viewAllBlogsAPI } from "../../../components/utils/api";
@@ -116,20 +116,20 @@ const ManageMyBlog = () => {
     setLoading(true);
     try {
       const response = isConsultant
-      ? await viewMyBlogsAPI({
-          page: pagination.current - 1,
-          size: pagination.pageSize,
-          title: searchText,
-          tag: selectedTags.join(", "),
-          //status: statusFilter.join(', ')
-        })
-      : await viewAllBlogsAPI({
-          page: pagination.current - 1,
-          size: pagination.pageSize,
-          title: searchText,
-          tag: selectedTags.join(", "),
-          //status: statusFilter.join(', ')
-        })
+        ? await viewMyBlogsAPI({
+            page: pagination.current - 1,
+            size: pagination.pageSize,
+            title: searchText,
+            tag: selectedTags.join(", "),
+            //status: statusFilter.join(', ')
+          })
+        : await viewAllBlogsAPI({
+            page: pagination.current - 1,
+            size: pagination.pageSize,
+            title: searchText,
+            tag: selectedTags.join(", "),
+            //status: statusFilter.join(', ')
+          });
       if (response && response.data) {
         setTimeout(() => {
           const formattedPosts = response.data.data.content.map((post) => {
@@ -317,6 +317,24 @@ const ManageMyBlog = () => {
       key: "postId",
       width: 60,
     },
+    ...(!isConsultant ? [
+      {
+        title: "Người đăng",
+        dataIndex: "consultantName",
+        key: "consultantName",
+        width: 150,
+        render: (text, record) => (
+          <Tooltip title={text}>
+            <Avatar
+              src={record.consultantImageUrl || "https://placehold.co/40x40/0099CF/white?text=Consultant"}
+              size="medium"
+              className="mr-2"
+            />
+            <span className="font-medium ml-2">{text}</span>
+          </Tooltip>
+        ),
+      },
+    ] : []),
     {
       title: "Tiêu đề",
       dataIndex: "title",
@@ -353,27 +371,6 @@ const ManageMyBlog = () => {
           ))}
         </div>
       ),
-    },
-    {
-      title: "Ngày đăng",
-      dataIndex: "publishedAt",
-      key: "publishedAt",
-      width: 160,
-      render: (date) => formatDateTime(date),
-      sorter: (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt),
-    },
-    {
-      title: "Lượt xem",
-      dataIndex: "viewCount",
-      key: "viewCount",
-      width: 100,
-      sorter: (a, b) => a.views - b.views,
-    },
-    {
-      title: "Lượt thích",
-      dataIndex: "likeCount",
-      key: "likeCount",
-      width: 100
     },
     {
       title: "Trạng thái",
@@ -417,6 +414,27 @@ const ManageMyBlog = () => {
         const order = { pending: 0, rejected: 1, approved: 2 };
         return order[a.status] - order[b.status];
       },
+    },
+    {
+      title: "Ngày đăng",
+      dataIndex: "publishedAt",
+      key: "publishedAt",
+      width: 160,
+      render: (date) => formatDateTime(date),
+      sorter: (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt),
+    },
+    {
+      title: "Lượt xem",
+      dataIndex: "viewCount",
+      key: "viewCount",
+      width: 100,
+      sorter: (a, b) => a.views - b.views,
+    },
+    {
+      title: "Lượt thích",
+      dataIndex: "likeCount",
+      key: "likeCount",
+      width: 100,
     },
     {
       title: "Thao tác",

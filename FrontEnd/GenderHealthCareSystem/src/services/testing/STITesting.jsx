@@ -39,6 +39,7 @@ import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../components/provider/AuthProvider";
 import LoginRequiredModal from "../../components/common/LoginRequiredModal";
 import { getSTISPackagesAPI } from "../../components/utils/api";
+import { formatPrice } from "../../components/utils/format";
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
@@ -59,13 +60,6 @@ const STITesting = () => {
     } else {
       navigate("/sti-booking");
     }
-  };
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
   };
 
   useEffect(() => {
