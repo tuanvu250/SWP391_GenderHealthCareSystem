@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Service
@@ -31,7 +32,7 @@ public class StisBookingService {
 //        return stisBookingRepository.findAll().stream().map(this::mapToResponse).toList();
 //    }
 
-    public Page<StisBookingResponse> findStisBooking(String name, Integer serviceID, StisBookingStatus status, int page, int size, String sort) {
+    public Page<StisBookingResponse> findStisBooking(String name, Integer serviceID, StisBookingStatus status, LocalDateTime startDateTime, LocalDateTime endDateTime, int page, int size, String sort) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
             pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
@@ -41,13 +42,14 @@ public class StisBookingService {
 
         Page<StisBooking> stisBooking;
         System.out.println("Name: " + name + ", ServiceID: " + serviceID + ", Status: " + status);
-        stisBooking = this.stisBookingRepository.findByCustomerNameAndServiceIdAndStatus(name, serviceID, status, pageable);
+        stisBooking = this.stisBookingRepository.findByCustomerNameAndServiceIdAndStatus(name, serviceID, status, startDateTime, endDateTime, pageable);
         return stisBooking.map(this::mapToResponse);
     }
 
     public Optional<StisBookingResponse> getBookingById(Integer id) {
         return stisBookingRepository.findById(id).stream().map(this::mapToResponse).findFirst();
     }
+
     public Optional<StisBooking> getBookingByIdNotForResponse(Integer id) {
         return stisBookingRepository.findById(id);
     }
@@ -55,6 +57,10 @@ public class StisBookingService {
 
     public StisBooking createBooking(StisBookingRequest booking) {
         StisBooking stisBooking = new StisBooking();
+        if (this.stisBookingRepository.countByUserIdAndBookingDate(booking.getCustomerId(), booking.getBookingDate().atStartOfDay(),booking.getBookingDate().atTime(LocalTime.MAX)) >0) {
+            throw new RuntimeException("You have reached the maximum number of bookings for this date.");
+        }
+
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
         stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
         LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
@@ -81,6 +87,7 @@ public class StisBookingService {
 
         return stisBookingRepository.save(stisBooking);
     }
+
     public void saveBooking(StisBooking booking) {
         stisBookingRepository.save(booking);
     }
@@ -120,6 +127,7 @@ public class StisBookingService {
             stisBookingRepository.save(booking);
         }
     }
+
     public void markBookingPaymentStatusAsCompleted(Integer id) {
         Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
         if (bookingOptional.isPresent()) {
@@ -129,11 +137,11 @@ public class StisBookingService {
         }
     }
 
-//    public List<StisBookingResponse> getBookingHistoryByCustomer(Integer customerId) {
+    //    public List<StisBookingResponse> getBookingHistoryByCustomer(Integer customerId) {
 //        // Fetch booking history for a specific customer from the repository
 //        return stisBookingRepository.findByCustomer_UserId(customerId).stream().map(this::mapToResponse).toList();
 //    }
-    public Page<StisBookingResponse> GetHistory(int ID, Integer serviceID, StisBookingStatus status, int page, int size, String sort) {
+    public Page<StisBookingResponse> GetHistory(int ID, Integer serviceID, StisBookingStatus status, LocalDateTime startDateTime, LocalDateTime endDateTime, int page, int size, String sort) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
             pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
@@ -142,7 +150,7 @@ public class StisBookingService {
         }
 
         Page<StisBooking> stisBooking;
-        stisBooking = this.stisBookingRepository.getHistory(ID, serviceID, status, pageable);
+        stisBooking = this.stisBookingRepository.getHistory(ID, serviceID,startDateTime,endDateTime, status, pageable);
         return stisBooking.map(this::mapToResponse);
     }
 
@@ -173,6 +181,8 @@ public class StisBookingService {
     }
 
 }
+
+
 
 
 

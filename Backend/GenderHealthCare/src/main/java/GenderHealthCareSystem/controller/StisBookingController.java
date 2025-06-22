@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static GenderHealthCareSystem.util.PageResponseUtil.mapToPageResponse;
@@ -32,14 +33,27 @@ public class StisBookingController {
     public ResponseEntity<ApiResponse<PageResponse<StisBookingResponse>>> SearchBooking(@RequestParam(required = false) String name,
                                                                                         @RequestParam(required = false) Integer serviceId,
                                                                                         @RequestParam(required = false) String status,
+                                                                                        @RequestParam(required = false) String startDate,
+                                                                                        @RequestParam(required = false) String endDate,
                                                                                         @RequestParam(defaultValue = "0") int page,
                                                                                         @RequestParam(defaultValue = "5") int size,
                                                                                         @RequestParam(defaultValue = "desc") String sort) {
         StisBookingStatus statusValue = null;
+
+        LocalDateTime startDateTime = null;
+        LocalDateTime endDateTime = null;
+
         if (status != null && !status.isBlank()) {
             statusValue = StisBookingStatus.valueOf(status.toUpperCase());
         }
-        Page<StisBookingResponse> bookings = stisBookingService.findStisBooking(name, serviceId, statusValue, page, size, sort);
+        if (startDate != null && !startDate.isEmpty()) {
+            startDateTime = LocalDateTime.parse(startDate);
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            endDateTime = LocalDateTime.parse(endDate);
+        }
+        Page<StisBookingResponse> bookings = stisBookingService.findStisBooking(name, serviceId, statusValue, startDateTime, endDateTime, page, size, sort);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched all bookings", mapToPageResponse(bookings), null));
     }
 
@@ -57,6 +71,8 @@ public class StisBookingController {
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<PageResponse<StisBookingResponse>>> getBookingHistoryByCustomer(@RequestParam(required = false) Integer serviceId,
                                                                                                       @RequestParam(required = false) String status,
+                                                                                                      @RequestParam(required = false) String startDate,
+                                                                                                      @RequestParam(required = false) String endDate,
                                                                                                       @RequestParam(defaultValue = "0") int page,
                                                                                                       @RequestParam(defaultValue = "5") int size,
                                                                                                       @RequestParam(defaultValue = "desc") String sort,
@@ -64,10 +80,21 @@ public class StisBookingController {
         // Fetch booking history for a specific customer
         int customerId = Integer.parseInt(jwt.getClaimAsString("userID"));
         StisBookingStatus statusValue = null;
+        LocalDateTime startDateTime = null;
+        LocalDateTime endDateTime = null;
+
         if (status != null && !status.isBlank()) {
             statusValue = StisBookingStatus.valueOf(status.toUpperCase());
         }
-        Page<StisBookingResponse> bookingHistory = stisBookingService.GetHistory(customerId, serviceId, statusValue, page, size, sort);
+
+        if (startDate != null && !startDate.isEmpty()) {
+            startDateTime = LocalDateTime.parse(startDate);
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            endDateTime = LocalDateTime.parse(endDate);
+        }
+        Page<StisBookingResponse> bookingHistory = stisBookingService.GetHistory(customerId, serviceId, statusValue,startDateTime,endDateTime, page, size, sort);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Fetched booking history", mapToPageResponse(bookingHistory), null));
     }
 
@@ -111,6 +138,8 @@ public class StisBookingController {
 
 
 }
+
+
 
 
 
