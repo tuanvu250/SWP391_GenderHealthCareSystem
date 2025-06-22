@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface StisFeedbackRepository extends JpaRepository<StisFeedback, Integer> {
     List<StisFeedback> findByStisService_ServiceId(Integer serviceId);
+
     boolean existsByStisBooking_BookingId(Integer bookingId);
+
     StisFeedback findByStisBooking_BookingId(Integer bookingId);
 }
