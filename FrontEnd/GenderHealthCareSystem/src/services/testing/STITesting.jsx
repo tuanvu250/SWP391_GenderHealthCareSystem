@@ -203,14 +203,6 @@ const STITesting = () => {
     },
   ];
 
-  const handleBooking = (packageData) => {
-    setIsBookingModalOpen(true);
-    form.setFieldsValue({
-      package: packageData.name,
-      price: packageData.price,
-    });
-  };
-
   return (
     <>
       {/* Hero Section */}
@@ -421,6 +413,31 @@ const STITesting = () => {
               sau khi có kết quả. Các mẫu xét nghiệm được xử lý bởi phòng lab
               đạt chuẩn ISO 15189.
             </p>
+          </div>
+
+          {/* Retail Services Link */}
+          <div className="mt-12 text-center max-w-3xl mx-auto">
+            <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-8 rounded-2xl shadow-sm border border-blue-100">
+              <div className="flex flex-col items-center">
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  Xét nghiệm đơn lẻ từng bệnh STIs
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-2xl">
+                  Ngoài các gói combo trên, chúng tôi còn cung cấp dịch vụ xét
+                  nghiệm đơn lẻ cho từng loại bệnh lây truyền qua đường tình dục.
+                  Phù hợp cho những ai chỉ muốn kiểm tra một loại STI cụ thể.
+                </p>
+                <Button
+                  type="primary"
+                  size="large"
+                  className="h-12 px-8 rounded-full shadow-md flex items-center"
+                  onClick={() => navigate("/retail-service")}
+                >
+                  Xem dịch vụ xét nghiệm đơn lẻ
+                  <ArrowRightOutlined className="ml-2" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

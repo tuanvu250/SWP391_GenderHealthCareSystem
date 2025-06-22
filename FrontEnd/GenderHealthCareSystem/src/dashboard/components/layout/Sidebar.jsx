@@ -175,12 +175,17 @@ const Sidebar = ({
           {
             key: "service-management",
             icon: <MedicineBoxOutlined />,
-            label: "Quản lý dịch vụ",
+            label: <Link to={"/manager/dashboard/manage-service"}>Quản lý dịch vụ</Link>,
           },
           {
             key: "blog-oversight",
             icon: <BookOutlined />,
             label: <Link to={"/manager/dashboard/manage-blog"}>Giám sát Blog</Link>,
+          },
+          {
+            key: "booking-management",
+            icon: <CalendarOutlined />,
+            label: <Link to={"/manager/dashboard/manage-booking-stis"}>Quản lý đặt lịch</Link>,
           },
           {
             key: "financial",

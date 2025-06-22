@@ -32,6 +32,7 @@ import PrivacySection from "../site-info/Privacy";
 import ExpertSection from "../site-info/Expert";
 
 import STITesting from "../services/testing/STITesting";
+import RetailService from "../services/testing/RetailService";
 import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
@@ -41,7 +42,9 @@ import MyBookings from "../services/consultant/BookingHistory";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
+import ManageService from "../dashboard/features/serviceSTIs/ManageService";
 import BookingResult from "../services/BookingResult";
+
 
 import MinhTrang from "../site-info/Expert-info/MinhTrang";
 import PeriodHistory from "../healthtracker/PeriodHistory";
@@ -81,6 +84,7 @@ function RouteMap() {
                 </Route>
 
                 <Route path="/sti-testing" element={<STITesting />} />
+                <Route path="/retail-service" element={<RetailService />} />
                 <Route
                     path="/sti-booking"
                     element={
@@ -158,6 +162,8 @@ function RouteMap() {
             >
                 <Route index element={<h1>Dashboard</h1>} />
                 <Route path="manage-blog" element={<ManageMyBlog />} />
+                <Route path="manage-booking-stis" element={<ManageBookingStis />} />
+                <Route path="manage-service" element={<ManageService />} />
             </Route>
 
             {/* Dashboard cho Staff */}
