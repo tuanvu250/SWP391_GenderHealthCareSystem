@@ -1,115 +1,114 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// Helper để định dạng ngày
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("vi-VN");
-};
+import { menstrualHistoryAPI } from "../components/utils/api";
 
 export default function PeriodHistory() {
-  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Giả định token được lưu trong localStorage
-  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPeriodHistory();
+    const fetch = async () => {
+      try {
+        const res = await menstrualHistoryAPI();
+        const allDays = res.data?.days || [];
+
+        // ✅ Chỉ lấy ngày do người dùng nhập (note === "form")
+        const userDays = allDays
+          .filter((d) => d.type === "MENSTRUATION" && d.note === "form")
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const periods = [];
+        let current = [];
+
+        for (let i = 0; i < userDays.length; i++) {
+          const cur = new Date(userDays[i].date);
+          const prev = i > 0 ? new Date(userDays[i - 1].date) : null;
+
+          if (!prev || (cur - prev) / (1000 * 60 * 60 * 24) === 1) {
+            current.push(userDays[i]);
+          } else {
+            if (current.length > 0) periods.push([...current]);
+            current = [userDays[i]];
+          }
+        }
+        if (current.length > 0) periods.push(current);
+
+        // ✅ Nhóm theo tháng, lấy kỳ có ngày bắt đầu mới nhất mỗi tháng
+        const map = new Map();
+        for (let group of periods) {
+          const startDate = group[0].date;
+          const monthKey = startDate.slice(0, 7); // yyyy-mm
+          const existing = map.get(monthKey);
+          if (!existing || new Date(startDate) > new Date(existing[0].date)) {
+            map.set(monthKey, group);
+          }
+        }
+
+        const result = Array.from(map.entries())
+          .map(([month, group]) => ({
+            month,
+            startDate: group[0].date,
+            endDate: group[group.length - 1].date,
+            length: group.length,
+          }))
+          .sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+        setHistory(result);
+      } catch (err) {
+        console.error("Lỗi tải lịch sử kỳ kinh:", err);
+        setHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch();
   }, []);
 
-  const fetchPeriodHistory = async () => {
-    try {
-      const res = await axios.get("/api/menstrual/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setHistory(res.data);
-    } catch (error) {
-      console.error("Lỗi khi tải lịch sử:", error);
-      alert("Không thể tải dữ liệu lịch sử.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) {
+    return <p className="text-center mt-10 text-gray-500">Đang tải dữ liệu...</p>;
+  }
 
-  const handleEdit = (id) => {
-    navigate(`/edit-period/${id}`);
-  };
-
-  const handleDelete = async (id) => {
-    const confirm = window.confirm("Bạn có chắc chắn muốn xóa bản ghi này?");
-    if (!confirm) return;
-
-    try {
-      await axios.delete(`/api/menstrual/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setHistory((prev) => prev.filter((item) => item.cycleId !== id));
-    } catch (error) {
-      console.error("Lỗi khi xóa:", error);
-      alert("Xóa bản ghi thất bại.");
-    }
-  };
+  if (history.length === 0) {
+    return (
+      <div className="text-center mt-10 text-gray-600">
+        <p>Không có dữ liệu kỳ kinh nào được nhập từ bạn.</p>
+        <button
+          onClick={() => navigate("/menstrual-tracker")}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Nhập kỳ kinh đầu tiên
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">Lịch sử chu kỳ</h2>
-
-      {loading ? (
-        <p className="text-center text-gray-500">Đang tải dữ liệu...</p>
-      ) : history.length === 0 ? (
-        <p className="text-center text-gray-500">Chưa có bản ghi nào.</p>
-      ) : (
-        <div className="space-y-4">
-          {history.map((entry) => (
-            <div
-              key={entry.cycleId}
-              className="flex justify-between items-center border p-4 rounded-lg shadow-sm"
-            >
-              <div>
-                <p className="font-medium">
-                  {formatDate(entry.startDate)} → {formatDate(entry.endDate)}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Chu kỳ: {entry.cycleLength} ngày
-                </p>
-                {entry.note && (
-                  <p className="text-sm italic text-gray-600 mt-1">
-                    Ghi chú: {entry.note}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(entry.cycleId)}
-                  className="px-3 py-1 text-sm bg-yellow-400 hover:bg-yellow-500 text-white rounded"
-                >
-                  Sửa
-                </button>
-                <button
-                  onClick={() => handleDelete(entry.cycleId)}
-                  className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded"
-                >
-                  Xóa
-                </button>
-              </div>
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      <h2 className="text-xl font-bold text-center mb-6">📖 Lịch sử kỳ kinh của bạn</h2>
+      <ul className="space-y-4">
+        {history.map((item, idx) => (
+          <li key={idx} className="border rounded p-4 shadow bg-white">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-700 font-semibold">
+                🗓️ Tháng {+item.month.split("-")[1]}/{item.month.split("-")[0]}
+              </span>
+              <span className="text-sm text-gray-500">
+                {item.startDate} → {item.endDate}
+              </span>
             </div>
-          ))}
-        </div>
-      )}
+            <p className="text-sm text-gray-700">🩸 {item.length} ngày</p>
+          </li>
+        ))}
+      </ul>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8 flex justify-center">
         <button
-          onClick={() => navigate("/menstrual-ovulation")}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => navigate("/menstrual-tracker")}
+          className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
         >
-          ← Quay lại theo dõi sức khỏe
+          Nhập kỳ kinh mới →
         </button>
       </div>
     </div>

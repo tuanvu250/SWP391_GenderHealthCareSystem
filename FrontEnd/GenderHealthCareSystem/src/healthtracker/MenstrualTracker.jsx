@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { healthTrackerAPI } from '../components/utils/api';
+// 📁 src/pages/MenstrualTracker.jsx
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  healthTrackerAPI,
+  updateTrackerAPI,
+  menstrualHistoryAPI,
+} from '../components/utils/api';
 
 export default function MenstrualTracker() {
   const [cycleLength, setCycleLength] = useState(28);
@@ -10,28 +15,68 @@ export default function MenstrualTracker() {
   const [popupMessage, setPopupMessage] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const checkHasData = async () => {
+      if (location.state?.forceInput) return;
+      try {
+        const res = await menstrualHistoryAPI();
+        const data = res.data;
+        const today = new Date();
+        const hasCurrentMonth = data.days?.some((d) => {
+          const dt = new Date(d.date);
+          return dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth();
+        });
+        if (hasCurrentMonth) {
+          navigate('/menstrual-ovulation', { state: { calendar: data } });
+        }
+      } catch (err) {
+        console.error('Lỗi kiểm tra dữ liệu kỳ kinh:', err);
+      }
+    };
+    checkHasData();
+  }, [navigate, location.state]);
 
   const handleSubmit = async () => {
     if (!startDate) {
-      setPopupMessage("Vui lòng chọn ngày bắt đầu kỳ kinh");
+      setPopupMessage('Vui lòng chọn ngày bắt đầu kỳ kinh');
       setShowPopup(true);
       return;
     }
+
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + periodLength - 1);
+
     try {
       setLoading(true);
-      const userData = {
+
+      const res = await healthTrackerAPI({
         startDate,
         endDate: endDate.toISOString().split('T')[0],
         cycleLength,
-        note: ""
-      };
-      const res = await healthTrackerAPI(userData);
-      navigate("/menstrual-ovulation", { state: { calendar: res.data } });
+        note: 'form',
+      });
+
+      const calendar = res.data;
+
+      await updateTrackerAPI({
+        startDate,
+        endDate: endDate.toISOString().split('T')[0],
+        cycleLength,
+        note: 'form',
+      });
+
+      navigate('/menstrual-ovulation', { state: { calendar } });
     } catch (err) {
       console.error(err);
-      setPopupMessage("Lỗi khi tính chu kỳ. ");
+      setPopupMessage('Lỗi khi tính hoặc lưu chu kỳ.');
       setShowPopup(true);
     } finally {
       setLoading(false);
@@ -41,19 +86,49 @@ export default function MenstrualTracker() {
   return (
     <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
       <h2 className="text-2xl font-bold text-center">Tính Chu Kỳ Kinh Nguyệt</h2>
-      <label className="block">Ngày bắt đầu kỳ kinh:
-        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="block w-full mt-1 border border-gray-300 rounded p-2" />
+
+      <label className="block">
+        Ngày bắt đầu kỳ kinh:
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="block w-full mt-1 border border-gray-300 rounded p-2"
+        />
       </label>
-      <label className="block">Chu kỳ (21–35 ngày):
-        <input type="range" min="21" max="35" value={cycleLength} onChange={(e) => setCycleLength(Number(e.target.value))} className="w-full mt-1" />
+
+      <label className="block">
+        Chu kỳ (21–35 ngày):
+        <input
+          type="range"
+          min="21"
+          max="35"
+          value={cycleLength}
+          onChange={(e) => setCycleLength(Number(e.target.value))}
+          className="w-full mt-1"
+        />
         <p>{cycleLength} ngày</p>
       </label>
-      <label className="block">Số ngày hành kinh (2–10 ngày):
-        <input type="range" min="2" max="10" value={periodLength} onChange={(e) => setPeriodLength(Number(e.target.value))} className="w-full mt-1" />
+
+      <label className="block">
+        Số ngày hành kinh (2–10 ngày):
+        <input
+          type="range"
+          min="2"
+          max="10"
+          value={periodLength}
+          onChange={(e) => setPeriodLength(Number(e.target.value))}
+          className="w-full mt-1"
+        />
         <p>{periodLength} ngày</p>
       </label>
-      <button onClick={handleSubmit} disabled={loading} className="bg-[#0099CF] hover:bg-blue-600 text-white px-4 py-2 rounded w-full">
-        {loading ? "Đang tính..." : "Tính ngay"}
+
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="bg-[#0099CF] hover:bg-blue-600 text-white px-4 py-2 rounded w-full"
+      >
+        {loading ? 'Đang tính...' : 'Tính ngay'}
       </button>
 
       {showPopup && (
@@ -61,7 +136,12 @@ export default function MenstrualTracker() {
           <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center border-t-4 border-blue-500">
             <h3 className="text-xl font-bold text-blue-600 mb-3">Thông báo</h3>
             <p className="text-gray-700 mb-4">{popupMessage}</p>
-            <button onClick={() => setShowPopup(false)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">OK</button>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}

@@ -247,6 +247,13 @@ export const updateUserProfileAPI = async (values) => {
 export const healthTrackerAPI = async (values) => {
   return api.post("/menstrual/calculate", values);
 };
+export const updateTrackerAPI = async (values) => {
+  return api.post("/menstrual/update", values);
+};
+
+export const menstrualHistoryAPI = () => {
+  return api.get("/menstrual/calendar/me");
+};
 
 {
   /*Booking Stis*/
