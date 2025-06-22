@@ -319,6 +319,8 @@ export const manageBookingsAPI = async ({
   size = 10,
   status = "",
   sort = "",
+  startDate = "",
+  endDate = "",
 }) => {
   const query = new URLSearchParams({
     name,
@@ -326,6 +328,8 @@ export const manageBookingsAPI = async ({
     size,
     status,
     sort,
+    startDate,
+    endDate,
   }).toString();
   return api.get(`/stis-bookings?${query}`);
 };
