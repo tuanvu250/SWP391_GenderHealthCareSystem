@@ -8,12 +8,9 @@ import {
   Divider,
   Button,
   Dropdown,
-  Popconfirm,
   Breadcrumb,
   Spin,
-  Image,
   message,
-  Tooltip,
   Modal,
   Form,
   Input,
@@ -22,11 +19,9 @@ import {
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
-  UserOutlined,
   ShareAltOutlined,
   FacebookOutlined,
   TwitterOutlined,
-  LinkedinOutlined,
   LikeOutlined,
   LikeFilled,
   CommentOutlined,
@@ -45,7 +40,7 @@ import {
   likeBlogAPI,
   postCommentBlogAPI,
 } from "../components/utils/api";
-import { formatDateTime } from "../components/utils/formatTime";
+import { formatDateTime } from "../components/utils/format";
 import { useAuth } from "../components/provider/AuthProvider";
 
 const { Title, Text, Paragraph } = Typography;

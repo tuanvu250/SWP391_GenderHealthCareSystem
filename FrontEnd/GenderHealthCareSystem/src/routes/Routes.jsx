@@ -38,12 +38,13 @@ import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
 import AskingSection from "../services/asking/AskingSection";
 import MyBookings from "../services/consultant/BookingHistory";
+import BookingResult from "../services/BookingResult";
 
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
-import ManageBookingStis from "../dashboard/features/bookingSTIs/ManageBookingStis";
-import ManageService from "../dashboard/features/serviceSTIs/ManageService";
-import BookingResult from "../services/BookingResult";
+import ManageBookingStis from "../dashboard/features/booking/ManageBookingStis";
+import ManageService from "../dashboard/features/service/ManageService";
+import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
 
 
 import MinhTrang from "../site-info/Expert-info/MinhTrang";
@@ -165,6 +166,7 @@ function RouteMap() {
                 <Route path="manage-blog" element={<ManageMyBlog />} />
                 <Route path="manage-booking-stis" element={<ManageBookingStis />} />
                 <Route path="manage-service" element={<ManageService />} />
+                <Route path="manage-feedback-service" element={<ManageFeedbackService />} />
             </Route>
 
             {/* Dashboard cho Staff */}

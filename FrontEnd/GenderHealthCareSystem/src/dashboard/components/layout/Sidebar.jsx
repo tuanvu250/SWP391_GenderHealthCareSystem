@@ -178,6 +178,11 @@ const Sidebar = ({
             label: <Link to={"/manager/dashboard/manage-service"}>Quản lý dịch vụ</Link>,
           },
           {
+            key: "feedback-management",
+            icon: <MessageOutlined />,
+            label: <Link to={"/manager/dashboard/manage-feedback-service"}>Quản lý phản hồi dịch vụ</Link>,
+          },
+          {
             key: "blog-oversight",
             icon: <BookOutlined />,
             label: <Link to={"/manager/dashboard/manage-blog"}>Giám sát Blog</Link>,

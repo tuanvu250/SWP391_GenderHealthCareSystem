@@ -17,12 +17,10 @@ import {
 import {
   SearchOutlined,
   CalendarOutlined,
-  UserOutlined,
-  ArrowRightOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { blogSearchAPI } from "../components/utils/api";
-import { formatDateTime } from "../components/utils/formatTime";
+import { formatDateTime } from "../components/utils/format";
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;

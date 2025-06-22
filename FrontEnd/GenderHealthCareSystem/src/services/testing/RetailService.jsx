@@ -7,8 +7,6 @@ import {
   Button,
   Tag,
   Divider,
-  Space,
-  Tooltip,
   Rate,
   Input,
   Select,
@@ -30,6 +28,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
+import { formatPrice } from "../../components/utils/format"; // Import hàm định dạng giá
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -183,14 +182,6 @@ const RetailService = () => {
     }
   };
 
-  // Format giá tiền
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen py-6 px-4">
       <div className="max-w-7xl mx-auto">
@@ -202,7 +193,7 @@ const RetailService = () => {
           <Breadcrumb.Item>
             <Link to="/sti-testing">Xét nghiệm STIs</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>Xét nghiệm STIs lẻ</Breadcrumb.Item>
+          <Breadcrumb.Item>Xét nghiệm STIs lẻ </Breadcrumb.Item>
         </Breadcrumb>
 
         {/* Header */}
