@@ -43,7 +43,8 @@ const ManageBookingStis = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState();
   const [paymentFilter, setPaymentFilter] = useState([]);
-  const [dateRange, setDateRange] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -103,7 +104,8 @@ const ManageBookingStis = () => {
 
   // Xử lý lọc theo ngày
   const handleDateRangeChange = (dates) => {
-    setDateRange(dates);
+    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDT00:00"));
+    setEndDate(dayjs(dates[1]).format("YYYY-MM-DDT00:00"));
     setPagination({ ...pagination, current: 1 });
   };
 
@@ -129,8 +131,10 @@ const ManageBookingStis = () => {
         name: searchText,
         page: pagination.current - 1,
         size: pagination.pageSize,
-        status: statusFilter
+        status: statusFilter,
         //sort: "bookingDate,desc",
+        startDate: startDate,
+        endDate: endDate,
       });
       setPagination({
         ...pagination,
@@ -159,7 +163,9 @@ const ManageBookingStis = () => {
       );
     } catch (error) {
       console.error("Error loading bookings:", error);
-      message.error("Không thể tải dữ liệu đặt lịch");
+      message.error(
+        error.response?.data?.message || "Không thể tải dữ liệu đặt lịch"
+      );
     } finally {
       setLoading(false);
     }
@@ -167,7 +173,7 @@ const ManageBookingStis = () => {
 
   useEffect(() => {
     loadData();
-  }, [pagination.current, searchText, statusFilter]);
+  }, [pagination.current, searchText, statusFilter, startDate, endDate]);
 
   const handleConfirm = async (bookingId) => {
     try {
@@ -390,7 +396,7 @@ const ManageBookingStis = () => {
               <Option value="COMPLETED">Hoàn thành</Option>
               <Option value="CANCELLED">Đã hủy</Option>
               <Option value="no_show">Không đến</Option>
-              <Option value="" >Tất cả</Option>
+              <Option value="">Tất cả</Option>
             </Select>
 
             {/* <Select

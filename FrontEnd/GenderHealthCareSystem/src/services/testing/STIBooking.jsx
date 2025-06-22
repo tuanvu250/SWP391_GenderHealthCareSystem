@@ -173,7 +173,7 @@ const STIBooking = () => {
 
       //console.log("Dữ liệu đặt lịch:", bookingData);
 
-      console.log(">>> Submitting booking data:", allValues.paymentMethod);
+      //console.log(">>> Submitting booking data:", allValues.paymentMethod);
 
       // Mô phỏng API call
       const response = await bookStisAPI(bookingData);
@@ -187,7 +187,7 @@ const STIBooking = () => {
       }
     } catch (error) {
       console.error("Error during booking:", error);
-      message.error("Có lỗi xảy ra khi đặt lịch, vui lòng thử lại.");
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch, vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
