@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "STIsFeedback")
 @Data
@@ -21,7 +20,7 @@ public class StisFeedback {
 
     private Integer feedbackId;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private StisBooking stisBooking;
 
