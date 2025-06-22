@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,15 +18,13 @@ public class StisFeedback {
     @Id
     @Column(name = "FeedbackID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer feedbackId;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
-    private StisBooking stisBooking;
+    @Column(name = "UserID")
+    private Integer userId;
 
     @Column(name = "Rating")
-    private Integer rating; // Assuming rating is an integer (e.g., 1-5)
+    private Integer rating;
 
     @Column(name = "Comment", columnDefinition = "NVARCHAR(MAX)")
     private String comment;
@@ -33,7 +32,14 @@ public class StisFeedback {
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // Relationships
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
+    @JsonIgnore
+    private StisBooking stisBooking;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ServiceID", referencedColumnName = "ServiceID")
+    @JsonIgnore
     private StisService stisService;
 }
