@@ -18,5 +18,6 @@ public class StisFeedbackResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String serviceName;
+    private String status;
 
 }

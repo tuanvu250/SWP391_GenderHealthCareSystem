@@ -20,6 +20,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Service for handling STI service feedback operations
@@ -36,7 +39,8 @@ public class StisFeedbackService {
      * 
      * @param req The feedback request containing bookingId, rating, and comment
      * @return The created feedback entity
-     * @throws IllegalStateException if authentication fails or booking status is invalid
+     * @throws IllegalStateException    if authentication fails or booking status is
+     *                                  invalid
      * @throws IllegalArgumentException if booking doesn't exist
      */
     public StisFeedback createFeedback(StisFeedbackRequest req) {
@@ -51,7 +55,8 @@ public class StisFeedbackService {
         feedback.setStisBooking(booking);
         feedback.setRating(req.getRating());
         feedback.setComment(req.getComment());
-        
+        feedback.setStatus("ACTIVE");
+
         LocalDateTime now = LocalDateTime.now();
         feedback.setCreatedAt(now);
         feedback.setUpdatedAt(now);
@@ -65,19 +70,19 @@ public class StisFeedbackService {
      * Gets the feedback history for a specific user with pagination
      *
      * @param userId The ID of the user
-     * @param page The page number (0-based)
-     * @param size The page size
-     * @param sort The sort direction ("asc" or "desc")
+     * @param page   The page number (0-based)
+     * @param size   The page size
+     * @param sort   The sort direction ("asc" or "desc")
      * @return Page of StisFeedbackResponse DTOs
      */
     public Page<StisFeedbackResponse> getUserFeedbackHistory(Integer userId, int page, int size, String sort) {
         // Create pageable object with sort direction
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
-        
-        // Get feedback page from repository
-        Page<StisFeedback> feedbackPage = feedbackRepo.findByUserId(userId, pageable);
-        
+
+        // Get feedback page from repository - only ACTIVE status
+        Page<StisFeedback> feedbackPage = feedbackRepo.findByUserIdAndStatus(userId, "ACTIVE", pageable);
+
         // Map to response DTOs
         return feedbackPage.map(this::mapToResponse);
     }
@@ -98,6 +103,7 @@ public class StisFeedbackService {
         response.setCreatedAt(feedback.getCreatedAt());
         response.setUpdatedAt(feedback.getUpdatedAt());
         response.setServiceName(feedback.getStisService().getServiceName());
+        response.setStatus(feedback.getStatus());
         return response;
     }
 
@@ -126,7 +132,8 @@ public class StisFeedbackService {
      * @param bookingId The ID of the booking to validate
      * @return The validated booking entity
      * @throws IllegalArgumentException if booking doesn't exist
-     * @throws IllegalStateException if booking is not completed or already has feedback
+     * @throws IllegalStateException    if booking is not completed or already has
+     *                                  feedback
      */
     private StisBooking validateAndGetBooking(Integer bookingId) {
         StisBooking booking = bookingRepo.findById(bookingId)
@@ -141,6 +148,22 @@ public class StisFeedbackService {
         }
 
         return booking;
+    }
+
+    /**
+     * Gets all feedback for a specific service with ACTIVE status
+     *
+     * @param serviceId The ID of the service
+     * @return List of StisFeedbackResponse DTOs
+     */
+    public List<StisFeedbackResponse> getServiceFeedback(Integer serviceId) {
+        // Get feedback list from repository - only ACTIVE status
+        List<StisFeedback> feedbackList = feedbackRepo.findByStisService_ServiceIdAndStatus(serviceId, "ACTIVE");
+
+        // Map to response DTOs
+        return feedbackList.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
 }
