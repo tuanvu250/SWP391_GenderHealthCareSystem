@@ -37,6 +37,9 @@ public class StisFeedback {
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
+
+    @Column(name = "Status", length = 20, columnDefinition = "NVARCHAR(20)")
+    private String status;
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)

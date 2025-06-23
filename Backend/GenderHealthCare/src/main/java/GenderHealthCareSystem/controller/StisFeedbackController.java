@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import static GenderHealthCareSystem.util.PageResponseUtil.mapToPageResponse;
 
+import java.util.List;
+
 /**
  * REST controller for handling STI service feedback operations
  */
@@ -76,6 +78,24 @@ public class StisFeedbackController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
         }
+    }
 
+    /**
+     * Gets all feedback for a specific service with ACTIVE status
+     * 
+     * @param serviceId The ID of the service
+     * @return ResponseEntity with list of feedback for the service
+     */
+    @GetMapping("/service/{serviceId}")
+    public ResponseEntity<ApiResponse<List<StisFeedbackResponse>>> getServiceFeedback(
+            @PathVariable Integer serviceId) {
+        try {
+            List<StisFeedbackResponse> feedbackList = feedbackService.getServiceFeedback(serviceId);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá dịch vụ", feedbackList, null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
     }
 }
