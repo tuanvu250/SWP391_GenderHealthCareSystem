@@ -166,4 +166,44 @@ public class StisFeedbackService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates an existing feedback by ID
+     *
+     * @param id  The ID of the feedback to update
+     * @param req The feedback entity with updated information
+     * @return The updated feedback entity
+     * @throws RuntimeException if feedback not found
+     */
+    public StisFeedback update(Integer id, StisFeedback req) {
+        StisFeedback existingFeedback = feedbackRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + id));
+
+        // Update fields
+        existingFeedback.setRating(req.getRating());
+        existingFeedback.setComment(req.getComment());
+
+        // Luôn đảm bảo status là "ACTIVE"
+        existingFeedback.setStatus("ACTIVE");
+
+        existingFeedback.setUpdatedAt(LocalDateTime.now());
+
+        return feedbackRepo.save(existingFeedback);
+    }
+
+    /**
+     * Hides a feedback by setting its status to "HIDDEN"
+     *
+     * @param id The ID of the feedback to hide
+     * @return The updated feedback entity with HIDDEN status
+     * @throws RuntimeException if feedback not found
+     */
+    public StisFeedback hideFeedback(Integer id) {
+        StisFeedback existingFeedback = feedbackRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + id));
+        
+        existingFeedback.setStatus("HIDDEN");
+        existingFeedback.setUpdatedAt(LocalDateTime.now());
+        
+        return feedbackRepo.save(existingFeedback);
+    }
 }

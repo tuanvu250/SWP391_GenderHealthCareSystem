@@ -98,4 +98,58 @@ public class StisFeedbackController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
         }
     }
+
+    /**
+     * Updates an existing feedback by ID
+     *
+     * @param id  The ID of the feedback to update
+     * @param req The feedback entity with updated information
+     * @return ResponseEntity with the updated feedback or error message
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<StisFeedback>> update(@PathVariable Integer id, @RequestBody StisFeedback req) {
+        try {
+            StisFeedback updated = feedbackService.update(id, req);
+            ApiResponse<StisFeedback> res = new ApiResponse<>(
+                    HttpStatus.OK,
+                    "Cập nhật đánh giá thành công",
+                    updated,
+                    null);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            ApiResponse<StisFeedback> res = new ApiResponse<>(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy đánh giá để cập nhật",
+                    null,
+                    "NOT_FOUND");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+    }
+
+    /**
+     * Hides a feedback by setting its status to "HIDDEN"
+     *
+     * @param id The ID of the feedback to hide
+     * @return ResponseEntity with the updated feedback or error message
+     */
+    @PutMapping("/{id}/hide")
+    public ResponseEntity<ApiResponse<StisFeedback>> hideFeedback(@PathVariable Integer id) {
+        try {
+            StisFeedback updated = feedbackService.hideFeedback(id);
+            ApiResponse<StisFeedback> res = new ApiResponse<>(
+                    HttpStatus.OK,
+                    "Đã ẩn đánh giá thành công",
+                    updated,
+                    null);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            ApiResponse<StisFeedback> res = new ApiResponse<>(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy đánh giá để ẩn",
+                    null,
+                    "NOT_FOUND");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+    }
+
 }
