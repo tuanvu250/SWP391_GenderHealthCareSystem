@@ -63,4 +63,40 @@ public interface StisFeedbackRepository extends JpaRepository<StisFeedback, Inte
      */
     List<StisFeedback> findByStisService_ServiceIdAndStatus(Integer serviceId, String status);
 
+    /**
+     * Find all feedback by user ID, service ID, rating, and status with pagination
+     * 
+     * @param userId    the ID of the user
+     * @param serviceId the ID of the service (can be null)
+     * @param rating    the rating value (can be null)
+     * @param status    the status of the feedback
+     * @param pageable  pagination information
+     * @return page of feedback matching the criteria
+     */
+    Page<StisFeedback> findByUserIdAndStisService_ServiceIdAndRatingAndStatus(
+            Integer userId, Integer serviceId, Integer rating, String status, Pageable pageable);
+
+    /**
+     * Find all feedback by user ID, service ID, and status with pagination
+     * 
+     * @param userId    the ID of the user
+     * @param serviceId the ID of the service
+     * @param status    the status of the feedback
+     * @param pageable  pagination information
+     * @return page of feedback matching the criteria
+     */
+    Page<StisFeedback> findByUserIdAndStisService_ServiceIdAndStatus(
+            Integer userId, Integer serviceId, String status, Pageable pageable);
+
+    /**
+     * Find all feedback by user ID, rating, and status with pagination
+     * 
+     * @param userId   the ID of the user
+     * @param rating   the rating value
+     * @param status   the status of the feedback
+     * @param pageable pagination information
+     * @return page of feedback matching the criteria
+     */
+    Page<StisFeedback> findByUserIdAndRatingAndStatus(
+            Integer userId, Integer rating, String status, Pageable pageable);
 }
