@@ -174,6 +174,7 @@ const HistoryTesting = () => {
     } catch (error) {
       setSubmittingFeedback(false);
       console.error("Error submitting feedback:", error);
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá");
     }
   };
 
