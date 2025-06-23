@@ -153,7 +153,8 @@ public class StisFeedbackController {
     }
 
     /**
-     * Gets all feedback for the authenticated user with pagination and optional filters
+     * Gets all feedback for the authenticated user with pagination and optional
+     * filters
      *
      * @param page      The page number (0-based)
      * @param size      The page size
@@ -171,13 +172,30 @@ public class StisFeedbackController {
             @RequestParam(required = false) Integer rating) {
 
         try {
-            Page<StisFeedbackResponse> feedbackPage = feedbackService.getAllUserFeedback(page, size, sort, serviceId, rating);
-            
+            Page<StisFeedbackResponse> feedbackPage = feedbackService.getAllUserFeedback(page, size, sort, serviceId,
+                    rating);
+
             return ResponseEntity.ok(
-                    new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá của người dùng", mapToPageResponse(feedbackPage), null));
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá của người dùng",
+                            mapToPageResponse(feedbackPage), null));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
         }
+    }
+
+    @GetMapping("/average/{serviceId}")
+    public ResponseEntity<Double> getAvgRating(@PathVariable Integer serviceId) {
+        return ResponseEntity.ok(feedbackService.getAvgRating(serviceId));
+    }
+
+    /**
+     * Gets the average rating across all feedback
+     * 
+     * @return The overall average rating
+     */
+    @GetMapping("/total-average")
+    public ResponseEntity<Double> getTotalAvgRating() {
+        return ResponseEntity.ok(feedbackService.getTotalAvgRating());
     }
 }
