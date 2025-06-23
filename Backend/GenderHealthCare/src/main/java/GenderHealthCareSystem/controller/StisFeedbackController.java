@@ -152,4 +152,32 @@ public class StisFeedbackController {
         }
     }
 
+    /**
+     * Gets all feedback for the authenticated user with pagination and optional filters
+     *
+     * @param page      The page number (0-based)
+     * @param size      The page size
+     * @param sort      The sort direction ("asc" or "desc")
+     * @param serviceId Optional service ID to filter by (can be null)
+     * @param rating    Optional rating to filter by (can be null)
+     * @return ResponseEntity with paginated user feedback
+     */
+    @GetMapping("/user-feedback")
+    public ResponseEntity<ApiResponse<PageResponse<StisFeedbackResponse>>> getUserFeedback(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "desc") String sort,
+            @RequestParam(required = false) Integer serviceId,
+            @RequestParam(required = false) Integer rating) {
+
+        try {
+            Page<StisFeedbackResponse> feedbackPage = feedbackService.getAllUserFeedback(page, size, sort, serviceId, rating);
+            
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá của người dùng", mapToPageResponse(feedbackPage), null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
+    }
 }

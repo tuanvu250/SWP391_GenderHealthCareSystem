@@ -5,9 +5,11 @@ import GenderHealthCareSystem.dto.StisFeedbackResponse;
 import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisFeedback;
+import GenderHealthCareSystem.model.Users;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisFeedbackRepository;
 import GenderHealthCareSystem.repository.StisServiceRepository;
+import GenderHealthCareSystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,7 @@ public class StisFeedbackService {
     private final StisFeedbackRepository feedbackRepo;
     private final StisBookingRepository bookingRepo;
     private final StisServiceRepository serviceRepo;
+    private final UserRepository userRepository;
 
     /**
      * Creates a new feedback for a completed STI service booking
@@ -104,6 +107,15 @@ public class StisFeedbackService {
         response.setUpdatedAt(feedback.getUpdatedAt());
         response.setServiceName(feedback.getStisService().getServiceName());
         response.setStatus(feedback.getStatus());
+        
+        // Add user information if available
+        Users customer = feedback.getStisBooking().getCustomer();
+        if (customer != null) {
+            response.setUserId(customer.getUserId());
+            response.setUserFullName(customer.getFullName());
+            response.setUserImageUrl(customer.getUserImageUrl());
+        }
+        
         return response;
     }
 
@@ -200,10 +212,52 @@ public class StisFeedbackService {
     public StisFeedback hideFeedback(Integer id) {
         StisFeedback existingFeedback = feedbackRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + id));
-        
+
         existingFeedback.setStatus("HIDDEN");
         existingFeedback.setUpdatedAt(LocalDateTime.now());
-        
+
         return feedbackRepo.save(existingFeedback);
+    }
+    
+    /**
+     * Gets all feedback for the authenticated user with pagination and optional filters
+     *
+     * @param page      The page number (0-based)
+     * @param size      The page size
+     * @param sort      The sort direction ("asc" or "desc")
+     * @param serviceId Optional service ID to filter by (can be null)
+     * @param rating    Optional rating to filter by (can be null)
+     * @return Page of StisFeedbackResponse DTOs
+     */
+    public Page<StisFeedbackResponse> getAllUserFeedback(int page, int size, String sort, Integer serviceId, Integer rating) {
+        // Extract user ID from JWT token
+        Integer userId = extractUserIdFromToken();
+        
+        // Create pageable object with sort direction
+        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
+        
+        // Get feedback page from repository based on filter criteria
+        Page<StisFeedback> feedbackPage;
+        
+        if (serviceId != null && rating != null) {
+            // Filter by both serviceId and rating
+            feedbackPage = feedbackRepo.findByUserIdAndStisService_ServiceIdAndRatingAndStatus(
+                    userId, serviceId, rating, "ACTIVE", pageable);
+        } else if (serviceId != null) {
+            // Filter by serviceId only
+            feedbackPage = feedbackRepo.findByUserIdAndStisService_ServiceIdAndStatus(
+                    userId, serviceId, "ACTIVE", pageable);
+        } else if (rating != null) {
+            // Filter by rating only
+            feedbackPage = feedbackRepo.findByUserIdAndRatingAndStatus(
+                    userId, rating, "ACTIVE", pageable);
+        } else {
+            // No filters
+            feedbackPage = feedbackRepo.findByUserIdAndStatus(userId, "ACTIVE", pageable);
+        }
+        
+        // Map to response DTOs
+        return feedbackPage.map(this::mapToResponse);
     }
 }
