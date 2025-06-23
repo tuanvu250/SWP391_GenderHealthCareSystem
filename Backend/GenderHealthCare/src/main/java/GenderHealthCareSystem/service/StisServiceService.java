@@ -34,6 +34,10 @@ public class StisServiceService {
             existing.setDescription(newData.getDescription());
             existing.setPrice(newData.getPrice());
             existing.setDuration(newData.getDuration());
+            existing.setTests(newData.getTests());
+            existing.setType(newData.getType());
+            existing.setDiscount(newData.getDiscount());
+            existing.setStatus(newData.getStatus());
             existing.setUpdatedAt(LocalDateTime.now());
             return repository.save(existing);
         }).orElseThrow(() -> new RuntimeException("Service not found"));
