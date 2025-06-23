@@ -37,8 +37,7 @@ public class StisFeedback {
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
-
-    // Relationships
+    
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     @JsonIgnore

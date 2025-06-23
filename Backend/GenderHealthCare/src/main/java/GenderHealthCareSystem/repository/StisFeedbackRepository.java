@@ -39,4 +39,5 @@ public interface StisFeedbackRepository extends JpaRepository<StisFeedback, Inte
      * @return page of feedback for the user
      */
     Page<StisFeedback> findByUserId(Integer userId, Pageable pageable);
+
 }
