@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing feedback for STI services
+ */
 @Entity
 @Table(name = "STIsFeedback")
 @Data
@@ -31,6 +34,9 @@ public class StisFeedback {
 
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
+
+    @Column(name = "UpdatedAt")
+    private LocalDateTime updatedAt;
 
     // Relationships
     @OneToOne(fetch = FetchType.LAZY)

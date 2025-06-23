@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.StisFeedbackRequest;
+import GenderHealthCareSystem.dto.StisFeedbackResponse;
 import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisFeedback;
@@ -8,6 +9,10 @@ import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisFeedbackRepository;
 import GenderHealthCareSystem.repository.StisServiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -31,8 +36,7 @@ public class StisFeedbackService {
      * 
      * @param req The feedback request containing bookingId, rating, and comment
      * @return The created feedback entity
-     * @throws IllegalStateException    if authentication fails or booking status is
-     *                                  invalid
+     * @throws IllegalStateException if authentication fails or booking status is invalid
      * @throws IllegalArgumentException if booking doesn't exist
      */
     public StisFeedback createFeedback(StisFeedbackRequest req) {
@@ -47,11 +51,54 @@ public class StisFeedbackService {
         feedback.setStisBooking(booking);
         feedback.setRating(req.getRating());
         feedback.setComment(req.getComment());
-        feedback.setCreatedAt(LocalDateTime.now());
+        
+        LocalDateTime now = LocalDateTime.now();
+        feedback.setCreatedAt(now);
+        feedback.setUpdatedAt(now);
         feedback.setStisService(booking.getStisService());
         feedback.setUserId(userId);
 
         return feedbackRepo.save(feedback);
+    }
+
+    /**
+     * Gets the feedback history for a specific user with pagination
+     *
+     * @param userId The ID of the user
+     * @param page The page number (0-based)
+     * @param size The page size
+     * @param sort The sort direction ("asc" or "desc")
+     * @return Page of StisFeedbackResponse DTOs
+     */
+    public Page<StisFeedbackResponse> getUserFeedbackHistory(Integer userId, int page, int size, String sort) {
+        // Create pageable object with sort direction
+        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
+        
+        // Get feedback page from repository
+        Page<StisFeedback> feedbackPage = feedbackRepo.findByUserId(userId, pageable);
+        
+        // Map to response DTOs
+        return feedbackPage.map(this::mapToResponse);
+    }
+
+    /**
+     * Maps a StisFeedback entity to a StisFeedbackResponse DTO
+     * 
+     * @param feedback The feedback entity to map
+     * @return The mapped response DTO
+     */
+    private StisFeedbackResponse mapToResponse(StisFeedback feedback) {
+        StisFeedbackResponse response = new StisFeedbackResponse();
+        response.setFeedbackId(feedback.getFeedbackId());
+        response.setBookingId(feedback.getStisBooking().getBookingId());
+        response.setBookingDate(feedback.getStisBooking().getBookingDate());
+        response.setRating(feedback.getRating());
+        response.setComment(feedback.getComment());
+        response.setCreatedAt(feedback.getCreatedAt());
+        response.setUpdatedAt(feedback.getUpdatedAt());
+        response.setServiceName(feedback.getStisService().getServiceName());
+        return response;
     }
 
     /**
@@ -79,8 +126,7 @@ public class StisFeedbackService {
      * @param bookingId The ID of the booking to validate
      * @return The validated booking entity
      * @throws IllegalArgumentException if booking doesn't exist
-     * @throws IllegalStateException    if booking is not completed or already has
-     *                                  feedback
+     * @throws IllegalStateException if booking is not completed or already has feedback
      */
     private StisBooking validateAndGetBooking(Integer bookingId) {
         StisBooking booking = bookingRepo.findById(bookingId)
