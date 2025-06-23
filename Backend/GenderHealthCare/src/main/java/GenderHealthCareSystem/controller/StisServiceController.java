@@ -25,8 +25,7 @@ public class StisServiceController {
                 HttpStatus.OK,
                 "Lấy danh sách dịch vụ thành công",
                 list,
-                null
-        );
+                null);
         return ResponseEntity.ok(res);
     }
 
@@ -34,11 +33,9 @@ public class StisServiceController {
     public ResponseEntity<ApiResponse<StisService>> getById(@PathVariable Integer id) {
         return service.getById(id)
                 .map(s -> ResponseEntity.ok(
-                        new ApiResponse<>(HttpStatus.OK, "Tìm thấy dịch vụ", s, null)
-                ))
+                        new ApiResponse<>(HttpStatus.OK, "Tìm thấy dịch vụ", s, null)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new ApiResponse<>(HttpStatus.NOT_FOUND, "Không tìm thấy dịch vụ", null, "NOT_FOUND")
-                ));
+                        new ApiResponse<>(HttpStatus.NOT_FOUND, "Không tìm thấy dịch vụ", null, "NOT_FOUND")));
     }
 
     @PostMapping
@@ -49,18 +46,29 @@ public class StisServiceController {
         toSave.setPrice(req.getPrice());
         toSave.setDuration(req.getDuration());
         toSave.setTests(req.getTests());
+        toSave.setType(req.getType());
+        toSave.setDiscount(req.getDiscount());
+        toSave.setStatus(req.getStatus());
         StisService created = service.create(toSave);
         ApiResponse<StisService> res = new ApiResponse<>(
-                HttpStatus.CREATED, "Tạo mới dịch vụ thành công", created, null
-        );
+                HttpStatus.CREATED, "Tạo mới dịch vụ thành công", created, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StisService>> update(@PathVariable Integer id, @RequestBody StisService req) {
+    public ResponseEntity<ApiResponse<StisService>> update(@PathVariable Integer id, @RequestBody StisServiceRequest req) {
         try {
-            StisService updated = service.update(id, req);
+            StisService serviceToUpdate = new StisService();
+            serviceToUpdate.setServiceName(req.getServiceName());
+            serviceToUpdate.setDescription(req.getDescription());
+            serviceToUpdate.setPrice(req.getPrice());
+            serviceToUpdate.setDuration(req.getDuration());
+            serviceToUpdate.setTests(req.getTests());
+            serviceToUpdate.setType(req.getType());
+            serviceToUpdate.setDiscount(req.getDiscount());
+            serviceToUpdate.setStatus(req.getStatus());
+            
+            StisService updated = service.update(id, serviceToUpdate);
             ApiResponse<StisService> res = new ApiResponse<>(
                     HttpStatus.OK,
                     "Cập nhật dịch vụ thành công",
@@ -87,16 +95,14 @@ public class StisServiceController {
                     HttpStatus.OK,
                     "Xóa dịch vụ thành công",
                     "Deleted",
-                    null
-            );
+                    null);
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             ApiResponse<String> res = new ApiResponse<>(
                     HttpStatus.NOT_FOUND,
                     "Không tìm thấy dịch vụ để xóa",
                     null,
-                    "NOT_FOUND"
-            );
+                    "NOT_FOUND");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
         }
     }
