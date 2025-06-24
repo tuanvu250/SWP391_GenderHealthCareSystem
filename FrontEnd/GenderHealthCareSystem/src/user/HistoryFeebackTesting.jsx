@@ -23,8 +23,12 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { formatDateTime } from "../components/utils/format";
-// Import các API cần thiết (giả định)
-// import { getFeedbackHistoryAPI, updateFeedbackAPI, deleteFeedbackAPI } from '../api/feedbackAPI';
+import {
+  deleteFeedbackTestingAPI,
+  editFeedbackTestingAPI,
+  getMyFeedbackTestingAPI,
+} from "../components/utils/api";
+import dayjs from "dayjs";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -36,72 +40,38 @@ const HistoryFeedbackTesting = () => {
   const [submitting, setSubmitting] = useState(false);
   const [editForm] = Form.useForm();
   const [editRating, setEditRating] = useState(5);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  // Mock data - thay thế bằng API call thật
+  const fetchFeedbacks = async () => {
+    setLoading(true);
+    try {
+      const response = await getMyFeedbackTestingAPI({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+      });
+      setPagination({
+        ...pagination,
+        total: response.data.data.totalElements,
+      });
+
+      setFeedbacks(response.data.data.content);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching feedback history:", error);
+      message.error(
+        error.response?.data?.message || "Không thể tải lịch sử đánh giá"
+      );
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchFeedbacks = async () => {
-      setLoading(true);
-      try {
-        // Giả lập API call
-        setTimeout(() => {
-          const mockFeedbacks = [
-            {
-              id: 1,
-              serviceId: 101,
-              bookingId: 501,
-              serviceName: "Gói xét nghiệm STI cơ bản",
-              appointmentDate: "10/06/2023",
-              rating: 5,
-              content:
-                "Dịch vụ rất tốt, nhân viên chuyên nghiệp và thân thiện. Kết quả được trả nhanh chóng và chi tiết.",
-              createdAt: "2023-06-15T08:30:00Z",
-              updatedAt: "2023-06-15T08:30:00Z",
-              status: "published",
-            },
-            {
-              id: 2,
-              serviceId: 102,
-              bookingId: 502,
-              serviceName: "Xét nghiệm HIV",
-              appointmentDate: "20/07/2023",
-              rating: 4,
-              content:
-                "Tốt nhưng thời gian chờ hơi lâu. Nhân viên tư vấn rất nhiệt tình.",
-              createdAt: "2023-07-25T10:15:00Z",
-              updatedAt: "2023-07-25T10:15:00Z",
-              status: "published",
-            },
-            {
-              id: 3,
-              serviceId: 103,
-              bookingId: 503,
-              serviceName: "Gói xét nghiệm STI toàn diện",
-              appointmentDate: "05/08/2023",
-              rating: 5,
-              content:
-                "Rất hài lòng với dịch vụ, từ đặt lịch đến nhận kết quả đều rất suôn sẻ và tiện lợi.",
-              createdAt: "2023-08-10T14:20:00Z",
-              updatedAt: "2023-08-10T14:20:00Z",
-              status: "published",
-            },
-          ];
-          setFeedbacks(mockFeedbacks);
-          setLoading(false);
-        }, 1000);
-
-        // Khi có API thật
-        // const response = await getFeedbackHistoryAPI();
-        // setFeedbacks(response.data);
-        // setLoading(false);
-      } catch (error) {
-        console.error("Error fetching feedback history:", error);
-        message.error("Không thể tải lịch sử đánh giá. Vui lòng thử lại sau.");
-        setLoading(false);
-      }
-    };
-
     fetchFeedbacks();
-  }, []);
+  }, [pagination.current, pagination.pageSize]);
 
   // Xử lý chỉnh sửa đánh giá
   const handleEditFeedback = (record) => {
@@ -119,34 +89,20 @@ const HistoryFeedbackTesting = () => {
       setSubmitting(true);
       const values = await editForm.validateFields();
 
-      // Giả lập API call
-      setTimeout(() => {
-        // Cập nhật state local
-        const updatedFeedbacks = feedbacks.map((feedback) =>
-          feedback.id === selectedFeedback.id
-            ? {
-                ...feedback,
-                rating: editRating,
-                content: values.content,
-                updatedAt: new Date().toISOString(),
-              }
-            : feedback
-        );
+      await editFeedbackTestingAPI(
+        selectedFeedback.feedbackId,
+        editRating,
+        values.content
+      );
 
-        setFeedbacks(updatedFeedbacks);
-        setSubmitting(false);
-        setEditModalVisible(false);
-        message.success("Đã cập nhật đánh giá thành công!");
-      }, 1000);
-
-      // Khi có API thật
-      // await updateFeedbackAPI(selectedFeedback.id, editRating, values.content);
-      // Sau đó fetch lại danh sách đánh giá
-      // fetchFeedbacks();
+      fetchFeedbacks();
+      setEditModalVisible(false);
+      setSubmitting(false);
+      message.success("Đánh giá đã được cập nhật thành công!");
     } catch (error) {
       setSubmitting(false);
       console.error("Error updating feedback:", error);
-      message.error("Không thể cập nhật đánh giá. Vui lòng thử lại.");
+      message.error(error.response?.data?.message || "Không thể cập nhật đánh giá");
     }
   };
 
@@ -155,42 +111,15 @@ const HistoryFeedbackTesting = () => {
     try {
       setLoading(true);
 
-      // Giả lập API call
-      setTimeout(() => {
-        // Cập nhật state local
-        const updatedFeedbacks = feedbacks.filter(
-          (feedback) => feedback.id !== feedbackId
-        );
-        setFeedbacks(updatedFeedbacks);
-        setLoading(false);
-        message.success("Đã xóa đánh giá thành công!");
-      }, 1000);
-
-      // Khi có API thật
-      // await deleteFeedbackAPI(feedbackId);
-      // Sau đó fetch lại danh sách đánh giá
-      // fetchFeedbacks();
+      await deleteFeedbackTestingAPI(feedbackId);
+      fetchFeedbacks();
+      message.success("Đánh giá đã được xóa thành công!");
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       console.error("Error deleting feedback:", error);
-      message.error("Không thể xóa đánh giá. Vui lòng thử lại.");
+      message.error(error.response?.data?.message || "Không thể xóa đánh giá");
     }
-  };
-
-  // Render trạng thái
-  const renderStatus = (status) => {
-    let color = "default";
-    let text = "Chờ duyệt";
-
-    if (status === "published") {
-      color = "success";
-      text = "Đã đăng";
-    } else if (status === "rejected") {
-      color = "error";
-      text = "Từ chối";
-    }
-
-    return <Tag color={color}>{text}</Tag>;
   };
 
   // Định nghĩa cột cho bảng
@@ -203,7 +132,7 @@ const HistoryFeedbackTesting = () => {
         <div>
           <div className="font-medium">{text}</div>
           <div className="text-xs text-gray-500">
-            Ngày sử dụng: {record.appointmentDate}
+            Ngày sử dụng: {formatDateTime(record.bookingDate)}
           </div>
         </div>
       ),
@@ -224,15 +153,15 @@ const HistoryFeedbackTesting = () => {
     },
     {
       title: "Nội dung",
-      dataIndex: "content",
-      key: "content",
+      dataIndex: "comment",
+      key: "comment",
       ellipsis: true,
       width: "35%",
     },
     {
       title: "Thời gian",
-      dataIndex: "createdAt",
-      key: "createdAt",
+      dataIndex: "createdAt || updatedAt",
+      key: "createdAt || updatedAt",
       render: (text) => formatDateTime(text),
     },
     {
@@ -248,7 +177,7 @@ const HistoryFeedbackTesting = () => {
           <Popconfirm
             title="Xóa đánh giá"
             description="Bạn chắc chắn muốn xóa đánh giá này?"
-            onConfirm={() => handleDeleteFeedback(record.id)}
+            onConfirm={() => handleDeleteFeedback(record.feedbackId)}
             okText="Xóa"
             cancelText="Hủy"
             icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
@@ -288,7 +217,7 @@ const HistoryFeedbackTesting = () => {
               {selectedFeedback.serviceName}
             </div>
             <Text type="secondary">
-              Ngày sử dụng: {selectedFeedback.appointmentDate}
+              Ngày sử dụng: {formatDateTime(selectedFeedback.bookingDate)}
             </Text>
           </div>
 
@@ -323,6 +252,7 @@ const HistoryFeedbackTesting = () => {
               <Form.Item
                 name="content"
                 label="Nhận xét của bạn:"
+                initialValue={selectedFeedback.comment}
                 rules={[
                   {
                     required: true,
@@ -352,6 +282,13 @@ const HistoryFeedbackTesting = () => {
     </Modal>
   );
 
+  const handleTableChange = (pagination) => {
+    setPagination({
+      ...pagination,
+      current: pagination.current,
+    });
+  };
+
   return (
     <Card className="shadow-sm">
       <div className="mb-6">
@@ -369,12 +306,10 @@ const HistoryFeedbackTesting = () => {
         <Table
           dataSource={feedbacks}
           columns={columns}
-          rowKey="id"
-          pagination={{
-            pageSize: 5,
-            position: ["bottomCenter"],
-            showSizeChanger: false,
-          }}
+          rowKey="feedbackId"
+          pagination={pagination}
+          onChange={handleTableChange}
+          scroll={{ x: "max-content" }}
         />
       ) : (
         <Empty
