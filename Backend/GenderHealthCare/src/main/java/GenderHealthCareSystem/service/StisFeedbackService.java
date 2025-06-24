@@ -220,50 +220,6 @@ public class StisFeedbackService {
     }
 
     /**
-     * Gets all feedback for the authenticated user with pagination and optional
-     * filters
-     *
-     * @param page      The page number (0-based)
-     * @param size      The page size
-     * @param sort      The sort direction ("asc" or "desc")
-     * @param serviceId Optional service ID to filter by (can be null)
-     * @param rating    Optional rating to filter by (can be null)
-     * @return Page of StisFeedbackResponse DTOs
-     */
-    public Page<StisFeedbackResponse> getAllUserFeedback(int page, int size, String sort, Integer serviceId,
-            Integer rating) {
-        // Extract user ID from JWT token
-        Integer userId = extractUserIdFromToken();
-
-        // Create pageable object with sort direction
-        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
-
-        // Get feedback page from repository based on filter criteria
-        Page<StisFeedback> feedbackPage;
-
-        if (serviceId != null && rating != null) {
-            // Filter by both serviceId and rating
-            feedbackPage = feedbackRepo.findByUserIdAndStisService_ServiceIdAndRatingAndStatus(
-                    userId, serviceId, rating, "ACTIVE", pageable);
-        } else if (serviceId != null) {
-            // Filter by serviceId only
-            feedbackPage = feedbackRepo.findByUserIdAndStisService_ServiceIdAndStatus(
-                    userId, serviceId, "ACTIVE", pageable);
-        } else if (rating != null) {
-            // Filter by rating only
-            feedbackPage = feedbackRepo.findByUserIdAndRatingAndStatus(
-                    userId, rating, "ACTIVE", pageable);
-        } else {
-            // No filters
-            feedbackPage = feedbackRepo.findByUserIdAndStatus(userId, "ACTIVE", pageable);
-        }
-
-        // Map to response DTOs
-        return feedbackPage.map(this::mapToResponse);
-    }
-
-    /**
      * Gets the average rating for a specific service
      * 
      * 
@@ -291,5 +247,42 @@ public class StisFeedbackService {
 
     public void deleteFeedback(Integer feedbackId) {
         feedbackRepo.deleteById(feedbackId);
+    }
+
+    /**
+     * Gets all active feedback with pagination and optional filters
+     *
+     * @param page      The page number (0-based)
+     * @param size      The page size
+     * @param sort      The sort direction ("asc" or "desc")
+     * @param serviceId Optional service ID to filter by (can be null)
+     * @param rating    Optional rating to filter by (can be null)
+     * @return Page of StisFeedbackResponse DTOs
+     */
+    public Page<StisFeedbackResponse> getAllActiveFeedback(int page, int size, String sort, Integer serviceId,
+            Integer rating) {
+        // Create pageable object with sort direction
+        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
+
+        Page<StisFeedback> feedbackPage;
+
+        if (serviceId != null && rating != null) {
+            // Filter by both service ID and rating
+            feedbackPage = feedbackRepo.findByStisService_ServiceIdAndRatingAndStatus(serviceId, rating, "ACTIVE",
+                    pageable);
+        } else if (serviceId != null) {
+            // Filter by service ID only
+            feedbackPage = feedbackRepo.findByStisService_ServiceIdAndStatus(serviceId, "ACTIVE", pageable);
+        } else if (rating != null) {
+            // Filter by rating only
+            feedbackPage = feedbackRepo.findByRatingAndStatus(rating, "ACTIVE", pageable);
+        } else {
+            // No filters, get all active feedback
+            feedbackPage = feedbackRepo.findByStatus("ACTIVE", pageable);
+        }
+
+        // Map to response DTOs
+        return feedbackPage.map(this::mapToResponse);
     }
 }
