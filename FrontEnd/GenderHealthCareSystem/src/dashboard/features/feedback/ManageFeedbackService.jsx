@@ -32,7 +32,7 @@ import {
 
 import FeedbackModal from "../../../components/shared/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
-import { deleteFeedbackTestingAPI, getAllFeedbackTestingAPI } from "../../../components/utils/api";
+import { deleteFeedbackTestingAPI, getAllFeedbackTestingAPI, hideFeedbackTestingAPI } from "../../../components/utils/api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -114,10 +114,10 @@ const ManageFeedbackService = () => {
   const handleDeleteFeedback = async (id) => {
     try {
       setLoading(true);
-      await deleteFeedbackTestingAPI(id);
+      await hideFeedbackTestingAPI(id);
       fetchFeedbacks(); 
       setLoading(false);
-      message.success("Đã xóa đánh giá thành công");
+      message.success("Đã ẩn đánh giá thành công");
     } catch (error) {
       console.error("Error deleting feedback:", error);
       message.error("Không thể xóa đánh giá. Vui lòng thử lại.");
@@ -189,14 +189,14 @@ const ManageFeedbackService = () => {
           </Tooltip>
 
           <Popconfirm
-            title="Xóa đánh giá"
-            description="Bạn có chắc chắn muốn xóa đánh giá này?"
+            title="Ẩn đánh giá"
+            description="Bạn có chắc chắn muốn ẩn đánh giá này?"
             onConfirm={() => handleDeleteFeedback(record.feedbackId)}
-            okText="Xóa"
+            okText="Ẩn"
             cancelText="Hủy"
             icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
           >
-            <Tooltip title="Xóa">
+            <Tooltip title="Ẩn">
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>

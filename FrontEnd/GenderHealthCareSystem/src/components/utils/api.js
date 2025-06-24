@@ -321,6 +321,44 @@ export const historyBookingAPI = async ({
   return api.get(`/stis-bookings/history?${query}`);
 };
 
+export const createInvoiceAPI = async (query) => {
+  return api.get(`/payment/create-invoice?${query}`);
+};
+
+export const cancelBookingAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-cancelled`);
+};
+
+export const manageBookingsAPI = async ({
+  name = "",
+  page = 0,
+  size = 10,
+  status = "",
+  sort = "",
+  startDate = "",
+  endDate = "",
+}) => {
+  const query = new URLSearchParams({
+    name,
+    page,
+    size,
+    status,
+    sort,
+    startDate,
+    endDate,
+  }).toString();
+  return api.get(`/stis-bookings?${query}`);
+};
+
+export const markConfirmedBookingStisAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-confirmed`);
+};
+
+export const markCompletedBookingStisAPI = async (bookingId) => {
+  return api.put(`/stis-bookings/${bookingId}/mark-completed`);
+};
+
+{ /*Feedback Stis*/}
 export const postFeedbackTestingAPI = async (bookingId, rating, comment) => {
   const feedbackData = {
     bookingId,
@@ -369,45 +407,16 @@ export const editFeedbackTestingAPI = async (feedbackId, rating, comment) => {
 };
 
 export const deleteFeedbackTestingAPI = async (feedbackId) => {
+  return api.delete(`/stis-feedback/delete/${feedbackId}`);
+};
+
+export const hideFeedbackTestingAPI = async (feedbackId) => {
   return api.put(`/stis-feedback/${feedbackId}/hide`);
-};
+}
 
-export const createInvoiceAPI = async (query) => {
-  return api.get(`/payment/create-invoice?${query}`);
-};
 
-export const cancelBookingAPI = async (bookingId) => {
-  return api.put(`/stis-bookings/${bookingId}/mark-cancelled`);
-};
 
-export const manageBookingsAPI = async ({
-  name = "",
-  page = 0,
-  size = 10,
-  status = "",
-  sort = "",
-  startDate = "",
-  endDate = "",
-}) => {
-  const query = new URLSearchParams({
-    name,
-    page,
-    size,
-    status,
-    sort,
-    startDate,
-    endDate,
-  }).toString();
-  return api.get(`/stis-bookings?${query}`);
-};
-
-export const markConfirmedBookingStisAPI = async (bookingId) => {
-  return api.put(`/stis-bookings/${bookingId}/mark-confirmed`);
-};
-
-export const markCompletedBookingStisAPI = async (bookingId) => {
-  return api.put(`/stis-bookings/${bookingId}/mark-completed`);
-};
+{  /*Pill Schedule*/}
 
 export const getAllPillSchedules = () => {
   return api.get("/pills/schedule/all");
