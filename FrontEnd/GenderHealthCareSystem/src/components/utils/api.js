@@ -47,7 +47,7 @@ export const loginAPI = async (values) => {
 
 export const getUserByIdAPI = async (userId) => {
   return api.get(`/users/${userId}`);
-}
+};
 
 //data của người dùng
 export const getUserProfile = async () => {
@@ -199,20 +199,18 @@ export const postCommentBlogAPI = async (postId, content) => {
 export const editCommentBlogAPI = async (commentId, content) => {
   const values = {
     blogPostId: commentId,
-    content
-  }
+    content,
+  };
   return api.put(`/comments/${commentId}`, values);
-}
+};
 
 export const deleteCommentBlogAPI = async (commentId) => {
   return api.put(`/comments/${commentId}/hide`);
-}
+};
 
 export const likeBlogAPI = async (postId) => {
   return api.put(`/blog-posts/${postId}/like`);
-}
-
-
+};
 
 {
   /*User Profile*/
@@ -261,7 +259,7 @@ export const menstrualHistoryAPI = () => {
 
 export const getSTISPackagesAPI = async () => {
   return api.get("/stis-services");
-}
+};
 
 export const bookStisAPI = async (values) => {
   const bookingData = {
@@ -310,7 +308,49 @@ export const postFeedbackTestingAPI = async (bookingId, rating, comment) => {
     comment,
   };
   return api.post("/stis-feedback", feedbackData);
-}
+};
+
+export const getAllFeedbackTestingAPI = async ({
+  page = 0,
+  size = 10,
+  sort = "",
+  //serviceId = "",
+  //rating = "",
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+    sort,
+    //serviceId,
+    //rating,
+  }).toString();
+  return api.get(`/stis-feedback/user-feedback?${query}`);
+};
+
+export const getMyFeedbackTestingAPI = async ({
+  page = 0,
+  size = 10,
+  sort = "",
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+    sort,
+  }).toString();
+  return api.get(`/stis-feedback/history?${query}`);
+};
+
+export const editFeedbackTestingAPI = async (feedbackId, rating, comment) => {
+  const feedbackData = {
+    rating,
+    comment,
+  };
+  return api.put(`/stis-feedback/${feedbackId}`, feedbackData);
+};
+
+export const deleteFeedbackTestingAPI = async (feedbackId) => {
+  return api.put(`/stis-feedback/${feedbackId}/hide`);
+};
 
 export const createInvoiceAPI = async (query) => {
   return api.get(`/payment/create-invoice?${query}`);
@@ -343,11 +383,11 @@ export const manageBookingsAPI = async ({
 
 export const markConfirmedBookingStisAPI = async (bookingId) => {
   return api.put(`/stis-bookings/${bookingId}/mark-confirmed`);
-}
+};
 
 export const markCompletedBookingStisAPI = async (bookingId) => {
   return api.put(`/stis-bookings/${bookingId}/mark-completed`);
-}
+};
 
 export const getAllPillSchedules = () => {
   return api.get("/pills/schedule/all");
