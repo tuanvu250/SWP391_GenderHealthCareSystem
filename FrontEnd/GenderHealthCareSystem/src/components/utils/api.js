@@ -274,7 +274,7 @@ export const bookStisAPI = async (values) => {
   return api.post("/stis-bookings", bookingData);
 };
 
-export const paymentAPI = async (amount, orderInfo, bookingID) => {
+export const paymentVNPayAPI = async (amount, orderInfo, bookingID) => {
   return api.get("/payment/vn-pay", {
     params: {
       amount,
@@ -283,6 +283,26 @@ export const paymentAPI = async (amount, orderInfo, bookingID) => {
     },
     responseType: "text", // Để nhận về URL
     maxRedirects: 0,
+  });
+};
+
+export const paymentPayPalAPI = async (price, bookingId) => {
+  const values = {
+    bookingId,
+    price,
+  };
+  return api.post("/payment/pay", values, {
+    responseType: "text", // Để nhận về URL
+    maxRedirects: 0,
+  });
+};
+
+export const paypalSuccessAPI = async (paymentId, payerID) => {
+  return api.get("/payment/success", {
+    params: {
+      paymentId,
+      payerID,
+    },
   });
 };
 

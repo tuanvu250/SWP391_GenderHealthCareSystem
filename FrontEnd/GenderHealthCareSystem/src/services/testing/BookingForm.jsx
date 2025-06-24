@@ -1,5 +1,5 @@
 // src/services/STIBooking/BookingForm.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Row,
   Col,
@@ -11,17 +11,16 @@ import {
   Form,
   Typography,
   Divider,
-  Alert,
   Space,
 } from "antd";
 import {
   CheckCircleOutlined,
-  ClockCircleOutlined,
   DollarCircleOutlined,
   BankOutlined,
   MedicineBoxOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../components/provider/AuthProvider";
+import vnpayLogo from "../../assets/vnpay.png"
 import dayjs from "dayjs";
 
 const { TextArea } = Input;
@@ -37,6 +36,17 @@ const BookingForm = ({
   formatPrice,
 }) => {
   const { user } = useAuth();
+  const [paymentMethod, setPaymentMethod] = useState(form.getFieldValue('paymentMethod') || '');
+
+  // Theo dõi thay đổi phương thức thanh toán
+  const handlePaymentMethodChange = (e) => {
+    setPaymentMethod(e.target.value);
+    
+    // Reset trường onlinePaymentMethod khi người dùng chuyển về thanh toán tiền mặt
+    if (e.target.value !== 'online') {
+      form.setFieldsValue({ onlinePaymentMethod: undefined });
+    }
+  };
 
   // Tự động điền thông tin người dùng từ context khi component được tạo
   useEffect(() => {
@@ -208,10 +218,16 @@ const BookingForm = ({
           name="paymentMethod"
           rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán!" }]}
         >
-          <Radio.Group className="w-full">
+          <Radio.Group 
+            className="w-full" 
+            onChange={handlePaymentMethodChange}
+            value={paymentMethod}
+          >
             <Space direction="vertical" className="w-full">
               <Card
-                className="w-full cursor-pointer hover:border-blue-500 mb-2 p-[16px]"
+                className={`w-full cursor-pointer hover:border-blue-500 mb-2 p-[16px] ${
+                  paymentMethod === "cash" ? "border-blue-500" : ""
+                }`}
               >
                 <Radio value="cash" className="w-full">
                   <div className="flex items-center">
@@ -227,9 +243,11 @@ const BookingForm = ({
               </Card>
 
               <Card
-                className="w-full cursor-pointer hover:border-blue-500 p-[16px]"
+                className={`w-full cursor-pointer hover:border-blue-500 p-[16px] ${
+                  paymentMethod === "online" ? "border-blue-500" : ""
+                }`}
               >
-                <Radio value="credit card" className="w-full">
+                <Radio value="online" className="w-full">
                   <div className="flex items-center">
                     <BankOutlined className="mr-2 text-lg text-blue-600" />
                     <div>
@@ -241,6 +259,77 @@ const BookingForm = ({
                   </div>
                 </Radio>
               </Card>
+              
+              {/* Dropdown cho phương thức thanh toán trực tuyến */}
+              {paymentMethod === "online" && (
+                <div className="pl-7 mt-2">
+                  <Form.Item
+                    name="paymentMethod"
+                    rules={[
+                      {
+                        required: paymentMethod === "online",
+                        message: "Vui lòng chọn cổng thanh toán!",
+                      },
+                    ]}
+                    className="mb-0"
+                  >
+                    <Radio.Group className="w-full">
+                      <Space direction="vertical" className="w-full">
+                        <Card
+                          className="w-full cursor-pointer hover:border-blue-500 p-[12px]"
+                          size="small"
+                          bodyStyle={{ padding: '12px' }}
+                        >
+                          <Radio value="vnpay" className="w-full">
+                            <div className="flex items-center">
+                              <div className="mr-2 flex items-center">
+                                <img 
+                                  src={vnpayLogo}
+                                  alt="VNPAY" 
+                                  className="h-6" 
+                                />
+                              </div>
+                              <div>
+                                <div className="font-medium">VNPAY</div>
+                                <div className="text-gray-500 text-sm">
+                                  Thẻ ATM/Internet Banking/QR Code
+                                </div>
+                              </div>
+                            </div>
+                          </Radio>
+                        </Card>
+
+                        <Card
+                          className="w-full cursor-pointer hover:border-blue-500 p-[12px]"
+                          size="small"
+                          bodyStyle={{ padding: '12px' }}
+                        >
+                          <Radio value="paypal" className="w-full">
+                            <div className="flex items-center">
+                              <div className="mr-2 flex items-center">
+                                <img 
+                                  src="/images/payment/paypal-logo.png" 
+                                  alt="PayPal" 
+                                  className="h-6" 
+                                  onError={(e) => {
+                                    e.target.src = "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg";
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <div className="font-medium">PayPal</div>
+                                <div className="text-gray-500 text-sm">
+                                  Thẻ tín dụng quốc tế/Tài khoản PayPal
+                                </div>
+                              </div>
+                            </div>
+                          </Radio>
+                        </Card>
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+              )}
             </Space>
           </Radio.Group>
         </Form.Item>
