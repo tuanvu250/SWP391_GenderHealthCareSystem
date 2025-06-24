@@ -54,6 +54,7 @@ public class StisInvoiceController {
                 invoice.getStisBooking().getBookingId(),
                 invoice.getTransactionId(),
                 invoice.getTotalAmount(),
+                invoice.getCurrency(),
                 invoice.getPaymentMethod(),
                 invoice.getPaidAt()
         );
@@ -66,6 +67,7 @@ public class StisInvoiceController {
         invoice.setStisBooking(stisBookingService.getBookingByIdNotForResponse(invoiceDTO.getBookingId()).get());
         invoice.setTransactionId(invoiceDTO.getTransactionId());
         invoice.setTotalAmount(invoiceDTO.getTotalAmount());
+        invoice.setCurrency(invoiceDTO.getCurrency());
         invoice.setPaymentMethod(invoiceDTO.getPaymentMethod());
         invoice.setPaidAt(invoiceDTO.getPaidAt());
         return invoice;
