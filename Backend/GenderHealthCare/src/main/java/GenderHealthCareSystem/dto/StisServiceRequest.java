@@ -10,7 +10,5 @@ public class StisServiceRequest {
     private BigDecimal price;
     private String duration;
     private String tests;
-    private String type;
-    private Integer discount;
-    private String status;
+
 }
