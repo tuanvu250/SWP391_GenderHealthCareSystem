@@ -64,7 +64,7 @@ const Services = () => {
             <li className="hover:text-[#909497] cursor-pointer py-2">
               <a onClick={() => navigate("/about")}>Giới thiệu</a>
             </li>
-            <li className="hover:text-[#909497] cursor-pointer py-2 text-blue-600 font-semibold border-b-2 border-blue-600">
+            <li className="hover:text-[#909497] cursor-pointer py-2 text-[#0099CF] font-semibold border-b-2 border-[#0099CF]">
               <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
             </li>
             <li className="hover:text-[#909497] cursor-pointer py-2">

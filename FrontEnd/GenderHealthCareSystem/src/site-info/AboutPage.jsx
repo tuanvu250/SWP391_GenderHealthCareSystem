@@ -12,7 +12,7 @@ const AboutPage = () => {
       {/* Menu */}
       <nav className="hidden lg:block">
         <ul className="flex space-x-8 font-medium text-[#a6acaf] ">
-          <li className="hover:text-[#909497] cursor-pointer py-2 text-blue-600 font-semibold border-b-2 border-blue-600">
+          <li className="hover:text-[#909497] cursor-pointer py-2 text-[#0099CF] font-semibold border-b-2 border-[#0099CF]">
             <a onClick={() => navigate("/about")}>Giới thiệu</a>
           </li>
 

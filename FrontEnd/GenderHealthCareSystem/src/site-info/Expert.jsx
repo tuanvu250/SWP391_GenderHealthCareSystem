@@ -111,7 +111,7 @@ const ExpertSection = () => {
             <li className="hover:text-[#909497] cursor-pointer py-2">
               <a onClick={() => navigate("/servicelist")}>Dịch vụ</a>
             </li>
-            <li className="text-blue-600 font-semibold border-b-2 border-blue-600 py-2 cursor-pointer">
+            <li className="hover:text-[#909497] cursor-pointer py-2 text-[#0099CF] font-semibold border-b-2 border-[#0099CF]">
               <a onClick={() => navigate("/expert")}>Chuyên gia</a>
             </li>
             <li className="hover:text-[#909497] cursor-pointer py-2">
