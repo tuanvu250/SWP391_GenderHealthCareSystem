@@ -36,15 +36,6 @@ public class StisService {
     @Column(name = "Tests", columnDefinition = "NVARCHAR(MAX)")
     private String tests;
 
-    @Column(name = "Type", length = 50, columnDefinition = "NVARCHAR(255)")
-    private String type;
-
-    @Column(name = "Discount")
-    private Integer discount;
-
-    @Column(name = "Status")
-    private String status;
-
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 

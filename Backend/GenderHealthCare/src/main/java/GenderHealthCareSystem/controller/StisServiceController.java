@@ -46,9 +46,7 @@ public class StisServiceController {
         toSave.setPrice(req.getPrice());
         toSave.setDuration(req.getDuration());
         toSave.setTests(req.getTests());
-        toSave.setType(req.getType());
-        toSave.setDiscount(req.getDiscount());
-        toSave.setStatus(req.getStatus());
+
         StisService created = service.create(toSave);
         ApiResponse<StisService> res = new ApiResponse<>(
                 HttpStatus.CREATED, "Tạo mới dịch vụ thành công", created, null);
@@ -56,7 +54,8 @@ public class StisServiceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StisService>> update(@PathVariable Integer id, @RequestBody StisServiceRequest req) {
+    public ResponseEntity<ApiResponse<StisService>> update(@PathVariable Integer id,
+            @RequestBody StisServiceRequest req) {
         try {
             StisService serviceToUpdate = new StisService();
             serviceToUpdate.setServiceName(req.getServiceName());
@@ -64,25 +63,20 @@ public class StisServiceController {
             serviceToUpdate.setPrice(req.getPrice());
             serviceToUpdate.setDuration(req.getDuration());
             serviceToUpdate.setTests(req.getTests());
-            serviceToUpdate.setType(req.getType());
-            serviceToUpdate.setDiscount(req.getDiscount());
-            serviceToUpdate.setStatus(req.getStatus());
-            
+
             StisService updated = service.update(id, serviceToUpdate);
             ApiResponse<StisService> res = new ApiResponse<>(
                     HttpStatus.OK,
                     "Cập nhật dịch vụ thành công",
                     updated,
-                    null
-            );
+                    null);
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             ApiResponse<StisService> res = new ApiResponse<>(
                     HttpStatus.NOT_FOUND,
                     "Không tìm thấy dịch vụ để cập nhật",
                     null,
-                    "NOT_FOUND"
-            );
+                    "NOT_FOUND");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
         }
     }

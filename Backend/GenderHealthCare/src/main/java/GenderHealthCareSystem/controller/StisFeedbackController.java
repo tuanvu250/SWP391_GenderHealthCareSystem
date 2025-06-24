@@ -198,4 +198,14 @@ public class StisFeedbackController {
     public ResponseEntity<Double> getTotalAvgRating() {
         return ResponseEntity.ok(feedbackService.getTotalAvgRating());
     }
+
+    @DeleteMapping("/delete/{feedbackId}")
+    public ResponseEntity<?> deleteFeedback(@PathVariable Integer feedbackId) {
+        try {
+            feedbackService.deleteFeedback(feedbackId);
+            return ResponseEntity.ok("Feedback đã được xóa thành công!");
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }
