@@ -21,7 +21,7 @@ import {
   paymentVNPayAPI,
 } from "../../components/utils/api";
 import { getSTISPackagesAPI } from "../../components/utils/api";
-import { formatPrice } from "../../components/utils/format";
+import { convertVndToUsd, formatPrice } from "../../components/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -199,7 +199,7 @@ const STIBooking = () => {
 
   const handlePayment = async (bookingID, paymentMethod) => {
     try {
-      console.log(">>> paymentMethod:", paymentMethod);
+      console.log(">>> $$$: ", convertVndToUsd(totalPrice));
       const response =
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(
@@ -207,7 +207,7 @@ const STIBooking = () => {
               "Đặt lịch xét nghiệm STI",
               bookingID
             )
-          : await paymentPayPalAPI(totalPrice, bookingID);
+          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingID);
 
       localStorage.setItem("bookingID", bookingID);
       localStorage.setItem("amount", totalPrice);

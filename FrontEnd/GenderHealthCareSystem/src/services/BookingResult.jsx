@@ -3,7 +3,8 @@ import { Button, Result, Typography, message } from "antd";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
-import { createInvoiceAPI, paypalSuccessAPI } from "../components/utils/api";
+import { createInvoiceAPI, paymentPayPalAPI, paymentVNPayAPI, paypalSuccessAPI } from "../components/utils/api";
+import { convertVndToUsd } from "../components/utils/format";
 
 const { Paragraph, Text } = Typography;
 
@@ -40,8 +41,9 @@ const BookingResult = () => {
 
   useEffect(() => {
     const onFinish = async () => {
-      setCheck(isPaymentSuccessful());
-      if (isVNpay) {
+      const checkResult = isPaymentSuccessful();
+      setCheck(checkResult);
+      if (isVNpay && checkResult) {
         // Xóa dữ liệu localStorage chỉ khi thanh toán thành công
         localStorage.removeItem("bookingID");
         localStorage.removeItem("amount");
@@ -57,7 +59,7 @@ const BookingResult = () => {
             message.error("Có lỗi xảy ra khi tạo hóa đơn, vui lòng thử lại.");
           }
         }
-      } else if (isPaypal) {
+      } else if (isPaypal && checkResult) {
         if (!hasCreatedInvoice.current) {
           hasCreatedInvoice.current = true;
           try {
@@ -66,7 +68,10 @@ const BookingResult = () => {
             await paypalSuccessAPI(paymentId, payerId);
           } catch (error) {
             console.error("Error creating invoice:", error);
-            message.error(error.response?.data?.message || "Có lỗi xảy ra khi xác nhận thanh toán PayPal.");
+            message.error(
+              error.response?.data?.message ||
+                "Có lỗi xảy ra khi xác nhận thanh toán PayPal."
+            );
           }
         }
       }
@@ -100,7 +105,14 @@ const BookingResult = () => {
       localStorage.removeItem("amount");
       localStorage.removeItem("orderInfo");
 
-      const response = await paymentAPI(amount, orderInfo, bookingID);
+      const response =
+        isVNpay
+          ? await paymentVNPayAPI(
+              amount,
+              "Đặt lịch xét nghiệm STI",
+              bookingID
+            )
+          : await paymentPayPalAPI(convertVndToUsd(amount), bookingID);
 
       message.success("Đang chuyển hướng đến trang thanh toán ...");
 

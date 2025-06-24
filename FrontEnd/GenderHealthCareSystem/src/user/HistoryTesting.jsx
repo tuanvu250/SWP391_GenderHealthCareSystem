@@ -36,7 +36,7 @@ import {
   postFeedbackTestingAPI,
 } from "../components/utils/api";
 import { cancelBookingAPI } from "../components/utils/api";
-import { formatPrice } from "../components/utils/format";
+import { convertVndToUsd, formatPrice } from "../components/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -117,7 +117,7 @@ const HistoryTesting = () => {
               "Đặt lịch xét nghiệm STI",
               bookingId
             )
-          : await paymentPayPalAPI(totalPrice, bookingId);
+          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingId);
 
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", totalPrice);
@@ -325,7 +325,6 @@ const HistoryTesting = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small">
           {renderStatus(record.status)}
-          {renderTestingStatus(record.testingStatus)}
           {renderPaymentStatus(record.paymentStatus)}
         </Space>
       ),
@@ -342,7 +341,7 @@ const HistoryTesting = () => {
       key: "payment",
       render: (_, record) => (
         <div>
-          <div>{renderPaymentMethod(record.paymentMethod)}</div>
+          <div>{renderPaymentMethod(record.paymentMethod.toUpperCase())}</div>
           <div className="mt-1">
             {record.paymentMethod !== "cash" &&
               record.paymentStatus === "UNPAID" && (

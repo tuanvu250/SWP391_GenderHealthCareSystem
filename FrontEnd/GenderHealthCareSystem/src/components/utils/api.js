@@ -297,11 +297,11 @@ export const paymentPayPalAPI = async (price, bookingId) => {
   });
 };
 
-export const paypalSuccessAPI = async (paymentId, payerID) => {
+export const paypalSuccessAPI = async (paymentId, PayerID) => {
   return api.get("/payment/success", {
     params: {
       paymentId,
-      payerID,
+      PayerID,
     },
   });
 };
