@@ -266,16 +266,17 @@ public class StisFeedbackService {
     /**
      * Gets the average rating for a specific service
      * 
-            
+     * 
      * @param serviceId The ID of the service
      * @return The average rating for the service
      */
     public double getAvgRating(Integer serviceId) {
         List<StisFeedback> feedbacks = feedbackRepo.findByStisService_ServiceId(serviceId);
-        if (feedbacks.isEmpty()) return 0;
+        if (feedbacks.isEmpty())
+            return 0;
         return feedbacks.stream().mapToInt(StisFeedback::getRating).average().orElse(0);
     }
-    
+
     /**
      * Gets the average rating of all feedback
      * 
@@ -283,7 +284,12 @@ public class StisFeedbackService {
      */
     public double getTotalAvgRating() {
         List<StisFeedback> allFeedbacks = feedbackRepo.findAll();
-        if (allFeedbacks.isEmpty()) return 0;
+        if (allFeedbacks.isEmpty())
+            return 0;
         return allFeedbacks.stream().mapToInt(StisFeedback::getRating).average().orElse(0);
+    }
+
+    public void deleteFeedback(Integer feedbackId) {
+        feedbackRepo.deleteById(feedbackId);
     }
 }
