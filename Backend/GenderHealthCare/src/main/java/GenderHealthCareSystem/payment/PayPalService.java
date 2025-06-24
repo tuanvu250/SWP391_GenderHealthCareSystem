@@ -15,7 +15,7 @@ public class PayPalService {
     @Autowired
     private APIContext apiContext;
 
-    public Payment createPayment(Double total, String currency, String method,
+    public Payment createPayment(String bookingID, Double total, String currency, String method,
                                  String intent, String description, String cancelUrl, String successUrl) throws PayPalRESTException {
 
         Amount amount = new Amount();
@@ -27,6 +27,7 @@ public class PayPalService {
         Transaction transaction = new Transaction();
         transaction.setDescription(description);
         transaction.setAmount(amount);
+        transaction.setCustom(bookingID);
 
         Payer payer = new Payer();
         payer.setPaymentMethod(method);

@@ -28,8 +28,10 @@ public class StisInvoice {
     @Column(name = "TransactionId")
     private String transactionId;
 
-    @Column(name = "TotalAmount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "TotalAmount")
+    private Double totalAmount;
+    @Column(name = "Currency")
+    private String currency;
 
     @Column(name = "PaymentMethod", length = 50)
     private String paymentMethod;

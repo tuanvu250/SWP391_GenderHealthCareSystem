@@ -8,6 +8,7 @@ import GenderHealthCareSystem.service.StisBookingService;
 import GenderHealthCareSystem.service.StisInvoiceService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.Sale;
 import com.paypal.base.rest.PayPalRESTException;
 import jakarta.persistence.Column;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,13 +31,12 @@ import java.util.Map;
 public class PaymentController {
 
     private final VnPayService vnPayService;
-    private final StisInvoiceService stisInvoiceService;
-    private final StisBookingService stisBookingService;
-
+    private final StisInvoiceService stiInvoiceService;
     private final PayPalService payPalService;
 
     public static final String SUCCESS_URL = "http://localhost:8080/api/payment/success";
     public static final String CANCEL_URL = "http://localhost:8080/api/payment/cancel";
+
     @GetMapping("/vn-pay")
     public ResponseEntity<String> createPayment(@RequestParam long amount,
                                                 @RequestParam String orderInfo,
@@ -65,72 +65,61 @@ public class PaymentController {
     }
 
 
-        @GetMapping("/create-invoice")
-        public ResponseEntity<ApiResponse<String>> createInvoice(@RequestParam Map<String, String> allParams) throws UnsupportedEncodingException {
-            // 1. Xác minh checksum (đảm bảo không bị giả)
-            String vnpSecureHash = allParams.get("vnp_SecureHash");
+    @GetMapping("/create-invoice")
+    public ResponseEntity<ApiResponse<String>> createInvoice(@RequestParam Map<String, String> allParams) throws UnsupportedEncodingException {
+        // 1. Xác minh checksum (đảm bảo không bị giả)
+        String vnpSecureHash = allParams.get("vnp_SecureHash");
 
-            if (!vnPayService.validateReturnData(allParams, vnpSecureHash)) {
-                return ResponseEntity.badRequest()
-                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid payment signature", null, "INVALID_SIGNATURE"));
-            }
-
-            // 2. Kiểm tra mã phản hồi từ VNPAY
-            String responseCode = allParams.get("vnp_ResponseCode");
-            if (!"00".equals(responseCode)) {
-                return ResponseEntity.badRequest()
-                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, "Payment failed with response code: " + responseCode, null, "PAYMENT_FAILED"));
-            }
-            //3. Tạo hóa đơn
-            StisBooking stisBooking = stisBookingService.getBookingByIdNotForResponse(Integer.parseInt(allParams.get("vnp_TxnRef"))).get();
-            StisInvoice invoice = new StisInvoice();
-            invoice.setStisBooking(stisBooking);
-            invoice.setTransactionId(allParams.get("vnp_TransactionNo"));
-            invoice.setTotalAmount(new BigDecimal(allParams.get("vnp_Amount")).divide(BigDecimal.valueOf(100))); // VNPay trả *100
-            invoice.setPaymentMethod("VNPay");
-            invoice.setPaidAt(LocalDateTime.now());
-            StisInvoice stisInvoice= stisInvoiceService.saveInvoice(invoice);
-            stisBooking.setPaymentStatus("Đã thanh toán");
-            stisBooking.setStisInvoice(stisInvoice);
-            this.stisBookingService.saveBooking(stisBooking);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Invoice is created successfully", null, null));
+        if (!vnPayService.validateReturnData(allParams, vnpSecureHash)) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, "Invalid payment signature", null, "INVALID_SIGNATURE"));
         }
+
+        // 2. Kiểm tra mã phản hồi từ VNPAY
+        String responseCode = allParams.get("vnp_ResponseCode");
+        if (!"00".equals(responseCode)) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, "Payment failed with response code: " + responseCode, null, "PAYMENT_FAILED"));
+        }
+        //3. Tạo hóa đơn
+        stiInvoiceService.createInvoiceFromVNPay(allParams);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Invoice is created successfully", null, null));
+    }
 
     @PostMapping("/pay")
-    public ResponseEntity<?> pay(@RequestBody Order order) {
-        try {
-            Payment payment = payPalService.createPayment(
-                    order.getPrice(),
-                    "USD",
-                    "paypal",
-                    "sale",
-                    "Thanh toán đơn hàng",
-                    CANCEL_URL,
-                    SUCCESS_URL);
+    public ResponseEntity<?> pay(@RequestBody Order order) throws PayPalRESTException {
 
-            for (Links link : payment.getLinks()) {
-                if (link.getRel().equals("approval_url")) {
-                    return ResponseEntity.ok(link.getHref());
-                }
+        Payment payment = payPalService.createPayment(
+                order.getBookingId().toString(),
+                order.getPrice(),
+                "USD",
+                "paypal",
+                "sale",
+                "Thanh toán đơn hàng",
+                CANCEL_URL,
+                SUCCESS_URL);
+
+        for (Links link : payment.getLinks()) {
+            if (link.getRel().equals("approval_url")) {
+                return ResponseEntity.ok(link.getHref());
             }
-        } catch (PayPalRESTException e) {
-            e.printStackTrace();
         }
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi tạo thanh toán");
     }
 
     @GetMapping("/success")
-    public ResponseEntity<String> success(@RequestParam("paymentId") String paymentId,
-                                          @RequestParam("PayerID") String payerId) {
-        try {
-            Payment payment = payPalService.executePayment(paymentId, payerId);
-            if ("approved".equals(payment.getState())) {
-                return ResponseEntity.ok("Thanh toán thành công!");
-            }
-        } catch (PayPalRESTException e) {
-            e.printStackTrace();
+    public ResponseEntity<ApiResponse<String>> success(@RequestParam("paymentId") String paymentId,
+                                                       @RequestParam("PayerID") String payerId) throws PayPalRESTException {
+
+        Payment payment = payPalService.executePayment(paymentId, payerId);
+        if ("approved".equals(payment.getState())) {
+            //3. Tạo hóa đơn
+            this.stiInvoiceService.createInvoiceFromPayPal(payment);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Invoice is created successfully", null, null));
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Thanh toán thất bại");
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "Fail to create Invoice", null, null));
     }
 
     @GetMapping("/cancel")

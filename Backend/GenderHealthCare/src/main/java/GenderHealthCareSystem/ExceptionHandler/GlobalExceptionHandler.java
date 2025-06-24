@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.ExceptionHandler;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,6 +19,17 @@ import org.springframework.validation.BindingResult;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PayPalRESTException.class)
+    public ResponseEntity<ApiResponse<String>> handlePayPalRESTException(PayPalRESTException ex) {
+        // Log the exception (consider adding proper logging)
+        ApiResponse<String> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "PayPal transaction failed: " + ex.getMessage(),
+                null,
+                "PayPal Error"
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<List<String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         // Extract validation errors from BindingResult
