@@ -29,7 +29,7 @@ public class PaymentController {
     private final PayPalService payPalService;
 
     public static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-    public static final String CANCEL_URL = "http://localhost:8080/api/payment/cancel";
+    public static final String CANCEL_URL = "http://localhost:5173/booking-result";
 
     @GetMapping("/vn-pay")
     public ResponseEntity<String> createPayment(@RequestParam long amount,
