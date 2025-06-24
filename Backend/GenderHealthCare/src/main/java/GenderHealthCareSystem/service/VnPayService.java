@@ -1,5 +1,7 @@
-package GenderHealthCareSystem.payment;
+package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.config.VnPayConfig;
+import GenderHealthCareSystem.util.VnPayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -7,12 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 @Service
 public class VnPayService {
     @Autowired

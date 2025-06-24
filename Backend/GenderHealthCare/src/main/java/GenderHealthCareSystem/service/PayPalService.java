@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.payment;
+package GenderHealthCareSystem.service;
 
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;

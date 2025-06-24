@@ -1,26 +1,20 @@
-package GenderHealthCareSystem.payment;
+package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.dto.Order;
-import GenderHealthCareSystem.model.StisBooking;
-import GenderHealthCareSystem.model.StisInvoice;
-import GenderHealthCareSystem.service.StisBookingService;
+import GenderHealthCareSystem.service.PayPalService;
 import GenderHealthCareSystem.service.StisInvoiceService;
+import GenderHealthCareSystem.service.VnPayService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.Sale;
 import com.paypal.base.rest.PayPalRESTException;
-import jakarta.persistence.Column;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;

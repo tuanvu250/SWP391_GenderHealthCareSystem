@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.payment;
+package GenderHealthCareSystem.config;
 
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.OAuthTokenCredential;
