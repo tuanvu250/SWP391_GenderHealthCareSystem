@@ -56,7 +56,7 @@ public class StisInvoiceService {
         StisInvoice savedInvoice = stisInvoiceRepository.save(invoice);
 
         // Cập nhật trạng thái booking
-        booking.setPaymentStatus("Đã thanh toán");
+        booking.setPaymentStatus("PAID");
         booking.setStisInvoice(savedInvoice);
         stisBookingService.saveBooking(booking);
 
@@ -81,7 +81,7 @@ public class StisInvoiceService {
 
         StisInvoice savedInvoice = stisInvoiceRepository.save(invoice);
 
-        booking.setPaymentStatus("Đã thanh toán");
+        booking.setPaymentStatus("PAID");
         booking.setStisInvoice(savedInvoice);
         stisBookingService.saveBooking(booking);
 
