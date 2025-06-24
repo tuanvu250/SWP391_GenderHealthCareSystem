@@ -46,6 +46,9 @@ public class StisServiceController {
         toSave.setPrice(req.getPrice());
         toSave.setDuration(req.getDuration());
         toSave.setTests(req.getTests());
+        toSave.setType(req.getType());
+        toSave.setDiscount(req.getDiscount());
+        toSave.setStatus(req.getStatus());
 
         StisService created = service.create(toSave);
         ApiResponse<StisService> res = new ApiResponse<>(
@@ -63,6 +66,9 @@ public class StisServiceController {
             serviceToUpdate.setPrice(req.getPrice());
             serviceToUpdate.setDuration(req.getDuration());
             serviceToUpdate.setTests(req.getTests());
+            serviceToUpdate.setType(req.getType());
+            serviceToUpdate.setDiscount(req.getDiscount());
+            serviceToUpdate.setStatus(req.getStatus());
 
             StisService updated = service.update(id, serviceToUpdate);
             ApiResponse<StisService> res = new ApiResponse<>(
