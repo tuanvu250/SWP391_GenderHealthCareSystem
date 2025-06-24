@@ -1,11 +1,18 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.model.StisInvoice;
 import GenderHealthCareSystem.repository.StisInvoiceRepository;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.Sale;
+import com.paypal.api.payments.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -13,6 +20,8 @@ public class StisInvoiceService {
 
     @Autowired
     private StisInvoiceRepository stisInvoiceRepository;
+    @Autowired
+    private StisBookingService stisBookingService;
 
     public List<StisInvoice> getAllInvoices() {
         return stisInvoiceRepository.findAll();
@@ -28,5 +37,54 @@ public class StisInvoiceService {
 
     public void deleteInvoice(Integer id) {
         stisInvoiceRepository.deleteById(id);
+    }
+
+    public StisInvoice createInvoiceFromVNPay(Map<String, String> params) {
+        int bookingId = Integer.parseInt(params.get("vnp_TxnRef"));
+        StisBooking booking = stisBookingService.getBookingByIdNotForResponse(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        StisInvoice invoice = new StisInvoice();
+        invoice.setStisBooking(booking);
+        invoice.setTransactionId(params.get("vnp_TransactionNo"));
+        invoice.setTotalAmount(Double.parseDouble(params.get("vnp_Amount")));
+        invoice.setPaymentMethod("VNPay");
+        invoice.setCurrency("VND");
+        invoice.setPaidAt(LocalDateTime.now());
+
+        // Lưu hóa đơn
+        StisInvoice savedInvoice = stisInvoiceRepository.save(invoice);
+
+        // Cập nhật trạng thái booking
+        booking.setPaymentStatus("Đã thanh toán");
+        booking.setStisInvoice(savedInvoice);
+        stisBookingService.saveBooking(booking);
+
+        return savedInvoice;
+    }
+    public StisInvoice createInvoiceFromPayPal(Payment payment) {
+        Transaction transaction = payment.getTransactions().get(0);
+        String bookingId = transaction.getCustom(); // custom field chứa orderId
+
+        StisBooking booking = stisBookingService.getBookingByIdNotForResponse(Integer.parseInt(bookingId))
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Sale sale = transaction.getRelatedResources().get(0).getSale();
+
+        StisInvoice invoice = new StisInvoice();
+        invoice.setStisBooking(booking);
+        invoice.setTransactionId(sale.getId());
+        invoice.setTotalAmount(Double.parseDouble(transaction.getAmount().getTotal()));
+        invoice.setPaymentMethod("Paypal");
+        invoice.setCurrency("USD");
+        invoice.setPaidAt(LocalDateTime.now());
+
+        StisInvoice savedInvoice = stisInvoiceRepository.save(invoice);
+
+        booking.setPaymentStatus("Đã thanh toán");
+        booking.setStisInvoice(savedInvoice);
+        stisBookingService.saveBooking(booking);
+
+        return savedInvoice;
     }
 }

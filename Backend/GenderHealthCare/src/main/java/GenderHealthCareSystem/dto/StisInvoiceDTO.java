@@ -15,7 +15,7 @@ public class StisInvoiceDTO {
     private Integer invoiceId;
     private Integer bookingId;
     private String transactionId;
-    private BigDecimal totalAmount;
+    private Double totalAmount;
     private String paymentMethod;
     private LocalDateTime paidAt;
 }

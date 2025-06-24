@@ -1,4 +1,4 @@
-package GenderHealthCareSystem.payment;
+package GenderHealthCareSystem.util;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
