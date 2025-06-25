@@ -17,16 +17,29 @@ export default function PillTracker() {
     const checkExistingSchedule = async () => {
       try {
         const res = await getAllPillSchedules();
-        if (res?.data?.length > 0) {
-          const schedule = res.data;
-          const firstItem = schedule.find(item => !item.isPlacebo);
-          if (firstItem) {
-            setPillStartDate(firstItem.pillDate.slice(0, 10));
-            setPillType(schedule.length === 21 ? '21' : '28');
-            setHasSchedule(true);
-            localStorage.setItem('pillStartDate', firstItem.pillDate.slice(0, 10));
-            localStorage.setItem('pillType', schedule.length === 21 ? '21' : '28');
-          }
+        const data = res?.data ?? [];
+
+        // ✅ Ưu tiên dữ liệu trong localStorage nếu hợp lệ
+        const startDateStr = localStorage.getItem("pillStartDate");
+        const pillTypeStr = localStorage.getItem("pillType");
+
+        if (startDateStr && pillTypeStr && dayjs(startDateStr).isValid()) {
+          setPillStartDate(startDateStr);
+          setPillType(pillTypeStr);
+          setHasSchedule(true);
+          return;
+        }
+
+        // ❌ Nếu không có localStorage, fallback theo API
+        const firstItem = data.find(item => !item.isPlacebo);
+        if (firstItem) {
+          const inferredType = data.length === 21 ? '21' : '28';
+          const dateOnly = firstItem.pillDate.slice(0, 10);
+          setPillStartDate(dateOnly);
+          setPillType(inferredType);
+          setHasSchedule(true);
+          localStorage.setItem('pillStartDate', dateOnly);
+          localStorage.setItem('pillType', inferredType);
         }
       } catch (err) {
         console.error('Lỗi kiểm tra lịch thuốc:', err);
@@ -57,6 +70,7 @@ export default function PillTracker() {
       localStorage.setItem("pillStartDate", pillStartDate);
       localStorage.setItem("pillType", pillType);
 
+      setHasSchedule(true);
       navigate("/pill-schedule", { state: { schedule: scheduleArray } });
     } catch (err) {
       console.error("Lỗi khi gọi API thuốc:", err);
