@@ -57,7 +57,9 @@ const Sidebar = ({
           {
             key: "appointments",
             icon: <CalendarOutlined />,
-            label: "Lịch hẹn tư vấn",
+            label: (
+              <Link to={"/consultant/dashboard/consultant-schedule"}>Lịch hẹn tư vấn</Link>
+            ),
           },
           {
             key: "questions",
