@@ -83,14 +83,17 @@ public class MenstrualCycleController {
 
         try {
             // Save the updated cycle and recalculate predictions
-            MenstrualCycleResponse updated = cycleService.updateMenstrualCycle(request, userId);
+            cycleService.updateMenstrualCycle(request, userId);
+
+            // Fetch the latest cycle to ensure the data is up-to-date
+            MenstrualCycleResponse latestCycle = cycleService.getLatestCycleForUser(userId);
 
             // Recalculate the calendar based on the updated cycle
-            int menstruationDays = (int) (updated.getEndDate().toEpochDay() - updated.getStartDate().toEpochDay()) + 1;
+            int menstruationDays = (int) (latestCycle.getEndDate().toEpochDay() - latestCycle.getStartDate().toEpochDay()) + 1;
             MenstrualCalendarResponse calendar = calendarService.buildCalendar(
-                    updated.getCycleId(),
-                    updated.getStartDate(),
-                    updated.getCycleLength(),
+                    latestCycle.getCycleId(),
+                    latestCycle.getStartDate(),
+                    latestCycle.getCycleLength(),
                     menstruationDays
             );
 
