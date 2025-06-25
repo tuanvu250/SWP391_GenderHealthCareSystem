@@ -93,4 +93,12 @@ public class StisServiceService {
             return repository.save(existing);
         }).orElseThrow(() -> new RuntimeException("Service not found"));
     }
+
+    public List<StisService> getByTypeCombo() {
+        return repository.findByType("combo");
+    }
+
+    public List<StisService> getByTypeRetail() {
+        return repository.findByType("retail");
+    }
 }

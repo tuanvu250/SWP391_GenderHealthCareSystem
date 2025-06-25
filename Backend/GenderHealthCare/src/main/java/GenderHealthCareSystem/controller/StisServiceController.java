@@ -132,6 +132,28 @@ public class StisServiceController {
         }
     }
 
+    @GetMapping("/combo")
+    public ResponseEntity<ApiResponse<List<StisService>>> getComboServices() {
+        List<StisService> comboServices = service.getByTypeCombo();
+        ApiResponse<List<StisService>> res = new ApiResponse<>(
+                HttpStatus.OK,
+                "Lấy danh sách dịch vụ combo thành công",
+                comboServices,
+                null);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/retail")
+    public ResponseEntity<ApiResponse<List<StisService>>> getRetailServices() {
+        List<StisService> retailServices = service.getByTypeRetail();
+        ApiResponse<List<StisService>> res = new ApiResponse<>(
+                HttpStatus.OK,
+                "Lấy danh sách dịch vụ retail thành công",
+                retailServices,
+                null);
+        return ResponseEntity.ok(res);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> delete(@PathVariable Integer id) {
         try {
