@@ -136,11 +136,16 @@ public class StisBookingController {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as done", null, null));
     }
 
+    @PutMapping("/{id}/mark-no-show")
+    public ResponseEntity<ApiResponse<Void>> markBookingAsNoShow(@PathVariable Integer id) {
+        stisBookingService.markBookingAsNoShow(id);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as no-show", null, null));
+    }
+
+    @PutMapping("/{id}/mark-denied")
+    public ResponseEntity<ApiResponse<Void>> markBookingAsDenied(@PathVariable Integer id) {
+        stisBookingService.markBookingAsDenied(id);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as denied", null, null));
+    }
 
 }
-
-
-
-
-
-
