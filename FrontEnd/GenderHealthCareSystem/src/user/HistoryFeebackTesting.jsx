@@ -23,12 +23,8 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { formatDateTime } from "../components/utils/format";
-import {
-  deleteFeedbackTestingAPI,
-  editFeedbackTestingAPI,
-  getMyFeedbackTestingAPI,
-} from "../components/utils/api";
-import dayjs from "dayjs";
+import { deleteFeedbackTestingAPI, editFeedbackTestingAPI, getMyFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
+
 
 const { Title, Text, Paragraph } = Typography;
 

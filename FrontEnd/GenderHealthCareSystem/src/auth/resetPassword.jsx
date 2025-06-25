@@ -2,7 +2,7 @@ import imgLogin from "../assets/login.png";
 import { ArrowLeftOutlined, LockOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
-import { resetPasswordAPI } from "../components/utils/api"; // Import your API function
+import { resetPasswordAPI } from "../components/api/Auth.api";
 
 const ResetPassword = () => {
   const navigate = useNavigate();

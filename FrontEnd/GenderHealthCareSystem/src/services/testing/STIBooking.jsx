@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Steps,
@@ -16,12 +16,11 @@ import BookingForm from "./BookingForm";
 import ConfirmBooking from "./ConfirmBooking";
 import dayjs from "dayjs";
 import {
-  bookStisAPI,
-  paymentPayPalAPI,
   paymentVNPayAPI,
-} from "../../components/utils/api";
-import { getSTISPackagesAPI } from "../../components/utils/api";
+  paymentPayPalAPI,
+} from "../../components/api/Payment.api";
 import { convertVndToUsd, formatPrice } from "../../components/utils/format";
+import { bookStisAPI, getSTISPackagesAPI } from "../../components/api/BookingTesting.api";
 
 const { Title, Text } = Typography;
 

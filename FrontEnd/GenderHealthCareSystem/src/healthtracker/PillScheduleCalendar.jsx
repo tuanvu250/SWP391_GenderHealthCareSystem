@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { message } from 'antd';
-import { getAllPillSchedules, markPillTaken } from '../components/utils/api';
+import { getAllPillSchedules, markPillTaken } from '../components/api/Pill.api';
 import axios from 'axios';
 
 dayjs.extend(isSameOrAfter);

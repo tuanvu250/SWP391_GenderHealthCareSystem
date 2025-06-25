@@ -3,8 +3,9 @@ import { Button, Result, Typography, message } from "antd";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
-import { createInvoiceAPI, paymentPayPalAPI, paymentVNPayAPI, paypalSuccessAPI } from "../components/utils/api";
+
 import { convertVndToUsd } from "../components/utils/format";
+import { createInvoiceAPI, paymentPayPalAPI, paymentVNPayAPI, paypalSuccessAPI } from "../components/api/Payment.api";
 
 const { Paragraph, Text } = Typography;
 

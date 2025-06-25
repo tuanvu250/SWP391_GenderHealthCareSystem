@@ -25,12 +25,9 @@ import {
 } from "@ant-design/icons";
 import { formatDateTime } from "../../../components/utils/format";
 import BlogModal from "../../components/modal/BlogModal";
-import { viewMyBlogsAPI } from "../../../components/utils/api";
-import { viewAllBlogsAPI } from "../../../components/utils/api";
-import { deleteBlogAPI } from "../../../components/utils/api";
-import { approveBlogAPI } from "../../../components/utils/api";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
 import { useAuth } from "../../../components/provider/AuthProvider";
+import { approveBlogAPI, deleteBlogAPI, viewAllBlogsAPI, viewMyBlogsAPI } from "../../../components/api/Blog.api";
 
 const { Title, Text } = Typography;
 const { Search } = Input;

@@ -1,0 +1,66 @@
+// src/api/booking.api.js
+import apiClient from "./apiClient";
+
+export const getSTISPackagesAPI = async () => {
+  return apiClient.get("/stis-services");
+};
+
+export const bookStisAPI = async (values) => {
+  const bookingData = {
+    serviceId: values.packageId,
+    bookingDate: values.appointmentDate,
+    bookingTime: values.appointmentTime,
+    note: values.notes,
+    paymentMethod: values.paymentMethod,
+  };
+
+  return apiClient.post("/stis-bookings", bookingData);
+};
+
+export const historyBookingAPI = async ({
+  page = 0,
+  size = 5,
+  status = "",
+  sort = "",
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+    status,
+    sort,
+  }).toString();
+  return apiClient.get(`/stis-bookings/history?${query}`);
+};
+
+export const cancelBookingAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-cancelled`);
+};
+
+export const manageBookingsAPI = async ({
+  name = "",
+  page = 0,
+  size = 10,
+  status = "",
+  sort = "",
+  startDate = "",
+  endDate = "",
+}) => {
+  const query = new URLSearchParams({
+    name,
+    page,
+    size,
+    status,
+    sort,
+    startDate,
+    endDate,
+  }).toString();
+  return apiClient.get(`/stis-bookings?${query}`);
+};
+
+export const markConfirmedBookingStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-confirmed`);
+};
+
+export const markCompletedBookingStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-completed`);
+};

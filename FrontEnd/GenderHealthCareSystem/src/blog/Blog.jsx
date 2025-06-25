@@ -19,8 +19,8 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { blogSearchAPI } from "../components/utils/api";
 import { formatDateTime } from "../components/utils/format";
+import { blogSearchAPI } from "../components/api/Blog.api";
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;

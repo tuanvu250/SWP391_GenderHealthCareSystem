@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { pillAPI, getAllPillSchedules } from '../components/utils/api';
 import dayjs from 'dayjs';
+import { getAllPillSchedules, pillAPI } from '../components/api/Pill.api';
 
 export default function PillTracker() {
   const [pillStartDate, setPillStartDate] = useState('');

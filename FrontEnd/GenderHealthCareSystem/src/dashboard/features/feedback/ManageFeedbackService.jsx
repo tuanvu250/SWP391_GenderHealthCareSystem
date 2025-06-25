@@ -30,9 +30,9 @@ import {
   StarOutlined,
 } from "@ant-design/icons";
 
-import FeedbackModal from "../../../components/shared/FeedbackModal";
+import FeedbackModal from "../../components/modal/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
-import { deleteFeedbackTestingAPI, getAllFeedbackTestingAPI, hideFeedbackTestingAPI } from "../../../components/utils/api";
+import { getAllFeedbackTestingAPI, hideFeedbackTestingAPI } from "../../../components/api/FeedbackTesting.api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -73,14 +73,12 @@ const ManageFeedbackService = () => {
       const response = await getAllFeedbackTestingAPI({
         page: pagination.current - 1,
         size: pagination.pageSize,
-        //rating: ratingFilter,
+        rating: ratingFilter,
       });
       setPagination({
         ...pagination,
         total: response.data.totalElements,
       });
-
-      console.log(">>> Feedbacks fetched:", response.data.data.content);
 
       setFeedbacks(response.data.data.content);
       setLoading(false);
@@ -130,24 +128,16 @@ const ManageFeedbackService = () => {
     {
       title: "Người dùng",
       dataIndex: "userFullName",
-      key: "userFullName",
+      key: "userFullName",  
       render: (_, record) => (
-        <>
-          <Avatar
-            src={
-              record.userAvatar ||
-              "https://www.gravatar.com/avatar/000?d=mp&f=y"
-            }
-            alt={record.userFullName}
-          />
+        <div className="flex items-center gap-0.5">
           <div>
-            <div>{record.userFullName}</div>
-            <div className="text-xs text-gray-500">
-              {formatDateTime(record.createdAt) ||
-                formatDateTime(record.updateAt)}
+            <Typography.Text strong>{record.userFullName}</Typography.Text>
+            <div className="text-gray-500 text-xs">
+              {formatDateTime(record.updateAt) || formatDateTime(record.createdAt)}
             </div>
-          </div>
-        </>
+          </div>  
+        </div>
       ),
     },
     {

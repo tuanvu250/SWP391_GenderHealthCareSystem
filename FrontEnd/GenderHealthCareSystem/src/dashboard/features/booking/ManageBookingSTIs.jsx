@@ -22,15 +22,11 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import {
-  manageBookingsAPI,
-  markCompletedBookingStisAPI,
-  markConfirmedBookingStisAPI,
-} from "../../../components/utils/api";
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
-import { getUserByIdAPI } from "../../../components/utils/api";
 import ResultStisModal from "../../components/modal/ResultStisModal";
 import { formatPrice } from "../../../components/utils/format"; // Import hàm định dạng giá
+import { manageBookingsAPI, markCompletedBookingStisAPI, markConfirmedBookingStisAPI } from "../../../components/api/BookingTesting.api";
+import { getUserByIdAPI } from "../../../components/api/Auth.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -145,20 +141,7 @@ const ManageBookingStis = () => {
         response.data.data.content.map((booking) => ({
           ...booking,
           id: booking.bookingId,
-          customerName: booking.customerName,
-          serviceName: booking.serviceName,
-          servicePrice: booking.servicePrice,
-          bookingDate: booking.bookingDate,
           bookingTime: `${booking.bookingTimeStart} - ${booking.bookingTimeEnd}`,
-          stisResultID: booking.stisResultID,
-          stisInvoiceID: booking.stisInvoiceID,
-          stisFeedbackID: booking.stisFeedbackID,
-          status: booking.status,
-          paymentStatus: booking.paymentStatus,
-          paymentMethod: booking.paymentMethod,
-          createdAt: booking.createdAt,
-          note: booking.note,
-          customerId: booking.customerId,
         }))
       );
     } catch (error) {

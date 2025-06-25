@@ -29,14 +29,10 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
-import {
-  historyBookingAPI,
-  paymentPayPalAPI,
-  paymentVNPayAPI,
-  postFeedbackTestingAPI,
-} from "../components/utils/api";
-import { cancelBookingAPI } from "../components/utils/api";
+
 import { convertVndToUsd, formatPrice } from "../components/utils/format";
+import { cancelBookingAPI, historyBookingAPI } from "../components/api/BookingTesting.api";
+import { paymentPayPalAPI, paymentVNPayAPI } from "../components/api/Payment.api";
 
 const { Title, Text } = Typography;
 
@@ -76,16 +72,12 @@ const HistoryTesting = () => {
       const data = response.data.data.content.map((item) => ({
         ...item,
         id: item.bookingId,
-        serviceName: item.serviceName,
         price: item.servicePrice,
         bookingDate: dayjs(item.updatedAt).format("DD/MM/YYYY"),
         appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
         appointmentTime: `${item.bookingTimeStart} - ${item.bookingTimeEnd}`,
-        notes: item.notem,
-        paymentStatus: item.paymentStatus,
-        status: item.status,
+        notes: item.note,
         testingStatus: item.status,
-        paymentMethod: item.paymentMethod,
       }));
       setBookings(data);
     } catch (error) {

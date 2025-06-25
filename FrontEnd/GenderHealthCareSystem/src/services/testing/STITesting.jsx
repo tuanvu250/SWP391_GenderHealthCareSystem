@@ -38,8 +38,9 @@ import {
 import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../components/provider/AuthProvider";
 import LoginRequiredModal from "../../components/common/LoginRequiredModal";
-import { getSTISPackagesAPI } from "../../components/utils/api";
+
 import { formatPrice } from "../../components/utils/format";
+import { getSTISPackagesAPI } from "../../components/api/BookingTesting.api";
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;

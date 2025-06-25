@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import { useContext, useState, useEffect } from "react";
-import { loginAPI, registerAPI, getUserProfile } from "../utils/api";
 import { message } from "antd";
+import { getUserProfile, loginAPI, registerAPI } from "../api/Auth.api";
 
 const TOKEN_KEY = "token";
 const USER_KEY = "user";

@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import imgLogin from "../assets/login.png";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../components/provider/AuthProvider";
 
 const Login = () => {

@@ -1,7 +1,7 @@
 // 📁 src/pages/OvulationCalendar.jsx
 import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {menstrualHistoryAPI} from "../components/utils/api";
+import { menstrualHistoryAPI } from "../components/api/HeathTracker.api";
 
 export default function OvulationCalendar() {
     const location = useLocation();

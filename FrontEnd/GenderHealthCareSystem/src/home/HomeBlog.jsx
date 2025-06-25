@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Card, Tag, Button } from "antd";
 import { ArrowRightOutlined } from "@ant-design/icons";
-import { blogHomeAPI } from "../components/utils/api";
 import { formatDateTime } from "../components/utils/format";
+import { blogHomeAPI } from "../components/api/Blog.api";
 
 const HomeBlog = () => {
   const [blogPosts, setBlogPosts] = useState([]);
