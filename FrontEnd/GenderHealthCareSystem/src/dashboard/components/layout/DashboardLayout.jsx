@@ -8,7 +8,7 @@ import { Outlet } from "react-router-dom";
 const DashboardLayout = ({ userRole }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState("dashboard");
-  const { user} = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -27,10 +27,6 @@ const DashboardLayout = ({ userRole }) => {
 
   return (
     <Layout className="min-h-screen">
-      <HeaderDashboard 
-        user={user}
-      />
-      
       <Layout>
         <Sidebar
           collapsed={collapsed}
@@ -39,8 +35,7 @@ const DashboardLayout = ({ userRole }) => {
           onMenuSelect={setSelectedMenu}
           userRole={userRole}
         />
-        
-        <Layout.Content className="md:p-6 bg-gray-50">
+        <Layout.Content className=" bg-gray-50">
           <Outlet />
         </Layout.Content>
       </Layout>
