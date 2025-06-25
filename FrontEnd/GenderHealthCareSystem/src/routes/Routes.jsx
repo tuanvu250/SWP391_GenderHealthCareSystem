@@ -37,7 +37,6 @@ import STIBooking from "../services/testing/STIBooking";
 import ConsultationBooking from "../services/consultant/ConsultationBooking";
 import Consultation from "../services/consultant/Consultation";
 import AskingSection from "../services/asking/AskingSection";
-import MyBookings from "../services/consultant/BookingHistory";
 import BookingResult from "../services/BookingResult";
 import ConfirmConsultationBooking  from "../services/consultant/ConfirmBookingConsultant";
 
@@ -101,7 +100,6 @@ function RouteMap() {
                     path="/services/consultationbooking"
                     element={<ConsultationBooking/>}
                 />
-                <Route path="history-consultant" element={<MyBookings/>}/>
                 <Route path="/services/consultation" element={<Consultation/>}/>
                 <Route path="/services/asking" element={<AskingSection/>}/>
                 <Route path="confirm-consultant" element={<ConfirmConsultationBooking/>}/>
