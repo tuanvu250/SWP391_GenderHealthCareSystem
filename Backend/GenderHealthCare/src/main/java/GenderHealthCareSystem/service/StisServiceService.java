@@ -3,6 +3,9 @@ package GenderHealthCareSystem.service;
 import GenderHealthCareSystem.model.StisService;
 import GenderHealthCareSystem.repository.StisServiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,6 +19,25 @@ public class StisServiceService {
 
     public List<StisService> getAll() {
         return repository.findAll();
+    }
+
+    public Page<StisService> getAll(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    public Page<StisService> getAll(String searchName, String status, Pageable pageable) {
+        Specification<StisService> spec = Specification.where(null);
+
+        if (searchName != null && !searchName.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("serviceName")),
+                    "%" + searchName.toLowerCase() + "%"));
+        }
+
+        if (status != null && !status.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        return repository.findAll(spec, pageable);
     }
 
     public Optional<StisService> getById(Integer id) {
