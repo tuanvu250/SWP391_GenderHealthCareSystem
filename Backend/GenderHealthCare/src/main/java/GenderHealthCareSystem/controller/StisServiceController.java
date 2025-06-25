@@ -1,15 +1,21 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisServiceRequest;
 import GenderHealthCareSystem.model.StisService;
 import GenderHealthCareSystem.service.StisServiceService;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stis-services")
@@ -19,12 +25,19 @@ public class StisServiceController {
     private final StisServiceService service;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StisService>>> getAll() {
-        List<StisService> list = service.getAll();
-        ApiResponse<List<StisService>> res = new ApiResponse<>(
+    public ResponseEntity<ApiResponse<PageResponse<StisService>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String searchName,
+            @RequestParam(required = false) String status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<StisService> resultPage = service.getAll(searchName, status, pageable);
+        PageResponse<StisService> pageResponse = PageResponseUtil.mapToPageResponse(resultPage);
+
+        ApiResponse<PageResponse<StisService>> res = new ApiResponse<>(
                 HttpStatus.OK,
                 "Lấy danh sách dịch vụ thành công",
-                list,
+                pageResponse,
                 null);
         return ResponseEntity.ok(res);
     }
