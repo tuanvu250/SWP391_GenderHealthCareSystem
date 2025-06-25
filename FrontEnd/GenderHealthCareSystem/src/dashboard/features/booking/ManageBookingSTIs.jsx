@@ -25,7 +25,13 @@ import dayjs from "dayjs";
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
 import ResultStisModal from "../../components/modal/ResultStisModal";
 import { formatPrice } from "../../../components/utils/format"; // Import hàm định dạng giá
-import { manageBookingsAPI, markCompletedBookingStisAPI, markConfirmedBookingStisAPI } from "../../../components/api/BookingTesting.api";
+import {
+  manageBookingsAPI,
+  markCompletedBookingStisAPI,
+  markConfirmedBookingStisAPI,
+  markDeniedBookingStisAPI,
+  markNoShowBookingStisAPI,
+} from "../../../components/api/BookingTesting.api";
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
 
 const { Title, Text } = Typography;
@@ -73,7 +79,12 @@ const ManageBookingStis = () => {
       color: "red",
       icon: <CloseCircleOutlined />,
     },
-    no_show: {
+    DENIED: {
+      text: "Đã từ chối",
+      color: "red",
+      icon: <CloseCircleOutlined />,
+    },
+    NO_SHOW: {
       text: "Không đến",
       color: "orange",
       icon: <CloseCircleOutlined />,
@@ -179,6 +190,30 @@ const ManageBookingStis = () => {
       message.error("Không thể đánh dấu lịch hẹn là hoàn thành");
     }
   };
+
+  const handleNoShow = async (bookingId) => {
+    try {
+      // Gọi API để đánh dấu lịch hẹn là không đến
+      await markNoShowBookingStisAPI(bookingId);
+      loadData();
+      message.success("Lịch đã được đánh dấu là không đến");
+    } catch (error) {
+      console.error("Error marking booking as no show:", error);
+      message.error("Không thể đánh dấu lịch hẹn là không đến");
+    }
+  }
+
+  const handleDenied = async (bookingId) => {
+    try {
+      // Gọi API để đánh dấu lịch hẹn là từ chối
+      await markDeniedBookingStisAPI(bookingId);
+      loadData();
+      message.success("Lịch đã được từ chối thành công");
+    } catch (error) {
+      console.error("Error denying booking:", error);
+      message.error("Không thể từ chối lịch hẹn");
+    }
+  }
 
   const handleEnterResult = async (booking) => {
     try {
@@ -308,22 +343,40 @@ const ManageBookingStis = () => {
           </Tooltip>
           <Tooltip title="Cập nhật trạng thái">
             {record.status === "CONFIRMED" && (
-              <Button
-                type="default"
-                size="small"
-                onClick={() => handleComplete(record.id)}
-              >
-                Hoàn thành
-              </Button>
+              <div className="flex flex-col gap-1">
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={() => handleComplete(record.id)}
+                >
+                  Hoàn thành
+                </Button>
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={() => handleNoShow(record.id)}
+                >
+                  Không đến
+                </Button>
+              </div>
             )}
             {record.status === "PENDING" && (
-              <Button
-                type="default"
-                size="small"
-                onClick={() => handleConfirm(record.id)}
-              >
-                Xác nhận
-              </Button>
+              <div className="flex flex-col gap-1">
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={() => handleConfirm(record.id)}
+                >
+                  Xác nhận
+                </Button>
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={() => handleDenied(record.id)}
+                >
+                  Từ chối
+                </Button>
+              </div>
             )}
             {record.status === "COMPLETED" && (
               <Button

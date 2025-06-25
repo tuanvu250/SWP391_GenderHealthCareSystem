@@ -64,3 +64,11 @@ export const markConfirmedBookingStisAPI = async (bookingId) => {
 export const markCompletedBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-completed`);
 };
+
+export const markDeniedBookingStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-denied`);
+}
+
+export const markNoShowBookingStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-no-show`);
+}

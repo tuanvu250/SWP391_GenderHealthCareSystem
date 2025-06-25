@@ -476,7 +476,7 @@ const Sidebar = ({
       </div>
 
       {/* User Profile & Logout button ở footer */}
-      <div className="border-t border-gray-200 mt-auto">
+      <div className="border-t border-gray-200 mt-auto bottom-0">
         <div className={`p-4 ${collapsed ? 'text-center' : ''}`}>
 
           { !collapsed && (
