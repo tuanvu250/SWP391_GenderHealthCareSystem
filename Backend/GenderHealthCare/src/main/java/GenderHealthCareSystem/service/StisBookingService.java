@@ -120,12 +120,21 @@ public class StisBookingService {
     }
 
     public void markBookingAsCancelled(Integer id) {
-        Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
-        if (bookingOptional.isPresent()) {
-            StisBooking booking = bookingOptional.get();
-            booking.setStatus(StisBookingStatus.CANCELLED);
-            stisBookingRepository.save(booking);
-        }
+        StisBooking booking = stisBookingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        booking.setStatus(StisBookingStatus.CANCELLED);
+        stisBookingRepository.save(booking);
+    }
+
+    public void markBookingAsNoShow(Integer id) {
+        StisBooking booking = stisBookingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        booking.setStatus(StisBookingStatus.NO_SHOW);
+        stisBookingRepository.save(booking);
+    }
+
+    public void markBookingAsDenied(Integer id) {
+        StisBooking booking = stisBookingRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        booking.setStatus(StisBookingStatus.DENIED);
+        stisBookingRepository.save(booking);
     }
 
     public void markBookingPaymentStatusAsCompleted(Integer id) {
@@ -181,9 +190,4 @@ public class StisBookingService {
     }
 
 }
-
-
-
-
-
 
