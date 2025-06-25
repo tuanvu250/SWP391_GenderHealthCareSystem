@@ -24,7 +24,7 @@ public class StisServiceController {
 
     private final StisServiceService service;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ApiResponse<PageResponse<StisService>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -94,6 +94,38 @@ public class StisServiceController {
             ApiResponse<StisService> res = new ApiResponse<>(
                     HttpStatus.NOT_FOUND,
                     "Không tìm thấy dịch vụ để cập nhật",
+                    null,
+                    "NOT_FOUND");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+    }
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<ApiResponse<StisService>> updateStatus(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> requestBody) {
+        try {
+            String status = requestBody.get("status");
+            if (status == null || (!status.equals("active") && !status.equals("nonactive"))) {
+                ApiResponse<StisService> res = new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST,
+                        "Trạng thái không hợp lệ. Chỉ chấp nhận 'active' hoặc 'nonactive'",
+                        null,
+                        "INVALID_STATUS");
+                return ResponseEntity.badRequest().body(res);
+            }
+
+            StisService updated = service.updateStatus(id, status);
+            ApiResponse<StisService> res = new ApiResponse<>(
+                    HttpStatus.OK,
+                    "Cập nhật trạng thái dịch vụ thành công",
+                    updated,
+                    null);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            ApiResponse<StisService> res = new ApiResponse<>(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy dịch vụ để cập nhật trạng thái",
                     null,
                     "NOT_FOUND");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
