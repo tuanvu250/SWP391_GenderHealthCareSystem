@@ -52,11 +52,30 @@ public class StisServiceService {
 
     public StisService update(Integer id, StisService newData) {
         return repository.findById(id).map(existing -> {
-            existing.setServiceName(newData.getServiceName());
-            existing.setDescription(newData.getDescription());
-            existing.setPrice(newData.getPrice());
-            existing.setDuration(newData.getDuration());
-            existing.setTests(newData.getTests());
+            if (newData.getServiceName() != null) {
+                existing.setServiceName(newData.getServiceName());
+            }
+            if (newData.getDescription() != null) {
+                existing.setDescription(newData.getDescription());
+            }
+            if (newData.getPrice() != null) {
+                existing.setPrice(newData.getPrice());
+            }
+            if (newData.getDuration() != null) {
+                existing.setDuration(newData.getDuration());
+            }
+            if (newData.getTests() != null) {
+                existing.setTests(newData.getTests());
+            }
+            if (newData.getType() != null) {
+                existing.setType(newData.getType());
+            }
+            if (newData.getDiscount() != null) {
+                existing.setDiscount(newData.getDiscount());
+            }
+            if (newData.getStatus() != null) {
+                existing.setStatus(newData.getStatus());
+            }
 
             existing.setUpdatedAt(LocalDateTime.now());
             return repository.save(existing);
@@ -65,5 +84,13 @@ public class StisServiceService {
 
     public void delete(Integer id) {
         repository.deleteById(id);
+    }
+
+    public StisService updateStatus(Integer id, String status) {
+        return repository.findById(id).map(existing -> {
+            existing.setStatus(status);
+            existing.setUpdatedAt(LocalDateTime.now());
+            return repository.save(existing);
+        }).orElseThrow(() -> new RuntimeException("Service not found"));
     }
 }
