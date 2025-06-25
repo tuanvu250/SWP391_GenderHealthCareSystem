@@ -30,8 +30,7 @@ import ImgCrop from "antd-img-crop";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useAuth } from "../components/provider/AuthProvider";
-import { updateUserProfileAPI } from "../components/utils/api";
-import { updateUserAvatarAPI } from "../components/utils/api";
+import { updateUserProfileAPI, updateUserAvatarAPI } from "../components/api/UserProfile.api";
 
 
 const { Title, Text, Paragraph } = Typography;

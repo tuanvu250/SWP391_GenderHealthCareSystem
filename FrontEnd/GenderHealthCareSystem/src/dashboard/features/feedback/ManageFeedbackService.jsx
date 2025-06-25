@@ -30,9 +30,9 @@ import {
   StarOutlined,
 } from "@ant-design/icons";
 
-import FeedbackModal from "../../../components/shared/FeedbackModal";
+import FeedbackModal from "../../components/modal/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
-import { deleteFeedbackTestingAPI, getAllFeedbackTestingAPI } from "../../../components/utils/api";
+import { getAllFeedbackTestingAPI, hideFeedbackTestingAPI } from "../../../components/api/FeedbackTesting.api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -73,14 +73,12 @@ const ManageFeedbackService = () => {
       const response = await getAllFeedbackTestingAPI({
         page: pagination.current - 1,
         size: pagination.pageSize,
-        //rating: ratingFilter,
+        rating: ratingFilter,
       });
       setPagination({
         ...pagination,
         total: response.data.totalElements,
       });
-
-      console.log(">>> Feedbacks fetched:", response.data.data.content);
 
       setFeedbacks(response.data.data.content);
       setLoading(false);
@@ -114,10 +112,10 @@ const ManageFeedbackService = () => {
   const handleDeleteFeedback = async (id) => {
     try {
       setLoading(true);
-      await deleteFeedbackTestingAPI(id);
+      await hideFeedbackTestingAPI(id);
       fetchFeedbacks(); 
       setLoading(false);
-      message.success("Đã xóa đánh giá thành công");
+      message.success("Đã ẩn đánh giá thành công");
     } catch (error) {
       console.error("Error deleting feedback:", error);
       message.error("Không thể xóa đánh giá. Vui lòng thử lại.");
@@ -130,24 +128,16 @@ const ManageFeedbackService = () => {
     {
       title: "Người dùng",
       dataIndex: "userFullName",
-      key: "userFullName",
+      key: "userFullName",  
       render: (_, record) => (
-        <>
-          <Avatar
-            src={
-              record.userAvatar ||
-              "https://www.gravatar.com/avatar/000?d=mp&f=y"
-            }
-            alt={record.userFullName}
-          />
+        <div className="flex items-center gap-0.5">
           <div>
-            <div>{record.userFullName}</div>
-            <div className="text-xs text-gray-500">
-              {formatDateTime(record.createdAt) ||
-                formatDateTime(record.updateAt)}
+            <Typography.Text strong>{record.userFullName}</Typography.Text>
+            <div className="text-gray-500 text-xs">
+              {formatDateTime(record.updateAt) || formatDateTime(record.createdAt)}
             </div>
-          </div>
-        </>
+          </div>  
+        </div>
       ),
     },
     {
@@ -189,14 +179,14 @@ const ManageFeedbackService = () => {
           </Tooltip>
 
           <Popconfirm
-            title="Xóa đánh giá"
-            description="Bạn có chắc chắn muốn xóa đánh giá này?"
+            title="Ẩn đánh giá"
+            description="Bạn có chắc chắn muốn ẩn đánh giá này?"
             onConfirm={() => handleDeleteFeedback(record.feedbackId)}
-            okText="Xóa"
+            okText="Ẩn"
             cancelText="Hủy"
             icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
           >
-            <Tooltip title="Xóa">
+            <Tooltip title="Ẩn">
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>

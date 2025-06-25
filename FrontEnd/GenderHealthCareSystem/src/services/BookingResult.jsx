@@ -3,8 +3,9 @@ import { Button, Result, Typography, message } from "antd";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
-import { paymentAPI } from "../components/utils/api";
-import { createInvoiceAPI } from "../components/utils/api";
+
+import { convertVndToUsd } from "../components/utils/format";
+import { createInvoiceAPI, paymentPayPalAPI, paymentVNPayAPI, paypalSuccessAPI } from "../components/api/Payment.api";
 
 const { Paragraph, Text } = Typography;
 
@@ -22,41 +23,68 @@ const BookingResult = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const fullQueryString = location.search.substring(1);
-  const responseCode = queryParams.get("vnp_ResponseCode");
+  const vnpayResponseCode = queryParams.get("vnp_ResponseCode");
+
+  const paymentId = queryParams.get("paymentId");
+  const payerId = queryParams.get("PayerID");
+
+  const isVNpay = vnpayResponseCode !== null;
+  const isPaypal = paymentId && payerId;
+
+  const isPaymentSuccessful = () => {
+    if (isVNpay) {
+      return vnpayResponseCode === "00";
+    } else if (isPaypal) {
+      return !!payerId;
+    }
+    return false;
+  };
 
   useEffect(() => {
     const onFinish = async () => {
-      if (responseCode === "00") {
-        setCheck(true);
-        
+      const checkResult = isPaymentSuccessful();
+      setCheck(checkResult);
+      if (isVNpay && checkResult) {
         // Xóa dữ liệu localStorage chỉ khi thanh toán thành công
         localStorage.removeItem("bookingID");
         localStorage.removeItem("amount");
         localStorage.removeItem("orderInfo");
-        
+
         // Chỉ gọi API tạo hóa đơn nếu chưa gọi
         if (!hasCreatedInvoice.current) {
           hasCreatedInvoice.current = true;
           try {
-            const response = await createInvoiceAPI(fullQueryString);
-            console.log("Invoice created successfully:", response);
+            await createInvoiceAPI(fullQueryString);
           } catch (error) {
             console.error("Error creating invoice:", error);
             message.error("Có lỗi xảy ra khi tạo hóa đơn, vui lòng thử lại.");
           }
         }
-      } else {
-        setCheck(false);
+      } else if (isPaypal && checkResult) {
+        if (!hasCreatedInvoice.current) {
+          hasCreatedInvoice.current = true;
+          try {
+            console.log(">>> Paypal paymentId:", paymentId);
+            console.log(">> Paypal payerId:", payerId);
+            await paypalSuccessAPI(paymentId, payerId);
+          } catch (error) {
+            console.error("Error creating invoice:", error);
+            message.error(
+              error.response?.data?.message ||
+                "Có lỗi xảy ra khi xác nhận thanh toán PayPal."
+            );
+          }
+        }
       }
     };
-    
+
     onFinish();
-    
+
     // Cleanup function để đảm bảo xử lý đúng khi component unmount
     return () => {
       // Không cần làm gì trong cleanup function
     };
-  }, [responseCode, fullQueryString]); // Thêm các dependencies
+  }, [fullQueryString]); // Thêm các dependencies
 
   const handlePaymentAgain = async () => {
     try {
@@ -66,7 +94,9 @@ const BookingResult = () => {
 
       // Kiểm tra xem các giá trị có tồn tại không
       if (!bookingID || !amount || !orderInfo) {
-        message.error("Thông tin thanh toán không đầy đủ. Vui lòng đặt lịch lại.");
+        message.error(
+          "Thông tin thanh toán không đầy đủ. Vui lòng đặt lịch lại."
+        );
         navigate("/sti-testing");
         return;
       }
@@ -76,7 +106,14 @@ const BookingResult = () => {
       localStorage.removeItem("amount");
       localStorage.removeItem("orderInfo");
 
-      const response = await paymentAPI(amount, orderInfo, bookingID);
+      const response =
+        isVNpay
+          ? await paymentVNPayAPI(
+              amount,
+              "Đặt lịch xét nghiệm STI",
+              bookingID
+            )
+          : await paymentPayPalAPI(convertVndToUsd(amount), bookingID);
 
       message.success("Đang chuyển hướng đến trang thanh toán ...");
 
@@ -117,7 +154,7 @@ const BookingResult = () => {
             <Button
               key="services"
               size="large"
-              onClick={() => navigate("/services/sti-testing")}
+              onClick={() => navigate("/sti-testing")}
               className="ml-4"
             >
               Quay lại trang dịch vụ

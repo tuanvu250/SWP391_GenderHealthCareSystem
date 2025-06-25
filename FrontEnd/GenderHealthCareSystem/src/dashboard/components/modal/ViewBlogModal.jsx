@@ -13,8 +13,8 @@ import {
 } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import { formatDateTime } from "../../../components/utils/format";
-import { deleteCommentBlogAPI, getCommentsBlogAPI } from "../../../components/utils/api";
 import { useState, useEffect } from "react";
+import { deleteCommentBlogAPI, getCommentsBlogAPI } from "../../../components/api/Blog.api";
 
 const { Title, Text, Paragraph } = Typography;
 

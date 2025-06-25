@@ -54,9 +54,13 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
                   <span className="flex items-center mt-1">
                     <DollarCircleOutlined className="text-green-600 mr-1" /> Thanh toán tiền mặt tại cơ sở
                   </span>
-                ) : paymentMethod === "credit card" ? (
+                ) : paymentMethod === "vnpay" ? (
                   <span className="flex items-center mt-1">
-                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua ngân hàng
+                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua VNPAY
+                  </span>
+                ) : paymentMethod === "paypal" ? (
+                  <span className="flex items-center mt-1">
+                    <BankOutlined className="text-blue-600 mr-1" /> Thanh toán qua PayPal
                   </span>
                 ) : (
                   <span className="text-orange-500">Chưa chọn</span>
@@ -111,16 +115,7 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
 
       {/* Thông tin bổ sung */}
       {(form.getFieldValue("medicalHistory") || form.getFieldValue("notes")) && (
-        <Card title="Thông tin bổ sung" className="mb-6">
-          {form.getFieldValue("medicalHistory") && (
-            <div className="mb-4">
-              <div className="font-semibold mb-2">Tiểu sử bệnh:</div>
-              <p className="text-gray-700 bg-gray-50 p-3 rounded">
-                {form.getFieldValue("medicalHistory")}
-              </p>
-            </div>
-          )}
-          
+        <Card title="Thông tin bổ sung" className="mb-6">      
           {form.getFieldValue("notes") && (
             <div>
               <div className="font-semibold mb-2">Ghi chú thêm:</div>

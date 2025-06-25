@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Steps,
@@ -15,10 +15,12 @@ import { useAuth } from "../../components/provider/AuthProvider";
 import BookingForm from "./BookingForm";
 import ConfirmBooking from "./ConfirmBooking";
 import dayjs from "dayjs";
-import { bookStisAPI } from "../../components/utils/api";
-import { paymentAPI } from "../../components/utils/api";
-import { getSTISPackagesAPI } from "../../components/utils/api";
-import { formatPrice } from "../../components/utils/format";
+import {
+  paymentVNPayAPI,
+  paymentPayPalAPI,
+} from "../../components/api/Payment.api";
+import { convertVndToUsd, formatPrice } from "../../components/utils/format";
+import { bookStisAPI, getSTISPackagesAPI } from "../../components/api/BookingTesting.api";
 
 const { Title, Text } = Typography;
 
@@ -171,35 +173,40 @@ const STIBooking = () => {
         notes: allValues.notes,
       };
 
-      //console.log("Dữ liệu đặt lịch:", bookingData);
-
-      //console.log(">>> Submitting booking data:", allValues.paymentMethod);
-
-      // Mô phỏng API call
       const response = await bookStisAPI(bookingData);
 
       if (allValues.paymentMethod === "cash") {
         // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
         setCashPayment(true);
-      } else if (allValues.paymentMethod === "credit card") {
-        await handlePayment(response.data.data.bookingId);
+      } else {
+        await handlePayment(
+          response.data.data.bookingId,
+          allValues.paymentMethod
+        );
       }
     } catch (error) {
       console.error("Error during booking:", error);
-      message.error(error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch, vui lòng thử lại.");
+      message.error(
+        error.response?.data?.message ||
+          "Có lỗi xảy ra khi đặt lịch, vui lòng thử lại."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handlePayment = async (bookingID) => {
+  const handlePayment = async (bookingID, paymentMethod) => {
     try {
-      const response = await paymentAPI(
-        totalPrice,
-        "Đặt lịch xét nghiệm STI",
-        bookingID
-      );
+      console.log(">>> $$$: ", convertVndToUsd(totalPrice));
+      const response =
+        paymentMethod === "vnpay"
+          ? await paymentVNPayAPI(
+              totalPrice,
+              "Đặt lịch xét nghiệm STI",
+              bookingID
+            )
+          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingID);
 
       localStorage.setItem("bookingID", bookingID);
       localStorage.setItem("amount", totalPrice);
@@ -215,8 +222,8 @@ const STIBooking = () => {
         window.location.href = response.data;
       }, 3000);
     } catch (error) {
-      console.error("Error processing payment:", error);
-      message.error("Có lỗi xảy ra khi xử lý thanh toán, vui lòng thử lại.");
+      console.error(error.response.data.message);
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi thanh toán");
     }
   };
 
@@ -355,7 +362,7 @@ const STIBooking = () => {
                 <span className="font-bold">
                   {form.getFieldValue("paymentMethod") === "cash"
                     ? "Tiền mặt tại cơ sở"
-                    : "Thanh toán qua ngân hàng"}
+                    : "Thanh toán trực tuyến"}
                 </span>
               </p>
             </div>
@@ -399,11 +406,7 @@ const STIBooking = () => {
       )}
 
       {cashPayment && (
-        <Modal
-          open={cashPayment}
-          footer={null}
-          closable={false}
-          centered>
+        <Modal open={cashPayment} footer={null} closable={false} centered>
           <Result
             status="success"
             title="Đặt lịch thành công!"

@@ -29,10 +29,10 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
-import { historyBookingAPI, postFeedbackTestingAPI } from "../components/utils/api";
-import { paymentAPI } from "../components/utils/api";
-import { cancelBookingAPI } from "../components/utils/api";
-import { formatPrice } from "../components/utils/format";
+
+import { convertVndToUsd, formatPrice } from "../components/utils/format";
+import { cancelBookingAPI, historyBookingAPI } from "../components/api/BookingTesting.api";
+import { paymentPayPalAPI, paymentVNPayAPI } from "../components/api/Payment.api";
 
 const { Title, Text } = Typography;
 
@@ -72,16 +72,12 @@ const HistoryTesting = () => {
       const data = response.data.data.content.map((item) => ({
         ...item,
         id: item.bookingId,
-        serviceName: item.serviceName,
         price: item.servicePrice,
         bookingDate: dayjs(item.updatedAt).format("DD/MM/YYYY"),
         appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
         appointmentTime: `${item.bookingTimeStart} - ${item.bookingTimeEnd}`,
-        notes: item.notem,
-        paymentStatus: item.paymentStatus,
-        status: item.status,
+        notes: item.note,
         testingStatus: item.status,
-        paymentMethod: item.paymentMethod,
       }));
       setBookings(data);
     } catch (error) {
@@ -104,13 +100,16 @@ const HistoryTesting = () => {
   };
 
   // Xử lý thanh toán
-  const handlePayment = async (bookingId, totalPrice) => {
+  const handlePayment = async (bookingId, totalPrice, paymentMethod) => {
     try {
-      const response = await paymentAPI(
-        totalPrice,
-        "Đặt lịch xét nghiệm STI",
-        bookingId
-      );
+      const response =
+        paymentMethod === "vnpay"
+          ? await paymentVNPayAPI(
+              totalPrice,
+              "Đặt lịch xét nghiệm STI",
+              bookingId
+            )
+          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingId);
 
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", totalPrice);
@@ -166,15 +165,21 @@ const HistoryTesting = () => {
 
       const values = await feedbackForm.validateFields();
       // Validate form
-      await postFeedbackTestingAPI(selectedBooking.id, feedbackRating, values.content);
+      await postFeedbackTestingAPI(
+        selectedBooking.id,
+        feedbackRating,
+        values.content
+      );
 
       setOpenFeedback(false);
-      setSubmittingFeedback(false); 
+      setSubmittingFeedback(false);
       message.success("Cảm ơn bạn đã gửi đánh giá!");
     } catch (error) {
       setSubmittingFeedback(false);
       console.error("Error submitting feedback:", error);
-      message.error(error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá");
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá"
+      );
     }
   };
 
@@ -312,7 +317,6 @@ const HistoryTesting = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small">
           {renderStatus(record.status)}
-          {renderTestingStatus(record.testingStatus)}
           {renderPaymentStatus(record.paymentStatus)}
         </Space>
       ),
@@ -329,9 +333,9 @@ const HistoryTesting = () => {
       key: "payment",
       render: (_, record) => (
         <div>
-          <div>{renderPaymentMethod(record.paymentMethod)}</div>
+          <div>{renderPaymentMethod(record.paymentMethod.toUpperCase())}</div>
           <div className="mt-1">
-            {record.paymentMethod === "credit card" &&
+            {record.paymentMethod !== "cash" &&
               record.paymentStatus === "UNPAID" && (
                 <Button
                   type="primary"
@@ -339,7 +343,11 @@ const HistoryTesting = () => {
                   icon={<CreditCardOutlined />}
                   onClick={() => {
                     setSelectedBooking(record);
-                    handlePayment(record.id, record.price);
+                    handlePayment(
+                      record.id,
+                      record.price,
+                      record.paymentMethod
+                    );
                   }}
                 >
                   Thanh toán
@@ -808,7 +816,7 @@ const HistoryTesting = () => {
       ]}
       onCancel={() => setOpenFeedback(false)}
       width={500}
-      destroyOnHidden 
+      destroyOnHidden
     >
       {selectedBooking && (
         <div className="space-y-6">
@@ -817,7 +825,8 @@ const HistoryTesting = () => {
               Đánh giá dịch vụ
             </Title>
             <Text type="secondary">
-              Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Hãy đánh giá trải nghiệm của bạn!
+              Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Hãy đánh giá trải
+              nghiệm của bạn!
             </Text>
           </div>
 
@@ -845,11 +854,19 @@ const HistoryTesting = () => {
                     allowClear={false}
                   />
                   <div className="mt-2">
-                    {feedbackRating === 5 && <Text type="success">Rất hài lòng</Text>}
-                    {feedbackRating === 4 && <Text type="success">Hài lòng</Text>}
+                    {feedbackRating === 5 && (
+                      <Text type="success">Rất hài lòng</Text>
+                    )}
+                    {feedbackRating === 4 && (
+                      <Text type="success">Hài lòng</Text>
+                    )}
                     {feedbackRating === 3 && <Text>Bình thường</Text>}
-                    {feedbackRating === 2 && <Text type="warning">Không hài lòng</Text>}
-                    {feedbackRating === 1 && <Text type="danger">Rất không hài lòng</Text>}
+                    {feedbackRating === 2 && (
+                      <Text type="warning">Không hài lòng</Text>
+                    )}
+                    {feedbackRating === 1 && (
+                      <Text type="danger">Rất không hài lòng</Text>
+                    )}
                   </div>
                 </div>
               </div>
@@ -898,7 +915,6 @@ const HistoryTesting = () => {
           Xem lịch sử đặt khám và kết quả xét nghiệm của bạn tại đây.
         </Text>
       </div>
-
       {loading ? (
         <div className="text-center py-10">
           <Spin size="large" />
@@ -913,7 +929,6 @@ const HistoryTesting = () => {
           onChange={handleTableChange}
           className="mt-4"
           scroll={{ x: 1200 }}
-
         />
       ) : (
         <Empty
@@ -921,7 +936,6 @@ const HistoryTesting = () => {
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}
-
       {/* Các modal */}
       {renderDetailModal()}
       {renderReceiptModal()}

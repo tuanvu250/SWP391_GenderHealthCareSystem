@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  healthTrackerAPI,
-  updateTrackerAPI,
-  menstrualHistoryAPI,
-} from '../components/utils/api';
+import { healthTrackerAPI, menstrualHistoryAPI, updateTrackerAPI } from '../components/api/HeathTracker.api';
 
 export default function MenstrualTracker() {
   const [cycleLength, setCycleLength] = useState(28);

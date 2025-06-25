@@ -32,16 +32,9 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  blogDetailAPI,
-  deleteCommentBlogAPI,
-  editCommentBlogAPI,
-  getCommentsBlogAPI,
-  likeBlogAPI,
-  postCommentBlogAPI,
-} from "../components/utils/api";
 import { formatDateTime } from "../components/utils/format";
 import { useAuth } from "../components/provider/AuthProvider";
+import { blogDetailAPI, deleteCommentBlogAPI, editCommentBlogAPI, getCommentsBlogAPI, likeBlogAPI, postCommentBlogAPI } from "../components/api/Blog.api";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

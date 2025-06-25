@@ -16,8 +16,7 @@ import {
   EyeOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { postBlogAPI } from "../../../components/utils/api";
-import { updateBlogAPI } from "../../../components/utils/api";
+import { postBlogAPI, updateBlogAPI } from "../../../components/api/Blog.api";
 
 const { Option } = Select;
 const { TextArea } = Input;

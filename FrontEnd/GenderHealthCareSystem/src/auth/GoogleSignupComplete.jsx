@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Form,
   Input,
@@ -16,11 +16,11 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
 import dayjs from "dayjs";
 import imgBackground from "../assets/login.png";
-import { updateUserProfileAPI } from "../components/utils/api";
+import { updateUserProfileAPI } from "../components/api/UserProfile.api";
 
 const { Option } = Select;
 const { Step } = Steps;
@@ -34,7 +34,7 @@ const GoogleSignupComplete = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await updateUserProfileAPI(values);
+      await updateUserProfileAPI(values);
 
       updateUser({
         ...user,
