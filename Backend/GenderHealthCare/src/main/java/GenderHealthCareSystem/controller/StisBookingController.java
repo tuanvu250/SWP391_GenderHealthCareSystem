@@ -148,4 +148,16 @@ public class StisBookingController {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as denied", null, null));
     }
 
+    @GetMapping("/check-limit")
+    public ResponseEntity<ApiResponse<Boolean>> checkBookingLimit(@RequestParam LocalDateTime bookingDateTime,
+                                                                  @RequestParam Integer serviceId) {
+        boolean isExceeded = stisBookingService.isBookingLimitExceeded(serviceId, bookingDateTime);
+        if (isExceeded) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse<>(HttpStatus.CONFLICT, "Booking limit exceeded for this service", isExceeded, null));
+        } else {
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking limit is within allowed range", isExceeded, null));
+        }
+    }
+
 }

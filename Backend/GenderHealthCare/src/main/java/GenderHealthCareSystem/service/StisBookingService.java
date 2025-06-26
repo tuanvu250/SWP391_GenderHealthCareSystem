@@ -60,12 +60,15 @@ public class StisBookingService {
         if (this.stisBookingRepository.countByUserIdAndBookingDate(booking.getCustomerId(), booking.getBookingDate().atStartOfDay(),booking.getBookingDate().atTime(LocalTime.MAX)) >0) {
             throw new RuntimeException("Bạn đã có lịch hẹn trong ngày này. Vui lòng chọn ngày khác.");
         }
+        if (this.isBookingLimitExceeded(booking.getServiceId(), LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime()))) {
+            throw new RuntimeException("Số lượng đặt lịch đã vượt quá giới hạn cho dịch vụ này trong khoảng thời gian đã chọn.");
+        }
 
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
         stisBooking.setStisService(this.stisServiceRepository.findById(booking.getServiceId()).get());
         LocalDateTime bookingDate = LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime());
         stisBooking.setBookingDate(bookingDate);
-        stisBooking.setStatus(StisBookingStatus.PENDING);
+        stisBooking.setStatus(StisBookingStatus.CONFIRMED);
         stisBooking.setPaymentStatus("UNPAID");
         stisBooking.setPaymentMethod(booking.getPaymentMethod());
         stisBooking.setNote(booking.getNote());
@@ -163,6 +166,14 @@ public class StisBookingService {
         return stisBooking.map(this::mapToResponse);
     }
 
+    public boolean isBookingLimitExceeded(Integer serviceId, LocalDateTime bookingDateTime) {
+        Integer limit=this.stisServiceRepository.findById(serviceId).get().getMaxBookingsPerSlot();
+        LocalDateTime startOfSlot = bookingDateTime.withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfSlot = startOfSlot.plusHours(1);
+        long bookingCount = stisBookingRepository.countBookingsInTimeSlot(serviceId, startOfSlot, endOfSlot);
+        System.out.println("Booking Count: " + bookingCount + ", Limit: " + limit);
+        return bookingCount >= limit;
+    }
 
     public StisBookingResponse mapToResponse(StisBooking booking) {
         // Map properties from StisBooking to StisBookingResponse

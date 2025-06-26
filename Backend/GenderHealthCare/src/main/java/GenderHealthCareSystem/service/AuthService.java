@@ -27,7 +27,8 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Role không tồn tại"));
 
         if (accountRepository.findByUserName(request.getUserName()).isPresent() ||
-                accountRepository.findByEmail(request.getEmail()).isPresent()) {
+                accountRepository.findByEmail(request.getEmail()).isPresent()||
+                usersRepository.findByPhone(request.getPhone()).isPresent()) {
             StringBuilder errors = new StringBuilder();
             if (accountRepository.findByUserName(request.getUserName()).isPresent()) {
                 errors.append("UserName đã tồn tại");

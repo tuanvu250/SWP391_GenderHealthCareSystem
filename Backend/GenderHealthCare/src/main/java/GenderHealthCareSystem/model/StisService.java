@@ -39,6 +39,9 @@ public class StisService {
     @Column(name = "Type", length = 50, columnDefinition = "NVARCHAR(255)")
     private String type;
 
+    @Column(name = "MaxBookingsPerSlot")
+    private Integer maxBookingsPerSlot;
+
     @Column(name = "Discount")
     private Integer discount;
 

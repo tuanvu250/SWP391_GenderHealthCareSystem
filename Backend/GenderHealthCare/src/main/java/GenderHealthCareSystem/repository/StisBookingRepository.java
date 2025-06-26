@@ -53,5 +53,9 @@ public interface StisBookingRepository extends JpaRepository<StisBooking, Intege
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay);
 
-
+    @Query("SELECT COUNT(sb) FROM StisBooking sb " +
+            "WHERE sb.stisService.serviceId = :serviceId " +
+            "AND sb.status = 'CONFIRMED' " +
+            "AND sb.bookingDate BETWEEN :startDateTime AND :endDateTime")
+    long countBookingsInTimeSlot(@Param("serviceId") Integer serviceId, @Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime);
 }

@@ -275,4 +275,6 @@ public class BlogPostController {
         var response = new ApiResponse<>(HttpStatus.OK, "Like count increased successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
+
 }
+

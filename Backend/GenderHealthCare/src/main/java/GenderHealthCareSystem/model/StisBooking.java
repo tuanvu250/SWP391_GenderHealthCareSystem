@@ -49,6 +49,7 @@ import java.time.LocalDateTime;
         @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
         private String note;
 
+
         @Column(name = "CreatedAt")
         private LocalDateTime createdAt;
 
@@ -63,4 +64,5 @@ import java.time.LocalDateTime;
 
         @OneToOne(mappedBy = "stisBooking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
         private StisFeedback stisFeedback;
+
     }
