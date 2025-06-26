@@ -60,6 +60,7 @@ public class StisServiceController {
         toSave.setDuration(req.getDuration());
         toSave.setTests(req.getTests());
         toSave.setType(req.getType());
+        toSave.setMaxBookingsPerSlot(req.getMaxBookingsPerSlot());
         toSave.setDiscount(req.getDiscount());
         toSave.setStatus(req.getStatus());
 
@@ -80,6 +81,7 @@ public class StisServiceController {
             serviceToUpdate.setDuration(req.getDuration());
             serviceToUpdate.setTests(req.getTests());
             serviceToUpdate.setType(req.getType());
+            serviceToUpdate.setMaxBookingsPerSlot(req.getMaxBookingsPerSlot());
             serviceToUpdate.setDiscount(req.getDiscount());
             serviceToUpdate.setStatus(req.getStatus());
 
