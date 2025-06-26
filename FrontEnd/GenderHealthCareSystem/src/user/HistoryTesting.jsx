@@ -31,8 +31,14 @@ import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
 
 import { convertVndToUsd, formatPrice } from "../components/utils/format";
-import { cancelBookingAPI, historyBookingAPI } from "../components/api/BookingTesting.api";
-import { paymentPayPalAPI, paymentVNPayAPI } from "../components/api/Payment.api";
+import {
+  cancelBookingAPI,
+  historyBookingAPI,
+} from "../components/api/BookingTesting.api";
+import {
+  paymentPayPalAPI,
+  paymentVNPayAPI,
+} from "../components/api/Payment.api";
 
 const { Title, Text } = Typography;
 
@@ -221,6 +227,18 @@ const HistoryTesting = () => {
             Đã xác nhận
           </Tag>
         );
+      case "DENIED":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="red">
+            Đã từ chối
+          </Tag>
+        );
+      case "NO_SHOW":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="orange">
+            Không đến
+          </Tag>
+        );
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -263,13 +281,19 @@ const HistoryTesting = () => {
   // Render phương thức thanh toán
   const renderPaymentMethod = (method) => {
     switch (method) {
-      case "credit card":
+      case "VNPAY":
         return (
           <span>
-            <CreditCardOutlined /> Ngân hàng
+            <CreditCardOutlined /> VNPAY
           </span>
         );
-      case "cash":
+      case "PAYPAL":
+        return (
+          <span>
+            <CreditCardOutlined /> PayPal
+          </span>
+        );
+      case "CASH":
         return (
           <span>
             <DollarOutlined /> Tiền mặt
@@ -340,7 +364,6 @@ const HistoryTesting = () => {
                 <Button
                   type="primary"
                   size="small"
-                  icon={<CreditCardOutlined />}
                   onClick={() => {
                     setSelectedBooking(record);
                     handlePayment(
@@ -358,7 +381,6 @@ const HistoryTesting = () => {
               <Button
                 type="default"
                 size="small"
-                icon={<FileDoneOutlined />}
                 onClick={() => handleViewReceipt(record)}
               >
                 Xem hóa đơn

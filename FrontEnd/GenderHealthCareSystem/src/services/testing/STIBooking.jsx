@@ -20,7 +20,8 @@ import {
   paymentPayPalAPI,
 } from "../../components/api/Payment.api";
 import { convertVndToUsd, formatPrice } from "../../components/utils/format";
-import { bookStisAPI, getSTISPackagesAPI } from "../../components/api/BookingTesting.api";
+import { bookStisAPI } from "../../components/api/BookingTesting.api";
+import { getServiceCombosAPI } from "../../components/api/ServiceTesting.api";
 
 const { Title, Text } = Typography;
 
@@ -41,7 +42,7 @@ const STIBooking = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await getSTISPackagesAPI();
+        const response = await getServiceCombosAPI();
         if (response && response.data) {
           // Assuming response.data is an array of packages
           const packages = response.data.data.map((pkg) => ({

@@ -38,9 +38,8 @@ import {
 import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../components/provider/AuthProvider";
 import LoginRequiredModal from "../../components/common/LoginRequiredModal";
-
 import { formatPrice } from "../../components/utils/format";
-import { getSTISPackagesAPI } from "../../components/api/BookingTesting.api";
+import { getServiceCombosAPI } from "../../components/api/ServiceTesting.api";
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
@@ -66,7 +65,7 @@ const STITesting = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await getSTISPackagesAPI();
+        const response = await getServiceCombosAPI();
         if (response && response.data) {
           // Assuming response.data is an array of packages
           const packages = response.data.data.map((pkg) => ({

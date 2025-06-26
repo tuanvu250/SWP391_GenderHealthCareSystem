@@ -1,5 +1,5 @@
-import React from "react";
-import { Layout, Menu } from "antd";
+import React, { useState } from "react";
+import { Avatar, Divider, Layout, Menu, Button, Typography, Tooltip, Space } from "antd";
 import {
   DashboardOutlined,
   UserOutlined,
@@ -25,12 +25,13 @@ import {
   CheckCircleOutlined,
   SendOutlined,
   SwapOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import { FaUserMd, FaUserTie, FaUserShield, FaCrown } from "react-icons/fa";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useAuth } from "../../../components/provider/AuthProvider";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Sider } = Layout;
+const { Text } = Typography;
 
 const Sidebar = ({
   collapsed,
@@ -39,6 +40,16 @@ const Sidebar = ({
   onMenuSelect,
   userRole,
 }) => {
+  const { user, logoutAction } = useAuth();
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+    logoutAction();
+    navigate("/login");
+  };
+
   // Menu items cho từng role
   const getMenuItems = (role) => {
     switch (role) {
@@ -410,13 +421,14 @@ const Sidebar = ({
     insetInlineStart: 0,
     top: 0,
     bottom: 0,
-    scrollbarWidth: "none",
-    scrollbarGutter: "stable",
+    scrollbarWidth: "thin",
+    scrollbarGutter: "able",
     msOverFlowStyle: "none",
+    display: "flex",
+    flexDirection: "column",  // Thêm flexDirection để dễ dàng định vị phần footer
   };
 
   const menuItems = getMenuItems(userRole);
-  const [isMobile, setIsMobile] = useState(false);
 
   return (
     <Sider
@@ -427,27 +439,62 @@ const Sidebar = ({
       width={280}
       style={siderStyle}
       className="shadow-sm"
+      breakpoint="md"
+      onBreakpoint={(broken) => setIsMobile(broken)}
     >
-      {/* Header */}
-      <div className="p-4 text-center border-b border-gray-200">
-        {!collapsed && (
-          <div className="text-lg font-bold text-gray-800">
-            {getRoleTitle(userRole)}
+      {/* Header with User Info */}
+      <div className={`p-6 border-b border-gray-200 transition-all duration-300 py-4`}>
+        {collapsed ? (
+          <div className="text-center">
+            <Tooltip title={user?.fullName || 'User'} placement="right">
+              <Avatar src={user?.userImageUrl} icon={<UserOutlined />} size="large" />
+            </Tooltip>
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <Avatar src={user?.userImageUrl} icon={<UserOutlined />} size="large" />
+            <div className="ml-3 overflow-hidden">
+              <div className="font-bold text-gray-800 truncate">{user?.fullName || 'User'}</div>
+              <Text type="secondary" className="capitalize text-sm">{userRole?.toLowerCase()}</Text>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Menu */}
-      <Menu
-        mode="inline"
-        selectedKeys={[selectedMenu]}
-        items={menuItems}
-        onClick={({ key }) => onMenuSelect(key)}
-        className="border-r-0 h-full"
-        style={{
-          fontSize: "14px",
-        }}
-      />
+      {/* Menu - thêm style flex-grow để đẩy footer xuống dưới cùng */}
+      <div style={{ flexGrow: 1, overflow: 'auto' }}>
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedMenu]}
+          items={menuItems}
+          onClick={({ key }) => onMenuSelect(key)}
+          className="border-r-0"
+          style={{
+            fontSize: "14px",
+          }}
+        />
+      </div>
+
+      {/* User Profile & Logout button ở footer */}
+      <div className="border-t border-gray-200 mt-auto bottom-0">
+        <div className={`p-4 ${collapsed ? 'text-center' : ''}`}>
+
+          { !collapsed && (
+            // Hiển thị khi sidebar mở rộng
+            <div>
+              <Button 
+                type="primary" 
+                danger 
+                icon={<LogoutOutlined />} 
+                onClick={handleLogout}
+                block
+              >
+                Đăng xuất
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
     </Sider>
   );
 };
