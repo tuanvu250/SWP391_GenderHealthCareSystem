@@ -143,13 +143,13 @@ public class StisServiceController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/retail")
-    public ResponseEntity<ApiResponse<List<StisService>>> getRetailServices() {
-        List<StisService> retailServices = service.getByTypeRetail();
+    @GetMapping("/single")
+    public ResponseEntity<ApiResponse<List<StisService>>> getSingleServices() {
+        List<StisService> singleServices = service.getByTypeSingle();
         ApiResponse<List<StisService>> res = new ApiResponse<>(
                 HttpStatus.OK,
-                "Lấy danh sách dịch vụ retail thành công",
-                retailServices,
+                "Lấy danh sách dịch vụ single thành công",
+                singleServices,
                 null);
         return ResponseEntity.ok(res);
     }
