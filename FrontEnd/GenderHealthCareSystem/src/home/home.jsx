@@ -48,6 +48,7 @@ const Home = () => {
                   type="primary"
                   size="large"
                   className="h-12 px-8 rounded-full shadow-md"
+                  onClick={() => navigate("/sti-testing")}
                 >
                   Xét nghiệm
                 </Button>

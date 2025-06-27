@@ -1,5 +1,5 @@
 // src/services/STIBooking/BookingForm.jsx
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Row,
   Col,
@@ -12,31 +12,180 @@ import {
   Typography,
   Divider,
   Space,
+  Tabs,
+  Pagination
 } from "antd";
 import {
   CheckCircleOutlined,
   DollarCircleOutlined,
   BankOutlined,
   MedicineBoxOutlined,
+  AppstoreOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../components/provider/AuthProvider";
 import vnpayLogo from "../../assets/vnpay.png"
 import dayjs from "dayjs";
+import { useSearchParams } from "react-router-dom";
 
 const { TextArea } = Input;
 const { Option } = Select;
-const { Text } = Typography;
+const { Text, Title } = Typography;
+const { TabPane } = Tabs;
 
 const BookingForm = ({
   form,
-  testingPackages,
+  singlePackages = [],
+  comboPackages = [],
   workingHours,
   disabledDate,
   handlePackageSelect,
   formatPrice,
 }) => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [paymentMethod, setPaymentMethod] = useState(form.getFieldValue('paymentMethod') || '');
+  const [activePackageType, setActivePackageType] = useState('combo');
+  
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6; // Show 6 items per page (2 rows x 3 columns)
+
+  // Calculate paginated packages
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  
+  const paginatedSinglePackages = singlePackages.slice(startIndex, endIndex);
+  const paginatedComboPackages = comboPackages.slice(startIndex, endIndex);
+
+  // Reset pagination when changing tab
+  const handlePackageTypeChange = (activeKey) => {
+    setActivePackageType(activeKey);
+    setCurrentPage(1); // Reset to first page
+    form.setFieldsValue({ package: undefined, packageDetails: undefined });
+  };
+
+  // Tự động điền thông tin người dùng từ context khi component được tạo
+  useEffect(() => {
+    form.setFieldsValue({
+      fullName: user?.fullName,
+      email: user?.email,
+      phone: user?.phone,
+      birthDate: user?.birthDate ? dayjs(user.birthDate) : null,
+      gender: user?.gender,
+    });
+  }, [form, user]);
+
+  useEffect(() => {
+    const serviceId = searchParams.get('serviceId');
+    //console.log(">>> serviceId from URL:", serviceId);
+    if (serviceId) {
+      // Tự động chọn gói dịch vụ nếu có serviceId trong URL
+      const selectedPackage = [...singlePackages, ...comboPackages].find(
+        pkg => pkg.serviceId === serviceId || pkg.serviceId === Number(serviceId)
+      );
+      
+      if (selectedPackage) {
+        // Set form values
+        form.setFieldsValue({
+          package: selectedPackage.serviceId,
+          packageDetails: selectedPackage,
+        });
+        
+        // Execute handlePackageSelect
+        handlePackageSelect(selectedPackage);
+        
+        // Set active tab based on package type
+        if (singlePackages.some(pkg => pkg.serviceId === selectedPackage.serviceId)) {
+          setActivePackageType('single');
+        } else if (comboPackages.some(pkg => pkg.serviceId === selectedPackage.serviceId)) {
+          setActivePackageType('combo');
+        }
+      } else {
+        // Package not found, reset
+        form.setFieldsValue({ package: undefined, packageDetails: undefined });
+      }
+    }
+  }, [searchParams, singlePackages, comboPackages, handlePackageSelect, form]);
+
+  // Render a package card with enhanced styling for grid
+  const renderPackageCardForGrid = (pkg) => {
+    // Make sure to compare with same type (string or number)
+    const formPackageId = form.getFieldValue("package");
+    const isSelected = formPackageId !== undefined && 
+      (formPackageId === pkg.serviceId || formPackageId === pkg.serviceId.toString());
+    
+    return (
+      <div 
+        className={`h-full border rounded-md p-4 hover:border-[#0099CF] cursor-pointer transition-all ${
+          isSelected ? "border-[#0099CF] border-2 shadow-md" : "border-gray-200"
+        }`}
+        onClick={() => handlePackageSelect(pkg)}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <MedicineBoxOutlined className="text-[#0099CF]" />
+          <div className="font-bold text-base">{pkg.serviceName}</div>
+          {isSelected && (
+            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center ml-auto">
+              <CheckCircleOutlined className="mr-1" /> Đã chọn
+            </span>
+          )}
+        </div>
+        
+        <p className="text-gray-500 text-sm mb-3 line-clamp-2">{pkg.description}</p>
+        
+        <div className="flex flex-wrap gap-1 mb-3">
+          {pkg.tests && pkg.tests.slice(0, 3).map((test, index) => (
+            <div
+              key={index}
+              className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full"
+            >
+              {test}
+            </div>
+          ))}
+          {pkg.tests && pkg.tests.length > 3 && (
+            <div className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+              +{pkg.tests.length - 3}
+            </div>
+          )}
+        </div>
+        
+        <div className="text-gray-600 text-xs mb-3">
+          <span className="text-gray-500">Thời gian có kết quả:</span>{" "}
+          {pkg.duration}
+        </div>
+        
+        <div className="flex justify-between items-end mt-auto pt-2 border-t border-gray-100">
+          <div>
+            <div className="text-base font-bold text-[#0099CF]">
+              {formatPrice(pkg.price)}
+            </div>
+            {pkg.originalPrice && (
+              <div className="line-through text-xs text-gray-500">
+                {formatPrice(pkg.originalPrice)}
+              </div>
+            )}
+          </div>
+          
+          {!isSelected ? (
+            <button 
+              className="bg-[#0099CF] text-white text-sm px-3 py-1 rounded hover:bg-[#007BA7] transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePackageSelect(pkg);
+              }}
+            >
+              Chọn
+            </button>
+          ) : (
+            <div className="text-green-600 font-medium text-xs flex items-center">
+              <CheckCircleOutlined className="mr-1" /> Đã chọn
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // Theo dõi thay đổi phương thức thanh toán
   const handlePaymentMethodChange = (e) => {
@@ -44,107 +193,120 @@ const BookingForm = ({
     
     // Reset trường onlinePaymentMethod khi người dùng chuyển về thanh toán tiền mặt
     if (e.target.value !== 'online') {
-      form.setFieldsValue({ onlinePaymentMethod: undefined });
+      form.setFieldsValue({ onlinePaymentMethod: undefined }); // Đúng với tên field mới
     }
   };
 
-  // Tự động điền thông tin người dùng từ context khi component được tạo
-  useEffect(() => {
-    form.setFieldsValue({
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      birthDate: user.birthDate ? dayjs(user.birthDate) : null,
-      gender: user.gender,
-    });
-  }, [form, user]);
-
   return (
     <div>
-
       <Divider />
 
       {/* Chọn gói xét nghiệm */}
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-4">Chọn gói xét nghiệm</h3>
+        
+        <Tabs 
+          activeKey={activePackageType}
+          onChange={handlePackageTypeChange}
+          className="mb-4"
+        >
+          {/* Đổi vị trí tab combo và single */}
+          <TabPane 
+            tab={
+              <span>
+                Gói combo tiết kiệm ({comboPackages.length})
+              </span>
+            } 
+            key="combo"
+          >
+            <div className="mb-4">
+              <Text type="secondary">
+                Gói xét nghiệm nhiều bệnh kết hợp, tiết kiệm chi phí và thời gian so với xét nghiệm riêng lẻ.
+              </Text>
+            </div>
+          </TabPane>
+          
+          <TabPane 
+            tab={
+              <span>
+                Dịch vụ đơn lẻ ({singlePackages.length})
+              </span>
+            } 
+            key="single"
+          >
+            <div className="mb-4">
+              <Text type="secondary">
+                Dịch vụ xét nghiệm từng bệnh riêng biệt, phù hợp nếu bạn chỉ cần xét nghiệm một loại bệnh cụ thể.
+              </Text>
+            </div>
+          </TabPane>
+        </Tabs>
+        
         <Form.Item
           name="package"
           rules={[{ required: true, message: "Vui lòng chọn gói xét nghiệm!" }]}
         >
-          <div className="space-y-4">
-            {testingPackages.map((pkg) => {
-              // Kiểm tra xem gói này có được chọn không
-              const isSelected = form.getFieldValue("package") === pkg.id;
-
-              return (
-                <Card
-                  key={pkg.id}
-                  className="border hover:border-[#0099CF] cursor-pointer transition-all "
-                  onClick={() => handlePackageSelect(pkg)}
-                >
-                  <div className="hidden">
-                    <Radio value={pkg.id} checked={isSelected} />
-                  </div>
-
-                  <div className="flex flex-col md:flex-row justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MedicineBoxOutlined className="text-[#0099CF]" />
-                        <h4 className="font-bold text-lg m-0">{pkg.name}</h4>
-                        {/* Thêm badge "Đã chọn" bên cạnh tên gói */}
-                        {isSelected && (
-                          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center">
-                            <CheckCircleOutlined className="mr-1" /> Đã chọn
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-500 mb-4">{pkg.description}</p>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {pkg.tests.map((test, index) => (
-                          <div
-                            key={index}
-                            className="px-3 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-full"
-                          >
-                            {test}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-gray-600">
-                        <span className="text-gray-500">Thời gian có kết quả:</span>{" "}
-                        {pkg.duration}
-                      </div>
+          <div>
+            {/* Đổi thứ tự hiển thị - hiển thị combo trước */}
+            {/* Combo Packages Grid */}
+            {activePackageType === 'combo' && comboPackages.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedComboPackages.map(pkg => (
+                    <div key={pkg.serviceId} className="h-full">
+                      {renderPackageCardForGrid(pkg)}
                     </div>
-
-                    <div className="md:text-right mt-4 md:mt-0 md:ml-4">
-                      <div className="text-xl font-bold text-[#0099CF]">
-                        {formatPrice(pkg.price)}
-                      </div>
-                      {pkg.originalPrice && (
-                        <div className="line-through text-gray-500">
-                          {formatPrice(pkg.originalPrice)}
-                        </div>
-                      )}
-                      {/* Thêm nút chọn khi chưa được chọn */}
-                      {!isSelected ? (
-                        <button 
-                          className="mt-2 bg-[#0099CF] text-white px-3 py-1 rounded hover:bg-[#007BA7] transition"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePackageSelect(pkg);
-                          }}
-                        >
-                          Chọn gói này
-                        </button>
-                      ) : (
-                        <div className="mt-2 text-green-600 font-medium flex items-center justify-end">
-                          <CheckCircleOutlined className="mr-1" /> Đã chọn
-                        </div>
-                      )}
-                    </div>
+                  ))}
+                </div>
+                
+                {/* Pagination for combo packages */}
+                {comboPackages.length > pageSize && (
+                  <div className="flex justify-center mt-6">
+                    <Pagination
+                      current={currentPage}
+                      total={comboPackages.length}
+                      pageSize={pageSize}
+                      onChange={setCurrentPage}
+                      showSizeChanger={false}
+                    />
                   </div>
-                </Card>
-              );
-            })}
+                )}
+              </>
+            ) : activePackageType === 'combo' ? (
+              <div className="text-center py-6 bg-gray-50 rounded">
+                <Text type="secondary">Không có gói combo nào hiện có</Text>
+              </div>
+            ) : null}
+            
+            {/* Single Packages Grid */}
+            {activePackageType === 'single' && singlePackages.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedSinglePackages.map(pkg => (
+                    <div key={pkg.serviceId} className="h-full">
+                      {renderPackageCardForGrid(pkg)}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Pagination for single packages */}
+                {singlePackages.length > pageSize && (
+                  <div className="flex justify-center mt-6">
+                    <Pagination
+                      current={currentPage}
+                      total={singlePackages.length}
+                      pageSize={pageSize}
+                      onChange={setCurrentPage}
+                      showSizeChanger={false}
+                    />
+                  </div>
+                )}
+              </>
+            ) : activePackageType === 'single' ? (
+              <div className="text-center py-6 bg-gray-50 rounded">
+                <Text type="secondary">Không có dịch vụ đơn lẻ nào hiện có</Text>
+              </div>
+            ) : null}
           </div>
         </Form.Item>
 
@@ -264,7 +426,7 @@ const BookingForm = ({
               {paymentMethod === "online" && (
                 <div className="pl-7 mt-2">
                   <Form.Item
-                    name="paymentMethod"
+                    name="onlinePaymentMethod" // Đổi từ "paymentMethod" thành "onlinePaymentMethod"
                     rules={[
                       {
                         required: paymentMethod === "online",
