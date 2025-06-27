@@ -331,7 +331,6 @@ const ManageBookingStis = () => {
       title: "Thao tác",
       key: "action",
       width: 120,
-      fixed: "right",
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem chi tiết">
