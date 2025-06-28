@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisResultRequest;
 import GenderHealthCareSystem.dto.StisResultResponse;
 import GenderHealthCareSystem.model.StisBooking;
@@ -7,12 +8,16 @@ import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisResult;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisResultRepository;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,5 +107,11 @@ public class StisResultService {
         result.setPdfResultUrl(pdfUrl);
         result.setUpdatedAt(LocalDateTime.now());
         return stisResultRepository.saveAndFlush(result);
+    }
+
+    public PageResponse<StisResultResponse> getAllResults(Pageable pageable) {
+        Page<StisResult> resultsPage = stisResultRepository.findAll(pageable);
+        Page<StisResultResponse> responsePages = resultsPage.map(this::mapToResponse);
+        return PageResponseUtil.mapToPageResponse(responsePages);
     }
 }
