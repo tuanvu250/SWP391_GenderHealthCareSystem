@@ -1,12 +1,16 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisResultRequest;
 import GenderHealthCareSystem.dto.StisResultResponse;
 import GenderHealthCareSystem.model.StisResult;
 import GenderHealthCareSystem.service.StisResultService;
 import GenderHealthCareSystem.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +72,23 @@ public class StisResultController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), "INVALID_REQUEST");
         }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<PageResponse<StisResultResponse>> getAllResults(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "resultId") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        PageResponse<StisResultResponse> results = stisResultService.getAllResults(pageable);
+
+        return ResponseEntity.ok(results);
     }
 
     private ResponseEntity<ApiResponse<StisResultResponse>> createErrorResponse(
