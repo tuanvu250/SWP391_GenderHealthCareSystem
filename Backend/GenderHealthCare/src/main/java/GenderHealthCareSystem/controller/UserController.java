@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.controller;
 
+import GenderHealthCareSystem.dto.ChangePasswordRequest;
 import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.model.Users;
@@ -7,9 +8,12 @@ import GenderHealthCareSystem.service.AccountService;
 import GenderHealthCareSystem.service.UserService;
 import GenderHealthCareSystem.util.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -56,5 +60,15 @@ public class UserController {
                 user.getBirthDate(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal Jwt jwt, @RequestBody ChangePasswordRequest request) {
+        String accountId = jwt.getClaimAsString("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+
+        return accountService.changePassword(Integer.parseInt(accountId), request);
     }
 }
