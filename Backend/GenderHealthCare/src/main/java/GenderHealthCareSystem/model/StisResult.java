@@ -65,6 +65,9 @@ public class StisResult {
     @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
     private String note;
 
+    @Column(name = "PdfResultUrl", columnDefinition = "NVARCHAR(255)", updatable = true)
+    private String pdfResultUrl;
+
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 

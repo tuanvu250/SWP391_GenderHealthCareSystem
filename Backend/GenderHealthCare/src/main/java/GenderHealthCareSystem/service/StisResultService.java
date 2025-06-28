@@ -9,6 +9,7 @@ import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisResultRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -82,6 +83,7 @@ public class StisResultService {
         res.setHpvDna(entity.getHpvDna());
         res.setResultText(entity.getResultText());
         res.setNote(entity.getNote());
+        res.setPdfResultUrl(entity.getPdfResultUrl());
         res.setCreatedAt(entity.getCreatedAt());
         res.setUpdatedAt(entity.getUpdatedAt());
         return res;
@@ -91,5 +93,14 @@ public class StisResultService {
         return stisResultRepository.findByStisBooking_BookingId(bookingId)
                 .map(this::mapToResponse);
     }
-}
 
+    @Transactional
+    public StisResult updateResultPdf(Integer resultId, String pdfUrl) {
+        StisResult result = stisResultRepository.findById(resultId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy kết quả với ID: " + resultId));
+
+        result.setPdfResultUrl(pdfUrl);
+        result.setUpdatedAt(LocalDateTime.now());
+        return stisResultRepository.saveAndFlush(result);
+    }
+}
