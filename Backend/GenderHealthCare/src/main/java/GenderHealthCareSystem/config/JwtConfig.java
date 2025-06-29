@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 @Configuration
-public class JwtConfig {
+public class    JwtConfig {
 
     // Khóa bí mật dùng để mã hóa và giải mã JWT, được lấy từ file cấu hình
     @Value("${jwt.base64-secret}")
