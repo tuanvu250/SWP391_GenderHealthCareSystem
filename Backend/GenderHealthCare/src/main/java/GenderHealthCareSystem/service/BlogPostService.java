@@ -49,7 +49,15 @@ public class BlogPostService {
         blog.setStatus("PUBLISHED");
         blogPostRepository.save(blog);
     }
-    
+    public void rejectBlogPost(Integer id) {
+        BlogPost blog = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
+        if ("DELETED".equals(blog.getStatus())) {
+            throw new RuntimeException("Bài viết này đã bị xóa và không thể được phê duyệt.");
+        }
+        blog.setStatus("Rejected");
+        blogPostRepository.save(blog);
+    }
 
     public void updateBlogPost(int id, BlogPost updatedBlogPost) {
         BlogPost existingBlogPost = blogPostRepository.findById(id)
@@ -151,4 +159,6 @@ public class BlogPostService {
         blogPostResponse.setStatus(blogPost.getStatus());
         return blogPostResponse;
     }
+
+
 }

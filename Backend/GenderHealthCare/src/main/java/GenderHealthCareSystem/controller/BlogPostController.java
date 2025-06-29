@@ -72,6 +72,14 @@ public class BlogPostController {
         var response = new ApiResponse<>(HttpStatus.OK, "Blog post approved successfully", null, null);
         return ResponseEntity.ok().body(response);
     }
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasRole('Manager') ")
+    public ResponseEntity<ApiResponse<?>> RejectBlogPost(@PathVariable Integer id) {
+        blogPostService.rejectBlogPost(id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Blog post rejected successfully", null, null);
+        return ResponseEntity.ok().body(response);
+    }
+
 
 
     @PutMapping("/{id}")
