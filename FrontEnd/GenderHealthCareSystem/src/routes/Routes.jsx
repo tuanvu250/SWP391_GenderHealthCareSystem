@@ -41,6 +41,7 @@ import BookingResult from "../services/BookingResult";
 import ConfirmConsultationBooking  from "../services/consultant/ConfirmBookingConsultant";
 
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
+import Overview from "../dashboard/features/overview/Overview";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/booking/ManageBookingStis";
 import ManageService from "../dashboard/features/service/ManageService";
@@ -150,7 +151,8 @@ function RouteMap() {
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
+                <Route index element={<Overview/>}/>
+                <Route path="overview" element={<Overview/>}/>
                 <Route path="manage-blog" element={<ManageMyBlog/>}/>
                 <Route path="/consultant/dashboard/consultant-schedule" element={<ConsultantSchedule/>}/>
             </Route>
@@ -164,7 +166,8 @@ function RouteMap() {
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
+                <Route index element={<Overview/>}/>
+                <Route path="overview" element={<Overview/>}/>
                 <Route path="manage-blog" element={<ManageMyBlog/>}/>
                 <Route path="manage-booking-stis" element={<ManageBookingStis/>}/>
                 <Route path="manage-service" element={<ManageService/>}/>
@@ -180,7 +183,8 @@ function RouteMap() {
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<h1>Dashboard</h1>}/>
+                <Route index element={<Overview/>}/>
+                <Route path="overview" element={<Overview/>}/>
                 <Route path="manage-booking-stis" element={<ManageBookingStis/>}/>
             </Route>
         </Routes>

@@ -15,6 +15,7 @@ import {
   Avatar,
   Skeleton,
   Breadcrumb,
+  message,
 } from "antd";
 import {
   CheckCircleFilled,
@@ -29,6 +30,7 @@ import {
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { formatPrice } from "../../components/utils/format"; // Import hàm định dạng giá
+import { getServiceSingleAPI } from "../../components/api/ServiceTesting.api";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -124,53 +126,22 @@ const RetailService = () => {
 
   // Lấy dữ liệu dịch vụ từ mock data
   useEffect(() => {
-    setLoading(true);
-    
-    // Giả lập API call với timeout
-    setTimeout(() => {
-      // Lọc ra chỉ các dịch vụ đơn lẻ (single)
-      const retailServices = mockServices.filter(service => service.category === "single");
-      
-      let filteredServices = [...retailServices];
-      
-      // Lọc theo từ khóa tìm kiếm
-      if (searchQuery) {
-        filteredServices = filteredServices.filter(
-          service => service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                   service.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+    const fetchServices = async() => {
+      try {
+        const response = await getServiceSingleAPI();
+        setServices(response.data.data || []);
+        setLoading(false);
+      } catch (error) {
+        message.error(error.response?.data?.message || "Lỗi khi tải dữ liệu dịch vụ");
       }
-      
-      // Lọc theo loại xét nghiệm
-      if (filterType !== "all") {
-        filteredServices = filteredServices.filter(service => service.testType === filterType);
-      }
-      
-      // Sắp xếp dịch vụ
-      switch (sortOption) {
-        case "price_low":
-          filteredServices.sort((a, b) => a.price - b.price);
-          break;
-        case "price_high":
-          filteredServices.sort((a, b) => b.price - a.price);
-          break;
-        case "rating":
-          filteredServices.sort((a, b) => b.rating - a.rating);
-          break;
-        default: // popularity
-          filteredServices.sort((a, b) => b.popularityScore - a.popularityScore);
-          break;
-      }
-      
-      setServices(filteredServices);
-      setLoading(false);
-    }, 800);
+    };
+
+    fetchServices();
   }, [searchQuery, filterType, sortOption]);
 
   // Đặt lịch dịch vụ
   const handleBookService = (serviceId) => {
-    // Chuyển đến trang đặt lịch (có thể thêm mã sau)
-    // navigate(`/book-service/${serviceId}`);
+    navigate(`/sti-booking?serviceId=${serviceId}`);
   };
 
   // Thêm/xóa dịch vụ yêu thích
@@ -268,7 +239,7 @@ const RetailService = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {services.map((service) => (
               <div
-                key={service.id}
+                key={service.serviceId}
                 className="transition-all duration-300"
               >
                 <Card 
@@ -279,15 +250,15 @@ const RetailService = () => {
                     <div className="flex justify-between items-start mb-2">
                       {/* Loại bỏ icon - chỉ giữ lại tiêu đề */}
                       <Title level={4} className="mb-1">
-                        {service.name}
+                        {service.serviceName}
                       </Title>
                       <Button
                         type="text"
                         shape="circle"
-                        icon={favorites.includes(service.id) ? <HeartFilled className="text-red-500" /> : <HeartOutlined />}
+                        icon={favorites.includes(service.serviceId) ? <HeartFilled className="text-red-500" /> : <HeartOutlined />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(service.id);
+                          toggleFavorite(service.serviceId);
                         }}
                       />
                     </div>
@@ -296,14 +267,14 @@ const RetailService = () => {
                       {service.description}
                     </Paragraph>
 
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                       <div className="flex items-center gap-1">
                         <Rate disabled defaultValue={service.rating} allowHalf character={<StarFilled />} className="text-sm" />
                         <Text className="text-sm text-gray-500">
                           ({service.reviewCount} đánh giá)
                         </Text>
                       </div>
-                    </div>
+                    </div> */}
 
                     <div className="flex gap-2 mb-3">
                       <Tag color="cyan">Thời gian: {service.duration} phút</Tag>
@@ -323,7 +294,7 @@ const RetailService = () => {
                       <Button 
                         type="primary" 
                         icon={<ShoppingCartOutlined />}
-                        onClick={() => handleBookService(service.id)}
+                        onClick={() => handleBookService(service.serviceId)}
                       >
                         Đặt lịch
                       </Button>
@@ -413,7 +384,7 @@ const RetailService = () => {
               renderItem={(item) => (
                 <List.Item>
                   <List.Item.Meta
-                    title={<Title level={5}>{item.question}</Title>}
+                    title={<strong className="text-lg">{item.question}</strong>} // Dùng strong thay vì Title
                     description={<Paragraph>{item.answer}</Paragraph>}
                   />
                 </List.Item>

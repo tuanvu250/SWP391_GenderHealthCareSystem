@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.dto.StisResultRequest;
 import GenderHealthCareSystem.dto.StisResultResponse;
 import GenderHealthCareSystem.model.StisBooking;
@@ -7,11 +8,16 @@ import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisResult;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisResultRepository;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +88,7 @@ public class StisResultService {
         res.setHpvDna(entity.getHpvDna());
         res.setResultText(entity.getResultText());
         res.setNote(entity.getNote());
+        res.setPdfResultUrl(entity.getPdfResultUrl());
         res.setCreatedAt(entity.getCreatedAt());
         res.setUpdatedAt(entity.getUpdatedAt());
         return res;
@@ -91,5 +98,20 @@ public class StisResultService {
         return stisResultRepository.findByStisBooking_BookingId(bookingId)
                 .map(this::mapToResponse);
     }
-}
 
+    @Transactional
+    public StisResult updateResultPdf(Integer resultId, String pdfUrl) {
+        StisResult result = stisResultRepository.findById(resultId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy kết quả với ID: " + resultId));
+
+        result.setPdfResultUrl(pdfUrl);
+        result.setUpdatedAt(LocalDateTime.now());
+        return stisResultRepository.saveAndFlush(result);
+    }
+
+    public PageResponse<StisResultResponse> getAllResults(Pageable pageable) {
+        Page<StisResult> resultsPage = stisResultRepository.findAll(pageable);
+        Page<StisResultResponse> responsePages = resultsPage.map(this::mapToResponse);
+        return PageResponseUtil.mapToPageResponse(responsePages);
+    }
+}

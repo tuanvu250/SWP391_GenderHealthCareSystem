@@ -1,6 +1,5 @@
 package GenderHealthCareSystem.dto;
 
-
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -19,6 +18,7 @@ public class StisResultResponse {
     private String hpvDna;
     private String resultText;
     private String note;
+    private String pdfResultUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

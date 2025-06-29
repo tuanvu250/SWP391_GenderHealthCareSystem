@@ -13,7 +13,7 @@ export const bookStisAPI = async (values) => {
     note: values.notes,
     paymentMethod: values.paymentMethod,
   };
-
+  console.log("Booking Data:", bookingData);
   return apiClient.post("/stis-bookings", bookingData);
 };
 

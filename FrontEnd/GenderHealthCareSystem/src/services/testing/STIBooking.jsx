@@ -21,7 +21,10 @@ import {
 } from "../../components/api/Payment.api";
 import { convertVndToUsd, formatPrice } from "../../components/utils/format";
 import { bookStisAPI } from "../../components/api/BookingTesting.api";
-import { getServiceCombosAPI } from "../../components/api/ServiceTesting.api";
+import {
+  getServiceCombosAPI,
+  getServiceSingleAPI,
+} from "../../components/api/ServiceTesting.api";
 
 const { Title, Text } = Typography;
 
@@ -37,26 +40,24 @@ const STIBooking = () => {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [testingPackages, setTestingPackages] = useState([]);
+  const [singlePackages, setSinglePackages] = useState([]);
   const [cashPayment, setCashPayment] = useState(false);
 
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         const response = await getServiceCombosAPI();
-        if (response && response.data) {
-          // Assuming response.data is an array of packages
-          const packages = response.data.data.map((pkg) => ({
-            id: pkg.serviceId,
-            name: pkg.serviceName,
-            price: pkg.price,
-            tests: pkg.tests.split(", "),
-            duration: pkg.duration,
-            description: pkg.description,
-          }));
-          setTestingPackages(packages);
-        } else {
-          console.error("No data found for testing packages");
-        }
+        const packages = response.data.data.map((pkg) => ({
+          ...pkg,
+          tests: pkg.tests.split(", "),
+        }));
+        setTestingPackages(packages);
+        const res = await getServiceSingleAPI();
+        const singleTests = res.data.data.map((pkg) => ({
+          ...pkg,
+          tests: [pkg.tests],
+        }));
+        setSinglePackages(singleTests);
       } catch (error) {
         console.error("Error fetching testing packages:", error);
         message.error("Không thể tải gói xét nghiệm. Vui lòng thử lại sau.");
@@ -122,8 +123,8 @@ const STIBooking = () => {
   const handlePackageSelect = (pkg) => {
     setSelectedPackage(pkg);
     form.setFieldsValue({
-      package: pkg.id,
-      packageName: pkg.name,
+      package: pkg.serviceId,
+      packageName: pkg.serviceName,
       packagePrice: pkg.price,
       packageDetails: JSON.stringify(pkg), // Lưu thông tin chi tiết của gói
     });
@@ -132,22 +133,18 @@ const STIBooking = () => {
 
   // Chuyển sang bước tiếp theo
   const nextStep = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        // Lưu lại giá trị trong form
-        setFormData({
-          ...formData,
-          ...values,
-        });
+    form.setFieldsValue({
+      package: selectedPackage?.serviceId,
+      packageDetails: JSON.stringify(selectedPackage),
+    });
 
-        setCurrentStep(currentStep + 1);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      })
-      .catch((errorInfo) => {
-        console.log("Validation failed:", errorInfo);
-        message.error("Vui lòng điền đầy đủ thông tin cần thiết");
-      });
+    form.validateFields().then(() => {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }).catch((errorInfo) => {
+      console.error("Validation failed:", errorInfo);
+      message.error("Vui lòng kiểm tra lại thông tin đã nhập.");
+    });
   };
 
   // Quay lại bước trước
@@ -173,6 +170,8 @@ const STIBooking = () => {
         paymentMethod: allValues.paymentMethod,
         notes: allValues.notes,
       };
+
+      console.log(">>> Booking data:", bookingData);
 
       const response = await bookStisAPI(bookingData);
 
@@ -224,7 +223,9 @@ const STIBooking = () => {
       }, 3000);
     } catch (error) {
       console.error(error.response.data.message);
-      message.error(error.response?.data?.message || "Có lỗi xảy ra khi thanh toán");
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi thanh toán"
+      );
     }
   };
 
@@ -240,7 +241,8 @@ const STIBooking = () => {
         return (
           <BookingForm
             form={form}
-            testingPackages={testingPackages}
+            comboPackages={testingPackages}
+            singlePackages={singlePackages}
             workingHours={workingHours}
             disabledDate={disabledDate}
             handlePackageSelect={handlePackageSelect}

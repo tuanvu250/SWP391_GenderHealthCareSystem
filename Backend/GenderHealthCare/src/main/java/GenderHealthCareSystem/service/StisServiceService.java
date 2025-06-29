@@ -70,6 +70,9 @@ public class StisServiceService {
             if (newData.getType() != null) {
                 existing.setType(newData.getType());
             }
+            if (newData.getMaxBookingsPerSlot() != null) {
+                existing.setMaxBookingsPerSlot(newData.getMaxBookingsPerSlot());
+            }
             if (newData.getDiscount() != null) {
                 existing.setDiscount(newData.getDiscount());
             }

@@ -53,12 +53,16 @@ const STITesting = () => {
   const [isLoginModal, setIsLoginModal] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [testingPackages, setTestingPackages] = useState([]);
+  const [selectedPackage, setSelectedPackage] = useState(null);
 
-  const handleUserService = () => {
+  const handleUserService = (pkg) => {
     if (!user) {
       setIsLoginModal(true);
     } else {
-      navigate("/sti-booking");
+      if (!pkg) {
+        navigate("/sti-booking");
+      }
+       else navigate(`/sti-booking?serviceId=${pkg.id}`);
     }
   };
 
@@ -383,7 +387,7 @@ const STITesting = () => {
                     size="large"
                     className={`rounded-full h-12 text-base font-medium mt-auto
                         border-[#0099CF] text-[#0099CF] hover:text-[#008BBB] hover:border-[#008BBB]`}
-                    onClick={handleUserService}
+                    onClick={() => handleUserService(pkg)}
                   >
                     Đặt gói này ngay
                   </Button>

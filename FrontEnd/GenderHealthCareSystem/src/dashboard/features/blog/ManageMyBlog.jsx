@@ -437,7 +437,6 @@ const ManageMyBlog = () => {
       title: "Thao tác",
       key: "action",
       width: 150,
-      fixed: "right",
       render: (_, record) => (
         <Space size="small">
           {/* Hiển thị button xem bài viết cho tất cả */}
