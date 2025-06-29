@@ -20,8 +20,11 @@ public class ApiResponse<T> {
         this.timestamp = LocalDateTime.now();
     }
 
+    public static <T> ApiResponse<T> success(T data) {
+        return new ApiResponse<>(HttpStatus.OK, "Success", data, null);
+    }
 
-
+    public static <T> ApiResponse<T> error(String errorMessage) {
+        return new ApiResponse<>(HttpStatus.BAD_REQUEST, errorMessage, null, "ERROR");
+    }
 }
-
-

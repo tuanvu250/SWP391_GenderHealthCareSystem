@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ public class ConsultationBooking {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ConsultantID", referencedColumnName = "UserID")
+    @Setter
     private Users consultant;
 
     @Column(name = "BookingDate")
@@ -48,4 +50,12 @@ public class ConsultationBooking {
 
     @OneToOne(mappedBy = "consultationBooking", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Invoice invoice; // Invoice for this consultation booking
+
+    @Setter
+    @Column(name = "MeetLink")
+    private String meetLink;
+
+    public void setCustomer(Users customer) {
+        this.customer = customer;
+    }
 }
