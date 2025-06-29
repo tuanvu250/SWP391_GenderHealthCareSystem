@@ -2,14 +2,19 @@ package GenderHealthCareSystem.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ConsultantProfile")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder // Thêm annotation để hỗ trợ builder pattern
 public class ConsultantProfile {
 
     @Id
@@ -25,15 +30,33 @@ public class ConsultantProfile {
     @Column(name = "Introduction", columnDefinition = "NVARCHAR(MAX)")
     private String introduction;
 
+    @Column(name = "JobTitle", length = 100, nullable = false)
+    private String jobTitle;
+
     @Column(name = "Specialization", columnDefinition = "NVARCHAR(MAX)")
     private String specialization;
 
     @Column(name = "Languages", columnDefinition = "NVARCHAR(MAX)")
-    private String languages; // Could be a list of strings, stored as JSON or comma-separated
+    private String languages;
 
-    @Column(name = "AvatarURL", columnDefinition = "TEXT")
-    private String avatarUrl;
-
-    @Column(name = "ExperienceYears")
+    @Column(name = "ExperienceYears", nullable = false)
     private Integer experienceYears;
+
+    @Column(name = "HourlyRate", nullable = false)
+    private Double hourlyRate;
+
+    @Column(name = "Location", length = 255)
+    private String location;
+
+    @Column(name = "IsAvailable")
+    private Boolean isAvailable;
+
+    @Column(name = "Rating")
+    private Double rating;
+
+    @Column(name = "ReviewCount")
+    private Integer reviewCount;
+
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProfileDetail> details = new ArrayList<>();
 }
