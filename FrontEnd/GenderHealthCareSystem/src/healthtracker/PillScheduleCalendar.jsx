@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { message } from 'antd';
@@ -9,6 +10,7 @@ import axios from 'axios';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+dayjs.locale('vi');
 
 export default function PillScheduleCalendar() {
   const navigate = useNavigate();
@@ -29,8 +31,6 @@ export default function PillScheduleCalendar() {
       const today = dayjs();
 
       const map = {};
-
-      // ✅ Chỉ map các ngày >= startDate
       data.forEach(item => {
         const dateObj = dayjs(item.pillDate);
         if (!startDate || dateObj.isBefore(startDate)) return;
@@ -52,12 +52,10 @@ export default function PillScheduleCalendar() {
       while (currentDate.isSameOrBefore(today) && counted < pillType) {
         const dateStr = currentDate.format("YYYY-MM-DD");
         const item = map[dateStr];
-
         if (!item || item.isPlacebo) {
           currentDate = currentDate.add(1, "day");
           continue;
         }
-
         validDates.push({ ...item, dateStr });
         counted++;
         currentDate = currentDate.add(1, "day");
@@ -76,8 +74,6 @@ export default function PillScheduleCalendar() {
 
       if (autoMarkPromises.length > 0) {
         await Promise.all(autoMarkPromises);
-
-        // 👇 Reload lại lịch mới nhất sau khi auto-mark
         const updated = await getAllPillSchedules();
         updated?.data?.forEach(item => {
           const dateObj = dayjs(item.pillDate);
@@ -105,17 +101,6 @@ export default function PillScheduleCalendar() {
     fetchSchedule();
   }, []);
 
-  const getMonthDates = () => {
-    const today = dayjs();
-    const startOfMonth = today.startOf('month');
-    const endOfMonth = today.endOf('month');
-    const days = [];
-    for (let date = startOfMonth; date.isSameOrBefore(endOfMonth); date = date.add(1, 'day')) {
-      days.push(date);
-    }
-    return days;
-  };
-
   const handleToggleCheck = async (dateStr) => {
     const token = sessionStorage.getItem("token");
     if (!token) {
@@ -128,7 +113,7 @@ export default function PillScheduleCalendar() {
       message.warning("Bạn đang đánh dấu cho ngày mai hoặc tương lai!");
     }
 
-    let item = updatedSchedule[dateStr];
+    const item = updatedSchedule[dateStr];
 
     try {
       if (!item) {
@@ -164,67 +149,89 @@ export default function PillScheduleCalendar() {
     }
   };
 
+  const renderCalendarForMonth = (month) => {
+    const startOfMonth = month.startOf('month');
+    const endOfMonth = month.endOf('month');
+    const days = [];
+    for (let d = startOfMonth; d.isSameOrBefore(endOfMonth); d = d.add(1, 'day')) {
+      days.push(d);
+    }
 
-  const daysInMonth = getMonthDates();
-  const firstDayOfWeek = dayjs().startOf('month').day();
-  const calendarRows = [];
-  let currentRow = [];
+    const firstDayOfWeek = startOfMonth.day();
+    const rows = [];
+    let row = [];
 
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    currentRow.push(<td key={`empty-${i}`} className="p-2"></td>);
-  }
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      row.push(<td key={`empty-${i}`} className="p-2"></td>);
+    }
 
-  daysInMonth.forEach((date, index) => {
-    const dateStr = date.format('YYYY-MM-DD');
-    const item = updatedSchedule[dateStr];
-    const hasTaken = item?.hasTaken ?? false;
-    const isToday = dayjs().format('YYYY-MM-DD') === dateStr;
-    const isPlacebo = item?.isPlacebo ?? false;
-    const showButton = item && !isPlacebo;
+    days.forEach((date, index) => {
+      const dateStr = date.format('YYYY-MM-DD');
+      const item = updatedSchedule[dateStr];
+      const hasTaken = item?.hasTaken ?? false;
+      const isToday = dayjs().isSame(date, 'day');
+      const isPlacebo = item?.isPlacebo ?? false;
+      const showButton = item && !isPlacebo;
 
-    currentRow.push(
-      <td key={dateStr} className="p-2 text-center">
-        {showButton ? (
-          <button
-            onClick={() => handleToggleCheck(dateStr)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition
-              ${hasTaken ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}
-              ${isToday ? 'ring-2 ring-blue-500' : ''}
-              hover:scale-105`}
-          >
-            {date.date()}
-          </button>
-        ) : (
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-gray-300">
-            {date.date()}
-          </div>
-        )}
-      </td>
+      row.push(
+        <td key={dateStr} className="p-1">
+          {showButton ? (
+            <button
+              onClick={() => handleToggleCheck(dateStr)}
+              className={`w-10 h-10 rounded-full mx-auto flex items-center justify-center font-semibold transition
+                ${hasTaken ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}
+                ${isToday ? 'ring-2 ring-blue-600 ring-offset-2' : ''}
+                hover:scale-105`}
+            >
+              {date.date()}
+            </button>
+          ) : (
+            <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center text-gray-300 border border-dashed">
+              {date.date()}
+            </div>
+          )}
+        </td>
+      );
+
+      if ((row.length + firstDayOfWeek) % 7 === 0) {
+        rows.push(<tr key={`row-${index}`}>{row}</tr>);
+        row = [];
+      }
+    });
+
+    if (row.length > 0) {
+      while (row.length < 7) {
+        row.push(<td key={`end-${row.length}`} className="p-2"></td>);
+      }
+      rows.push(<tr key="last">{row}</tr>);
+    }
+
+    return (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-center mb-2">
+          Tháng {month.month() + 1} năm {month.year()}
+        </h3>
+        <table className="w-full table-fixed text-center border-separate border-spacing-y-2">
+          <thead>
+            <tr className="text-gray-700 font-medium text-sm">
+              <th>CN</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
     );
-
-    if ((currentRow.length + firstDayOfWeek) % 7 === 0) {
-      calendarRows.push(<tr key={`row-${index}`}>{currentRow}</tr>);
-      currentRow = [];
-    }
-  });
-
-  if (currentRow.length > 0) {
-    while (currentRow.length < 7) {
-      currentRow.push(<td key={`end-empty-${currentRow.length}`} className="p-2"></td>);
-    }
-    calendarRows.push(<tr key="last-row">{currentRow}</tr>);
-  }
+  };
 
   const startDateStr = localStorage.getItem("pillStartDate");
 
   return (
     <div className="max-w-4xl mx-auto mt-6 p-6 bg-white shadow-md rounded">
-      <h2 className="text-2xl font-bold text-center mb-2">
-        Lịch uống thuốc theo tháng
-      </h2>
+      <h2 className="text-2xl font-bold text-center mb-2">Lịch uống thuốc theo tháng</h2>
+
       {startDateStr && (
         <p className="text-center text-gray-600 text-sm mb-4">
-          📅  Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
+          📅 Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
         </p>
       )}
 
@@ -232,14 +239,9 @@ export default function PillScheduleCalendar() {
         <p className="text-center">Đang tải...</p>
       ) : (
         <>
-          <table className="w-full table-fixed border-separate border-spacing-1">
-            <thead>
-              <tr className="text-gray-700 font-medium text-sm">
-                <th>CN</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th>
-              </tr>
-            </thead>
-            <tbody>{calendarRows}</tbody>
-          </table>
+          {[-1, 0, 1].map(offset => (
+            <div key={offset}>{renderCalendarForMonth(dayjs().add(offset, 'month'))}</div>
+          ))}
 
           <div className="mt-4 text-center text-sm text-gray-700">
             <p>✅ Đã uống: <strong>{takenCount}</strong> viên</p>
@@ -263,7 +265,6 @@ export default function PillScheduleCalendar() {
             >
               Làm mới
             </button>
-
           </div>
         </>
       )}
