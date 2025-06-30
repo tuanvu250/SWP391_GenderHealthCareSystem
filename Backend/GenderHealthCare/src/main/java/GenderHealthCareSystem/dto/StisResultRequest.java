@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.dto;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class StisResultRequest {
@@ -9,4 +10,5 @@ public class StisResultRequest {
     private String referenceRange;
     private String resultText;
     private String note;
+    private MultipartFile pdfFile;
 }

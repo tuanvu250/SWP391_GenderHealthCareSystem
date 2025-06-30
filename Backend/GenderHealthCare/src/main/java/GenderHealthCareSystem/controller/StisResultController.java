@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,14 +27,68 @@ public class StisResultController {
     private final StisResultService stisResultService;
     private final CloudinaryService cloudinaryService;
 
-    @PostMapping("/return/{bookingId}")
-    public ResponseEntity<?> returnResult(@PathVariable Integer bookingId, @RequestBody StisResultRequest req) {
-
+    // API xử lý JSON request
+    @PostMapping(value = "/return/{bookingId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> returnResultJson(
+            @PathVariable Integer bookingId,
+            @RequestBody StisResultRequest req) {
         try {
             StisResult result = stisResultService.createResult(bookingId, req);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Tạo kết quả xét nghiệm thành công",
+                    stisResultService.mapToResponse(result), null));
         } catch (IllegalStateException | IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, "BAD_REQUEST"));
+        }
+    }
+
+    // API xử lý form-data request
+    @PostMapping(value = "/return/{bookingId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> returnResultFormData(
+            @PathVariable Integer bookingId,
+            @RequestParam("testCode") String testCode,
+            @RequestParam("resultValue") String resultValue,
+            @RequestParam("referenceRange") String referenceRange,
+            @RequestParam(value = "resultText", required = false) String resultText,
+            @RequestParam(value = "note", required = false) String note,
+            @RequestParam(value = "pdfFile", required = false) MultipartFile pdfFile) {
+        try {
+            // Tạo StisResultRequest từ form data
+            StisResultRequest req = new StisResultRequest();
+            req.setTestCode(testCode);
+            req.setResultValue(resultValue);
+            req.setReferenceRange(referenceRange);
+            req.setResultText(resultText);
+            req.setNote(note);
+            req.setPdfFile(pdfFile);
+
+            // Tạo kết quả xét nghiệm
+            StisResult result = stisResultService.createResult(bookingId, req);
+
+            // Upload file PDF nếu có
+            if (pdfFile != null && !pdfFile.isEmpty()) {
+                String contentType = pdfFile.getContentType();
+                if (contentType == null || !contentType.equals("application/pdf")) {
+                    return ResponseEntity.badRequest()
+                            .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, "Chỉ chấp nhận file PDF", null,
+                                    "INVALID_FILE_TYPE"));
+                }
+
+                try {
+                    String pdfUrl = cloudinaryService.uploadFile(pdfFile);
+                    result = stisResultService.updateResultPdf(result.getResultId(), pdfUrl);
+                } catch (IOException e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR,
+                                    "Lỗi khi upload file: " + e.getMessage(), null, "UPLOAD_ERROR"));
+                }
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Tạo kết quả xét nghiệm thành công",
+                    stisResultService.mapToResponse(result), null));
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, "BAD_REQUEST"));
         }
     }
 
@@ -43,35 +98,6 @@ public class StisResultController {
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Không tìm thấy kết quả cho booking này!"));
-    }
-
-    @PostMapping("/upload-pdf/{resultId}")
-    public ResponseEntity<ApiResponse<StisResultResponse>> uploadResultPdf(
-            @PathVariable Integer resultId,
-            @RequestParam("file") MultipartFile file) {
-
-        if (file.isEmpty()) {
-            return createErrorResponse(HttpStatus.BAD_REQUEST, "File không được để trống", "FILE_EMPTY");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.equals("application/pdf")) {
-            return createErrorResponse(HttpStatus.BAD_REQUEST, "Chỉ chấp nhận file PDF", "INVALID_FILE_TYPE");
-        }
-
-        try {
-            String pdfUrl = cloudinaryService.uploadFile(file);
-            StisResult result = stisResultService.updateResultPdf(resultId, pdfUrl);
-            StisResultResponse resultResponse = stisResultService.mapToResponse(result);
-
-            return ResponseEntity.ok(new ApiResponse<>(
-                    HttpStatus.OK, "Upload file PDF thành công", resultResponse, null));
-        } catch (IOException e) {
-            return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Lỗi khi upload file: " + e.getMessage(), "UPLOAD_ERROR");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), "INVALID_REQUEST");
-        }
     }
 
     @GetMapping("/all")
