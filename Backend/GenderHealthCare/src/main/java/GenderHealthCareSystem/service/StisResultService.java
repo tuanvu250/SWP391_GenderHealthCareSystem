@@ -26,6 +26,7 @@ public class StisResultService {
     private final StisBookingRepository stisBookingRepository;
     private final StisResultRepository stisResultRepository;
 
+    @Transactional
     public StisResult createResult(Integer bookingId, StisResultRequest req) {
         StisBooking booking = stisBookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking!"));
@@ -36,10 +37,24 @@ public class StisResultService {
                     throw new IllegalStateException("Booking này đã được trả kết quả trước đó!");
                 }
                 break;
+            case COMPLETED:
+                // Kiểm tra xem đã có kết quả chưa
+                Optional<StisResult> existingResult = stisResultRepository.findByStisBooking_BookingId(bookingId);
+                if (existingResult.isPresent()) {
+                    // Nếu đã có kết quả, cập nhật kết quả hiện tại
+                    StisResult result = existingResult.get();
+                    result.setTestCode(req.getTestCode());
+                    result.setResultValue(req.getResultValue());
+                    result.setReferenceRange(req.getReferenceRange());
+                    result.setResultText(req.getResultText());
+                    result.setNote(req.getNote());
+                    result.setUpdatedAt(LocalDateTime.now());
+                    return stisResultRepository.save(result);
+                }
+                // Nếu chưa có kết quả mặc dù booking COMPLETED, cho phép tạo mới
+                break;
             case PENDING:
                 throw new IllegalStateException("Không thể trả kết quả cho booking đang chờ xác nhận (PENDING)!");
-            case COMPLETED:
-                throw new IllegalStateException("Booking này đã hoàn tất (COMPLETED), không thể trả kết quả nữa!");
             case CANCELLED:
                 throw new IllegalStateException("Booking đã bị huỷ (CANCELLED), không thể trả kết quả!");
             case NO_SHOW:
