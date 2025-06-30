@@ -201,8 +201,8 @@ const MinhTrang = () => {
                                 <option value="15:00 - 16:00">15:00 - 16:00</option>
                                 <option value="16:30 - 17:30">16:30 - 17:30</option>
                             </select>
+                            
                             <div className="space-y-4">
-
                                 <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
                                     <input
                                         type="radio"

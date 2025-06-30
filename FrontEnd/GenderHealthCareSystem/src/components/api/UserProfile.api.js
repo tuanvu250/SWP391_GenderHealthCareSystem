@@ -23,3 +23,15 @@ export const updateUserProfileAPI = async (values) => {
   };
   return apiClient.put("/profile/update", userData);
 };
+
+
+export const getConsultantProfile = async () => {
+  const res = await apiClient.get("/consultant/profile");
+  return res.data;
+};
+
+// PUT /api/consultant/profile
+export const updateConsultantProfile = async (data) => {
+  const res = await apiClient.put("/consultant/profile", data);
+  return res.data;
+};
