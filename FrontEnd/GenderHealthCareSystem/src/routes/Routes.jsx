@@ -46,7 +46,7 @@ import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/booking/ManageBookingStis";
 import ManageService from "../dashboard/features/service/ManageService";
 import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
-import ConsultantSchedule from "../dashboard/features/booking/ConsultantSchedule";
+import ConsultantSchedule from "../dashboard/components/modal/ViewBookingConsultant";
 
 
 import MinhTrang from "../site-info/Expert-info/MinhTrang";
