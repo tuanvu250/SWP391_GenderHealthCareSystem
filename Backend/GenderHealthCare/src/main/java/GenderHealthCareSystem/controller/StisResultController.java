@@ -45,7 +45,7 @@ public class StisResultController {
                         .body("Không tìm thấy kết quả cho booking này!"));
     }
 
-    @PutMapping("/upload-pdf/{resultId}")
+    @PostMapping("/upload-pdf/{resultId}")
     public ResponseEntity<ApiResponse<StisResultResponse>> uploadResultPdf(
             @PathVariable Integer resultId,
             @RequestParam("file") MultipartFile file) {
