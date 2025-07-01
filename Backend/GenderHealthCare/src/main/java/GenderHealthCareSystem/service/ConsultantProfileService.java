@@ -159,4 +159,14 @@ public class ConsultantProfileService {
             return response;
         }).toList();
     }
+
+    @Transactional
+    public String updateEmploymentStatus(Integer consultantId, Boolean employmentStatus) {
+        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        profile.setEmploymentStatus(employmentStatus);
+        profileRepo.save(profile);
+        return "Employment status updated successfully";
+    }
 }

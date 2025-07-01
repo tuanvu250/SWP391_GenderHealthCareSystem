@@ -57,6 +57,9 @@ public class ConsultantProfile {
     @Column(name = "ReviewCount")
     private Integer reviewCount;
 
+    @Column(name = "EmploymentStatus")
+    private Boolean employmentStatus;
+
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProfileDetail> details = new ArrayList<>();
 }

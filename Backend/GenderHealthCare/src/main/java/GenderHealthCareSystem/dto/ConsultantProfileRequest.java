@@ -13,5 +13,6 @@ public class ConsultantProfileRequest {
     private Double hourlyRate;
     private String location;
     private Boolean isAvailable;
+    private Boolean employmentStatus;
     private List<ProfileDetailRequest> details;
 }
