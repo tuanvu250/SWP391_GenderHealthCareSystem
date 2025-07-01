@@ -76,4 +76,15 @@ public class ConsultantProfileController {
             return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
         }
     }
+
+    @PutMapping("/{id}/hourly-rate")
+    @PreAuthorize("hasRole('Manager')")
+    public ResponseEntity<?> updateHourlyRate(@PathVariable Integer id, @RequestParam Double hourlyRate) {
+        try {
+            String result = service.updateHourlyRate(id, hourlyRate);
+            return ResponseEntity.ok(result);
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
+        }
+    }
 }

@@ -169,4 +169,14 @@ public class ConsultantProfileService {
         profileRepo.save(profile);
         return "Employment status updated successfully";
     }
+
+    @Transactional
+    public String updateHourlyRate(Integer consultantId, Double hourlyRate) {
+        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        profile.setHourlyRate(hourlyRate);
+        profileRepo.save(profile);
+        return "Hourly rate updated successfully";
+    }
 }
