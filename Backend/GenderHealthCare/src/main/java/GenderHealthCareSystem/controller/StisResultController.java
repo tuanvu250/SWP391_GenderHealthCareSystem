@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/stis-results")
@@ -129,23 +130,20 @@ public class StisResultController {
 
         @GetMapping("/by-booking/{bookingId}")
         public ResponseEntity<?> getResultByBooking(@PathVariable Integer bookingId) {
-                return stisResultService.getResultByBookingId(bookingId)
-                                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                                .body("Không tìm thấy kết quả cho booking này!"));
-        }
-
-        // Lấy kết quả theo ID
-        @GetMapping("/{resultId}")
-        public ResponseEntity<?> getResultById(@PathVariable Integer resultId) {
-                return stisResultService.getResultById(resultId)
-                                .map(result -> ResponseEntity.ok(new ApiResponse<>(
-                                                HttpStatus.OK, "Lấy kết quả xét nghiệm thành công",
-                                                stisResultService.mapToResponse(result), null)))
-                                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                                .body(new ApiResponse<>(HttpStatus.NOT_FOUND,
-                                                                "Không tìm thấy kết quả xét nghiệm", null,
-                                                                "NOT_FOUND")));
+                List<StisResultResponse> results = stisResultService.getAllResultsByBookingId(bookingId);
+                
+                if (results.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(new ApiResponse<>(HttpStatus.NOT_FOUND, 
+                                        "Không tìm thấy kết quả cho booking này!", null, "NOT_FOUND"));
+                }
+                
+                return ResponseEntity.ok(new ApiResponse<>(
+                        HttpStatus.OK,
+                        "Lấy danh sách kết quả xét nghiệm thành công",
+                        results,
+                        null
+                ));
         }
 
         @GetMapping("/all")
