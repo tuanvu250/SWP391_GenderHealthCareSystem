@@ -209,7 +209,7 @@ export default function OvulationCalendar() {
         {dirty && (
           <button
             onClick={handleSave}
-            className="px-5 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
           >
             Lưu thay đổi
           </button>

@@ -185,7 +185,7 @@ const Sidebar = ({
           {
             key: "consultant-management",
             icon: <UserOutlined />,
-            label: "Quản lý consultant",
+           label: <Link to={"/manager/dashboard/manage-consultant-profile"}>Quản lý tư vấn viên</Link>,
           },
           {
             key: "service-management",

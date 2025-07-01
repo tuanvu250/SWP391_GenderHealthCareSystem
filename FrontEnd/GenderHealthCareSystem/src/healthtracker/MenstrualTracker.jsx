@@ -1,4 +1,4 @@
-// ✅ File 1: src/pages/MenstrualTracker.jsx
+// ✅ File: src/pages/MenstrualTracker.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -21,18 +21,25 @@ export default function MenstrualTracker() {
     const token = sessionStorage.getItem('token');
     if (!token) return navigate('/login');
 
-    const checkHasData = async () => {
+    const checkExistingCycle = async () => {
       try {
         const res = await menstrualHistoryAPI();
         const data = res.data;
-        if (Array.isArray(data.days) && data.days.length > 0 && !location.state?.forceInput) {
+
+        if (
+          Array.isArray(data.days) &&
+          data.days.length > 0 &&
+          !location.state?.forceInput // Chỉ chuyển nếu không phải bấm "nhập lại"
+        ) {
           navigate('/menstrual-ovulation', { state: { calendar: data } });
         }
       } catch (err) {
-        console.error('Không có dữ liệu chu kỳ:', err);
+        console.error('Lỗi khi kiểm tra dữ liệu chu kỳ:', err);
+        // vẫn tiếp tục cho người dùng nhập nếu lỗi
       }
     };
-    checkHasData();
+
+    checkExistingCycle();
   }, [navigate, location.state]);
 
   const handleSubmit = async () => {
@@ -48,6 +55,7 @@ export default function MenstrualTracker() {
     try {
       setLoading(true);
 
+      // Gửi dữ liệu kỳ kinh mới
       await healthTrackerAPI({
         startDate,
         endDate: endDate.toISOString().split('T')[0],
@@ -55,6 +63,7 @@ export default function MenstrualTracker() {
         note: 'form',
       });
 
+      // Gửi cập nhật
       await updateTrackerAPI({
         startDate,
         endDate: endDate.toISOString().split('T')[0],
@@ -62,6 +71,7 @@ export default function MenstrualTracker() {
         note: 'form',
       });
 
+      // Sau khi lưu thành công, lấy lại dữ liệu và điều hướng
       const updatedCalendar = await menstrualHistoryAPI();
       navigate('/menstrual-ovulation', { state: { calendar: updatedCalendar.data } });
     } catch (err) {

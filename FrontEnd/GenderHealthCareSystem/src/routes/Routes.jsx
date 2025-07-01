@@ -48,6 +48,7 @@ import ManageService from "../dashboard/features/service/ManageService";
 import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
 import ConsultantSchedule from "../dashboard/components/modal/ViewBookingConsultant";
 import ConsultantProfile from "../dashboard/features/profile/ConsultantProfile";
+import ConsultantManagement from "../dashboard/features/profile/ConsultantManagement";
 
 import MinhTrang from "../site-info/Expert-info/MinhTrang";
 import PeriodHistory from "../healthtracker/PeriodHistory";
@@ -173,6 +174,7 @@ function RouteMap() {
                 <Route path="manage-booking-stis" element={<ManageBookingStis/>}/>
                 <Route path="manage-service" element={<ManageService/>}/>
                 <Route path="manage-feedback-service" element={<ManageFeedbackService/>}/>
+                <Route path="/manager/dashboard/manage-consultant-profile" element={<ConsultantManagement/>}/>
             </Route>
 
             {/* Dashboard cho Staff */}
