@@ -48,4 +48,10 @@ public class ConsultantProfileController {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
         return ResponseEntity.ok(service.get(consultantId));
     }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(service.getAllConsultants());
+    }
 }
