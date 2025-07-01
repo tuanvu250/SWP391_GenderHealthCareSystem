@@ -14,8 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,16 +36,15 @@ public class StisResultService {
 
         switch (booking.getStatus()) {
             case CONFIRMED:
-                if (booking.getStisResult() != null) {
-                    throw new IllegalStateException("Booking này đã được trả kết quả trước đó!");
-                }
+                // Không cần kiểm tra booking.getStisResult() nữa vì mối quan hệ đã thay đổi
+                // thành OneToMany
                 break;
             case COMPLETED:
                 // Kiểm tra xem đã có kết quả chưa
-                Optional<StisResult> existingResult = stisResultRepository.findByStisBooking_BookingId(bookingId);
-                if (existingResult.isPresent()) {
-                    // Nếu đã có kết quả, cập nhật kết quả hiện tại
-                    StisResult result = existingResult.get();
+                List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+                if (!existingResults.isEmpty()) {
+                    // Nếu đã có kết quả, cập nhật kết quả đầu tiên
+                    StisResult result = existingResults.get(0);
                     result.setTestCode(req.getTestCode());
                     result.setResultValue(req.getResultValue());
                     result.setReferenceRange(req.getReferenceRange());
@@ -83,6 +85,134 @@ public class StisResultService {
         return result;
     }
 
+    @Transactional
+    public List<StisResult> createMultipleResults(Integer bookingId, List<StisResultRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách kết quả không được để trống!");
+        }
+
+        StisBooking booking = stisBookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking!"));
+
+        // Kiểm tra trạng thái booking
+        switch (booking.getStatus()) {
+            case CONFIRMED:
+                // OK để tạo kết quả
+                break;
+            case COMPLETED:
+                // Nếu đã COMPLETED, kiểm tra xem có kết quả nào chưa
+                List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+                if (!existingResults.isEmpty()) {
+                    // Nếu đã có kết quả, xóa tất cả kết quả cũ
+                    stisResultRepository.deleteAll(existingResults);
+                    stisResultRepository.flush();
+                }
+                break;
+            case PENDING:
+                throw new IllegalStateException("Không thể trả kết quả cho booking đang chờ xác nhận (PENDING)!");
+            case CANCELLED:
+                throw new IllegalStateException("Booking đã bị huỷ (CANCELLED), không thể trả kết quả!");
+            case NO_SHOW:
+                throw new IllegalStateException("Booking khách không đến (NO_SHOW), không thể trả kết quả!");
+            case DENIED:
+                throw new IllegalStateException("Booking không đủ điều kiện (DENIED), không thể trả kết quả!");
+            case DELETED:
+                throw new IllegalStateException("Booking đã bị xóa (DELETED), không thể trả kết quả!");
+            default:
+                throw new IllegalStateException("Trạng thái booking không hợp lệ!");
+        }
+
+        // Tạo danh sách kết quả mới
+        List<StisResult> results = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (StisResultRequest req : requests) {
+            StisResult result = new StisResult();
+            result.setStisBooking(booking);
+            result.setResultDate(now);
+            result.setTestCode(req.getTestCode());
+            result.setResultValue(req.getResultValue());
+            result.setReferenceRange(req.getReferenceRange());
+            result.setResultText(req.getResultText());
+            result.setNote(req.getNote());
+            result.setCreatedAt(now);
+            result.setUpdatedAt(now);
+            results.add(result);
+        }
+
+        // Lưu tất cả kết quả
+        results = stisResultRepository.saveAll(results);
+
+        // Cập nhật trạng thái booking
+        booking.setStatus(StisBookingStatus.COMPLETED);
+        stisBookingRepository.save(booking);
+
+        return results;
+    }
+
+    @Transactional
+    public StisResult updateResult(Integer resultId, StisResultRequest req) {
+        StisResult result = stisResultRepository.findById(resultId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Không tìm thấy kết quả xét nghiệm với ID: " + resultId));
+
+        // Chỉ cập nhật các trường không null
+        if (StringUtils.hasText(req.getTestCode())) {
+            result.setTestCode(req.getTestCode());
+        }
+
+        if (StringUtils.hasText(req.getResultValue())) {
+            result.setResultValue(req.getResultValue());
+        }
+
+        if (StringUtils.hasText(req.getReferenceRange())) {
+            result.setReferenceRange(req.getReferenceRange());
+        }
+
+        if (StringUtils.hasText(req.getResultText())) {
+            result.setResultText(req.getResultText());
+        }
+
+        if (StringUtils.hasText(req.getNote())) {
+            result.setNote(req.getNote());
+        }
+
+        result.setUpdatedAt(LocalDateTime.now());
+        return stisResultRepository.save(result);
+    }
+
+    @Transactional
+    public void deleteResult(Integer resultId) {
+        StisResult result = stisResultRepository.findById(resultId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Không tìm thấy kết quả xét nghiệm với ID: " + resultId));
+
+        // Nếu có quan hệ với booking, xử lý trước khi xóa
+        StisBooking booking = result.getStisBooking();
+        if (booking != null) {
+            // Kiểm tra xem có còn kết quả nào khác không
+            List<StisResult> remainingResults = stisResultRepository
+                    .findAllByStisBooking_BookingId(booking.getBookingId());
+            if (remainingResults.size() <= 1) {
+                // Nếu đây là kết quả cuối cùng, đặt lại trạng thái booking về CONFIRMED
+                booking.setStatus(StisBookingStatus.CONFIRMED);
+                stisBookingRepository.save(booking);
+            }
+        }
+
+        // Xóa các mối quan hệ trước khi xóa đối tượng
+        result.setStisBooking(null);
+        stisResultRepository.saveAndFlush(result);
+
+        // Thực hiện xóa với force
+        stisResultRepository.deleteById(resultId);
+        stisResultRepository.flush();
+    }
+
+    public Optional<StisResult> getResultById(Integer resultId) {
+        return stisResultRepository.findById(resultId);
+    }
+
     public StisResultResponse mapToResponse(StisResult entity) {
         StisResultResponse res = new StisResultResponse();
         res.setResultId(entity.getResultId());
@@ -100,8 +230,19 @@ public class StisResultService {
     }
 
     public Optional<StisResultResponse> getResultByBookingId(Integer bookingId) {
-        return stisResultRepository.findByStisBooking_BookingId(bookingId)
-                .map(this::mapToResponse);
+        List<StisResult> results = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
+        // Trả về kết quả đầu tiên nếu có nhiều kết quả
+        return Optional.of(mapToResponse(results.get(0)));
+    }
+
+    public List<StisResultResponse> getAllResultsByBookingId(Integer bookingId) {
+        List<StisResult> results = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+        return results.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional

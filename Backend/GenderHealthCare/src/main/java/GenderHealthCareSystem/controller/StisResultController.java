@@ -92,12 +92,53 @@ public class StisResultController {
         }
     }
 
+    // API cập nhật kết quả (cho phép cập nhật từng trường riêng lẻ)
+    @PutMapping(value = "/{resultId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateResult(
+            @PathVariable Integer resultId,
+            @RequestBody StisResultRequest req) {
+        try {
+            StisResult result = stisResultService.updateResult(resultId, req);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    HttpStatus.OK, "Cập nhật kết quả xét nghiệm thành công",
+                    stisResultService.mapToResponse(result), null));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, "BAD_REQUEST"));
+        }
+    }
+
+    // API xóa kết quả
+    @DeleteMapping("/{resultId}")
+    public ResponseEntity<?> deleteResult(@PathVariable Integer resultId) {
+        try {
+            stisResultService.deleteResult(resultId);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    HttpStatus.OK, "Xóa kết quả xét nghiệm thành công", null, null));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null, "BAD_REQUEST"));
+        }
+    }
+
     @GetMapping("/by-booking/{bookingId}")
     public ResponseEntity<?> getResultByBooking(@PathVariable Integer bookingId) {
         return stisResultService.getResultByBookingId(bookingId)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Không tìm thấy kết quả cho booking này!"));
+    }
+
+    // Lấy kết quả theo ID
+    @GetMapping("/{resultId}")
+    public ResponseEntity<?> getResultById(@PathVariable Integer resultId) {
+        return stisResultService.getResultById(resultId)
+                .map(result -> ResponseEntity.ok(new ApiResponse<>(
+                        HttpStatus.OK, "Lấy kết quả xét nghiệm thành công",
+                        stisResultService.mapToResponse(result), null)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Không tìm thấy kết quả xét nghiệm", null,
+                                "NOT_FOUND")));
     }
 
     @GetMapping("/all")
