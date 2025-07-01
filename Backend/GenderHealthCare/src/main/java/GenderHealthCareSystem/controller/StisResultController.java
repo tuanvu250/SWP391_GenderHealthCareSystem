@@ -135,19 +135,6 @@ public class StisResultController {
                                                 .body("Không tìm thấy kết quả cho booking này!"));
         }
 
-        // Lấy kết quả theo ID
-        @GetMapping("/{resultId}")
-        public ResponseEntity<?> getResultById(@PathVariable Integer resultId) {
-                return stisResultService.getResultById(resultId)
-                                .map(result -> ResponseEntity.ok(new ApiResponse<>(
-                                                HttpStatus.OK, "Lấy kết quả xét nghiệm thành công",
-                                                stisResultService.mapToResponse(result), null)))
-                                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                                .body(new ApiResponse<>(HttpStatus.NOT_FOUND,
-                                                                "Không tìm thấy kết quả xét nghiệm", null,
-                                                                "NOT_FOUND")));
-        }
-
         @GetMapping("/all")
         public ResponseEntity<PageResponse<StisResultResponse>> getAllResults(
                         @RequestParam(defaultValue = "0") int page,
