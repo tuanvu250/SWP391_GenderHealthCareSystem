@@ -32,11 +32,14 @@ public class StisResultController {
         @PostMapping(value = "/return/{bookingId}", consumes = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<?> returnResultJson(
                         @PathVariable Integer bookingId,
-                        @RequestBody StisResultRequest req) {
+                        @RequestBody List<StisResultRequest> reqs) {
                 try {
-                        StisResult result = stisResultService.createResult(bookingId, req);
+                        List<StisResult> results = stisResultService.createMultipleResults(bookingId, reqs);
+                        List<StisResultResponse> responseList = results.stream()
+                                        .map(stisResultService::mapToResponse)
+                                        .toList();
                         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Tạo kết quả xét nghiệm thành công",
-                                        stisResultService.mapToResponse(result), null));
+                                        responseList, null));
                 } catch (IllegalStateException | IllegalArgumentException ex) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                         .body(new ApiResponse<>(HttpStatus.BAD_REQUEST, ex.getMessage(), null,
@@ -131,19 +134,18 @@ public class StisResultController {
         @GetMapping("/by-booking/{bookingId}")
         public ResponseEntity<?> getResultByBooking(@PathVariable Integer bookingId) {
                 List<StisResultResponse> results = stisResultService.getAllResultsByBookingId(bookingId);
-                
+
                 if (results.isEmpty()) {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                .body(new ApiResponse<>(HttpStatus.NOT_FOUND, 
-                                        "Không tìm thấy kết quả cho booking này!", null, "NOT_FOUND"));
+                                        .body(new ApiResponse<>(HttpStatus.NOT_FOUND,
+                                                        "Không tìm thấy kết quả cho booking này!", null, "NOT_FOUND"));
                 }
-                
+
                 return ResponseEntity.ok(new ApiResponse<>(
-                        HttpStatus.OK,
-                        "Lấy danh sách kết quả xét nghiệm thành công",
-                        results,
-                        null
-                ));
+                                HttpStatus.OK,
+                                "Lấy danh sách kết quả xét nghiệm thành công",
+                                results,
+                                null));
         }
 
         @GetMapping("/all")
