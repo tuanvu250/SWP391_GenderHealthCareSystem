@@ -8,14 +8,9 @@ public class StisResultResponse {
     private Integer resultId;
     private Integer bookingId;
     private LocalDateTime resultDate;
-    private String hivCombo;
-    private String syphilisRpr;
-    private String chlamydiaNaat;
-    private String gonorrheaNaat;
-    private String hsvIgm;
-    private String hbsAg;
-    private String antiHcv;
-    private String hpvDna;
+    private String testCode;
+    private String resultValue;
+    private String referenceRange;
     private String resultText;
     private String note;
     private String pdfResultUrl;

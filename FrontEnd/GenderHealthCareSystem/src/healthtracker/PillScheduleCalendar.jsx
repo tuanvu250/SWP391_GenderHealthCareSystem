@@ -1,10 +1,11 @@
+import { getAllPillSchedules, markPillTaken } from '../components/api/Pill.api';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { message } from 'antd';
-import { getAllPillSchedules, markPillTaken } from '../components/api/Pill.api';
+
 import axios from 'axios';
 
 dayjs.extend(isSameOrAfter);
@@ -45,6 +46,7 @@ export default function PillScheduleCalendar() {
         return;
       }
 
+      // ✅ Lọc các ngày hợp lệ từ startDate → hôm nay, tối đa pillType viên
       const validDates = [];
       let currentDate = startDate;
       let counted = 0;
@@ -63,6 +65,7 @@ export default function PillScheduleCalendar() {
         currentDate = currentDate.add(1, "day");
       }
 
+      // ✅ Tự động đánh dấu xanh nếu ngày trong quá khứ và chưa có hasTaken
       const autoMarkPromises = [];
       const todayStr = today.format("YYYY-MM-DD");
 
@@ -123,11 +126,6 @@ export default function PillScheduleCalendar() {
       return;
     }
 
-    const clickedDate = dayjs(dateStr);
-    if (clickedDate.isAfter(dayjs(), 'day')) {
-      message.warning("Bạn đang đánh dấu cho ngày mai hoặc tương lai!");
-    }
-
     let item = updatedSchedule[dateStr];
 
     try {
@@ -159,11 +157,10 @@ export default function PillScheduleCalendar() {
 
       await fetchSchedule();
     } catch (err) {
-      console.error("Lỗi cập nhật:", err?.response?.data || err.message);
+      console.error("❌ Lỗi cập nhật:", err?.response?.data || err.message);
       message.error("Không thể cập nhật lịch.");
     }
   };
-
 
   const daysInMonth = getMonthDates();
   const firstDayOfWeek = dayjs().startOf('month').day();
@@ -224,7 +221,7 @@ export default function PillScheduleCalendar() {
       </h2>
       {startDateStr && (
         <p className="text-center text-gray-600 text-sm mb-4">
-          📅  Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
+          📅 Bắt đầu uống: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
         </p>
       )}
 

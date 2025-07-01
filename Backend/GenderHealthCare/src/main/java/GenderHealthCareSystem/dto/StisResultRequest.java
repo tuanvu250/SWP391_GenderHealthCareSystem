@@ -1,17 +1,14 @@
 package GenderHealthCareSystem.dto;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class StisResultRequest {
-    private String hivCombo;
-    private String syphilisRpr;
-    private String chlamydiaNaat;
-    private String gonorrheaNaat;
-    private String hsvIgm;
-    private String hbsAg;
-    private String antiHcv;
-    private String hpvDna;
+    private String testCode;
+    private String resultValue;
+    private String referenceRange;
     private String resultText;
     private String note;
+    private MultipartFile pdfFile;
 }
