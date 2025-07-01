@@ -5,6 +5,7 @@ import GenderHealthCareSystem.model.ProfileDetail;
 import GenderHealthCareSystem.model.Users;
 import GenderHealthCareSystem.dto.ConsultantProfileRequest;
 import GenderHealthCareSystem.dto.ProfileDetailRequest;
+import GenderHealthCareSystem.dto.ConsultantProfileResponse;
 import GenderHealthCareSystem.repository.ConsultantProfileRepository;
 import GenderHealthCareSystem.repository.ProfileDetailRepository;
 import GenderHealthCareSystem.repository.UsersRepository;
@@ -130,5 +131,32 @@ public class ConsultantProfileService {
         ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         profileRepo.delete(profile);
+    }
+
+    public List<ConsultantProfileResponse> getAllConsultants() {
+        List<ConsultantProfile> profiles = profileRepo.findAll();
+        return profiles.stream().map(profile -> {
+            ConsultantProfileResponse response = new ConsultantProfileResponse();
+            response.setJobTitle(profile.getJobTitle());
+            response.setIntroduction(profile.getIntroduction());
+            response.setSpecialization(profile.getSpecialization());
+            response.setLanguages(profile.getLanguages());
+            response.setExperienceYears(profile.getExperienceYears());
+            response.setHourlyRate(profile.getHourlyRate());
+            response.setLocation(profile.getLocation());
+            response.setIsAvailable(profile.getIsAvailable());
+            response.setDetails(profile.getDetails().stream().map(detail -> {
+                ProfileDetailRequest detailRequest = new ProfileDetailRequest();
+                detailRequest.setDetailType(detail.getDetailType());
+                detailRequest.setTitle(detail.getTitle());
+                detailRequest.setOrganization(detail.getOrganization());
+                detailRequest.setFromDate(detail.getFromDate());
+                detailRequest.setToDate(detail.getToDate());
+                detailRequest.setDescription(detail.getDescription());
+                detailRequest.setIssuedDate(detail.getIssuedDate());
+                return detailRequest;
+            }).toList());
+            return response;
+        }).toList();
     }
 }
