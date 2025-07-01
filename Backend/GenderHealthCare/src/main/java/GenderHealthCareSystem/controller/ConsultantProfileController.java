@@ -54,4 +54,15 @@ public class ConsultantProfileController {
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(service.getAllConsultants());
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<?> getConsultantProfile(@PathVariable Integer id) {
+        try {
+            var profile = service.get(id);
+            return ResponseEntity.ok(profile);
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
+        }
+    }
 }
