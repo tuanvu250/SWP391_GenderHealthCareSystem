@@ -49,11 +49,11 @@ public class ConsultantProfileController {
         return ResponseEntity.ok(service.get(consultantId));
     }
 
-    @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('Customer', 'Manager')")
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(service.getAllConsultants());
-    }
+        @GetMapping("/all")
+        @PreAuthorize("hasAnyRole('Customer', 'Manager')")
+        public ResponseEntity<?> getAll() {
+            return ResponseEntity.ok(service.getAllConsultants());
+        }
 
         @GetMapping("/{id}")
     @PreAuthorize("hasRole('Customer')")
