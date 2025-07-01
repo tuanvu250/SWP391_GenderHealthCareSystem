@@ -65,4 +65,15 @@ public class ConsultantProfileController {
             return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
         }
     }
+
+    @PutMapping("/{id}/employment-status")
+    @PreAuthorize("hasRole('Manager')")
+    public ResponseEntity<?> updateEmploymentStatus(@PathVariable Integer id, @RequestParam Boolean employmentStatus) {
+        try {
+            String result = service.updateEmploymentStatus(id, employmentStatus);
+            return ResponseEntity.ok(result);
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
+        }
+    }
 }
