@@ -291,5 +291,11 @@ public class BlogPostController {
         var response = new ApiResponse<>(HttpStatus.OK, "Related blog posts retrieved successfully", relatedBlogPosts, null);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/{tag}/related-tags")
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getRelatedBlogPostsByTags(@PathVariable String tag) {
+        List<BlogPostResponse> relatedBlogPosts = blogPostService.findRelatedBlogPostsByTags(tag);
+        var response = new ApiResponse<>(HttpStatus.OK, "Related blog posts retrieved successfully", relatedBlogPosts, null);
+        return ResponseEntity.ok(response);
+    }
 
 }
