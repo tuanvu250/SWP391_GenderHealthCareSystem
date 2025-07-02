@@ -260,4 +260,75 @@ public class StisResultService {
         Page<StisResultResponse> responsePages = resultsPage.map(this::mapToResponse);
         return PageResponseUtil.mapToPageResponse(responsePages);
     }
+
+    /**
+     * Kiểm tra xem booking có tồn tại không
+     * 
+     * @param bookingId ID của booking cần kiểm tra
+     * @return true nếu booking tồn tại, false nếu không
+     */
+    public boolean bookingExists(Integer bookingId) {
+        return stisBookingRepository.existsById(bookingId);
+    }
+
+    /**
+     * Cập nhật URL PDF cho các kết quả của booking
+     * Nếu updateAll=true, cập nhật tất cả các kết quả
+     * Nếu updateAll=false:
+     * - Nếu không có kết quả nào có PDF, cập nhật cho kết quả đầu tiên
+     * - Nếu đã có ít nhất một kết quả có PDF, không cập nhật
+     *
+     * @param bookingId ID của booking cần cập nhật PDF
+     * @param pdfUrl    URL của file PDF đã upload
+     * @param updateAll true để cập nhật tất cả kết quả, false để chỉ cập nhật kết
+     *                  quả đầu tiên nếu chưa có PDF
+     * @return Danh sách các kết quả đã được cập nhật
+     */
+    @Transactional
+    public List<StisResultResponse> updatePdfUrlForBooking(Integer bookingId, String pdfUrl, boolean updateAll) {
+        List<StisResult> results = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("Không tìm thấy kết quả xét nghiệm cho booking này!");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (updateAll) {
+            // Cập nhật PDF cho tất cả các kết quả
+            for (StisResult result : results) {
+                result.setPdfResultUrl(pdfUrl);
+                result.setUpdatedAt(now);
+            }
+            stisResultRepository.saveAll(results);
+        } else {
+            // Kiểm tra xem có kết quả nào đã có PDF chưa
+            boolean hasPdf = results.stream()
+                    .anyMatch(r -> r.getPdfResultUrl() != null && !r.getPdfResultUrl().isEmpty());
+
+            if (!hasPdf) {
+                // Nếu không có kết quả nào có PDF, cập nhật cho kết quả đầu tiên
+                StisResult firstResult = results.get(0);
+                firstResult.setPdfResultUrl(pdfUrl);
+                firstResult.setUpdatedAt(now);
+                stisResultRepository.save(firstResult);
+            }
+        }
+
+        // Trả về danh sách kết quả đã cập nhật
+        return getAllResultsByBookingId(bookingId);
+    }
+
+    /**
+     * Cập nhật URL PDF cho các kết quả của booking
+     * Phương thức overload cho phương thức cũ, mặc định không cập nhật tất cả
+     * 
+     * @param bookingId ID của booking cần cập nhật PDF
+     * @param pdfUrl    URL của file PDF đã upload
+     * @return Danh sách các kết quả đã được cập nhật
+     */
+    @Transactional
+    public List<StisResultResponse> updatePdfUrlForBooking(Integer bookingId, String pdfUrl) {
+        return updatePdfUrlForBooking(bookingId, pdfUrl, false);
+    }
 }
