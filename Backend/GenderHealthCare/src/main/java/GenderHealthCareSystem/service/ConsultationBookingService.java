@@ -9,14 +9,15 @@ import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import GenderHealthCareSystem.repository.UserRepository;
 import com.paypal.base.rest.PayPalRESTException;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -82,19 +83,23 @@ public class ConsultationBookingService {
         } else {
             throw new IllegalArgumentException("Unsupported payment method");
         }
-
         if (consultant.getFullName() == null) {
             throw new IllegalArgumentException("Consultant full name is missing");
         }
 
-        booking.setMeetLink(googleCalendarService.createGoogleMeetLink(
-                "Consultation with " + consultant.getFullName(),
-                req.getBookingDate(),
-                req.getBookingDate().plusHours(1)
-        ));
+
+        // Chưa tạo link họp ở bước này
+        booking.setMeetLink(null);
 
         return new ConsultantBookingResponse(
-                booking.getBookingId(), booking.getStatus(), paymentUrl, null
+                booking.getBookingId(),
+                booking.getConsultant().getFullName(),
+                booking.getStatus(),
+                paymentUrl,
+                booking.getPaymentStatus(),
+                null, // Chưa có link họp
+                booking.getInvoice() != null ? booking.getInvoice().getTotalAmount() : BigDecimal.ZERO,
+                booking.getInvoice() != null ? booking.getInvoice().getPaymentMethod() : "Unknown"
         );
     }
 
@@ -111,7 +116,19 @@ public class ConsultationBookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
         booking.setStatus("CONFIRMED");
         booking.setPaymentStatus("PAID");
-        booking.setMeetLink("https://your-meeting-platform.com/" + java.util.UUID.randomUUID());
+
+        // Tạo link Google Meet thực tế sau khi thanh toán thành công
+        String meetLink;
+        try {
+            meetLink = googleCalendarService.createGoogleMeetLink(
+                "Consultation with " + booking.getConsultant().getFullName(),
+                booking.getBookingDate(),
+                booking.getBookingDate().plusHours(1)
+            );
+        } catch (Exception e) {
+            meetLink = "https://your-meeting-platform.com/" + java.util.UUID.randomUUID();
+        }
+        booking.setMeetLink(meetLink);
         bookingRepo.save(booking);
 
         // 2. Cập nhật invoice
@@ -131,7 +148,30 @@ public class ConsultationBookingService {
         return schedule;
     }
 
+    /**
+     * Lấy lịch sử booking của user (customer)
+     */
+    public List<ConsultantBookingResponse> getBookingHistory(Integer customerId) {
+        var bookings = bookingRepo.findAll(); // Lấy tất cả booking, có thể thay bằng query theo customerId nếu cần
+        return bookings.stream()
+                .filter(b -> b.getCustomer() != null && b.getCustomer().getUserId().equals(customerId))
+                .map(booking -> new ConsultantBookingResponse(
+                        booking.getBookingId(),
+                        booking.getConsultant() != null ? booking.getConsultant().getFullName() : null,
+                        booking.getStatus(),
+                        null, // Không cần trả paymentUrl trong lịch sử
+                        booking.getPaymentStatus(),
+                        booking.getMeetLink(),
+                        booking.getInvoice() != null ? booking.getInvoice().getTotalAmount() : null,
+                        booking.getInvoice() != null ? booking.getInvoice().getPaymentMethod() : null
+                ))
+                .toList();
+    }
+
     private BigDecimal calculateFee(ConsultationBooking booking) {
-        return BigDecimal.valueOf(100); // Example fee
+        // TODO: Tính phí động dựa trên thông tin booking, ví dụ:
+        // return BigDecimal.valueOf(booking.getConsultant().getBaseFee());
+        // Hiện tại trả về 100 như cũ
+        return BigDecimal.valueOf(100);
     }
 }
