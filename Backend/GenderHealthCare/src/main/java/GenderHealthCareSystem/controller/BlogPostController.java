@@ -284,5 +284,18 @@ public class BlogPostController {
         return ResponseEntity.ok().body(response);
     }
 
-}
+    @GetMapping("/{id}/related")
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getRelatedBlogPosts(@PathVariable Integer id) {
+        BlogPost blogPost = blogPostService.findBlogPostById(id);
+        List<BlogPostResponse> relatedBlogPosts = blogPostService.findRelatedBlogPosts(blogPost.getTags(), id);
+        var response = new ApiResponse<>(HttpStatus.OK, "Related blog posts retrieved successfully", relatedBlogPosts, null);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/{tag}/related-tags")
+    public ResponseEntity<ApiResponse<List<BlogPostResponse>>> getRelatedBlogPostsByTags(@PathVariable String tag) {
+        List<BlogPostResponse> relatedBlogPosts = blogPostService.findRelatedBlogPostsByTags(tag);
+        var response = new ApiResponse<>(HttpStatus.OK, "Related blog posts retrieved successfully", relatedBlogPosts, null);
+        return ResponseEntity.ok(response);
+    }
 
+}

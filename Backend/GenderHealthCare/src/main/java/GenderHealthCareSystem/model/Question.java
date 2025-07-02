@@ -18,7 +18,6 @@ public class Question {
     @Id
     @Column(name = "QuestionID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer questionId;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -47,4 +46,11 @@ public class Question {
 
     @Column(name = "AnsweredAt")
     private LocalDateTime answeredAt;
+
+    @Column(name = "Status", columnDefinition = "NVARCHAR(20)")
+    private String status; // PENDING, ANSWERED, DELETED
+
+    public boolean isAnswered() {
+        return answer != null && !answer.trim().isEmpty();
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -52,5 +53,18 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Integer> {
             Pageable pageable
     );
 
+    @Query("""
+    SELECT b FROM BlogPost b
+    WHERE b.tags LIKE %:tags%
+      AND b.status = 'PUBLISHED'
+      AND b.postId <> :postId
+""")
+    List<BlogPost> findRelatedBlogPosts(@Param("tags") String tags, @Param("postId") Integer postId);
 
+    @Query("""
+    SELECT b FROM BlogPost b
+    WHERE b.tags LIKE %:tags%
+      AND b.status = 'PUBLISHED'
+""")
+    List<BlogPost> findRelatedBlogPostsByTag(@Param("tags") String tags);
 }
