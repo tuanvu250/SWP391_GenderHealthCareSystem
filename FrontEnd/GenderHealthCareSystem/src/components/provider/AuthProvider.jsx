@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedToken = sessionStorage.getItem(TOKEN_KEY);
     const storedUser = sessionStorage.getItem(USER_KEY);
-    //console.log(">>> storedToken:", storedToken);
+    const rememberMe = localStorage.getItem("remember") === "true";
     if (storedToken) {
       setToken(storedToken);
 
@@ -34,18 +34,19 @@ export const AuthProvider = ({ children }) => {
           console.error("Lỗi khi parse dữ liệu user:", error);
         }
       }
-
+      // Nếu có token, coi như đã đăng nhập
       setIsAuthenticated(true);
+    } else if (rememberMe) {
+      console.log("Using token from localStorage: ", localStorage.getItem(TOKEN_KEY));
+      setToken(localStorage.getItem("token"));
+      sessionStorage.setItem(TOKEN_KEY, localStorage.getItem("token"));
+      setIsAuthenticated(true);
+      refreshUserProfile();
     } else {
       setIsAuthenticated(false);
     }
 
     setLoading(false);
-    //console.log(">>> isLogin:", isAuthenticated);
-  }, []);
-
-  useEffect(() => {
-    console.log("isAuthenticated state changed:", isAuthenticated);
   }, [isAuthenticated]);
 
   const updateUser = (newUser) => {
@@ -56,18 +57,14 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
 
     sessionStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
-
-    //console.log(">>> User updated:", updatedUser);
   };
 
-  
   const refreshUserProfile = async () => {
     try {
       const response = await getUserProfile();
       if (response.data) {
         sessionStorage.setItem(USER_KEY, JSON.stringify(response.data));
         setUser(response.data);
-        //console.log(">>> User profile refreshed:", user);
         return { success: true, data: response.data };
       }
       return { success: false, message: "Không nhận được dữ liệu" };
@@ -81,7 +78,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const loginAction = async (userData) => {
     try {
       const response = await loginAPI(userData);
@@ -93,7 +89,11 @@ export const AuthProvider = ({ children }) => {
         refreshUserProfile();
 
         setIsAuthenticated(true);
-        return { success: true, message: "Đăng nhập thành công!", role: response.data.role};
+        return {
+          success: true,
+          message: "Đăng nhập thành công!",
+          role: response.data.role,
+        };
       } else {
         setIsAuthenticated(false);
         return {
@@ -110,13 +110,19 @@ export const AuthProvider = ({ children }) => {
         message = "Lỗi máy chủ, vui lòng thử lại sau!";
       }
       return { success: false, message: message };
+    } finally {
+      const rememberMe = localStorage.getItem("remember") === "true";
+      if (rememberMe) {
+        localStorage.setItem(TOKEN_KEY, sessionStorage.getItem(TOKEN_KEY));
+      }
     }
   };
-
 
   const logoutAction = () => {
     sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
+    localStorage.removeItem("token");
+    localStorage.removeItem("remember");
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);

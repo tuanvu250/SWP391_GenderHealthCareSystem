@@ -33,6 +33,7 @@ import {
   markNoShowBookingStisAPI,
 } from "../../../components/api/BookingTesting.api";
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
+import { getServiceTestingByIdAPI } from "../../../components/api/ServiceTesting.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -49,13 +50,14 @@ const ManageBookingStis = () => {
   const [endDate, setEndDate] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 6,
     total: 0,
   });
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [customer, setCustomer] = useState(null);
   const [resultModalVisible, setResultModalVisible] = useState(false);
+  const [serviceData, setServiceData] = useState(null);
 
   // Cấu hình trạng thái đặt lịch
   const bookingStatusConfig = {
@@ -128,12 +130,11 @@ const ManageBookingStis = () => {
     setPagination({ ...pagination, current: 1 });
   };
 
-  // Load dữ liệu (mô phỏng API call)
+  // Load dữ liệu
   const loadData = async () => {
     setLoading(true);
 
     try {
-      // Mô phỏng API call với delay
       const response = await manageBookingsAPI({
         name: searchText,
         page: pagination.current - 1,
@@ -201,7 +202,7 @@ const ManageBookingStis = () => {
       console.error("Error marking booking as no show:", error);
       message.error("Không thể đánh dấu lịch hẹn là không đến");
     }
-  }
+  };
 
   const handleDenied = async (bookingId) => {
     try {
@@ -213,16 +214,16 @@ const ManageBookingStis = () => {
       console.error("Error denying booking:", error);
       message.error("Không thể từ chối lịch hẹn");
     }
-  }
+  };
 
   const handleEnterResult = async (booking) => {
     try {
       const response = await getUserByIdAPI(booking.customerId);
-      if (response.data) {
-        setCustomer(response.data);
-      }
-    } catch (cerror) {
-      console.error("Error fetching customer data:", cerror);
+      setCustomer(response.data);
+      const res = await getServiceTestingByIdAPI(booking.serviceId);
+      setServiceData(res.data.data);
+    } catch (error) {
+      console.error("Error fetching customer data:", error);
     }
     setSelectedBooking(booking);
     setResultModalVisible(true);
@@ -469,6 +470,7 @@ const ManageBookingStis = () => {
           onCancel={() => setResultModalVisible(false)}
           booking={selectedBooking}
           customer={customer}
+          serviceData={serviceData}
         />
       </Card>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -23,30 +23,31 @@ import {
   MinusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { enterResultStisAPI, uploadStisAttachmentsAPI } from "../../../components/api/BookingTesting.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
-const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
+const ResultStisModal = ({ open, onCancel, booking, onSave, customer, serviceData }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [testDetails, setTestDetails] = useState("");
+  const [stisList, setStisList] = useState([]);
 
-  // Danh sách các STIs phổ biến
-  const stisList = [
-    { label: "Chlamydia", value: "chlamydia" },
-    { label: "Lậu (Gonorrhea)", value: "gonorrhea" },
-    { label: "Giang mai (Syphilis)", value: "syphilis" },
-    { label: "HIV", value: "hiv" },
-    { label: "HPV (Human Papillomavirus)", value: "hpv" },
-    { label: "Herpes sinh dục", value: "herpes" },
-    { label: "Trichomonas", value: "trichomonas" },
-    { label: "Viêm gan B", value: "hepatitis_b" },
-    { label: "Viêm gan C", value: "hepatitis_c" },
-    { label: "Mycoplasma genitalium", value: "mycoplasma" },
-  ];
+  // Cập nhật stisList mỗi khi serviceData thay đổi
+  useEffect(() => {
+    if (serviceData?.tests) {
+      const newStisList = serviceData.tests.split(", ").map((sti) => ({
+        value: sti.trim(),
+        label: sti.trim(),
+      }));
+      setStisList(newStisList);
+    } else {
+      setStisList([]);
+    }
+  }, [serviceData]);
 
   // Xử lý khi nhập editor chi tiết xét nghiệm
   const handleEditorChange = (content) => {
@@ -55,7 +56,7 @@ const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
 
   // Xử lý khi tải file lên
   const handleFileChange = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
+    setFileList(newFileList.slice(-1)); 
   };
 
   // Xử lý khi submit form
@@ -68,26 +69,14 @@ const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
       // Chuẩn bị dữ liệu kết quả với các bệnh đã phát hiện
       const detectedStis =
         values.detectedStis?.map((item) => ({
-          disease: item.disease,
-          result: item.result,
+          testCode: item.disease,
+          resultText: item.result,
           notes: item.notes,
         })) || [];
 
-      // Format lại dữ liệu kết quả
-      const resultData = {
-        bookingId: booking.id || booking.bookingId,
-        testDate: values.testDate.format("YYYY-MM-DD"),
-        performedBy: values.performedBy,
-        facility: values.facility,
-        conclusion: values.conclusion,
-        recommendation: values.recommendation,
-        detectedDiseases: detectedStis,
-        details: testDetails,
-        attachments: fileList.map((file) => file.originFileObj),
-      };
+      await enterResultStisAPI(booking.bookingId, detectedStis);
 
-      // Gọi function onSave được truyền từ component cha
-      await onSave(resultData);
+      await uploadStisAttachmentsAPI(booking.bookingId, fileList[0].originFileObj);
 
       message.success("Lưu kết quả xét nghiệm thành công!");
       form.resetFields();
@@ -96,7 +85,9 @@ const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
       onCancel(); // Đóng modal sau khi lưu
     } catch (error) {
       console.error("Error saving test results:", error);
-      message.error("Không thể lưu kết quả xét nghiệm, vui lòng thử lại!");
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi lưu kết quả xét nghiệm. Vui lòng thử lại."
+      );
     } finally {
       setLoading(false);
     }
@@ -138,54 +129,10 @@ const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
             </Col>
             <Col span={12}>
               <Text type="secondary">Số điện thoại:</Text>{" "}
-              <Text strong>{booking?.customerPhone}</Text>
+              <Text strong>{customer?.phone}</Text>
             </Col>
           </Row>
-        </Card>
-
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="testDate"
-              label="Ngày xét nghiệm"
-              rules={[
-                { required: true, message: "Vui lòng chọn ngày xét nghiệm!" },
-              ]}
-            >
-              <DatePicker
-                format="DD/MM/YYYY"
-                style={{ width: "100%" }}
-                disabledDate={(current) =>
-                  current && current > dayjs().endOf("day")
-                }
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="facility"
-              label="Cơ sở thực hiện xét nghiệm"
-              rules={[
-                { required: true, message: "Vui lòng nhập cơ sở xét nghiệm!" },
-              ]}
-            >
-              <Input placeholder="Nhập tên cơ sở xét nghiệm" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item
-          name="performedBy"
-          label="Người thực hiện"
-          rules={[
-            {
-              required: true,
-              message: "Vui lòng nhập người thực hiện xét nghiệm!",
-            },
-          ]}
-        >
-          <Input placeholder="Nhập tên người thực hiện xét nghiệm" />
-        </Form.Item>
+        </Card> 
 
         <Divider>Kết quả xét nghiệm</Divider>
 
@@ -276,45 +223,20 @@ const ResultStisModal = ({ open, onCancel, booking, onSave }) => {
           )}
         </Form.List>
 
-        <Form.Item
-          name="conclusion"
-          label="Kết luận"
-          rules={[{ required: true, message: "Vui lòng nhập kết luận!" }]}
-        >
-          <TextArea
-            placeholder="Nhập kết luận xét nghiệm"
-            autoSize={{ minRows: 2, maxRows: 4 }}
-          />
-        </Form.Item>
-
-        <Form.Item name="recommendation" label="Lời khuyên / Hướng dẫn">
-          <TextArea
-            placeholder="Nhập lời khuyên cho khách hàng"
-            autoSize={{ minRows: 2, maxRows: 4 }}
-          />
-        </Form.Item>
-
-        <Form.Item label="Chi tiết kết quả xét nghiệm">
-          <TextArea
-            value={testDetails}
-            onChange={handleEditorChange}
-            placeholder="Nhập chi tiết kết quả xét nghiệm"
-            autoSize={{ minRows: 6, maxRows: 10 }}
-          />
-        </Form.Item>
-
         <Form.Item label="Tài liệu đính kèm">
           <Upload
             listType="picture"
             fileList={fileList}
             onChange={handleFileChange}
             beforeUpload={() => false} // Không upload ngay lập tức
-            maxCount={5}
+            maxCount={1}
+            accept=".jpg,.jpeg,.png,.pdf"
+            onRemove={() => setFileList([])}
           >
             <Button icon={<UploadOutlined />}>Chọn file</Button>
           </Upload>
           <Text type="secondary" className="mt-2 block">
-            Định dạng hỗ trợ: JPG, PNG, PDF. Tối đa 5 file.
+            Định dạng hỗ trợ: JPG, PNG, PDF.
           </Text>
         </Form.Item>
 

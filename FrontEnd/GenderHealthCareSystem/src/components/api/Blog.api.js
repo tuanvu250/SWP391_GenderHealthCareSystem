@@ -84,6 +84,10 @@ export const approveBlogAPI = async (postId) => {
   return apiClient.put(`/blog-posts/${postId}/approve`);
 };
 
+export const rejectBlogAPI = async (postId) => {
+  return apiClient.put(`/blog-posts/${postId}/reject`);
+}
+
 export const deleteBlogAPI = async (postId) => {
   return apiClient.delete(`/blog-posts/${postId}`);
 };
@@ -131,3 +135,7 @@ export const deleteCommentBlogAPI = async (commentId) => {
 export const likeBlogAPI = async (postId) => {
   return apiClient.put(`/blog-posts/${postId}/like`);
 };
+
+export const relatedBlogsByIdAPI = async (postId) => {
+  return apiClient.get(`/blog-posts/${postId}/related`);
+}

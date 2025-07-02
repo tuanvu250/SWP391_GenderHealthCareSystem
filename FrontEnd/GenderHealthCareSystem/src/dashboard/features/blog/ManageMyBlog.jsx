@@ -27,7 +27,7 @@ import { formatDateTime } from "../../../components/utils/format";
 import BlogModal from "../../components/modal/BlogModal";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
 import { useAuth } from "../../../components/provider/AuthProvider";
-import { approveBlogAPI, deleteBlogAPI, viewAllBlogsAPI, viewMyBlogsAPI } from "../../../components/api/Blog.api";
+import { approveBlogAPI, deleteBlogAPI, rejectBlogAPI, viewAllBlogsAPI, viewMyBlogsAPI } from "../../../components/api/Blog.api";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -51,11 +51,6 @@ const ManageMyBlog = () => {
   const [statusFilter, setStatusFilter] = useState([]);
   const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
-
-  // State cho modal từ chối
-  const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [blogToReject, setBlogToReject] = useState(null);
 
   // Danh sách tags
   const tagOptions = [
@@ -82,7 +77,7 @@ const ManageMyBlog = () => {
       badgeColor: "green",
       description: "Bài viết đã được phê duyệt và hiển thị công khai",
     },
-    rejected: {
+    Rejected: {
       status: "error",
       text: "Bị từ chối",
       color: "#f5222d",
@@ -231,25 +226,11 @@ const ManageMyBlog = () => {
     }
   };
 
-  // Hàm mở modal từ chối bài viết
-  const openRejectModal = (blog) => {
-    setBlogToReject(blog);
-    setRejectionReason("");
-    setRejectionModalVisible(true);
-  };
-
   // Hàm xử lý từ chối bài viết
-  const handleReject = async () => {
-    if (!rejectionReason.trim()) {
-      message.error("Vui lòng nhập lý do từ chối");
-      return;
-    }
-
+  const handleReject = async (blogId) => {
     try {
       setLoading(true);
-      // Gọi API từ chối bài viết
-      //await rejectBlogAPI(blogToReject.postId, rejectionReason);
-      setRejectionModalVisible(false);
+      await rejectBlogAPI(blogId);
       setTimeout(() => {
         fetchBlogList();
         message.success("Đã từ chối bài viết");
@@ -458,7 +439,7 @@ const ManageMyBlog = () => {
               <Button
                 danger
                 icon={<CloseCircleOutlined />}
-                onClick={() => openRejectModal(record)}
+                onClick={() => handleReject(record.postId)}
                 title="Từ chối bài viết"
               />
             </>
@@ -613,27 +594,6 @@ const ManageMyBlog = () => {
         onClose={() => setViewBlogModalVisible(false)}
         blog={selectedBlog}
       />
-
-      {/* Modal từ chối bài viết */}
-      <Modal
-        title="Từ chối bài viết"
-        open={rejectionModalVisible}
-        onCancel={() => setRejectionModalVisible(false)}
-        onOk={handleReject}
-        okText="Từ chối"
-        cancelText="Hủy"
-        okButtonProps={{ danger: true }}
-      >
-        <div className="mb-2">
-          <Text>Vui lòng nhập lý do từ chối bài viết này:</Text>
-        </div>
-        <TextArea
-          rows={4}
-          value={rejectionReason}
-          onChange={(e) => setRejectionReason(e.target.value)}
-          placeholder="Nhập lý do từ chối..."
-        />
-      </Modal>
     </div>
   );
 };

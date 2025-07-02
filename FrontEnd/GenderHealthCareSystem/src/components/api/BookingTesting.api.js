@@ -72,3 +72,17 @@ export const markDeniedBookingStisAPI = async (bookingId) => {
 export const markNoShowBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-no-show`);
 }
+
+export const enterResultStisAPI = async (bookingId, resultData) => {
+  return apiClient.post(`/stis-results/return/${bookingId}`, resultData);
+}
+
+export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
+  const formData = new FormData();
+  formData.append("pdfFile", attachments);
+  return apiClient.put(`/stis-results/upload-pdf/${bookingId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
