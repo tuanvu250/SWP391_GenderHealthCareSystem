@@ -93,7 +93,6 @@ const experts = [
 export default function ConsultationBooking() {
   const [selectedExpert, setSelectedExpert] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [successModal, setSuccessModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSelect = (expert) => {
@@ -108,17 +107,27 @@ export default function ConsultationBooking() {
 
   const handleSubmitBooking = (e) => {
     e.preventDefault();
-    console.log("Đặt lịch với", selectedExpert.name);
-    setShowForm(false);
-    setSuccessModal(true);
+    const form = e.target;
 
-    setTimeout(() => {
-      navigate("/confirm-consultant");
-    }, 2000);
+    const bookingData = {
+      name: form.fullName.value,
+      phone: form.phone.value,
+      email: form.email.value,
+      date: form.date.value,
+      timeSlot: form.timeSlot.value,
+      notes: form.notes.value,
+      paymentMethod: form.paymentMethod.value,
+      expertName: selectedExpert.name,
+      consultantId: selectedExpert.id,
+      customerId: 10, // hardcoded nếu chưa có auth
+    };
+
+    navigate("/confirm-consultant", { state: bookingData });
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      {/* Header & Title */}
       <div className="bg-[#E6F7FB] p-6 lg:p-8 rounded-xl shadow mb-10 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold text-[#0077aa] mb-2">
           Dịch vụ tư vấn sức khỏe cá nhân
@@ -132,6 +141,7 @@ export default function ConsultationBooking() {
         Đặt lịch tư vấn sức khỏe giới tính
       </h2>
 
+      {/* Expert List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {experts.map((expert) => (
           <div key={expert.id} className="bg-white p-4 shadow rounded-xl">
@@ -154,6 +164,7 @@ export default function ConsultationBooking() {
         ))}
       </div>
 
+      {/* Booking Form */}
       {showForm && selectedExpert && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in-up">
@@ -174,10 +185,7 @@ export default function ConsultationBooking() {
                 <h3 className="text-xl font-bold text-[#0099CF]">{selectedExpert.name}</h3>
                 <p className="text-gray-600 text-sm">{selectedExpert.specialty}</p>
                 <p
-                  onClick={() => {
-                    setShowForm(false);
-                    setSelectedExpert(null);
-                  }}
+                  onClick={handleCloseForm}
                   className="mt-2 text-sm text-[#0099CF] hover:underline cursor-pointer"
                 >
                   Chọn tư vấn viên khác
@@ -276,17 +284,7 @@ export default function ConsultationBooking() {
                   Xác nhận đặt lịch
                 </button>
               </div>
-              
             </form>
-          </div>
-        </div>
-      )}
-
-      {successModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white p-6 rounded-xl shadow-xl text-center">
-            <h2 className="text-xl font-semibold text-[#0099CF] mb-3">Đặt lịch thành công!</h2>
-            <p className="text-gray-700">Bạn sẽ được chuyển đến trang xác nhận thông tin...</p>
           </div>
         </div>
       )}

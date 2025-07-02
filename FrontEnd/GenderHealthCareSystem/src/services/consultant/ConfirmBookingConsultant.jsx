@@ -1,44 +1,55 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Row, Col, Tag, Divider, message, Alert } from "antd";
-import { ClockCircleOutlined, UserOutlined, PhoneOutlined, MailOutlined, BankOutlined } from "@ant-design/icons";
+import { Button, Card, Row, Col, Divider, message, Alert } from "antd";
+import { createConsultationBooking } from "../../components/api/ConsultantBooking.api";
+import dayjs from "dayjs";
 
 export default function ConfirmConsultationBooking() {
     const location = useLocation();
     const navigate = useNavigate();
-    const bookingData = location.state || {
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        email: "nguyenvana@example.com",
-        date: "23/06/2025",
-        timeSlot: "09:00 - 10:00",
-        expertName: "TS. Nguyễn Thị Minh Trang",
-        notes: "Cần tư vấn về sức khỏe giới tính.",
-        paymentMethod: "Ngân hàng"
-    };
+
+    const bookingData = location.state;
 
     const [loading, setLoading] = useState(false);
 
     const handleConfirm = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch("/api/stis-booking", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(bookingData),
-            });
+        if (!bookingData) {
+            message.error("Không có dữ liệu đặt lịch.");
+            return;
+        }
 
-            if (response.ok) {
+        setLoading(true);
+
+        try {
+            const startTime = bookingData.timeSlot.split(" - ")[0]; // e.g. "09:00"
+            const bookingDate = dayjs(`${bookingData.date} ${startTime}`).format("YYYY-MM-DDTHH:mm:ss");
+
+            const payload = {
+
+                consultantId: bookingData.consultantId || 1, // fallback nếu ID không có
+
+                customerId: bookingData.customerId || 10,
+                bookingDate,
+                note: bookingData.notes || "",
+                paymentMethod: bookingData.paymentMethod === "bank" ? "VNPAY" : "PAYPAL",
+            };
+
+            console.log("Gửi lên:", payload);
+
+            const response = await createConsultationBooking(payload);
+
+            if (response.paymentUrl) {
+                message.success("Đang chuyển đến cổng thanh toán...");
+                setTimeout(() => {
+                    window.location.href = response.paymentUrl;
+                }, 1500);
+            } else {
                 message.success("Đặt lịch thành công!");
                 navigate("/history-consultant");
-            } else {
-                message.error("Đặt lịch thất bại.");
             }
         } catch (err) {
-            console.error(err);
-            message.error("Có lỗi xảy ra khi đặt lịch.");
+            console.error("Đặt lịch lỗi:", err);
+            message.error("Đặt lịch thất bại.");
         } finally {
             setLoading(false);
         }
@@ -50,7 +61,7 @@ export default function ConfirmConsultationBooking() {
 
     return (
         <div className="p-8 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-center mb-2">Đặt lịch tư vấn sức khỏe</h1>
+            <h1 className="text-2xl font-bold text-center mb-2">Xác nhận đặt lịch tư vấn</h1>
             <p className="text-center text-gray-500 mb-6">
                 Vui lòng kiểm tra lại thông tin trước khi xác nhận đặt lịch
             </p>
@@ -74,7 +85,7 @@ export default function ConfirmConsultationBooking() {
                         <p><strong>Ngày tư vấn:</strong> {bookingData.date}</p>
                         <p><strong>Khung giờ:</strong> {bookingData.timeSlot}</p>
                         <p><strong>Chuyên gia:</strong> {bookingData.expertName}</p>
-                        <p><strong>Phương thức thanh toán:</strong> Chuyển khoản ngân hàng</p>
+                        <p><strong>Phương thức thanh toán:</strong> {bookingData.paymentMethod === "bank" ? "VNPAY" : "PayPal"}</p>
                     </Col>
                 </Row>
             </Card>
