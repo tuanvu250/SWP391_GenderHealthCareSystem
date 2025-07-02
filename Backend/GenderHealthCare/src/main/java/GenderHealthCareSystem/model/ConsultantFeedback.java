@@ -24,6 +24,9 @@ public class ConsultantFeedback {
     @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
     private ConsultationBooking consultationBooking;
 
+    @Column(name = "Rating")
+    private Integer rating;
+
     @Column(name = "Comment", columnDefinition = "NVARCHAR(MAX)")
     private String comment;
 
