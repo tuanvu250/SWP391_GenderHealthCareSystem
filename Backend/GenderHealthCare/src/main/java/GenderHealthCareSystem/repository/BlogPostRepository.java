@@ -52,5 +52,12 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Integer> {
             Pageable pageable
     );
 
+    @Query("""
+    SELECT b FROM BlogPost b
+    WHERE b.tags LIKE %:tags%
+      AND b.status = 'PUBLISHED'
+      AND b.postId <> :postId
+""")
+    List<BlogPost> findRelatedBlogPosts(@Param("tags") String tags, @Param("postId") Integer postId);
 
 }

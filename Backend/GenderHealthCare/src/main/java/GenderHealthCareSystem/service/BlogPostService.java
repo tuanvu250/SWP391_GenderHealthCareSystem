@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -141,6 +142,33 @@ public class BlogPostService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với id: " + id));
         blogPost.setLikeCount(blogPost.getLikeCount() + 1);
         blogPostRepository.save(blogPost);
+    }
+
+    public List<BlogPostResponse> findRelatedBlogPosts(String tags, Integer postId) {
+        // Split the tags string into individual tags
+        String[] tagArray = tags.split(",");
+
+        // Prepare a list to hold related blog posts
+        List<BlogPost> relatedBlogPosts = new ArrayList<>();
+
+        // Fetch related blog posts for each tag
+        for (String tag : tagArray) {
+            relatedBlogPosts.addAll(blogPostRepository.findRelatedBlogPosts(tag.trim(), postId));
+        }
+
+        // Shuffle the list to randomize the order
+        Collections.shuffle(relatedBlogPosts);
+
+        // Limit the list to 4 items
+        List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(4).toList();
+
+        // Map the related blog posts to response objects
+        List<BlogPostResponse> responses = new ArrayList<>();
+        for (BlogPost blogPost : limitedBlogPosts) {
+            responses.add(mapToResponse(blogPost));
+        }
+
+        return responses;
     }
 
     public BlogPostResponse mapToResponse(BlogPost blogPost) {
