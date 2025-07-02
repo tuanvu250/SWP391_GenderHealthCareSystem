@@ -2,6 +2,8 @@ package GenderHealthCareSystem.repository;
 
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.model.Users;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,5 +37,17 @@ public interface ConsultationBookingRepository
     Optional<ConsultationBooking> findConflict(@Param("consultantId") Integer consultantId, @Param("slotStart") LocalDateTime slotStart, @Param("slotEnd") LocalDateTime slotEnd);
 
     List<ConsultationBooking> findByConsultant(Users consultant);
-}
 
+    @Query("SELECT cb FROM ConsultationBooking cb " +
+            "WHERE (:customerId = cb.customer.userId) " +
+            "AND (:consultantId IS NULL OR cb.consultant.userId = :consultantId) " +
+            "AND (:status IS NULL OR cb.status = :status) " +
+            "AND (:startDateTime IS NULL OR cb.bookingDate >= :startDateTime) " +
+            "AND (:endDateTime IS NULL OR cb.bookingDate <= :endDateTime)")
+    Page<ConsultationBooking> getHistory(@Param("customerId") int customerId,
+                                          @Param("consultantId") Integer consultantId,
+                                          @Param("startDateTime") LocalDateTime startDateTime,
+                                          @Param("endDateTime") LocalDateTime endDateTime,
+                                          @Param("status") String status,
+                                          Pageable pageable);
+}

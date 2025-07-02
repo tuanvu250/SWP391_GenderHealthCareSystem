@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,4 +58,16 @@ public class ConsultantBookingController {
             return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
         }
     }
+
+    @GetMapping("/history/{customerId}")
+    public ResponseEntity<?> getBookingHistory(@PathVariable Integer customerId) {
+        try {
+            var history = bookingService.getBookingHistory(customerId);
+            return ResponseEntity.ok(ApiResponse.success(history));
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
+        }
+    }
+
+
 }
