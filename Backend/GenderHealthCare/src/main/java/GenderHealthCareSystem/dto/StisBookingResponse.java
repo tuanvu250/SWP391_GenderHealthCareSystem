@@ -23,9 +23,7 @@ public class StisBookingResponse {
     private LocalDate bookingDate;
     private LocalTime bookingTimeStart;
     private LocalTime bookingTimeEnd;
-    private Integer stisResultID;
     private Integer stisInvoiceID;
-    private Integer stisFeedbackID;
     private StisBookingStatus status;
     private String paymentStatus;
     private String paymentMethod;
