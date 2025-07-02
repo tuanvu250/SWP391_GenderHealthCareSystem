@@ -54,3 +54,7 @@ export const getServiceCombosAPI = async () => {
 export const getServiceSingleAPI = async () => {
   return apiClient.get(`/stis-services/single`);
 }
+
+export const getServiceTestingByIdAPI = async (id) => {
+  return apiClient.get(`/stis-services/${id}`);
+};

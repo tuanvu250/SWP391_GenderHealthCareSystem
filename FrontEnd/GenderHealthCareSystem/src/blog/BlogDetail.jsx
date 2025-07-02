@@ -34,7 +34,8 @@ import {
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { formatDateTime } from "../components/utils/format";
 import { useAuth } from "../components/provider/AuthProvider";
-import { blogDetailAPI, deleteCommentBlogAPI, editCommentBlogAPI, getCommentsBlogAPI, likeBlogAPI, postCommentBlogAPI } from "../components/api/Blog.api";
+import { blogDetailAPI, deleteCommentBlogAPI, editCommentBlogAPI, getCommentsBlogAPI, likeBlogAPI, postCommentBlogAPI, relatedBlogsByIdAPI } from "../components/api/Blog.api";
+import RelatedBlog from "./RelatedBlog"; 
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -111,9 +112,32 @@ const BlogDetail = () => {
     }
   };
 
+  const fetchRelatedPosts = async () => {
+    try {
+      const response = await relatedBlogsByIdAPI(postId);
+      if(response && response.data) {
+        const posts = response.data.data.map((post) => ({
+          ...post,
+          tags: post.tags
+            ? post.tags.split(", ").map((tag) => ({
+                text: tag.trim(),
+                color: getTagColor(tag.trim()),
+              }))
+            : [],
+            })
+        );
+        setRelatedPosts(posts);
+      }
+    } catch (error) {
+      console.error("Error fetching related posts:", error.message);
+      message.error("Không thể tải bài viết liên quan, vui lòng thử lại sau.");
+    }
+  };
+
   useEffect(() => {
     fetchBlog();
     fetchComments();
+    fetchRelatedPosts();
     window.scrollTo(0, 0);
   }, [postId]);
 
@@ -401,45 +425,7 @@ const BlogDetail = () => {
           </div>
         </div>
 
-        {/* Bài viết liên quan */}
-        {/* <div className="mb-12">
-          <Title level={3} className="mb-6">
-            Bài viết liên quan
-          </Title>
-          <Row gutter={[16, 16]}>
-            {relatedPosts.map((post) => (
-              <Col xs={24} sm={12} lg={8} key={post.id}>
-                <Card
-                  hoverable
-                  cover={
-                    <div className="h-40 overflow-hidden">
-                      <img
-                        alt={post.title}
-                        src={post.image}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  }
-                  onClick={() => navigate(`/blog/${post.id}`)}
-                >
-                  <Title level={5} className="mb-2 line-clamp-2">
-                    {post.title}
-                  </Title>
-                  <Paragraph className="text-gray-600 mb-3 line-clamp-2">
-                    {post.excerpt}
-                  </Paragraph>
-                  <div className="flex justify-between items-center">
-                    <Space>
-                      <Avatar src={post.author.avatar} size="small" />
-                      <Text className="text-xs">{post.author.name}</Text>
-                    </Space>
-                    <Text className="text-xs text-gray-500">{post.date}</Text>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </div> */}
+        <RelatedBlog posts={relatedPosts} />
 
         <div className="text-center mb-8">
           <Button type="primary" onClick={() => navigate("/blog")}>

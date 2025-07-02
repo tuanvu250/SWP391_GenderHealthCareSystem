@@ -19,14 +19,21 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
+      if (values.remember) {
+        localStorage.setItem("remember", "true");
+      } else {
+        localStorage.removeItem("remember");
+      }
+
       const response = await auth.loginAction(values);
+
       if (response.success) {
         message.success(response.message);
-        setTimeout(() => {      
+        setTimeout(() => {
           if (response.role === "Customer") {
             navigate("/home");
           } else navigate(`/${response.role.toLowerCase()}/dashboard`);
-        }, 500) ;
+        }, 500);
       } else {
         message.error(response.message);
         form.setFieldValue("password", ""); // Clear password field on error
@@ -41,16 +48,18 @@ const Login = () => {
 
   const loginWithGoogle = () => {
     setLoading(true);
-    
+
     // Frontend URL để Google callback lại
-    const redirectUri = encodeURIComponent('http://localhost:5173/login/oauth2/');
-    
+    const redirectUri = encodeURIComponent(
+      "http://localhost:5173/login/oauth2/"
+    );
+
     // URL OAuth của backend
     const googleAuthUrl = `http://localhost:8080/oauth2/authorization/google?redirect_uri=${redirectUri}`;
-    
+
     // Chuyển hướng browser đến trang xác thực Google
     window.location.href = googleAuthUrl;
-  }
+  };
 
   return (
     <div
