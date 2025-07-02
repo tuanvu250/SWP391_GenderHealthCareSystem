@@ -15,4 +15,9 @@ public class ConsultantProfileRequest {
     private Boolean isAvailable;
     private Boolean employmentStatus;
     private List<ProfileDetailRequest> details;
+    private String fullName;
 }
+
+
+
+

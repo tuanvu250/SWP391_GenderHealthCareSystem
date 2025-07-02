@@ -99,6 +99,9 @@ public class ConsultantProfileService {
     }
 
     public ConsultantProfileRequest get(Integer consultantId) {
+        Users user = usersRepo.findById(consultantId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
 
@@ -111,7 +114,6 @@ public class ConsultantProfileService {
         response.setHourlyRate(profile.getHourlyRate());
         response.setLocation(profile.getLocation());
         response.setIsAvailable(profile.getIsAvailable());
-
         response.setDetails(profile.getDetails().stream().map(detail -> {
             ProfileDetailRequest detailRequest = new ProfileDetailRequest();
             detailRequest.setDetailType(detail.getDetailType());
@@ -123,6 +125,8 @@ public class ConsultantProfileService {
             detailRequest.setIssuedDate(detail.getIssuedDate());
             return detailRequest;
         }).toList());
+
+        response.setFullName(user.getFullName()); // Add fullName from Users
 
         return response;
     }
@@ -156,6 +160,9 @@ public class ConsultantProfileService {
                 detailRequest.setIssuedDate(detail.getIssuedDate());
                 return detailRequest;
             }).toList());
+
+            response.setFullName(profile.getConsultant().getFullName()); // Add fullName from Users
+
             return response;
         }).toList();
     }

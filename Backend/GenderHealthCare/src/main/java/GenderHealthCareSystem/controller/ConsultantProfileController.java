@@ -49,13 +49,13 @@ public class ConsultantProfileController {
         return ResponseEntity.ok(service.get(consultantId));
     }
 
-    @GetMapping("/all")
-    @PreAuthorize("hasRole('Customer')")
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(service.getAllConsultants());
-    }
+        @GetMapping("/all")
+        @PreAuthorize("hasAnyRole('Customer', 'Manager')")
+        public ResponseEntity<?> getAll() {
+            return ResponseEntity.ok(service.getAllConsultants());
+        }
 
-    @GetMapping("/{id}")
+        @GetMapping("/{id}")
     @PreAuthorize("hasRole('Customer')")
     public ResponseEntity<?> getConsultantProfile(@PathVariable Integer id) {
         try {
@@ -87,4 +87,6 @@ public class ConsultantProfileController {
             return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
         }
     }
+
+
 }

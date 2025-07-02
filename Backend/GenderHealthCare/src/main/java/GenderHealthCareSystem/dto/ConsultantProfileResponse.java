@@ -15,4 +15,5 @@ public class ConsultantProfileResponse {
     private Boolean isAvailable;
     private Boolean employmentStatus;
     private List<ProfileDetailRequest> details;
+    private String fullName; // Added field for consultant's full name
 }
