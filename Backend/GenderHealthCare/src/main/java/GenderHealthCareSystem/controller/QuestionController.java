@@ -82,6 +82,20 @@ public class QuestionController {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Answered questions retrieved successfully", pageResponse, null));
     }
 
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<ApiResponse<PageResponse<QuestionResponse>>> getAllQuestionsForCustomerEndpoint(
+            @PathVariable String customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        // Frontend muốn hiện tất cả câu hỏi, không filter theo customerId
+        Page<QuestionResponse> questions = questionService.getAllQuestions(pageable);
+        PageResponse<QuestionResponse> pageResponse = PageResponseUtil.mapToPageResponse(questions);
+
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "All questions retrieved successfully", pageResponse, null));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionResponse>> getQuestionById(@PathVariable Integer id) {
         QuestionResponse response = questionService.getQuestionById(id);
