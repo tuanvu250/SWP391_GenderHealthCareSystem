@@ -13,7 +13,9 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -26,7 +28,13 @@ public class GoogleCalendarService {
     private static final String CREDENTIALS_FILE_PATH = "src/main/resources/google-credentials.json";
 
     public String createGoogleMeetLink(String summary, LocalDateTime startTime, LocalDateTime endTime) throws IOException {
-        GoogleCredentials credentials = ServiceAccountCredentials.fromStream(new FileInputStream(CREDENTIALS_FILE_PATH))
+        InputStream credentialsStream = getClass().getClassLoader().getResourceAsStream("google-credentials.json");
+
+        if (credentialsStream == null) {
+            throw new FileNotFoundException("Credentials file not found in resources");
+        }
+
+        GoogleCredentials credentials = ServiceAccountCredentials.fromStream(credentialsStream)
                 .createScoped(Collections.singleton("https://www.googleapis.com/auth/calendar"));
 
         JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
