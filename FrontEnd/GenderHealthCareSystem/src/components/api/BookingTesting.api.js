@@ -1,8 +1,18 @@
 // src/api/booking.api.js
 import apiClient from "./apiClient";
+import dayjs from "dayjs";
 
 export const getSTISPackagesAPI = async () => {
   return apiClient.get("/stis-services");
+};
+
+export const checkLimitTimeToBookAPI = async (serviceId, bookingDateTime) => {
+  return apiClient.get(`/stis-bookings/check-limit`, {
+    params: {
+      serviceId,
+      bookingDateTime,
+    },
+  }); 
 };
 
 export const bookStisAPI = async (values) => {
@@ -67,15 +77,16 @@ export const markCompletedBookingStisAPI = async (bookingId) => {
 
 export const markDeniedBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-denied`);
-}
+};
 
 export const markNoShowBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-no-show`);
-}
+};
 
 export const enterResultStisAPI = async (bookingId, resultData) => {
+  console.log("Result Data:", resultData);
   return apiClient.post(`/stis-results/return/${bookingId}`, resultData);
-}
+};
 
 export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
   const formData = new FormData();
@@ -85,4 +96,4 @@ export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
       "Content-Type": "multipart/form-data",
     },
   });
-}
+};

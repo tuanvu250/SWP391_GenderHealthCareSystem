@@ -99,13 +99,13 @@ const STIBooking = () => {
 
   // Khung giờ làm việc
   const workingHours = [
-    { value: "08:00", label: "08:00 - 09:00" },
-    { value: "09:00", label: "09:00 - 10:00" },
-    { value: "10:00", label: "10:00 - 11:00" },
-    { value: "13:00", label: "13:00 - 14:00" },
-    { value: "14:00", label: "14:00 - 15:00" },
-    { value: "15:00", label: "15:00 - 16:00" },
-    { value: "16:00", label: "16:00 - 17:00" },
+    { value: "08:00", label: "08:00 - 09:00" , disabled: false },
+    { value: "09:00", label: "09:00 - 10:00" , disabled: false },
+    { value: "10:00", label: "10:00 - 11:00" , disabled: false },
+    { value: "13:00", label: "13:00 - 14:00" , disabled: false },
+    { value: "14:00", label: "14:00 - 15:00" , disabled: false },
+    { value: "15:00", label: "15:00 - 16:00" , disabled: false },
+    { value: "16:00", label: "16:00 - 17:00" , disabled: false },
   ];
 
   // Disable các ngày trong quá khứ và cuối tuần
@@ -170,9 +170,6 @@ const STIBooking = () => {
         paymentMethod: allValues.paymentMethod,
         notes: allValues.notes,
       };
-
-      console.log(">>> Booking data:", bookingData);
-
       const response = await bookStisAPI(bookingData);
 
       if (allValues.paymentMethod === "cash") {
