@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -150,18 +152,28 @@ public class BlogPostService {
 
         // Prepare a list to hold related blog posts
         List<BlogPost> relatedBlogPosts = new ArrayList<>();
-
+        HashMap<Integer, BlogPost> relatedBlogPostsMap = new HashMap<Integer, BlogPost>();
         // Fetch related blog posts for each tag
         for (String tag : tagArray) {
+            relatedBlogPosts= new ArrayList<>();
             relatedBlogPosts.addAll(blogPostRepository.findRelatedBlogPosts(tag.trim(), postId));
+            // Add to map to avoid duplicates
+            for (BlogPost blogPost : relatedBlogPosts) {
+                if (!relatedBlogPostsMap.containsKey(blogPost.getPostId())) {
+                    relatedBlogPostsMap.put(blogPost.getPostId(), blogPost);
+                }
+            }
         }
+        // Convert the map values to a list
+        relatedBlogPosts = new ArrayList<>(relatedBlogPostsMap.values());
+        System.out.println("Related blog posts found: " + relatedBlogPosts.size());
 
         // Shuffle the list to randomize the order
         Collections.shuffle(relatedBlogPosts);
 
         // Limit the list to 4 items
         List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(3).toList();
-
+        System.out.println("Limited blog posts: " + limitedBlogPosts.size());
         // Map the related blog posts to response objects
         List<BlogPostResponse> responses = new ArrayList<>();
         for (BlogPost blogPost : limitedBlogPosts) {
@@ -175,11 +187,20 @@ public class BlogPostService {
 
         // Prepare a list to hold related blog posts
         List<BlogPost> relatedBlogPosts = new ArrayList<>();
+        HashMap<Integer, BlogPost> relatedBlogPostsMap = new HashMap<Integer, BlogPost>();
 
         // Fetch related blog posts for each tag
         for (String tag : tagArray) {
+            relatedBlogPosts = new ArrayList<>();
             relatedBlogPosts.addAll(blogPostRepository.findRelatedBlogPostsByTag(tag.trim()));
+            for (BlogPost blogPost : relatedBlogPosts) {
+                if (!relatedBlogPostsMap.containsKey(blogPost.getPostId())) {
+                    relatedBlogPostsMap.put(blogPost.getPostId(), blogPost);
+                }
+            }
         }
+        // Convert the map values to a list
+        relatedBlogPosts = new ArrayList<>(relatedBlogPostsMap.values());
 
         // Shuffle the list to randomize the order
         Collections.shuffle(relatedBlogPosts);
