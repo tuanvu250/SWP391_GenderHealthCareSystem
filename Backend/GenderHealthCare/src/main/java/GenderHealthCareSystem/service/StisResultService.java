@@ -34,26 +34,33 @@ public class StisResultService {
         StisBooking booking = stisBookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking!"));
 
+
+        if (req.getTestCode() == null || req.getTestCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã xét nghiệm (test_code) không được để trống!");
+        }
+
         switch (booking.getStatus()) {
             case CONFIRMED:
-                // Không cần kiểm tra booking.getStisResult() nữa vì mối quan hệ đã thay đổi
-                // thành OneToMany
+
+                List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+                boolean testCodeExists = existingResults.stream()
+                        .anyMatch(r -> req.getTestCode().trim().equals(r.getTestCode()));
+                if (testCodeExists) {
+                    throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này!");
+                }
                 break;
             case COMPLETED:
-                // Kiểm tra xem đã có kết quả chưa
-                List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
-                if (!existingResults.isEmpty()) {
-                    // Nếu đã có kết quả, cập nhật kết quả đầu tiên
-                    StisResult result = existingResults.get(0);
-                    result.setTestCode(req.getTestCode());
-                    result.setResultValue(req.getResultValue());
-                    result.setReferenceRange(req.getReferenceRange());
-                    result.setResultText(req.getResultText());
-                    result.setNote(req.getNote());
-                    result.setUpdatedAt(LocalDateTime.now());
-                    return stisResultRepository.save(result);
+
+                List<StisResult> completedResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
+                if (!completedResults.isEmpty()) {
+
+                    boolean testCodeExistsInCompleted = completedResults.stream()
+                            .anyMatch(r -> req.getTestCode().trim().equals(r.getTestCode()));
+                    if (testCodeExistsInCompleted) {
+                        throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này!");
+                    }
+
                 }
-                // Nếu chưa có kết quả mặc dù booking COMPLETED, cho phép tạo mới
                 break;
             case PENDING:
                 throw new IllegalStateException("Không thể trả kết quả cho booking đang chờ xác nhận (PENDING)!");
@@ -69,20 +76,28 @@ public class StisResultService {
                 throw new IllegalStateException("Trạng thái booking không hợp lệ!");
         }
 
-        StisResult result = new StisResult();
-        result.setStisBooking(booking);
-        result.setResultDate(LocalDateTime.now());
-        result.setTestCode(req.getTestCode());
-        result.setResultValue(req.getResultValue());
-        result.setReferenceRange(req.getReferenceRange());
-        result.setResultText(req.getResultText());
-        result.setNote(req.getNote());
-        result.setCreatedAt(LocalDateTime.now());
-        result.setUpdatedAt(LocalDateTime.now());
-        stisResultRepository.save(result);
-        booking.setStatus(StisBookingStatus.COMPLETED);
-        stisBookingRepository.save(booking);
-        return result;
+        try {
+            StisResult result = new StisResult();
+            result.setStisBooking(booking);
+            result.setResultDate(LocalDateTime.now());
+            result.setTestCode(req.getTestCode().trim());
+            result.setResultValue(req.getResultValue());
+            result.setReferenceRange(req.getReferenceRange());
+            result.setResultText(req.getResultText());
+            result.setNote(req.getNote());
+            result.setCreatedAt(LocalDateTime.now());
+            result.setUpdatedAt(LocalDateTime.now());
+            stisResultRepository.save(result);
+            booking.setStatus(StisBookingStatus.COMPLETED);
+            stisBookingRepository.save(booking);
+            return result;
+        } catch (Exception e) {
+
+            if (e.getMessage().contains("unique constraint") || e.getMessage().contains("duplicate")) {
+                throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này! Vui lòng sử dụng mã khác.");
+            }
+            throw e;
+        }
     }
 
     @Transactional
@@ -94,16 +109,27 @@ public class StisResultService {
         StisBooking booking = stisBookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking!"));
 
-        // Kiểm tra trạng thái booking
+
+        List<String> testCodes = requests.stream()
+                .map(StisResultRequest::getTestCode)
+                .filter(code -> code != null && !code.trim().isEmpty())
+                .toList();
+
+        long uniqueTestCodes = testCodes.stream().distinct().count();
+        if (testCodes.size() != uniqueTestCodes) {
+            throw new IllegalArgumentException("Không được trùng lặp mã xét nghiệm (test_code) trong cùng một booking!");
+        }
+
+
         switch (booking.getStatus()) {
             case CONFIRMED:
-                // OK để tạo kết quả
+
                 break;
             case COMPLETED:
-                // Nếu đã COMPLETED, kiểm tra xem có kết quả nào chưa
+
                 List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
                 if (!existingResults.isEmpty()) {
-                    // Nếu đã có kết quả, xóa tất cả kết quả cũ
+
                     stisResultRepository.deleteAll(existingResults);
                     stisResultRepository.flush();
                 }
@@ -122,15 +148,20 @@ public class StisResultService {
                 throw new IllegalStateException("Trạng thái booking không hợp lệ!");
         }
 
-        // Tạo danh sách kết quả mới
+
         List<StisResult> results = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
         for (StisResultRequest req : requests) {
+
+            if (req.getTestCode() == null || req.getTestCode().trim().isEmpty()) {
+                throw new IllegalArgumentException("Mã xét nghiệm (test_code) không được để trống!");
+            }
+
             StisResult result = new StisResult();
             result.setStisBooking(booking);
             result.setResultDate(now);
-            result.setTestCode(req.getTestCode());
+            result.setTestCode(req.getTestCode().trim());
             result.setResultValue(req.getResultValue());
             result.setReferenceRange(req.getReferenceRange());
             result.setResultText(req.getResultText());
@@ -140,14 +171,22 @@ public class StisResultService {
             results.add(result);
         }
 
-        // Lưu tất cả kết quả
-        results = stisResultRepository.saveAll(results);
+        try {
 
-        // Cập nhật trạng thái booking
-        booking.setStatus(StisBookingStatus.COMPLETED);
-        stisBookingRepository.save(booking);
+            results = stisResultRepository.saveAll(results);
 
-        return results;
+
+            booking.setStatus(StisBookingStatus.COMPLETED);
+            stisBookingRepository.save(booking);
+
+            return results;
+        } catch (Exception e) {
+
+            if (e.getMessage().contains("unique constraint") || e.getMessage().contains("duplicate")) {
+                throw new IllegalArgumentException("Mã xét nghiệm đã tồn tại cho booking này! Vui lòng kiểm tra lại danh sách kết quả.");
+            }
+            throw e;
+        }
     }
 
     @Transactional
@@ -156,10 +195,22 @@ public class StisResultService {
                 .orElseThrow(
                         () -> new IllegalArgumentException("Không tìm thấy kết quả xét nghiệm với ID: " + resultId));
 
-        // Chỉ cập nhật các trường không null
+
         if (StringUtils.hasText(req.getTestCode())) {
-            result.setTestCode(req.getTestCode());
+            String newTestCode = req.getTestCode().trim();
+
+            if (!newTestCode.equals(result.getTestCode())) {
+                List<StisResult> existingResults = stisResultRepository
+                        .findAllByStisBooking_BookingId(result.getStisBooking().getBookingId());
+                boolean testCodeExists = existingResults.stream()
+                        .anyMatch(r -> !r.getResultId().equals(resultId) && newTestCode.equals(r.getTestCode()));
+                if (testCodeExists) {
+                    throw new IllegalArgumentException("Mã xét nghiệm '" + newTestCode + "' đã tồn tại cho booking này!");
+                }
+            }
+            result.setTestCode(newTestCode);
         }
+
 
         if (StringUtils.hasText(req.getResultValue())) {
             result.setResultValue(req.getResultValue());
@@ -177,8 +228,16 @@ public class StisResultService {
             result.setNote(req.getNote());
         }
 
-        result.setUpdatedAt(LocalDateTime.now());
-        return stisResultRepository.save(result);
+        try {
+            result.setUpdatedAt(LocalDateTime.now());
+            return stisResultRepository.save(result);
+        } catch (Exception e) {
+
+            if (e.getMessage().contains("unique constraint") || e.getMessage().contains("duplicate")) {
+                throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này! Vui lòng sử dụng mã khác.");
+            }
+            throw e;
+        }
     }
 
     @Transactional
@@ -187,24 +246,24 @@ public class StisResultService {
                 .orElseThrow(
                         () -> new IllegalArgumentException("Không tìm thấy kết quả xét nghiệm với ID: " + resultId));
 
-        // Nếu có quan hệ với booking, xử lý trước khi xóa
+
         StisBooking booking = result.getStisBooking();
         if (booking != null) {
-            // Kiểm tra xem có còn kết quả nào khác không
+
             List<StisResult> remainingResults = stisResultRepository
                     .findAllByStisBooking_BookingId(booking.getBookingId());
             if (remainingResults.size() <= 1) {
-                // Nếu đây là kết quả cuối cùng, đặt lại trạng thái booking về CONFIRMED
+
                 booking.setStatus(StisBookingStatus.CONFIRMED);
                 stisBookingRepository.save(booking);
             }
         }
 
-        // Xóa các mối quan hệ trước khi xóa đối tượng
+
         result.setStisBooking(null);
         stisResultRepository.saveAndFlush(result);
 
-        // Thực hiện xóa với force
+
         stisResultRepository.deleteById(resultId);
         stisResultRepository.flush();
     }
@@ -234,7 +293,7 @@ public class StisResultService {
         if (results.isEmpty()) {
             return Optional.empty();
         }
-        // Trả về kết quả đầu tiên nếu có nhiều kết quả
+
         return Optional.of(mapToResponse(results.get(0)));
     }
 
@@ -295,19 +354,19 @@ public class StisResultService {
         LocalDateTime now = LocalDateTime.now();
 
         if (updateAll) {
-            // Cập nhật PDF cho tất cả các kết quả
+
             for (StisResult result : results) {
                 result.setPdfResultUrl(pdfUrl);
                 result.setUpdatedAt(now);
             }
             stisResultRepository.saveAll(results);
         } else {
-            // Kiểm tra xem có kết quả nào đã có PDF chưa
+
             boolean hasPdf = results.stream()
                     .anyMatch(r -> r.getPdfResultUrl() != null && !r.getPdfResultUrl().isEmpty());
 
             if (!hasPdf) {
-                // Nếu không có kết quả nào có PDF, cập nhật cho kết quả đầu tiên
+
                 StisResult firstResult = results.get(0);
                 firstResult.setPdfResultUrl(pdfUrl);
                 firstResult.setUpdatedAt(now);
@@ -315,7 +374,7 @@ public class StisResultService {
             }
         }
 
-        // Trả về danh sách kết quả đã cập nhật
+
         return getAllResultsByBookingId(bookingId);
     }
 
