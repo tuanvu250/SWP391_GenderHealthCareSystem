@@ -26,13 +26,25 @@ public class Invoice {
     @JoinColumn(name = "booking_id", referencedColumnName = "BookingID", unique = true)
     private ConsultationBooking consultationBooking;
 
-    @Column(name = "total_amount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "TransactionId")
+    private String transactionId;
 
-    @Column(name = "payment_method", length = 50)
+    @Column(name = "TotalAmount")
+    private Double totalAmount;
+
+    @Column(name = "Currency")
+    private String currency;
+
+    @Column(name = "PaymentMethod", length = 50)
     private String paymentMethod;
 
-    @Setter
-    @Column(name = "paid_at")
+
+    @Column(name = "PaidAt")
     private LocalDateTime paidAt;
+
+    @Column(name = "RefundStatus", length = 20)
+    private String refundStatus;    // NOT_REQUESTED, REFUND_PENDING, REFUNDED, NON_REFUNDABLE
+
+    @Column(name = "RefundAmount")
+    private Double refundAmount;
 }

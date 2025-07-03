@@ -55,7 +55,5 @@ public class ConsultationBooking {
     @Column(name = "MeetLink")
     private String meetLink;
 
-    public void setCustomer(Users customer) {
-        this.customer = customer;
-    }
+
 }

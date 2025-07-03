@@ -1,73 +1,122 @@
 package GenderHealthCareSystem.controller;
 
-import GenderHealthCareSystem.dto.ConsultantBookingRequest;
-import GenderHealthCareSystem.dto.ConsultantBookingResponse;
-import GenderHealthCareSystem.dto.ApiResponse;
-import GenderHealthCareSystem.service.ConsultationBookingService;
+import GenderHealthCareSystem.dto.*;
+import GenderHealthCareSystem.service.ConsultantBookingService;
+import GenderHealthCareSystem.service.ConsultantInvoiceService;
+import GenderHealthCareSystem.util.PageResponseUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
+
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/bookings")
 @RequiredArgsConstructor
 public class ConsultantBookingController {
 
-    private final ConsultationBookingService bookingService;
+    private final ConsultantBookingService bookingService;
+    private final ConsultantInvoiceService invoiceService;
 
     @PostMapping
-    public ResponseEntity<?> createBooking(
-            @RequestBody ConsultantBookingRequest req,
-            HttpServletRequest httpReq) {
-        try {
-            // Validate date format
-            if (req.getBookingDate() == null) {
-                throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd'T'HH:mm:ss");
-            }
-
-            Map<String,String> info = new HashMap<>();
-            info.put("ip", httpReq.getRemoteAddr());
-            ConsultantBookingResponse resp = bookingService.createBooking(req, info);
-            return ResponseEntity.ok(ApiResponse.success(resp));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<ConsultantBookingResponse>> createBooking(
+            @RequestBody @Valid ConsultantBookingRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        // Lấy customerId từ token JWT, không dùng giá trị từ client
+        int customerId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        ConsultantBookingResponse response = bookingService.createBooking(request,customerId);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @GetMapping("/payment-return")
-    public ResponseEntity<?> paymentReturn(@RequestParam Map<String,String> params) {
-        try {
-            bookingService.confirmPayment(params);
-            return ResponseEntity.ok(ApiResponse.success("Payment confirmed"));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
+
+
+    // 3. Consultant: view all bookings with customer info
+    @GetMapping("/consultant/schedule")
+    public ResponseEntity<ApiResponse<List<ConsultantBookingDetailResponse>>> getConsultantSchedule(
+            @AuthenticationPrincipal Jwt jwt) {
+        int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        String role = jwt.getClaimAsString("role");
+        if (!"CONSULTANT".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Bạn không có quyền truy cập lịch tư vấn."));
         }
+        List<ConsultantBookingDetailResponse> schedule = bookingService.getScheduleForConsultant(consultantId);
+        return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 
-    @GetMapping("/consultant/{consultantId}/schedule")
-    public ResponseEntity<?> getConsultantSchedule(@PathVariable Integer consultantId) {
-        try {
-            var schedule = bookingService.getConsultantSchedule(consultantId);
-            return ResponseEntity.ok(ApiResponse.success(schedule));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-        }
+    @GetMapping("/calendar/{consultantId}")
+    public ResponseEntity<?> getConsultantCalendar(@PathVariable Integer consultantId) {
+        var calendar = bookingService.getConsultantCalendar(consultantId);
+        return ResponseEntity.ok(ApiResponse.success(calendar));
     }
 
-    @GetMapping("/history/{customerId}")
-    public ResponseEntity<?> getBookingHistory(@PathVariable Integer customerId) {
-        try {
-            var history = bookingService.getBookingHistory(customerId);
-            return ResponseEntity.ok(ApiResponse.success(history));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-        }
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingResponse>>> getBookingHistory(
+            @RequestParam(required = false) Integer consultantId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "desc") String sort,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        int customerId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        LocalDateTime start = startDate != null && !startDate.isEmpty() ? LocalDateTime.parse(startDate) : null;
+        LocalDateTime end = endDate != null && !endDate.isEmpty() ? LocalDateTime.parse(endDate) : null;
+
+        Page<ConsultantBookingResponse> history = bookingService.getHistory(
+                customerId, consultantId, start, end, page, size, sort
+        );
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        HttpStatus.OK,
+                        "Fetched booking history",
+                        PageResponseUtil.mapToPageResponse(history),
+                        null
+                )
+        );
+    }
+    @PutMapping("/cancel/{bookingId}")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<RefundResponse> cancelBooking(
+            @PathVariable Integer bookingId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Integer customerId = ((Number) jwt.getClaim("userID")).intValue();
+        String msg = invoiceService.requestRefund(bookingId, customerId);
+        Double amount = invoiceService.getInvoiceByBooking(bookingId)
+                .map(inv -> inv.getRefundAmount())
+                .orElse(0.0);
+        String status = invoiceService.getInvoiceByBooking(bookingId)
+                .map(inv -> inv.getRefundStatus())
+                .orElse("UNKNOWN");
+
+        return ResponseEntity.ok(new RefundResponse(msg, amount, status));
     }
 
+    /**
+     * Customer đổi lịch tư vấn đã thanh toán
+     */
+    @PutMapping("/reschedule")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<Map<String, String>> reschedule(
+            @RequestBody RescheduleRequest req,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Integer customerId = ((Number) jwt.getClaim("userID")).intValue();
+        String result = invoiceService.rescheduleBooking(
+                req.getBookingId(), customerId, req.getNewBookingDate());
+        return ResponseEntity.ok(Map.of("message", result));
+    }
 
 }

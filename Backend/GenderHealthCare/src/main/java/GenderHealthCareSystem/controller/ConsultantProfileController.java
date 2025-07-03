@@ -1,5 +1,7 @@
 package GenderHealthCareSystem.controller;
 
+import GenderHealthCareSystem.dto.ConsultantProfileResponse;
+import GenderHealthCareSystem.dto.ConsultantSearchRequest;
 import GenderHealthCareSystem.model.ConsultantProfile;
 import GenderHealthCareSystem.dto.ConsultantProfileRequest;
 import GenderHealthCareSystem.service.ConsultantProfileService;
@@ -8,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/consultant/profile")
@@ -86,6 +90,14 @@ public class ConsultantProfileController {
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
         }
+    }
+
+
+    @PostMapping("/search")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<List<ConsultantProfileResponse>> search(@RequestBody ConsultantSearchRequest req) {
+        List<ConsultantProfileResponse> results = service.searchConsultants(req);
+        return ResponseEntity.ok(results);
     }
 
 

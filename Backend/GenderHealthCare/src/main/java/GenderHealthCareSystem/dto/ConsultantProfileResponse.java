@@ -14,6 +14,8 @@ public class ConsultantProfileResponse {
     private String location;
     private Boolean isAvailable;
     private Boolean employmentStatus;
-    private List<ProfileDetailRequest> details;
+    private List<ProfileDetailResponse> details;
     private String fullName; // Added field for consultant's full name
+    private String userImageUrl; // Added field for consultant's image url
+
 }

@@ -1,11 +1,9 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.*;
 import GenderHealthCareSystem.model.ConsultantProfile;
 import GenderHealthCareSystem.model.ProfileDetail;
 import GenderHealthCareSystem.model.Users;
-import GenderHealthCareSystem.dto.ConsultantProfileRequest;
-import GenderHealthCareSystem.dto.ProfileDetailRequest;
-import GenderHealthCareSystem.dto.ConsultantProfileResponse;
 import GenderHealthCareSystem.repository.ConsultantProfileRepository;
 import GenderHealthCareSystem.repository.ProfileDetailRepository;
 import GenderHealthCareSystem.repository.UsersRepository;
@@ -15,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -139,33 +138,11 @@ public class ConsultantProfileService {
 
     public List<ConsultantProfileResponse> getAllConsultants() {
         List<ConsultantProfile> profiles = profileRepo.findAll();
-        return profiles.stream().map(profile -> {
-            ConsultantProfileResponse response = new ConsultantProfileResponse();
-            response.setJobTitle(profile.getJobTitle());
-            response.setIntroduction(profile.getIntroduction());
-            response.setSpecialization(profile.getSpecialization());
-            response.setLanguages(profile.getLanguages());
-            response.setExperienceYears(profile.getExperienceYears());
-            response.setHourlyRate(profile.getHourlyRate());
-            response.setLocation(profile.getLocation());
-            response.setIsAvailable(profile.getIsAvailable());
-            response.setDetails(profile.getDetails().stream().map(detail -> {
-                ProfileDetailRequest detailRequest = new ProfileDetailRequest();
-                detailRequest.setDetailType(detail.getDetailType());
-                detailRequest.setTitle(detail.getTitle());
-                detailRequest.setOrganization(detail.getOrganization());
-                detailRequest.setFromDate(detail.getFromDate());
-                detailRequest.setToDate(detail.getToDate());
-                detailRequest.setDescription(detail.getDescription());
-                detailRequest.setIssuedDate(detail.getIssuedDate());
-                return detailRequest;
-            }).toList());
-
-            response.setFullName(profile.getConsultant().getFullName()); // Add fullName from Users
-
-            return response;
-        }).toList();
+        return profiles.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
+
 
     @Transactional
     public String updateEmploymentStatus(Integer consultantId, Boolean employmentStatus) {
@@ -185,5 +162,60 @@ public class ConsultantProfileService {
         profile.setHourlyRate(hourlyRate);
         profileRepo.save(profile);
         return "Hourly rate updated successfully";
+    }
+
+
+    public List<ConsultantProfileResponse> searchConsultants(ConsultantSearchRequest req) {
+        return profileRepo.findAll().stream()
+                .filter(p -> req.getIsAvailable() == null || req.getIsAvailable().equals(p.getIsAvailable()))
+                .filter(p -> req.getLocation() == null || p.getLocation().toLowerCase().contains(req.getLocation().toLowerCase()))
+                .filter(p -> req.getMinHourlyRate() == null || p.getHourlyRate() >= req.getMinHourlyRate())
+                .filter(p -> req.getMaxHourlyRate() == null || p.getHourlyRate() <= req.getMaxHourlyRate())
+                .filter(p -> req.getMinExperience() == null || p.getExperienceYears() >= req.getMinExperience())
+                .filter(p -> req.getMaxExperience() == null || p.getExperienceYears() <= req.getMaxExperience())
+                .filter(p -> req.getLanguage() == null || p.getLanguages().toLowerCase().contains(req.getLanguage().toLowerCase()))
+                .filter(p -> {
+                    if (req.getKeyword() == null) return true;
+                    String kw = req.getKeyword().toLowerCase();
+                    return p.getConsultant().getFullName().toLowerCase().contains(kw)
+                            || p.getJobTitle().toLowerCase().contains(kw)
+                            || p.getSpecialization().toLowerCase().contains(kw)
+                            || p.getIntroduction().toLowerCase().contains(kw);
+                })
+                .filter(p -> {
+                    if (req.getDetailType() == null && req.getOrganization() == null) return true;
+                    return p.getDetails().stream().anyMatch(d ->
+                            (req.getDetailType() == null || d.getDetailType().equalsIgnoreCase(req.getDetailType()))
+                                    && (req.getOrganization() == null || d.getOrganization().toLowerCase().contains(req.getOrganization().toLowerCase()))
+                    );
+                })
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ConsultantProfileResponse toResponse(ConsultantProfile profile) {
+        ConsultantProfileResponse res = new ConsultantProfileResponse();
+        res.setFullName(profile.getConsultant().getFullName());
+        res.setUserImageUrl(profile.getConsultant().getUserImageUrl());
+        res.setJobTitle(profile.getJobTitle());
+        res.setIntroduction(profile.getIntroduction());
+        res.setSpecialization(profile.getSpecialization());
+        res.setLanguages(profile.getLanguages());
+        res.setExperienceYears(profile.getExperienceYears());
+        res.setHourlyRate(profile.getHourlyRate());
+        res.setLocation(profile.getLocation());
+        res.setIsAvailable(profile.getIsAvailable());
+        res.setDetails(profile.getDetails().stream().map(d -> {
+            ProfileDetailResponse dr = new ProfileDetailResponse();
+            dr.setDetailType(d.getDetailType());
+            dr.setTitle(d.getTitle());
+            dr.setOrganization(d.getOrganization());
+            dr.setFromDate(d.getFromDate());
+            dr.setToDate(d.getToDate());
+            dr.setDescription(d.getDescription());
+            dr.setIssuedDate(d.getIssuedDate());
+            return dr;
+        }).collect(Collectors.toList()));
+        return res;
     }
 }
