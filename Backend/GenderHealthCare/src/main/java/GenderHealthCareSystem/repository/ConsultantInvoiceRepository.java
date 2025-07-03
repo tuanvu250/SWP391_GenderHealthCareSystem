@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface InvoiceRepository  extends JpaRepository<Invoice, Integer> {
+public interface ConsultantInvoiceRepository extends JpaRepository<Invoice, Integer> {
     Optional<Invoice> findByConsultationBookingBookingId(Integer bookingId);
-
 }
+

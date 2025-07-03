@@ -45,6 +45,7 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
+
     @Column(name = "UserImageUrl")
     private String userImageUrl;
 

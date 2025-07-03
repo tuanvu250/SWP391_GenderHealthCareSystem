@@ -33,21 +33,32 @@ public interface ConsultationBookingRepository
      */
     Optional<ConsultationBooking> findByConsultantAndBookingDateBetween(Users consultant, LocalDateTime slotStart, LocalDateTime slotEnd);
 
-    @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId AND cb.bookingDate BETWEEN :slotStart AND :slotEnd")
-    Optional<ConsultationBooking> findConflict(@Param("consultantId") Integer consultantId, @Param("slotStart") LocalDateTime slotStart, @Param("slotEnd") LocalDateTime slotEnd);
 
     List<ConsultationBooking> findByConsultant(Users consultant);
 
     @Query("SELECT cb FROM ConsultationBooking cb " +
-            "WHERE (:customerId = cb.customer.userId) " +
+            "WHERE cb.customer.userId = :customerId " +
             "AND (:consultantId IS NULL OR cb.consultant.userId = :consultantId) " +
-            "AND (:status IS NULL OR cb.status = :status) " +
             "AND (:startDateTime IS NULL OR cb.bookingDate >= :startDateTime) " +
             "AND (:endDateTime IS NULL OR cb.bookingDate <= :endDateTime)")
-    Page<ConsultationBooking> getHistory(@Param("customerId") int customerId,
-                                          @Param("consultantId") Integer consultantId,
-                                          @Param("startDateTime") LocalDateTime startDateTime,
-                                          @Param("endDateTime") LocalDateTime endDateTime,
-                                          @Param("status") String status,
-                                          Pageable pageable);
+    Page<ConsultationBooking> getHistory(
+            @Param("customerId") int customerId,
+            @Param("consultantId") Integer consultantId,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime,
+            Pageable pageable
+    );
+
+    List<ConsultationBooking> findByCustomer_UserId(Integer customerId);
+
+    @Query("SELECT b FROM ConsultationBooking b WHERE b.consultant.userId = :consultantId AND b.bookingDate BETWEEN :start AND :end")
+    Optional<ConsultationBooking> findConflict(@Param("consultantId") Integer consultantId,
+                                               @Param("start") LocalDateTime start,
+                                               @Param("end") LocalDateTime end);
+    boolean existsByConsultantAndBookingDate(Users consultant, LocalDateTime bookingDate);
+
+
+
+
 }
+

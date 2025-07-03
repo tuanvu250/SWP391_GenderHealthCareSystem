@@ -1,4 +1,5 @@
-package GenderHealthCareSystem.service;
+
+        package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.model.Invoice;
@@ -27,7 +28,7 @@ public class InvoiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
         Invoice inv = new Invoice();
         inv.setConsultationBooking(booking);
-        inv.setTotalAmount(amount);
+        inv.setTotalAmount(amount.doubleValue());
         inv.setPaymentMethod("VNPAY");  // mặc định nếu VNPAY
         inv = invoiceRepo.save(inv);
         return inv;

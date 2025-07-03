@@ -2,6 +2,7 @@ package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.dto.Order;
+import GenderHealthCareSystem.service.InvoiceService;
 import GenderHealthCareSystem.service.PayPalService;
 import GenderHealthCareSystem.service.StisInvoiceService;
 import GenderHealthCareSystem.service.VnPayService;
@@ -30,6 +31,7 @@ public class PaymentController {
 
     public static final String SUCCESS_URL = "http://localhost:5173/booking-result";
     public static final String CANCEL_URL = "http://localhost:5173/booking-result";
+    private final InvoiceService invoiceService;
 
     @GetMapping("/vn-pay")
     public ResponseEntity<String> createPayment(@RequestParam long amount,
@@ -120,7 +122,8 @@ public class PaymentController {
     public ResponseEntity<String> cancel() {
         return ResponseEntity.ok("Hủy thanh toán.");
     }
+
+
+
+
 }
-
-
-
