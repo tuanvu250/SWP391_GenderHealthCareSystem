@@ -153,8 +153,8 @@ public class StisBookingController {
                                                                   @RequestParam Integer serviceId) {
         boolean isExceeded = stisBookingService.isBookingLimitExceeded(serviceId, bookingDateTime);
         if (isExceeded) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new ApiResponse<>(HttpStatus.CONFLICT, "Booking limit exceeded for this service", isExceeded, null));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(HttpStatus.OK, "Booking limit exceeded for this service", isExceeded, null));
         } else {
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking limit is within allowed range", isExceeded, null));
         }
