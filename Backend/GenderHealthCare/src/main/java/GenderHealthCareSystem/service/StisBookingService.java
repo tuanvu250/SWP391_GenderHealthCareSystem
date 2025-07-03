@@ -196,7 +196,7 @@ public class StisBookingService {
         response.setServiceName(booking.getStisService().getServiceName());
         response.setServicePrice(booking.getStisService().getPrice());
         response.setStisInvoiceID(booking.getStisInvoice() != null ? booking.getStisInvoice().getInvoiceId() : null);
-
+//        response.setResultStatus(booking.getStisResults().any);
         response.setBookingDate(booking.getBookingDate().toLocalDate());
         response.setBookingTimeStart(booking.getBookingDate().toLocalTime());
         response.setBookingTimeEnd(booking.getBookingDate().toLocalTime().plusHours(1));

@@ -25,6 +25,7 @@ public class StisBookingResponse {
     private LocalTime bookingTimeEnd;
     private Integer stisInvoiceID;
     private StisBookingStatus status;
+    private String resultStatus;
     private String paymentStatus;
     private String paymentMethod;
     private String note;
