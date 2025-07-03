@@ -160,7 +160,7 @@ public class BlogPostService {
         Collections.shuffle(relatedBlogPosts);
 
         // Limit the list to 4 items
-        List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(4).toList();
+        List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(3).toList();
 
         // Map the related blog posts to response objects
         List<BlogPostResponse> responses = new ArrayList<>();
@@ -185,7 +185,7 @@ public class BlogPostService {
         Collections.shuffle(relatedBlogPosts);
 
         // Limit the list to 4 items
-        List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(4).toList();
+        List<BlogPost> limitedBlogPosts = relatedBlogPosts.stream().limit(3).toList();
 
         // Map the related blog posts to response objects
         List<BlogPostResponse> responses = new ArrayList<>();
