@@ -28,6 +28,7 @@ const Login = () => {
       const response = await auth.loginAction(values);
 
       if (response.success) {
+        localStorage.setItem("user", JSON.stringify(response));
         message.success(response.message);
         setTimeout(() => {
           if (response.role === "Customer") {

@@ -1,6 +1,11 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 
 export const getAllConsultants = async () => {
-  const res = await axios.get("/consultant/profile/all");
-  return res.data;
+  try {
+    const response = await apiClient.get("/consultant/profile/all");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching consultants:", error);
+    return [];
+  }
 };

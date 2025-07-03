@@ -1,10 +1,10 @@
-import { getAllPillSchedules, markPillTaken } from '../components/api/Pill.api';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { message, Modal } from 'antd';
+import { message } from 'antd';
+import { getAllPillSchedules, markPillTaken } from '../components/api/Pill.api';
 import axios from 'axios';
 
 dayjs.extend(isSameOrAfter);
@@ -16,31 +16,6 @@ export default function PillScheduleCalendar() {
   const [loading, setLoading] = useState(true);
   const [takenCount, setTakenCount] = useState(0);
   const [notTakenCount, setNotTakenCount] = useState(0);
-  const [pillTypeCount, setPillTypeCount] = useState(28);
-  const [forceReload, setForceReload] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-
-  const handleFinishSchedule = () => {
-    Modal.confirm({
-      title: "Bạn đã uống hết thuốc",
-      content: "Bạn muốn tiếp tục theo dõi chu kỳ mới hay dừng lại?",
-      okText: "Tiếp tục",
-      cancelText: "Dừng theo dõi",
-      onOk: () => {
-        localStorage.removeItem("pillStartDate");
-        localStorage.removeItem("pillType");
-        setRedirecting(true);
-        navigate("/pill-tracker");
-      },
-      onCancel: () => {
-        localStorage.removeItem("pillStartDate");
-        localStorage.removeItem("pillType");
-        message.info("Bạn đã dừng theo dõi thuốc.");
-        setRedirecting(true);
-        navigate("/pill-tracker");
-      },
-    });
-  };
 
   const fetchSchedule = async () => {
     setLoading(true);
@@ -50,7 +25,6 @@ export default function PillScheduleCalendar() {
 
       const startDateStr = localStorage.getItem("pillStartDate");
       const pillType = parseInt(localStorage.getItem("pillType") || "28", 10);
-      setPillTypeCount(pillType);
       const startDate = startDateStr ? dayjs(startDateStr) : null;
       const today = dayjs();
 
@@ -74,7 +48,7 @@ export default function PillScheduleCalendar() {
       let currentDate = startDate;
       let counted = 0;
 
-      while (counted < pillType) {
+      while (currentDate.isSameOrBefore(today) && counted < pillType) {
         const dateStr = currentDate.format("YYYY-MM-DD");
         const item = map[dateStr];
 
@@ -117,10 +91,6 @@ export default function PillScheduleCalendar() {
       setUpdatedSchedule(map);
       setTakenCount(taken);
       setNotTakenCount(notTaken);
-
-      if (taken >= pillType) {
-        handleFinishSchedule();
-      }
     } catch (err) {
       message.error("Không thể tải lịch uống thuốc.");
       console.error(err);
@@ -131,7 +101,7 @@ export default function PillScheduleCalendar() {
 
   useEffect(() => {
     fetchSchedule();
-  }, [forceReload]);
+  }, []);
 
   const getMonthDates = () => {
     const today = dayjs();
@@ -151,6 +121,11 @@ export default function PillScheduleCalendar() {
       return;
     }
 
+    const clickedDate = dayjs(dateStr);
+    if (clickedDate.isAfter(dayjs(), 'day')) {
+      message.warning("Bạn đang đánh dấu cho ngày mai hoặc tương lai!");
+    }
+
     let item = updatedSchedule[dateStr];
 
     try {
@@ -158,7 +133,7 @@ export default function PillScheduleCalendar() {
         await axios.post(
           "/api/pills",
           {
-            pillType: pillTypeCount.toString(),
+            pillType: "28",
             startDate: dateStr,
             timeOfDay: "08:00:00",
             isActive: true,
@@ -182,29 +157,29 @@ export default function PillScheduleCalendar() {
 
       await fetchSchedule();
     } catch (err) {
-      console.error("❌ Lỗi cập nhật:", err?.response?.data || err.message);
+      console.error("Lỗi cập nhật:", err?.response?.data || err.message);
       message.error("Không thể cập nhật lịch.");
     }
   };
 
   const daysInMonth = getMonthDates();
-  const startDay = daysInMonth[0].day();
-  const calendarCells = [];
+  const firstDayOfWeek = dayjs().startOf('month').day();
+  const calendarRows = [];
+  let currentRow = [];
 
-  for (let i = 0; i < startDay; i++) {
-    calendarCells.push(<td key={`empty-start-${i}`} className="p-2"></td>);
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    currentRow.push(<td key={`empty-${i}`} className="p-2"></td>);
   }
 
-  daysInMonth.forEach((date) => {
+  daysInMonth.forEach((date, index) => {
     const dateStr = date.format('YYYY-MM-DD');
     const item = updatedSchedule[dateStr];
     const hasTaken = item?.hasTaken ?? false;
     const isToday = dayjs().format('YYYY-MM-DD') === dateStr;
     const isPlacebo = item?.isPlacebo ?? false;
-    const isFuture = dayjs(dateStr).isAfter(dayjs());
     const showButton = item && !isPlacebo;
 
-    calendarCells.push(
+    currentRow.push(
       <td key={dateStr} className="p-2 text-center">
         {showButton ? (
           <button
@@ -212,8 +187,7 @@ export default function PillScheduleCalendar() {
             className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition
               ${hasTaken ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}
               ${isToday ? 'ring-2 ring-blue-500' : ''}
-              ${isFuture ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`}
-            disabled={isFuture}
+              hover:scale-105`}
           >
             {date.date()}
           </button>
@@ -224,20 +198,21 @@ export default function PillScheduleCalendar() {
         )}
       </td>
     );
+
+    if ((currentRow.length + firstDayOfWeek) % 7 === 0) {
+      calendarRows.push(<tr key={`row-${index}`}>{currentRow}</tr>);
+      currentRow = [];
+    }
   });
 
-  while (calendarCells.length % 7 !== 0) {
-    calendarCells.push(<td key={`empty-end-${calendarCells.length}`} className="p-2"></td>);
-  }
-
-  const calendarRows = [];
-  for (let i = 0; i < calendarCells.length; i += 7) {
-    calendarRows.push(<tr key={`row-${i}`}>{calendarCells.slice(i, i + 7)}</tr>);
+  if (currentRow.length > 0) {
+    while (currentRow.length < 7) {
+      currentRow.push(<td key={`end-empty-${currentRow.length}`} className="p-2"></td>);
+    }
+    calendarRows.push(<tr key="last-row">{currentRow}</tr>);
   }
 
   const startDateStr = localStorage.getItem("pillStartDate");
-
-  if (redirecting) return null;
 
   return (
     <div className="max-w-4xl mx-auto mt-6 p-6 bg-white shadow-md rounded">
@@ -246,7 +221,7 @@ export default function PillScheduleCalendar() {
       </h2>
       {startDateStr && (
         <p className="text-center text-gray-600 text-sm mb-4">
-          📅 Bắt đầu uống: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
+          📅 Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
         </p>
       )}
 
@@ -270,7 +245,11 @@ export default function PillScheduleCalendar() {
 
           <div className="mt-6 flex justify-center gap-4">
             <button
-              onClick={() => navigate("/pill-tracker")}
+              onClick={() => {
+                localStorage.removeItem("pillStartDate");
+                localStorage.removeItem("pillType");
+                window.location.reload(); // 🔁 reload toàn bộ component
+              }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
               ← Nhập lại lịch

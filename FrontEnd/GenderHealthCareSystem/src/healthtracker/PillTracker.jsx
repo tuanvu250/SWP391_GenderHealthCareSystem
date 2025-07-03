@@ -17,6 +17,8 @@ export default function PillScheduleCalendar() {
   const [takenCount, setTakenCount] = useState(0);
   const [notTakenCount, setNotTakenCount] = useState(0);
   const [pillTypeCount, setPillTypeCount] = useState(28);
+  const [newStartDate, setNewStartDate] = useState('');
+  const [newPillType, setNewPillType] = useState('28');
 
   const clearPillData = () => {
     localStorage.removeItem("pillStartDate");
@@ -102,7 +104,6 @@ export default function PillScheduleCalendar() {
 
       if (autoMarkPromises.length > 0) {
         await Promise.all(autoMarkPromises);
-
         const updated = await getAllPillSchedules();
         updated?.data?.forEach(item => {
           const dateObj = dayjs(item.pillDate);
@@ -131,7 +132,12 @@ export default function PillScheduleCalendar() {
   };
 
   useEffect(() => {
-    fetchSchedule();
+    const hasStart = localStorage.getItem("pillStartDate");
+    if (hasStart) {
+      fetchSchedule();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const getMonthDates = () => {
@@ -188,6 +194,52 @@ export default function PillScheduleCalendar() {
     }
   };
 
+  const handleCreateNewSchedule = () => {
+    if (!newStartDate) {
+      return message.warning("Vui lòng chọn ngày bắt đầu.");
+    }
+    localStorage.setItem("pillStartDate", newStartDate);
+    localStorage.setItem("pillType", newPillType);
+    setLoading(true);
+    fetchSchedule();
+  };
+
+  const startDateStr = localStorage.getItem("pillStartDate");
+
+  if (!startDateStr) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h2 className="text-xl font-semibold mb-4 text-center">Nhập lịch uống thuốc mới</h2>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Ngày bắt đầu:</label>
+          <input
+            type="date"
+            className="w-full border p-2 rounded"
+            value={newStartDate}
+            onChange={(e) => setNewStartDate(e.target.value)}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Loại thuốc:</label>
+          <select
+            className="w-full border p-2 rounded"
+            value={newPillType}
+            onChange={(e) => setNewPillType(e.target.value)}
+          >
+            <option value="28">28 viên</option>
+            <option value="21">21 viên</option>
+          </select>
+        </div>
+        <button
+          onClick={handleCreateNewSchedule}
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+        >
+          Bắt đầu theo dõi
+        </button>
+      </div>
+    );
+  }
+
   const daysInMonth = getMonthDates();
   const startDay = daysInMonth[0].day();
   const calendarCells = [];
@@ -235,8 +287,6 @@ export default function PillScheduleCalendar() {
   for (let i = 0; i < calendarCells.length; i += 7) {
     calendarRows.push(<tr key={`row-${i}`}>{calendarCells.slice(i, i + 7)}</tr>);
   }
-
-  const startDateStr = localStorage.getItem("pillStartDate");
 
   return (
     <div className="max-w-4xl mx-auto mt-6 p-6 bg-white shadow-md rounded">
