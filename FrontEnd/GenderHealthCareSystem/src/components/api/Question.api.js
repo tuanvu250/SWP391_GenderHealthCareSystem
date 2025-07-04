@@ -13,25 +13,12 @@ export const createQuestionAPI = async ({ title, content, consultantId }) => {
 
 // components/api/Question.api.js
 export const getMyQuestionsAPI = async (customerId) => {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`/api/questions/customer/${customerId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }), // thêm token nếu có
-    },
-  });
-
-  if (!res.ok) {
-    console.error("Lỗi khi gọi API lấy câu hỏi:", res.status, await res.text());
-    throw new Error("Lỗi khi gọi API lấy câu hỏi của bạn");
-  }
-
+  const res = await fetch(`/api/questions/customer/${customerId}`);
+  if (!res.ok) throw new Error("Lỗi khi gọi API lấy câu hỏi của bạn");
   return res.json();
 };
 
- 
+
 export const getUnansweredQuestionsAPI = async () => {
   return apiClient.get("/questions/pending");
 };
@@ -41,14 +28,21 @@ export const answerQuestionAPI = async (questionId, answer) => {
 };
 
 export const getAllQuestionsAPI = async () => {
-  return apiClient.get("/questions"); 
+  return apiClient.get("/questions");
 };
 
-export const getQuestionCommentsAPI = async (questionId) => {
-  const res = await apiClient.get(`/questions/${questionId}/comments`);
-  return res.data?.data || [];
+export const getCommentsAPI = async (questionId) => {
+  try {
+    const res = await apiClient.get(`/questions/${questionId}/comments`);
+    return res.data?.data || [];
+  } catch (error) {
+    console.error("Lỗi khi lấy bình luận:", error);
+    throw error;
+  }
 };
-
-export const postQuestionCommentAPI = async (questionId, content) => {
-  return apiClient.post(`/questions/${questionId}/comments`, { content });
+export const postCommentAPI = (questionId, content) => {
+  return apiClient.post(`/questions/${questionId}/comments`, {
+    questionId, // ✅ phải có nếu DTO yêu cầu
+    content,
+  });
 };

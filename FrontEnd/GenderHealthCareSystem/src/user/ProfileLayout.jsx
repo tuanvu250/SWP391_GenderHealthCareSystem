@@ -58,6 +58,7 @@ const UserProfile = () => {
     if (path.includes('/user/history-testing')) return "2";
     if (path.includes('/user/history-feedback-testing')) return "3";
     if (path.includes('/user/history-consultant')) return "4";
+    if (path.includes('/user/history-consultant-feedback')) return "5";
     return "1"; // Default tab - profile
   };
 
@@ -71,19 +72,23 @@ const UserProfile = () => {
   const tabItems = [
     {
       key: "1",
-      label: <span onClick={() =>  navigate('/user/profile')}>Thông tin cá nhân</span>,
+      label: <span onClick={() => navigate('/user/profile')}>Thông tin cá nhân</span>,
     },
     {
       key: "2",
-      label: <span onClick={() =>  navigate('/user/history-testing')}>Lịch sử xét nghiệm</span>,
+      label: <span onClick={() => navigate('/user/history-testing')}>Lịch sử xét nghiệm</span>,
     },
     {
       key: "3",
-      label: <span onClick={() =>  navigate('/user/history-feedback-testing')}>Lịch sử đánh giá xét nghiệm</span>, 
+      label: <span onClick={() => navigate('/user/history-feedback-testing')}>Lịch sử đánh giá xét nghiệm</span>,
     },
     {
       key: "4",
-      label: <span onClick={() =>  navigate('/user/history-consultant')}>Lịch sử đặt lịch tư vấn</span>, 
+      label: <span onClick={() => navigate('/user/history-consultant')}>Lịch sử đặt lịch tư vấn</span>,
+    },
+    {
+      key: "5",
+      label: <span onClick={() => navigate('/user/history-consultant-feedback')}>Lịch sử đánh giá tư vấn viên</span>,
     },
   ];
 
@@ -99,7 +104,7 @@ const UserProfile = () => {
             items={tabItems}
           />
         </Card>
-      <Outlet />
+        <Outlet />
       </div>
     </div>
   );

@@ -48,7 +48,7 @@ import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
 import ManageBookingStis from "../dashboard/features/booking/ManageBookingStis";
 import ManageService from "../dashboard/features/service/ManageService";
 import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
-import ConsultantSchedule from "../dashboard/components/modal/ViewBookingConsultant";
+import ConsultantBookingSchedule from "../dashboard/features/booking/ConsultantBookingSchedule";
 import ConsultantProfile from "../dashboard/features/profile/ConsultantProfile";
 import ConsultantManagement from "../dashboard/features/profile/ConsultantManagement";
 import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerPage";
@@ -160,7 +160,7 @@ function RouteMap() {
                 <Route index element={<Overview />} />
                 <Route path="overview" element={<Overview />} />
                 <Route path="manage-blog" element={<ManageMyBlog />} />
-                <Route path="/consultant/dashboard/consultant-schedule" element={<ConsultantSchedule />} />
+                <Route path="/consultant/dashboard/consultant-schedule" element={<ConsultantBookingSchedule />} />
                 <Route path="/consultant/dashboard/consultant-profile" element={<ConsultantProfile />} />
                 <Route path="/consultant/dashboard/consultant-answer" element={<ConsultantAnswerPage />} />
             </Route>

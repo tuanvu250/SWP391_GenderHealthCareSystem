@@ -297,12 +297,19 @@ const Header = () => {
               <li>
                 <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => navigate("/health-tracker")}
+                  onClick={() => navigate("/menstrual-tracker")}
                 >
                   Theo dõi kỳ kinh
                 </a>
               </li>
-
+              <li>
+                <a
+                  className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
+                  onClick={() => navigate("/pill-tracker")}
+                >
+                  Theo dõi nhắc nhở uống thuốc tránh thai
+                </a>
+              </li>
               <li>
                 <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"

@@ -1,6 +1,15 @@
 // src/pages/admin/ConsultantManagement.jsx
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, message, App as AntdApp } from "antd";
+import {
+  Table,
+  Button,
+  Modal,
+  message,
+  App as AntdApp,
+  Input,
+  Form,
+  Switch,
+} from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 import { getAllConsultants } from "../../../components/api/Consultant.api";
@@ -11,6 +20,9 @@ function ConsultantManagementContent() {
   const [details, setDetails] = useState([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [currentProfileId, setCurrentProfileId] = useState(null);
+  const [editingConsultant, setEditingConsultant] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const fetchConsultants = async () => {
     setLoading(true);
@@ -27,6 +39,11 @@ function ConsultantManagementContent() {
   };
 
   const fetchDetails = async (profileId) => {
+    if (!profileId) {
+      message.error("Thiếu profileId để gọi chi tiết");
+      return;
+    }
+
     try {
       const res = await axios.get(
         `http://localhost:8080/consultant/profile/details?profileId=${profileId}`,
@@ -55,11 +72,56 @@ function ConsultantManagementContent() {
     }
   };
 
+  const handleEdit = (record) => {
+    setEditingConsultant(record);
+    form.setFieldsValue(record);
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const values = await form.validateFields();
+      const id = editingConsultant.profileID || editingConsultant.id;
+
+      // Cập nhật đơn giá
+      await axios.put(
+        `http://localhost:8080/api/consultant/profile/${id}/hourly-rate`,
+        null,
+        {
+          params: { hourlyRate: values.hourlyRate },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
+          },
+        }
+      );
+
+      // Cập nhật trạng thái
+      await axios.put(
+        `http://localhost:8080/api/consultant/profile/${id}/employment-status`,
+        null,
+        {
+          params: { employmentStatus: values.isAvailable },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
+          },
+        }
+      );
+
+      message.success("Cập nhật thành công!");
+      setEditModalOpen(false);
+      fetchConsultants();
+    } catch (error) {
+      console.error("Lỗi khi cập nhật:", error);
+      message.error("Cập nhật thất bại");
+    }
+  };
+
   useEffect(() => {
     fetchConsultants();
   }, []);
 
   const columns = [
+    { title: "Họ tên", dataIndex: "fullName" },
     { title: "Chức danh", dataIndex: "jobTitle" },
     { title: "Chuyên môn", dataIndex: "specialization" },
     { title: "Ngôn ngữ", dataIndex: "languages" },
@@ -74,9 +136,18 @@ function ConsultantManagementContent() {
     {
       title: "Hành động",
       render: (_, r) => (
-        <Button onClick={() => fetchDetails(r.profileID)} type="link">
-          Xem chi tiết
-        </Button>
+        <>
+          <Button
+            onClick={() => fetchDetails(r.profileID || r.id || r.consultantProfileId)}
+            type="link"
+            style={{ paddingRight: 8 }}
+          >
+            Xem chi tiết
+          </Button>
+          <Button type="link" onClick={() => handleEdit(r)}>
+            Chỉnh sửa
+          </Button>
+        </>
       ),
     },
   ];
@@ -108,7 +179,7 @@ function ConsultantManagementContent() {
       <Table
         columns={columns}
         dataSource={consultants}
-        rowKey={(record) => record.profileID || record.ProfileID}
+        rowKey={(record) => record.profileID || record.id || record.consultantProfileId}
         loading={loading}
       />
 
@@ -126,6 +197,23 @@ function ConsultantManagementContent() {
           pagination={false}
           scroll={{ y: 400 }}
         />
+      </Modal>
+
+      <Modal
+        title="Chỉnh sửa tư vấn viên"
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        onOk={handleSaveEdit}
+        okText="Lưu"
+      >
+        <Form layout="vertical" form={form}>
+          <Form.Item name="hourlyRate" label="Đơn giá">
+            <Input type="number" />
+          </Form.Item>
+          <Form.Item name="isAvailable" label="Trạng thái làm việc" valuePropName="checked">
+            <Switch checkedChildren="Đang làm" unCheckedChildren="Tạm nghỉ" />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

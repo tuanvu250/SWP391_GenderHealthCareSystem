@@ -1,3 +1,4 @@
+// AskingSection.jsx
 "use client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -5,20 +6,14 @@ import {
   getAnsweredQuestionsAPI,
   createQuestionAPI,
   getMyQuestionsAPI,
+  getCommentsAPI,
+  postCommentAPI,
 } from "../../components/api/Question.api";
 import { message } from "antd";
 
 export default function AskingSection() {
   const user = JSON.parse(localStorage.getItem("user"));
-
-  const [form, setForm] = useState({
-    email: "",
-    question: "",
-    tag: "",
-  });
-  const navigate = useNavigate();
-
-
+  const [form, setForm] = useState({ email: "", question: "", tag: "" });
   const [submitted, setSubmitted] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
   const [myQuestions, setMyQuestions] = useState([]);
@@ -26,6 +21,7 @@ export default function AskingSection() {
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const navigate = useNavigate();
 
   const tagOptions = [
     { label: "Sức Khỏe", value: "suckhoe", color: "bg-green-100 text-green-800" },
@@ -51,13 +47,11 @@ export default function AskingSection() {
           tag: matchedTag?.value || "tuvan",
         };
       });
-
       if (pageIndex === 0) {
         setAnsweredQuestions(mapped);
       } else {
         setAnsweredQuestions((prev) => [...prev, ...mapped]);
       }
-
       if (mapped.length < 5) setHasMore(false);
     } catch (err) {
       console.error("Lỗi khi tải câu hỏi:", err);
@@ -87,13 +81,11 @@ export default function AskingSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const selectedTagLabel = tagOptions.find((t) => t.value === form.tag)?.label || "Câu hỏi";
-
     const payload = {
       title: `${selectedTagLabel} - ${form.question.slice(0, 60)}`,
       content: form.question,
       consultantId: null,
     };
-
     try {
       await createQuestionAPI(payload);
       setSubmitted(true);
@@ -106,10 +98,8 @@ export default function AskingSection() {
     }
   };
 
-  const getTagColor = (tagValue) =>
-    tagOptions.find((t) => t.value === tagValue)?.color || "bg-gray-100 text-gray-800";
-  const getTagLabel = (tagValue) =>
-    tagOptions.find((t) => t.value === tagValue)?.label || tagValue;
+  const getTagColor = (tagValue) => tagOptions.find((t) => t.value === tagValue)?.color || "bg-gray-100 text-gray-800";
+  const getTagLabel = (tagValue) => tagOptions.find((t) => t.value === tagValue)?.label || tagValue;
 
   const filteredAnswered = answeredQuestions.filter((q) => {
     const matchTag = selectedTag === "all" || q.tag === selectedTag;
@@ -175,7 +165,7 @@ export default function AskingSection() {
           </div>
         </div>
 
-        {/* DANH SÁCH CÂU HỎI ĐÃ ĐƯỢC TƯ VẤN */}
+        {/* DANH SÁCH CÂU HỎI */}
         <div className="space-y-6">
           <h3 className="text-2xl font-bold text-[#0099CF]">Câu hỏi đã được tư vấn</h3>
 
@@ -230,10 +220,8 @@ export default function AskingSection() {
             </div>
           )}
 
-          {/* DANH SÁCH CÂU HỎI CỦA TÔI */}
           <div className="mt-10">
             <div className="flex justify-between items-center mb-4">
-              
               <button
                 onClick={() => navigate("/my-questions")}
                 className="text-sm text-[#0099CF] hover:underline"
@@ -245,23 +233,80 @@ export default function AskingSection() {
               <p className="text-gray-500">Bạn chưa gửi câu hỏi nào.</p>
             ) : (
               <div className="space-y-4">
-                {myQuestions.map((q, i) => (
-                  <div key={i} className="bg-white border rounded-lg p-4 shadow">
+                {myQuestions.map((q) => (
+                  <div key={q.id} className="bg-white border rounded-lg p-4 shadow">
                     <p className="font-medium mb-1">🔹 {q.title}</p>
                     <p className="text-sm text-gray-500">
-                      Trạng thái:{" "}
+                      Trạng thái: {" "}
                       <span className={q.answer ? "text-green-600" : "text-yellow-600"}>
                         {q.answer ? "Đã được tư vấn" : "Đang chờ tư vấn"}
                       </span>
                     </p>
-                   
+                    <CommentBox questionId={q.id} />
                   </div>
                 ))}
               </div>
             )}
           </div>
-
         </div>
+      </div>
+    </div>
+  );
+}
+
+function CommentBox({ questionId }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+
+  useEffect(() => {
+    fetchComments();
+  }, []);
+
+  const fetchComments = async () => {
+    try {
+      const data = await getCommentsAPI(questionId);
+      setComments(data);
+    } catch (err) {
+      console.error("Lỗi khi tải bình luận:", err);
+    }
+  };
+
+  const handlePost = async () => {
+    if (!newComment.trim()) return;
+    try {
+      await postCommentAPI(questionId, newComment);
+      setNewComment("");
+      fetchComments();
+    } catch (err) {
+      console.error("Gửi bình luận thất bại:", err);
+      message.error("Không thể gửi bình luận");
+    }
+  };
+
+  return (
+    <div className="mt-4 border-t pt-3">
+      <h4 className="text-sm font-semibold mb-2 text-gray-700">Bình luận</h4>
+      <div className="space-y-2 max-h-[200px] overflow-y-auto">
+        {comments.map((c, i) => (
+          <div key={i} className="text-sm text-gray-700 bg-gray-100 p-2 rounded">
+            {c.content}
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center mt-2 gap-2">
+        <input
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Nhập bình luận..."
+          className="flex-1 px-3 py-2 border rounded"
+        />
+        <button
+          onClick={handlePost}
+          className="bg-[#0099CF] text-white px-3 py-2 rounded hover:bg-[#007ca8]"
+        >
+          Gửi
+        </button>
       </div>
     </div>
   );

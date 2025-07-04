@@ -24,8 +24,12 @@ export default function ConfirmConsultationBooking() {
       const startTime = bookingData.timeSlot.split(" - ")[0];
       const bookingDate = dayjs(`${bookingData.date} ${startTime}`).toDate();
 
+      if (!bookingData.consultantId) {
+        throw new Error("Thiếu consultantId");
+      }
+
       const payload = {
-        consultantId: bookingData.consultantId || 1,
+        consultantId: bookingData.consultantId,
         customerId: bookingData.customerId || 10,
         bookingDate,
         note: bookingData.notes || "",
@@ -41,7 +45,6 @@ export default function ConfirmConsultationBooking() {
       const amount = 100000;
       const orderInfo = "Đặt lịch tư vấn";
 
-      // 👉 Lưu thông tin cần thiết cho trang kết quả thanh toán
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", amount);
       localStorage.setItem("orderInfo", orderInfo);
@@ -74,10 +77,6 @@ export default function ConfirmConsultationBooking() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-2">Xác nhận đặt lịch tư vấn</h1>
-      <p className="text-center text-gray-500 mb-6">
-        Vui lòng kiểm tra lại thông tin trước khi xác nhận đặt lịch
-      </p>
-
       <Alert
         message="Vui lòng kiểm tra lại thông tin trước khi xác nhận đặt lịch"
         type="warning"
@@ -109,7 +108,6 @@ export default function ConfirmConsultationBooking() {
       )}
 
       <Divider />
-
       <div className="flex justify-between mt-6">
         <Button onClick={() => navigate(-1)}>Quay lại</Button>
         <Button type="primary" loading={loading} onClick={handleConfirm}>
