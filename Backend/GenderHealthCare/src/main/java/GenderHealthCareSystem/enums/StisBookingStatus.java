@@ -3,6 +3,7 @@ package GenderHealthCareSystem.enums;
 public enum StisBookingStatus {
     PENDING,
     CONFIRMED,
+    PENDING_TEST_RESULT,
     COMPLETED,
     CANCELLED,
     NO_SHOW, //Người đặt không đến đúng giờ, không thông báo, và bỏ lỡ lịch khám

@@ -146,6 +146,12 @@ public class StisBookingService {
         booking.setStatus(StisBookingStatus.DENIED);
         stisBookingRepository.save(booking);
     }
+    public void markBookingAsPendingTestResult(Integer id) {
+        StisBooking booking = stisBookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        booking.setStatus(StisBookingStatus.PENDING_TEST_RESULT);
+        stisBookingRepository.save(booking);
+    }
 
     public void markBookingPaymentStatusAsCompleted(Integer id) {
         Optional<StisBooking> bookingOptional = stisBookingRepository.findById(id);
@@ -209,5 +215,6 @@ public class StisBookingService {
 
         return response;
     }
+
 
 }
