@@ -147,6 +147,11 @@ public class StisBookingController {
         stisBookingService.markBookingAsDenied(id);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as denied", null, null));
     }
+    @PutMapping("/{id}/mark-pending-test-result")
+    public ResponseEntity<ApiResponse<Void>> markBookingAsPendingTestResult(@PathVariable Integer id) {
+        stisBookingService.markBookingAsPendingTestResult(id);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as pending test result", null, null));
+    }
 
     @GetMapping("/check-limit")
     public ResponseEntity<ApiResponse<Boolean>> checkBookingLimit(@RequestParam LocalDateTime bookingDateTime,
