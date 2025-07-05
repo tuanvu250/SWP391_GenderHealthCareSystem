@@ -1,10 +1,12 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
-import GenderHealthCareSystem.dto.PaymentCallbackRequest;
 import GenderHealthCareSystem.service.ConsultantInvoiceService;
 import GenderHealthCareSystem.service.PayPalService;
 import GenderHealthCareSystem.service.VnPayService;
+import GenderHealthCareSystem.service.ConsultantBookingService;
+import GenderHealthCareSystem.model.ConsultationBooking;
+import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +30,7 @@ public class ConsultantPaymentController {
     private final VnPayService vnPayService;
     private final PayPalService payPalService;
     private final ConsultantInvoiceService consultantInvoiceService;
+    private final ConsultationBookingRepository bookingRepository;
 
     private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
     private static final String CANCEL_URL = "http://localhost:5173/booking-result";
@@ -35,14 +39,25 @@ public class ConsultantPaymentController {
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
                                                      @RequestParam String method,
                                                      HttpServletRequest request) throws Exception {
+        // Lấy thông tin booking để tính số tiền thực tế
+        ConsultationBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+
+        // Tính số tiền dựa trên hourly rate của consultant
+        BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
+
         String paymentUrl;
 
         if ("VNPAY".equalsIgnoreCase(method)) {
-            paymentUrl = vnPayService.createPaymentUrl(10000, "Consultation", bookingId.toString(), request.getRemoteAddr());
+            // VNPAY sử dụng VND
+            long vnpayAmount = amount.longValue();
+            paymentUrl = vnPayService.createPaymentUrl(vnpayAmount, "Consultation", bookingId.toString(), request.getRemoteAddr());
         } else if ("PAYPAL".equalsIgnoreCase(method)) {
+            // PayPal sử dụng USD, cần convert từ VND sang USD
+            double usdAmount = convertVNDtoUSD(amount.doubleValue());
             Payment payment = payPalService.createPayment(
                     bookingId.toString(),
-                    1000.00,
+                    usdAmount,
                     "USD",
                     "paypal",
                     "sale",
@@ -60,6 +75,14 @@ public class ConsultantPaymentController {
         }
 
         return ResponseEntity.ok(paymentUrl);
+    }
+
+    /**
+     * Convert VND to USD (example rate: 1 USD = 24000 VND)
+     */
+    private double convertVNDtoUSD(double vndAmount) {
+        final double USD_TO_VND_RATE = 24000.0;
+        return vndAmount / USD_TO_VND_RATE;
     }
 
     @GetMapping("/success")
@@ -102,6 +125,7 @@ public class ConsultantPaymentController {
         consultantInvoiceService.createInvoiceFromVNPay(params);
         return ResponseEntity.ok(ApiResponse.success("Hóa đơn đã được tạo thành công"));
     }
+
 
 
 }
