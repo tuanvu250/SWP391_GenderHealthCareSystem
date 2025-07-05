@@ -100,6 +100,13 @@ public class ConsultantInvoiceService {
         return BigDecimal.valueOf(profile.getHourlyRate());
     }
 
+    /**
+     * Public method để tính phí booking - sử dụng cho payment controller
+     */
+    public BigDecimal calculateBookingFee(ConsultationBooking booking) {
+        return calculateFee(booking);
+    }
+
 
     public String requestRefund(Integer bookingId, Integer customerId) {
         ConsultationBooking booking = bookingRepo.findById(bookingId)
