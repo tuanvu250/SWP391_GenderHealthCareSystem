@@ -88,7 +88,7 @@ public class StisResultService {
             result.setCreatedAt(LocalDateTime.now());
             result.setUpdatedAt(LocalDateTime.now());
             stisResultRepository.save(result);
-            booking.setStatus(StisBookingStatus.COMPLETED);
+            booking.setStatus(StisBookingStatus.PENDING_TEST_RESULT);
             stisBookingRepository.save(booking);
             return result;
         } catch (Exception e) {
@@ -176,7 +176,7 @@ public class StisResultService {
             results = stisResultRepository.saveAll(results);
 
 
-            booking.setStatus(StisBookingStatus.COMPLETED);
+            booking.setStatus(StisBookingStatus.PENDING_TEST_RESULT);
             stisBookingRepository.save(booking);
 
             return results;
