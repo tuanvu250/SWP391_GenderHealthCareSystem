@@ -239,6 +239,12 @@ const HistoryTesting = () => {
             Không đến
           </Tag>
         );
+      case "PENDING_TEST_RESULT":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="yellow">
+            Chờ kết quả
+          </Tag>
+        );
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -344,13 +350,6 @@ const HistoryTesting = () => {
           {renderPaymentStatus(record.paymentStatus)}
         </Space>
       ),
-      filters: [
-        { text: "Đã đặt lịch", value: "booked" },
-        { text: "Đang xử lý", value: "in_progress" },
-        { text: "Hoàn thành", value: "completed" },
-        { text: "Đã hủy", value: "cancelled" },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
     {
       title: "Thanh toán",

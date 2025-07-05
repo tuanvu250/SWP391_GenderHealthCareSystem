@@ -196,7 +196,7 @@ const ManageFeedbackService = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <Title level={4}>Quản lý đánh giá dịch vụ</Title>
       </div>

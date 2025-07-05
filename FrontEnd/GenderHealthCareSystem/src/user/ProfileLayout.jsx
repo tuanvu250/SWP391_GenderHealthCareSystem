@@ -52,46 +52,43 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-
-  const getActiveTabFromPath = () => {
-    const path = location.pathname;
-    if (path.includes('/user/history-testing')) return "2";
-    if (path.includes('/user/history-feedback-testing')) return "3";
-    if (path.includes('/user/history-consultant')) return "4";
-    if (path.includes('/user/history-consultant-feedback')) return "5";
-    return "1"; // Default tab - profile
-  };
-
   useEffect(() => {
     const activeTab = getActiveTabFromPath();
     setActiveTab(activeTab);
   }, [location.pathname]);
 
+  const getActiveTabFromPath = () => {
+    const path = location.pathname;
+    if (path.includes("/user/history-testing")) return "2";
+    if (path.includes("/user/history-feedback-testing")) return "3";
+    return "1"; // Default tab - profile
+  };
 
   // Cập nhật tabItems với logic chỉnh sửa mới
   const tabItems = [
     {
       key: "1",
-      label: <span onClick={() => navigate('/user/profile')}>Thông tin cá nhân</span>,
+      label: (
+        <span onClick={() => navigate("/user/profile")}>Thông tin cá nhân</span>
+      ),
     },
     {
       key: "2",
-      label: <span onClick={() => navigate('/user/history-testing')}>Lịch sử xét nghiệm</span>,
+      label: (
+        <span onClick={() => navigate("/user/history-testing")}>
+          Lịch sử xét nghiệm
+        </span>
+      ),
     },
     {
       key: "3",
-      label: <span onClick={() => navigate('/user/history-feedback-testing')}>Lịch sử đánh giá xét nghiệm</span>,
-    },
-    {
-      key: "4",
-      label: <span onClick={() => navigate('/user/history-consultant')}>Lịch sử đặt lịch tư vấn</span>,
-    },
-    {
-      key: "5",
-      label: <span onClick={() => navigate('/user/history-consultant-feedback')}>Lịch sử đánh giá tư vấn viên</span>,
+      label: (
+        <span onClick={() => navigate("/user/history-feedback-testing")}>
+          Lịch sử đánh giá xét nghiệm
+        </span>
+      ),
     },
   ];
-
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

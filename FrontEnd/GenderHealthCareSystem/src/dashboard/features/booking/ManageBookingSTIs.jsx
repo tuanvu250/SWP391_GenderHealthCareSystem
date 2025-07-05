@@ -31,6 +31,7 @@ import {
   markConfirmedBookingStisAPI,
   markDeniedBookingStisAPI,
   markNoShowBookingStisAPI,
+  markPendingResultBookingStisAPI,
 } from "../../../components/api/BookingTesting.api";
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
 import { getServiceTestingByIdAPI } from "../../../components/api/ServiceTesting.api";
@@ -90,6 +91,11 @@ const ManageBookingStis = () => {
       text: "Không đến",
       color: "orange",
       icon: <CloseCircleOutlined />,
+    },
+    PENDING_TEST_RESULT: {
+      text: "Chờ kết quả",
+      color: "yellow",
+      icon: <ClockCircleOutlined />,
     },
   };
 
@@ -213,6 +219,17 @@ const ManageBookingStis = () => {
     } catch (error) {
       console.error("Error denying booking:", error);
       message.error("Không thể từ chối lịch hẹn");
+    }
+  };
+
+  const handleResultPending = async (bookingId) => {
+    try {
+      await markPendingResultBookingStisAPI(bookingId);
+      loadData();
+      message.success("Lịch đã được đánh dấu là chờ kết quả");
+    } catch (error) {
+      console.error("Error marking booking as pending result:", error);
+      message.error(error.response?.data?.message || "Không thể đánh dấu lịch hẹn là chờ kết quả" );
     }
   };
 
@@ -347,9 +364,9 @@ const ManageBookingStis = () => {
                 <Button
                   type="default"
                   size="small"
-                  onClick={() => handleComplete(record.id)}
+                  onClick={() => handleResultPending(record.id)}
                 >
-                  Hoàn thành
+                  Chờ kết quả
                 </Button>
                 <Button
                   type="default"

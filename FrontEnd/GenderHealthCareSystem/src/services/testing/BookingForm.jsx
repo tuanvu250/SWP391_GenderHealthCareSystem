@@ -82,7 +82,6 @@ const BookingForm = ({
     });
   }, [form, user]);
 
-  // ✅ Thêm state để quản lý disabled hours
   const [disabledHours, setDisabledHours] = useState(new Set());
   const [isCheckingTimes, setIsCheckingTimes] = useState(false);
 
@@ -105,7 +104,7 @@ const BookingForm = ({
           const response = await checkLimitTimeToBookAPI(serviceId, bookingDateTime);
           return {
             time: hour.value,
-            isDisabled: response.data?.data === true || response.data?.available === false,
+            isDisabled: response.data?.data === true,
           };
         } catch (error) {
           console.error(`>>> Error checking ${hour.value}:`, error);
@@ -115,7 +114,6 @@ const BookingForm = ({
 
       const results = await Promise.all(timeCheckPromises);
 
-      // ✅ Cập nhật Set với disabled hours
       const newDisabledHours = new Set();
       results.forEach((result) => {
         if (result.isDisabled) {

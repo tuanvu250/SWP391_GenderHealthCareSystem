@@ -71,6 +71,10 @@ export const markConfirmedBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-confirmed`);
 };
 
+export const markPendingResultBookingStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/mark-pending-test-result`);
+};  
+
 export const markCompletedBookingStisAPI = async (bookingId) => {
   return apiClient.put(`/stis-bookings/${bookingId}/mark-completed`);
 };

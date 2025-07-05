@@ -63,9 +63,7 @@ const Sidebar = ({
           {
             key: "profile",
             icon: <UserOutlined />,
-            label: (
-              <Link to={"/consultant/dashboard/consultant-profile"}>Hồ sơ tư vấn viên</Link>
-            ),
+            label: "Hồ sơ tư vấn viên",
           },
           {
             key: "appointments",
@@ -77,9 +75,7 @@ const Sidebar = ({
           {
             key: "questions",
             icon: <MessageOutlined />,
-             label: (
-              <Link to={"/consultant/dashboard/consultant-answer"}>Câu hỏi chuyên môn</Link>
-            ),
+            label: "Câu hỏi chuyên môn",
           },
           {
             key: "reviews",
@@ -187,7 +183,7 @@ const Sidebar = ({
           {
             key: "consultant-management",
             icon: <UserOutlined />,
-           label: <Link to={"/manager/dashboard/manage-consultant-profile"}>Quản lý tư vấn viên</Link>,
+            label: "Quản lý consultant",
           },
           {
             key: "service-management",
@@ -480,7 +476,7 @@ const Sidebar = ({
       </div>
 
       {/* User Profile & Logout button ở footer */}
-      <div className="border-t border-gray-200 mt-auto bottom-0">
+      <div className="border-t border-gray-200 mt-auto">
         <div className={`p-4 ${collapsed ? 'text-center' : ''}`}>
 
           { !collapsed && (
