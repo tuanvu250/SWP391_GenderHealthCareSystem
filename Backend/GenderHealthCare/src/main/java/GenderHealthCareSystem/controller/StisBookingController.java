@@ -164,5 +164,10 @@ public class StisBookingController {
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking limit is within allowed range", isExceeded, null));
         }
     }
+    @PutMapping("/{id}/resulted-at")
+    public ResponseEntity<ApiResponse<Void>> markBookingAsResultedAt(@PathVariable Integer id) {
+        stisBookingService.resultedTime(id);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "cập nhật thời gian có kết quả thành công", null, null));
+    }
 
 }

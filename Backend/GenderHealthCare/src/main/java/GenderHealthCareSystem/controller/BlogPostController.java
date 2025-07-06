@@ -229,12 +229,12 @@ public class BlogPostController {
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort
     ) {
-        System.out.println("orderBy: " + orderBy);
-        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPostsForManager(title, tag, orderBy, page, size, sort);
-        System.out.println("title: " + title);
+        Page<BlogPostResponse> blogPosts = blogPostService.searchBlogPostsForManager(title, tag, orderBy,status , page, size, sort);
+
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),
                 blogPosts.getNumber(),

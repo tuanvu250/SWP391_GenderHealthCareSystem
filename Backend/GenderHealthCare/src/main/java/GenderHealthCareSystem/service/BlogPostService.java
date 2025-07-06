@@ -114,7 +114,7 @@ public class BlogPostService {
         return blogPosts.map(this::mapToResponse);
 
     }
-    public Page<BlogPostResponse> searchBlogPostsForManager(String title, String tag, String orderBy, int page, int size, String sort) {
+    public Page<BlogPostResponse> searchBlogPostsForManager(String title, String tag, String orderBy,String status , int page, int size, String sort) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
             pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
@@ -123,7 +123,7 @@ public class BlogPostService {
         }
 
         Page<BlogPost> blogPosts;
-        blogPosts = this.blogPostRepository.searchBlogPostsForManager(title,tag, pageable);
+        blogPosts = this.blogPostRepository.searchBlogPostsForManager(title,tag,status, pageable);
 
 
         return blogPosts.map(this::mapToResponse);
