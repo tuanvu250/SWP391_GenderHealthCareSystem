@@ -56,6 +56,9 @@ public class StisBooking {
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
 
+    @Column(name = "ResultedAt")
+    private LocalDateTime resultedAt;
+
     @OneToMany(mappedBy = "stisBooking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<StisResult> stisResults = new ArrayList<>();
 
