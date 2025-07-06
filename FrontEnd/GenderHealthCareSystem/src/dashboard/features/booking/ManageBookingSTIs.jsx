@@ -32,9 +32,11 @@ import {
   markDeniedBookingStisAPI,
   markNoShowBookingStisAPI,
   markPendingResultBookingStisAPI,
+  viewResultStisAPI,
 } from "../../../components/api/BookingTesting.api";
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
 import { getServiceTestingByIdAPI } from "../../../components/api/ServiceTesting.api";
+import ViewResultStisModal from "../../components/modal/ViewResultStisModal";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -59,6 +61,9 @@ const ManageBookingStis = () => {
   const [customer, setCustomer] = useState(null);
   const [resultModalVisible, setResultModalVisible] = useState(false);
   const [serviceData, setServiceData] = useState(null);
+  const [isViewResultModal, setIsViewResultModal] = useState(false);
+  const [resultData, setResultData] = useState([]);
+  const [attachmentUrl, setAttachmentUrl] = useState("");
 
   // Cấu hình trạng thái đặt lịch
   const bookingStatusConfig = {
@@ -187,17 +192,6 @@ const ManageBookingStis = () => {
     }
   };
 
-  const handleComplete = async (bookingId) => {
-    try {
-      await markCompletedBookingStisAPI(bookingId);
-      loadData();
-      message.success("Lịch đã được đánh dấu hoàn thành");
-    } catch (error) {
-      console.error("Error completing booking:", error);
-      message.error("Không thể đánh dấu lịch hẹn là hoàn thành");
-    }
-  };
-
   const handleNoShow = async (bookingId) => {
     try {
       // Gọi API để đánh dấu lịch hẹn là không đến
@@ -229,21 +223,23 @@ const ManageBookingStis = () => {
       message.success("Lịch đã được đánh dấu là chờ kết quả");
     } catch (error) {
       console.error("Error marking booking as pending result:", error);
-      message.error(error.response?.data?.message || "Không thể đánh dấu lịch hẹn là chờ kết quả" );
+      message.error(
+        error.response?.data?.message ||
+          "Không thể đánh dấu lịch hẹn là chờ kết quả"
+      );
     }
   };
 
-  const handleEnterResult = async (booking) => {
+  const handleGetDataResult = async (booking) => {
     try {
       const response = await getUserByIdAPI(booking.customerId);
       setCustomer(response.data);
       const res = await getServiceTestingByIdAPI(booking.serviceId);
       setServiceData(res.data.data);
     } catch (error) {
-      console.error("Error fetching customer data:", error);
+      console.error("Error fetching data:", error);
     }
     setSelectedBooking(booking);
-    setResultModalVisible(true);
   };
 
   const handleViewBooking = async (booking) => {
@@ -257,6 +253,27 @@ const ManageBookingStis = () => {
     }
     setSelectedBooking(booking);
     setViewModalVisible(true);
+  };
+
+  const handleEnterResultStis = async (booking) => {
+    handleGetDataResult(booking);
+    setResultModalVisible(true);
+  };
+
+  const handleViewResultStis = async (booking) => {
+    try {
+      handleGetDataResult(booking);
+      const response = await viewResultStisAPI(booking.bookingId);
+      console.log(">>> Result data:", response.data.data);
+      setSelectedBooking(booking);
+      setResultData(response.data.data || []);
+      setAttachmentUrl(response.data.data[0]?.pdfResultUrl || "");
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Không thể tải kết quả xét nghiệm"
+      );
+    }
+    setIsViewResultModal(true);
   };
 
   // Cột cho bảng
@@ -395,13 +412,22 @@ const ManageBookingStis = () => {
                 </Button>
               </div>
             )}
+            {record.status === "PENDING_TEST_RESULT" && (
+              <Button
+                type="default"
+                size="small"
+                onClick={() => handleEnterResultStis(record)}
+              >
+                Nhập kết quả
+              </Button>
+            )}
             {record.status === "COMPLETED" && (
               <Button
                 type="default"
                 size="small"
-                onClick={() => handleEnterResult(record)}
+                onClick={() => handleViewResultStis(record)}
               >
-                Nhập kết quả
+                Xem kết quả
               </Button>
             )}
           </Tooltip>
@@ -488,6 +514,18 @@ const ManageBookingStis = () => {
           booking={selectedBooking}
           customer={customer}
           serviceData={serviceData}
+          onSave={() => {
+            loadData();
+          }}
+        />
+        <ViewResultStisModal
+          open={isViewResultModal}
+          onCancel={() => setIsViewResultModal(false)}
+          booking={selectedBooking}
+          customer={customer}
+          serviceData={serviceData}
+          resultData={resultData}
+          attachmentUrl={attachmentUrl}
         />
       </Card>
     </div>

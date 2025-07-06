@@ -49,7 +49,7 @@ public class StisResultService {
                     throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này!");
                 }
                 break;
-            case COMPLETED:
+            case PENDING_TEST_RESULT:
 
                 List<StisResult> completedResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
                 if (!completedResults.isEmpty()) {
@@ -125,7 +125,7 @@ public class StisResultService {
             case CONFIRMED:
 
                 break;
-            case COMPLETED:
+            case PENDING_TEST_RESULT:
 
                 List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
                 if (!existingResults.isEmpty()) {

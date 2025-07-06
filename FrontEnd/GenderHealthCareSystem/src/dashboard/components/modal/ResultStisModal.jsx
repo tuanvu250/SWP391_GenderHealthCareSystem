@@ -23,13 +23,24 @@ import {
   MinusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { enterResultStisAPI, uploadStisAttachmentsAPI } from "../../../components/api/BookingTesting.api";
+import {
+  enterResultStisAPI,
+  markCompletedBookingStisAPI,
+  uploadStisAttachmentsAPI,
+} from "../../../components/api/BookingTesting.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
-const ResultStisModal = ({ open, onCancel, booking, onSave, customer, serviceData }) => {
+const ResultStisModal = ({
+  open,
+  onCancel,
+  booking,
+  onSave,
+  customer,
+  serviceData,
+}) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
@@ -56,7 +67,7 @@ const ResultStisModal = ({ open, onCancel, booking, onSave, customer, serviceDat
 
   // Xử lý khi tải file lên
   const handleFileChange = ({ fileList: newFileList }) => {
-    setFileList(newFileList.slice(-1)); 
+    setFileList(newFileList.slice(-1));
   };
 
   // Xử lý khi submit form
@@ -76,17 +87,24 @@ const ResultStisModal = ({ open, onCancel, booking, onSave, customer, serviceDat
 
       await enterResultStisAPI(booking.bookingId, detectedStis);
 
-      await uploadStisAttachmentsAPI(booking.bookingId, fileList[0].originFileObj);
+      await uploadStisAttachmentsAPI(
+        booking.bookingId,
+        fileList[0].originFileObj
+      );
+
+      await markCompletedBookingStisAPI(booking.bookingId);
 
       message.success("Lưu kết quả xét nghiệm thành công!");
       form.resetFields();
       setTestDetails("");
       setFileList([]);
+      onSave();
       onCancel(); // Đóng modal sau khi lưu
     } catch (error) {
       console.error("Error saving test results:", error);
       message.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi lưu kết quả xét nghiệm. Vui lòng thử lại."
+        error.response?.data?.message ||
+          "Có lỗi xảy ra khi lưu kết quả xét nghiệm. Vui lòng thử lại."
       );
     } finally {
       setLoading(false);
@@ -132,7 +150,7 @@ const ResultStisModal = ({ open, onCancel, booking, onSave, customer, serviceDat
               <Text strong>{customer?.phone}</Text>
             </Col>
           </Row>
-        </Card> 
+        </Card>
 
         <Divider>Kết quả xét nghiệm</Divider>
 

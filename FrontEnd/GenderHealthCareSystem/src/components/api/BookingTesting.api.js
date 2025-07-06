@@ -88,8 +88,11 @@ export const markNoShowBookingStisAPI = async (bookingId) => {
 };
 
 export const enterResultStisAPI = async (bookingId, resultData) => {
-  console.log("Result Data:", resultData);
   return apiClient.post(`/stis-results/return/${bookingId}`, resultData);
+};
+
+export const viewResultStisAPI = async (bookingId) => {
+  return apiClient.get(`/stis-results/by-booking/${bookingId}`);
 };
 
 export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
