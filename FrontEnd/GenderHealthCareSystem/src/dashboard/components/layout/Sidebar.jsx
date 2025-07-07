@@ -478,9 +478,19 @@ const Sidebar = ({
       {/* User Profile & Logout button ở footer */}
       <div className="border-t border-gray-200 mt-auto">
         <div className={`p-4 ${collapsed ? 'text-center' : ''}`}>
-
-          { !collapsed && (
-            // Hiển thị khi sidebar mở rộng
+          {collapsed ? (
+            // Hiển thị khi sidebar thu gọn - chỉ hiển thị icon
+            <Tooltip title="Đăng xuất" placement="right">
+              <Button 
+                type="text" 
+                danger
+                icon={<LogoutOutlined />} 
+                onClick={handleLogout}
+                size="middle"
+              />
+            </Tooltip>
+          ) : (
+            // Hiển thị khi sidebar mở rộng - hiển thị đầy đủ nút
             <div>
               <Button 
                 type="primary" 

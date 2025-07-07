@@ -14,20 +14,24 @@ import {
   Badge,
   Popconfirm,
   Modal,
+  Dropdown,
 } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
   EyeOutlined,
+  FileDoneOutlined,
+  DownOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
 import ResultStisModal from "../../components/modal/ResultStisModal";
-import { formatPrice } from "../../../components/utils/format"; // Import hàm định dạng giá
+import InvoiceModal from "../../components/modal/InvoiceModal";
+import { formatPrice } from "../../../components/utils/format";
 import {
   manageBookingsAPI,
-  markCompletedBookingStisAPI,
   markConfirmedBookingStisAPI,
   markDeniedBookingStisAPI,
   markNoShowBookingStisAPI,
@@ -37,6 +41,7 @@ import {
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
 import { getServiceTestingByIdAPI } from "../../../components/api/ServiceTesting.api";
 import ViewResultStisModal from "../../components/modal/ViewResultStisModal";
+import { getInvoiceTestingAPI } from "../../../components/api/Payment.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -64,6 +69,8 @@ const ManageBookingStis = () => {
   const [isViewResultModal, setIsViewResultModal] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [attachmentUrl, setAttachmentUrl] = useState("");
+  const [invoiceVisible, setInvoiceVisible] = useState(false);
+  const [invoiceData, setInvoiceData] = useState({});
 
   // Cấu hình trạng thái đặt lịch
   const bookingStatusConfig = {
@@ -135,12 +142,6 @@ const ManageBookingStis = () => {
     setPagination({ ...pagination, current: 1 });
   };
 
-  // Xử lý lọc theo trạng thái thanh toán
-  const handlePaymentFilterChange = (value) => {
-    setPaymentFilter(value);
-    setPagination({ ...pagination, current: 1 });
-  };
-
   // Load dữ liệu
   const loadData = async () => {
     setLoading(true);
@@ -151,7 +152,6 @@ const ManageBookingStis = () => {
         page: pagination.current - 1,
         size: pagination.pageSize,
         status: statusFilter,
-        //sort: "bookingDate,desc",
         startDate: startDate,
         endDate: endDate,
       });
@@ -194,7 +194,6 @@ const ManageBookingStis = () => {
 
   const handleNoShow = async (bookingId) => {
     try {
-      // Gọi API để đánh dấu lịch hẹn là không đến
       await markNoShowBookingStisAPI(bookingId);
       loadData();
       message.success("Lịch đã được đánh dấu là không đến");
@@ -206,7 +205,6 @@ const ManageBookingStis = () => {
 
   const handleDenied = async (bookingId) => {
     try {
-      // Gọi API để đánh dấu lịch hẹn là từ chối
       await markDeniedBookingStisAPI(bookingId);
       loadData();
       message.success("Lịch đã được từ chối thành công");
@@ -215,6 +213,9 @@ const ManageBookingStis = () => {
       message.error("Không thể từ chối lịch hẹn");
     }
   };
+
+  const handleConfirmPayment = async (bookingId) => {
+  }
 
   const handleResultPending = async (bookingId) => {
     try {
@@ -274,6 +275,99 @@ const ManageBookingStis = () => {
       );
     }
     setIsViewResultModal(true);
+  };
+
+  // Hàm xử lý hiển thị hóa đơn
+  const handleViewInvoice = async (record) => {
+    try {
+      handleGetDataResult(record);
+      const response = await getInvoiceTestingAPI(record.stisInvoiceID);
+      setInvoiceData({
+        ...response.data,
+        serviceName: record.serviceName,
+      })
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Không thể tải hóa đơn"
+      );
+      return;
+    }
+    // Hiển thị modal hóa đơn
+    setInvoiceVisible(true);
+  };
+
+  // Hàm lấy menu items dựa trên trạng thái của record
+  const getActionMenuItems = (record) => {
+    const items = [];
+
+    if (record.status === "CONFIRMED") {
+      items.push({
+        key: "pendingResult",
+        label: "Chờ kết quả",
+        icon: <ClockCircleOutlined />,
+      });
+      items.push({
+        key: "noShow",
+        label: "Không đến",
+        icon: <CloseCircleOutlined />,
+      });
+      if(record.paymentStatus === "UNPAID") {
+        items.push({
+          key: "confirm-payment",
+          label: "Xác nhận thanh toán",
+          icon: <CheckCircleOutlined />,
+        });
+      }
+    }
+
+    if (record.status === "PENDING") {
+      items.push({
+        key: "confirm",
+        label: "Xác nhận",
+        icon: <CheckCircleOutlined />,
+      });
+      items.push({
+        key: "deny",
+        label: "Từ chối",
+        icon: <CloseCircleOutlined />,
+      });
+    }
+
+    if (record.status === "PENDING_TEST_RESULT") {
+      items.push({
+        key: "enterResult",
+        label: "Nhập kết quả",
+        icon: <EditOutlined />,
+      });
+    }
+
+    return items;
+  };
+
+  // Hàm xử lý khi chọn menu item
+  const handleMenuClick = (key, record) => {
+    switch (key) {
+      case "confirm":
+        handleConfirm(record.id);
+        break;
+      case "deny":
+        handleDenied(record.id);
+        break;
+      case "pendingResult":
+        handleResultPending(record.id);
+        break;
+      case "noShow":
+        handleNoShow(record.id);
+        break;
+      case "enterResult":
+        handleEnterResultStis(record);
+        break;
+      case "confirm-payment":
+        handleConfirmPayment(record.id);
+        break;
+      default:
+        break;
+    }
   };
 
   // Cột cho bảng
@@ -339,13 +433,14 @@ const ManageBookingStis = () => {
         );
       },
       filters: [
-        { text: "Chờ xác nhận", value: "pending" },
-        { text: "Đã xác nhận", value: "confirmed" },
-        { text: "Hoàn thành", value: "completed" },
-        { text: "Đã hủy", value: "cancelled" },
-        { text: "Không đến", value: "no_show" },
+        { text: "Chờ xác nhận", value: "PENDING" },
+        { text: "Đã xác nhận", value: "CONFIRMED" },
+        { text: "Hoàn thành", value: "COMPLETED" },
+        { text: "Đã hủy", value: "CANCELLED" },
+        { text: "Không đến", value: "NO_SHOW" },
+        { text: "Chờ kết quả", value: "PENDING_TEST_RESULT" },
       ],
-      onFilter: (value, record) => record.bookingStatus === value,
+      onFilter: (value, record) => record.status === value,
     },
     {
       title: "Ngày giờ hẹn",
@@ -365,72 +460,57 @@ const ManageBookingStis = () => {
     {
       title: "Thao tác",
       key: "action",
-      width: 120,
+      width: 150,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Xem chi tiết">
+          {/* Nút xem chi tiết luôn hiển thị */}
+          <Button
+            type="primary"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewBooking(record)}
+          >
+            Chi tiết
+          </Button>
+
+          {/* Nút hóa đơn chỉ hiển thị khi đã thanh toán */}
+          {record.paymentStatus === "PAID" && (
             <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => handleViewBooking(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Cập nhật trạng thái">
-            {record.status === "CONFIRMED" && (
-              <div className="flex flex-col gap-1">
-                <Button
-                  type="default"
-                  size="small"
-                  onClick={() => handleResultPending(record.id)}
-                >
-                  Chờ kết quả
-                </Button>
-                <Button
-                  type="default"
-                  size="small"
-                  onClick={() => handleNoShow(record.id)}
-                >
-                  Không đến
-                </Button>
-              </div>
-            )}
-            {record.status === "PENDING" && (
-              <div className="flex flex-col gap-1">
-                <Button
-                  type="default"
-                  size="small"
-                  onClick={() => handleConfirm(record.id)}
-                >
-                  Xác nhận
-                </Button>
-                <Button
-                  type="default"
-                  size="small"
-                  onClick={() => handleDenied(record.id)}
-                >
-                  Từ chối
-                </Button>
-              </div>
-            )}
-            {record.status === "PENDING_TEST_RESULT" && (
-              <Button
-                type="default"
-                size="small"
-                onClick={() => handleEnterResultStis(record)}
+              type="default"
+              size="small"
+              icon={<FileDoneOutlined />}
+              onClick={() => handleViewInvoice(record)}
+            >
+              Hóa đơn
+            </Button>
+          )}
+
+          {/* Nếu đã hoàn thành, hiển thị nút xem kết quả */}
+          {record.status === "COMPLETED" ? (
+            <Button
+              type="default"
+              size="small"
+              onClick={() => handleViewResultStis(record)}
+            >
+              Xem kết quả
+            </Button>
+          ) : (
+            // Dropdown menu cho các hành động cập nhật trạng thái
+            getActionMenuItems(record).length > 0 && (
+              <Dropdown
+                menu={{
+                  items: getActionMenuItems(record),
+                  onClick: ({ key }) => handleMenuClick(key, record),
+                }}
+                placement="bottomRight"
+                arrow
               >
-                Nhập kết quả
-              </Button>
-            )}
-            {record.status === "COMPLETED" && (
-              <Button
-                type="default"
-                size="small"
-                onClick={() => handleViewResultStis(record)}
-              >
-                Xem kết quả
-              </Button>
-            )}
-          </Tooltip>
+                <Button type="default" size="small">
+                  Cập nhật <DownOutlined />
+                </Button>
+              </Dropdown>
+            )
+          )}
         </Space>
       ),
     },
@@ -474,21 +554,10 @@ const ManageBookingStis = () => {
               <Option value="CONFIRMED">Đã xác nhận</Option>
               <Option value="COMPLETED">Hoàn thành</Option>
               <Option value="CANCELLED">Đã hủy</Option>
-              <Option value="no_show">Không đến</Option>
+              <Option value="NO_SHOW">Không đến</Option>
+              <Option value="PENDING_TEST_RESULT">Chờ kết quả</Option>
               <Option value="">Tất cả</Option>
             </Select>
-
-            {/* <Select
-              mode="multiple"
-              placeholder="Lọc trạng thái thanh toán"
-              style={{ minWidth: 200 }}
-              allowClear
-              onChange={handlePaymentFilterChange}
-            >
-              <Option value="paid">Đã thanh toán</Option>
-              <Option value="unpaid">Chưa thanh toán</Option>
-              <Option value="refunded">Đã hoàn tiền</Option>
-            </Select> */}
           </div>
         </div>
 
@@ -502,12 +571,15 @@ const ManageBookingStis = () => {
           scroll={{ x: 1300 }}
           size="middle"
         />
+
+        {/* Modals */}
         <ViewBookingStisModal
           open={viewModalVisible}
           onCancel={() => setViewModalVisible(false)}
           booking={selectedBooking}
           customer={customer}
         />
+
         <ResultStisModal
           open={resultModalVisible}
           onCancel={() => setResultModalVisible(false)}
@@ -518,6 +590,7 @@ const ManageBookingStis = () => {
             loadData();
           }}
         />
+
         <ViewResultStisModal
           open={isViewResultModal}
           onCancel={() => setIsViewResultModal(false)}
@@ -526,6 +599,13 @@ const ManageBookingStis = () => {
           serviceData={serviceData}
           resultData={resultData}
           attachmentUrl={attachmentUrl}
+        />
+
+        <InvoiceModal
+          visible={invoiceVisible}
+          onCancel={() => setInvoiceVisible(false)}
+          invoice={invoiceData}
+          customer={customer}
         />
       </Card>
     </div>

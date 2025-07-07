@@ -39,6 +39,7 @@ import {
   paymentPayPalAPI,
   paymentVNPayAPI,
 } from "../components/api/Payment.api";
+import { postFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
 
 const { Title, Text } = Typography;
 
@@ -47,7 +48,6 @@ const HistoryTesting = () => {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [viewReceipt, setViewReceipt] = useState(false);
   const [viewResult, setViewResult] = useState(false);
   const [viewDetail, setViewDetail] = useState(false);
   const [openFeedback, setOpenFeedback] = useState(false);
@@ -148,11 +148,6 @@ const HistoryTesting = () => {
     }
   };
 
-  // Xử lý xem hóa đơn
-  const handleViewReceipt = (record) => {
-    setSelectedBooking(record);
-    setViewReceipt(true);
-  };
 
   const handleFeedback = (record) => {
     setSelectedBooking(record);
@@ -359,7 +354,8 @@ const HistoryTesting = () => {
           <div>{renderPaymentMethod(record.paymentMethod.toUpperCase())}</div>
           <div className="mt-1">
             {record.paymentMethod !== "cash" &&
-              record.paymentStatus === "UNPAID" && (
+              record.paymentStatus === "UNPAID" && 
+               record.status !== "CANCELLED" && (
                 <Button
                   type="primary"
                   size="small"
@@ -375,16 +371,6 @@ const HistoryTesting = () => {
                   Thanh toán
                 </Button>
               )}
-
-            {record.paymentStatus === "PAID" && (
-              <Button
-                type="default"
-                size="small"
-                onClick={() => handleViewReceipt(record)}
-              >
-                Xem hóa đơn
-              </Button>
-            )}
           </div>
         </div>
       ),
@@ -560,99 +546,6 @@ const HistoryTesting = () => {
                 Xem kết quả xét nghiệm
               </Button>
             )}
-          </div>
-        </div>
-      )}
-    </Modal>
-  );
-
-  // Modal xem hóa đơn
-  const renderReceiptModal = () => (
-    <Modal
-      title={<span className="text-lg">Hóa đơn thanh toán</span>}
-      open={viewReceipt}
-      footer={[
-        <Button key="print" type="primary" icon={<FileDoneOutlined />}>
-          In hóa đơn
-        </Button>,
-        <Button key="back" onClick={() => setViewReceipt(false)}>
-          Đóng
-        </Button>,
-      ]}
-      onCancel={() => setViewReceipt(false)}
-      width={500}
-    >
-      {selectedBooking && (
-        <div className="space-y-4">
-          <div className="text-center pb-4 border-b">
-            <Title level={4} className="mb-1">
-              GENDER HEALTHCARE CENTER
-            </Title>
-            <div className="text-gray-500 text-sm">
-              227 Nguyễn Văn Cừ, Quận 5, TP.HCM
-            </div>
-            <div className="text-gray-500 text-sm">Hotline: 028 3835 9033</div>
-          </div>
-
-          <div className="text-center">
-            <Title level={4} className="my-2">
-              HÓA ĐƠN THANH TOÁN
-            </Title>
-            <div className="text-gray-500">
-              Ngày: {selectedBooking.bookingDate}
-            </div>
-          </div>
-
-          <div className="pb-3 border-b">
-            <div className="flex justify-between">
-              <div className="text-gray-500">Mã hoá đơn:</div>
-              <div className="font-medium">INV-{selectedBooking.id}</div>
-            </div>
-            <div className="flex justify-between mt-1">
-              <div className="text-gray-500">Khách hàng:</div>
-              <div className="font-medium">
-                {user?.fullName || "Khách hàng"}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2 pb-3 border-b">
-            <div className="font-medium">Chi tiết dịch vụ:</div>
-            <div className="flex justify-between border-b pb-2">
-              <div>{selectedBooking.serviceName}</div>
-              <div className="font-medium">
-                {formatPrice(selectedBooking.price)}
-              </div>
-            </div>
-
-            <div className="flex justify-between font-bold text-lg pt-2">
-              <div>Tổng tiền:</div>
-              <div className="text-[#0099CF]">
-                {formatPrice(selectedBooking.price)}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2 pb-3">
-            <div className="flex justify-between">
-              <div className="text-gray-500">Phương thức thanh toán:</div>
-              <div>{renderPaymentMethod(selectedBooking.paymentMethod)}</div>
-            </div>
-            <div className="flex justify-between">
-              <div className="text-gray-500">Trạng thái:</div>
-              <div className="text-green-600 font-medium">Đã thanh toán</div>
-            </div>
-            <div className="flex justify-between">
-              <div className="text-gray-500">Thời gian thanh toán:</div>
-              <div>
-                {dayjs(selectedBooking.createdAt).format("HH:mm:ss DD/MM/YYYY")}
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center text-gray-500 text-sm pt-4 border-t">
-            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-            <p>Mọi thắc mắc vui lòng liên hệ: support@genderhealthcare.vn</p>
           </div>
         </div>
       )}
@@ -959,7 +852,6 @@ const HistoryTesting = () => {
       )}
       {/* Các modal */}
       {renderDetailModal()}
-      {renderReceiptModal()}
       {renderTestResultModal()}
       {renderFeedbackModal()} {/* Modal đánh giá đã được cập nhật */}
     </Card>

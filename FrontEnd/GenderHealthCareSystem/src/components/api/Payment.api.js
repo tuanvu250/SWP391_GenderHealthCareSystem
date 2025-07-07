@@ -36,3 +36,7 @@ export const paypalSuccessAPI = async (paymentId, PayerID) => {
 export const createInvoiceAPI = async (query) => {
   return apiClient.get(`/payment/create-invoice?${query}`);
 };
+
+export const getInvoiceTestingAPI = async (invoiceId) => {
+  return apiClient.get(`/stis-invoices/${invoiceId}`);
+};
