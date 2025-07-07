@@ -9,6 +9,9 @@ import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -19,19 +22,42 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ConsultantInvoiceService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConsultantInvoiceService.class);
+
     private final ConsultantInvoiceRepository invoiceRepo;
     private final ConsultationBookingRepository bookingRepo;
     private final GoogleCalendarService googleCalendarService;
     private final ConsultantProfileRepository consultantProfileRepo;
 
     public void createInvoiceFromPayPal(Payment payment) {
+        logger.info("Starting PayPal invoice creation for payment ID: {}", payment.getId());
         Integer bookingId = Integer.parseInt(payment.getTransactions().get(0).getCustom());
-        ConsultationBooking booking = bookingRepo.findById(bookingId).orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        logger.info("Retrieved booking ID: {} from PayPal payment", bookingId);
 
-        // Lấy số tiền thực tế user đã thanh toán từ PayPal
+        ConsultationBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.error("Booking with ID {} not found", bookingId);
+                    return new IllegalArgumentException("Booking không tồn tại");
+                });
+
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
         Double expectedAmount = calculateFee(booking).doubleValue();
-        if (!paidAmount.equals(expectedAmount)) {
+
+        // Convert expectedAmount to USD for PayPal comparison
+        final double USD_TO_VND_RATE = 24000.0;
+        expectedAmount = expectedAmount / USD_TO_VND_RATE;
+
+        logger.info("Paid amount: {}, Expected amount (converted to USD): {}", paidAmount, expectedAmount);
+
+        // Làm tròn số tiền thanh toán thực tế và dự kiến để tránh sai lệch nhỏ
+        BigDecimal roundedPaidAmount = BigDecimal.valueOf(paidAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal roundedExpectedAmount = BigDecimal.valueOf(expectedAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        logger.info("Rounded paid amount: {}", roundedPaidAmount);
+        logger.info("Rounded expected amount: {}", roundedExpectedAmount);
+
+        if (!roundedPaidAmount.equals(roundedExpectedAmount)) {
+            logger.error("Payment amount mismatch after rounding: Paid = {}, Expected = {}", roundedPaidAmount, roundedExpectedAmount);
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
@@ -51,21 +77,40 @@ public class ConsultantInvoiceService {
         try {
             String meetLink = googleCalendarService.createGoogleMeetLink("Tư vấn với chuyên gia", booking.getBookingDate(), booking.getBookingDate().plusHours(1));
             booking.setMeetLink(meetLink);
+            logger.info("Google Meet link created successfully: {}", meetLink);
         } catch (Exception e) {
+            logger.error("Failed to create Google Meet link", e);
             throw new RuntimeException("Không thể tạo Google Meet link", e);
         }
 
         bookingRepo.save(booking);
+        logger.info("Invoice and booking updated successfully for booking ID: {}", bookingId);
     }
 
     public void createInvoiceFromVNPay(Map<String, String> params) {
+        logger.info("Starting VNPay invoice creation for transaction: {}", params.get("vnp_TransactionNo"));
         Integer bookingId = Integer.parseInt(params.get("vnp_TxnRef"));
-        ConsultationBooking booking = bookingRepo.findById(bookingId).orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        logger.info("Retrieved booking ID: {} from VNPay transaction", bookingId);
 
-        // Lấy số tiền thực tế user đã thanh toán từ VNPAY
-        Double paidAmount = Double.valueOf(params.get("vnp_Amount")) / 100;
+        ConsultationBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.error("Booking with ID {} not found", bookingId);
+                    return new IllegalArgumentException("Booking không tồn tại");
+                });
+
+        Double paidAmount = Double.parseDouble(params.get("vnp_Amount")) / 100;
         Double expectedAmount = calculateFee(booking).doubleValue();
-        if (!paidAmount.equals(expectedAmount)) {
+        logger.info("Paid amount: {}, Expected amount: {}", paidAmount, expectedAmount);
+
+        // Làm tròn số tiền thanh toán thực tế và dự kiến để tránh sai lệch nhỏ
+        BigDecimal roundedPaidAmount = BigDecimal.valueOf(paidAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal roundedExpectedAmount = BigDecimal.valueOf(expectedAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        logger.info("Rounded paid amount: {}", roundedPaidAmount);
+        logger.info("Rounded expected amount: {}", roundedExpectedAmount);
+
+        if (!roundedPaidAmount.equals(roundedExpectedAmount)) {
+            logger.error("Payment amount mismatch after rounding: Paid = {}, Expected = {}", roundedPaidAmount, roundedExpectedAmount);
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
@@ -85,19 +130,37 @@ public class ConsultantInvoiceService {
         try {
             String meetLink = googleCalendarService.createGoogleMeetLink("Tư vấn với chuyên gia", booking.getBookingDate(), booking.getBookingDate().plusHours(1));
             booking.setMeetLink(meetLink);
+            logger.info("Google Meet link created successfully: {}", meetLink);
         } catch (Exception e) {
+            logger.error("Failed to create Google Meet link", e);
             throw new RuntimeException("Không thể tạo Google Meet link", e);
         }
 
         bookingRepo.save(booking);
+        logger.info("Invoice and booking updated successfully for booking ID: {}", bookingId);
     }
+
     private BigDecimal calculateFee(ConsultationBooking booking) {
         Integer consultantId = booking.getConsultant().getUserId();
+        logger.info("Calculating fee for consultant ID: {}", consultantId);
 
         var profile = consultantProfileRepo.findByConsultantUserId(consultantId)
-                .orElseThrow(() -> new IllegalArgumentException("Consultant profile not found"));
+                .orElseThrow(() -> {
+                    logger.error("Consultant profile not found for ID: {}", consultantId);
+                    return new IllegalArgumentException("Consultant profile not found");
+                });
 
-        return BigDecimal.valueOf(profile.getHourlyRate());
+        Double hourlyRate = profile.getHourlyRate();
+        logger.info("Hourly rate for consultant ID {}: {}", consultantId, hourlyRate);
+
+        if (hourlyRate == null || hourlyRate <= 0) {
+            logger.error("Invalid hourly rate for consultant ID {}: {}", consultantId, hourlyRate);
+            throw new IllegalArgumentException("Consultant hourly rate is not set or invalid");
+        }
+
+        BigDecimal fee = BigDecimal.valueOf(hourlyRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+        logger.info("Calculated fee for consultant ID {}: {}", consultantId, fee);
+        return fee;
     }
 
     /**
