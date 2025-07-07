@@ -1,10 +1,12 @@
 package GenderHealthCareSystem.controller;
 
+import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.dto.StisInvoiceDTO;
 import GenderHealthCareSystem.model.StisInvoice;
 import GenderHealthCareSystem.service.StisBookingService;
 import GenderHealthCareSystem.service.StisInvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ public class StisInvoiceController {
 
     @Autowired
     private StisInvoiceService stisInvoiceService;
+    @Autowired
     private StisBookingService stisBookingService;
 
     @GetMapping
@@ -36,10 +39,10 @@ public class StisInvoiceController {
     }
 
     @PostMapping
-    public ResponseEntity<StisInvoiceDTO> createInvoice(@RequestBody StisInvoiceDTO invoiceDTO) {
+    public ResponseEntity<ApiResponse<StisInvoiceDTO>> createInvoice(@RequestBody StisInvoiceDTO invoiceDTO) {
         StisInvoice invoice = convertToEntity(invoiceDTO);
         StisInvoice savedInvoice = stisInvoiceService.saveInvoice(invoice);
-        return ResponseEntity.ok(convertToDTO(savedInvoice));
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.CREATED, "Invoice created successfully", convertToDTO(savedInvoice), null));
     }
 
     @DeleteMapping("/{id}")

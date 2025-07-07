@@ -212,9 +212,16 @@ public class StisBookingService {
         response.setNote(booking.getNote());
         response.setCreatedAt(booking.getCreatedAt());
         response.setUpdatedAt(booking.getUpdatedAt());
+        response.setResultedAt(booking.getResultedAt());
 
         return response;
     }
 
 
+    public void resultedTime(Integer id) {
+        StisBooking booking = stisBookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        booking.setResultedAt(LocalDateTime.now());
+        stisBookingRepository.save(booking);
+    }
 }

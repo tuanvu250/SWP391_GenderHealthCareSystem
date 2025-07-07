@@ -8,9 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class PayPalService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PayPalService.class);
 
     @Autowired
     private APIContext apiContext;
@@ -46,10 +50,18 @@ public class PayPalService {
     }
 
     public Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
+        logger.info("Executing PayPal payment with paymentId: {} and payerId: {}", paymentId, payerId);
         Payment payment = new Payment();
         payment.setId(paymentId);
         PaymentExecution execution = new PaymentExecution();
         execution.setPayerId(payerId);
-        return payment.execute(apiContext, execution);
+        try {
+            Payment executedPayment = payment.execute(apiContext, execution);
+            logger.info("Payment executed successfully: {}", executedPayment);
+            return executedPayment;
+        } catch (PayPalRESTException e) {
+            logger.error("Error executing PayPal payment: {}", e.getDetails());
+            throw e;
+        }
     }
 }

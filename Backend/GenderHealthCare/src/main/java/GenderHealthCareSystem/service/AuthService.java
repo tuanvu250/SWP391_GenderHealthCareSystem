@@ -2,6 +2,7 @@ package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.ExceptionHandler.UserAlreadyExistsException;
 import GenderHealthCareSystem.dto.RegisterRequest;
+import GenderHealthCareSystem.enums.AccountStatus;
 import GenderHealthCareSystem.model.*;
 import GenderHealthCareSystem.repository.*;
 import jakarta.transaction.Transactional;
@@ -64,7 +65,7 @@ public class AuthService {
         account.setUserName(request.getUserName());
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
-        account.setStatus("ACTIVE");
+        account.setAccountStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
     }
 }

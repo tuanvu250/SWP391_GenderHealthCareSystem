@@ -1,12 +1,13 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.ChangePasswordRequest;
+import GenderHealthCareSystem.enums.AccountStatus;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.repository.AccountRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-import GenderHealthCareSystem.dto.ChangePasswordRequest;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,12 +20,15 @@ public class AccountService {
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
     public Account findByUserId(int id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
     }
+
     public void saveAccount(Account account) {
-        account.setPassword(passwordEncoder.encode(account.getPassword())); // Hash the password
+        // Hash the password before saving
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
         accountRepository.save(account);
     }
 
@@ -37,15 +41,28 @@ public class AccountService {
 
         Account account = optionalAccount.get();
 
-        // Kiểm tra mật khẩu cũ có đúng không
+        // Verify old password
         if (!passwordEncoder.matches(request.getOldPassword(), account.getPassword())) {
             return ResponseEntity.status(400).body(Map.of("message", "Mật khẩu cũ không chính xác"));
         }
 
-        // Cập nhật mật khẩu mới
+        // Update with new password
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
         accountRepository.save(account);
 
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+    }
+
+    public void updateAccountStatus(Integer accountId, AccountStatus newStatus) {
+        Optional<Account> optionalAccount = accountRepository.findById(accountId);
+
+        if (optionalAccount.isEmpty()) {
+            throw new RuntimeException("Account not found with id: " + accountId);
+        }
+
+        Account account = optionalAccount.get();
+        account.setAccountStatus(newStatus);
+        accountRepository.save(account);
+
     }
 }

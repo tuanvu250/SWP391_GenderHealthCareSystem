@@ -31,4 +31,5 @@ public class StisBookingResponse {
     private String note;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime resultedAt;
 }

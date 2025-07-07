@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Enumeration;
@@ -27,34 +30,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ConsultantPaymentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConsultantPaymentController.class);
+
     private final VnPayService vnPayService;
     private final PayPalService payPalService;
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-    private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-    private static final String CANCEL_URL = "http://localhost:5173/booking-result";
-
+         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
+         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
                                                      @RequestParam String method,
                                                      HttpServletRequest request) throws Exception {
-        // Lấy thông tin booking để tính số tiền thực tế
-        ConsultationBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+        logger.info("Generating payment URL for booking ID: {} with method: {}", bookingId, method);
 
-        // Tính số tiền dựa trên hourly rate của consultant
+        ConsultationBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.error("Booking with ID {} not found", bookingId);
+                    return new IllegalArgumentException("Booking không tồn tại");
+                });
+
         BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
+        logger.info("Calculated amount for booking ID {}: {}", bookingId, amount);
 
         String paymentUrl;
 
         if ("VNPAY".equalsIgnoreCase(method)) {
-            // VNPAY sử dụng VND
             long vnpayAmount = amount.longValue();
+            logger.info("VNPAY amount for booking ID {}: {}", bookingId, vnpayAmount);
             paymentUrl = vnPayService.createPaymentUrl(vnpayAmount, "Consultation", bookingId.toString(), request.getRemoteAddr());
         } else if ("PAYPAL".equalsIgnoreCase(method)) {
-            // PayPal sử dụng USD, cần convert từ VND sang USD
             double usdAmount = convertVNDtoUSD(amount.doubleValue());
+            logger.info("PayPal amount (USD) for booking ID {}: {}", bookingId, usdAmount);
             Payment payment = payPalService.createPayment(
                     bookingId.toString(),
                     usdAmount,
@@ -69,11 +79,18 @@ public class ConsultantPaymentController {
                     .filter(link -> link.getRel().equals("approval_url"))
                     .findFirst()
                     .map(Links::getHref)
-                    .orElseThrow(() -> new IllegalArgumentException("No approval URL from PayPal"));
+                    .orElseThrow(() -> {
+                        logger.error("No approval URL returned by PayPal for booking ID {}", bookingId);
+                        return new IllegalArgumentException("No approval URL from PayPal");
+                    });
+            // Cập nhật expectedAmount thành USD để khớp với PayPal
+            amount = BigDecimal.valueOf(usdAmount);
         } else {
+            logger.error("Invalid payment method: {}", method);
             return ResponseEntity.badRequest().body("Phương thức thanh toán không hợp lệ");
         }
 
+        logger.info("Generated payment URL for booking ID {}: {}", bookingId, paymentUrl);
         return ResponseEntity.ok(paymentUrl);
     }
 
@@ -82,7 +99,9 @@ public class ConsultantPaymentController {
      */
     private double convertVNDtoUSD(double vndAmount) {
         final double USD_TO_VND_RATE = 24000.0;
-        return vndAmount / USD_TO_VND_RATE;
+        double usdAmount = vndAmount / USD_TO_VND_RATE;
+        logger.info("Converted VND amount {} to USD: {}", vndAmount, usdAmount);
+        return usdAmount;
     }
 
     @GetMapping("/success")
