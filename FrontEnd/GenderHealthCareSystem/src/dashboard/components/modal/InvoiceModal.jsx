@@ -1,10 +1,10 @@
-import React, { useRef } from 'react';
-import { Modal, Button, Typography, message } from 'antd';
-import { FilePdfOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { convertUsdToVnd, formatPrice } from '../../../components/utils/format';
+import React, { useRef } from "react";
+import { Modal, Button, Typography, message } from "antd";
+import { FilePdfOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { convertUsdToVnd, formatPrice } from "../../../components/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -16,10 +16,10 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
 
   // Hàm xuất PDF với xử lý màu oklch
   const handleExportPDF = () => {
-    message.loading('Đang chuẩn bị tài liệu PDF...');
-    
+    message.loading("Đang chuẩn bị tài liệu PDF...");
+
     // Tạo một bản sao style để xử lý
-    const tempStyles = document.createElement('style');
+    const tempStyles = document.createElement("style");
     tempStyles.innerHTML = `
       .text-green-600 {
         color: rgb(22, 163, 74) !important;
@@ -29,42 +29,49 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
       }
     `;
     document.head.appendChild(tempStyles);
-    
+
     html2canvas(invoiceRef.current, {
       scale: 2,
       useCORS: true,
       logging: false,
-      backgroundColor: '#ffffff'
-    }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`Hóa đơn-${invoice.invoiceId || 'unknown'}.pdf`);
-      
-      // Xóa style tạm thời sau khi xuất
-      document.head.removeChild(tempStyles);
-      message.success('Xuất PDF thành công!');
-    }).catch(err => {
-      // Đảm bảo xóa style tạm thời nếu có lỗi
-      if (document.head.contains(tempStyles)) {
+      backgroundColor: "#ffffff",
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        pdf.save(`Hóa đơn-${invoice.invoiceId || "unknown"}.pdf`);
+
+        // Xóa style tạm thời sau khi xuất
         document.head.removeChild(tempStyles);
-      }
-      console.error('Lỗi khi xuất PDF:', err);
-      message.error('Có lỗi khi xuất PDF. Vui lòng thử lại!');
-    });
+        message.success("Xuất PDF thành công!");
+      })
+      .catch((err) => {
+        // Đảm bảo xóa style tạm thời nếu có lỗi
+        if (document.head.contains(tempStyles)) {
+          document.head.removeChild(tempStyles);
+        }
+        console.error("Lỗi khi xuất PDF:", err);
+        message.error("Có lỗi khi xuất PDF. Vui lòng thử lại!");
+      });
   };
 
   const getPaymentMethodText = (method) => {
     switch (method) {
-      case 'cash': return 'Tiền mặt';
-      case 'vnpay': return 'VNPAY';
-      case 'paypal': return 'PayPal';
-      case 'credit': return 'Thẻ tín dụng';
-      default: return method;
+      case "cash":
+        return "Tiền mặt";
+      case "vnpay":
+        return "VNPAY";
+      case "paypal":
+        return "PayPal";
+      case "credit":
+        return "Thẻ tín dụng";
+      default:
+        return method;
     }
   };
 
@@ -75,7 +82,12 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
       onCancel={onCancel}
       width={500}
       footer={[
-        <Button key="export" type="primary" icon={<FilePdfOutlined />} onClick={handleExportPDF}>
+        <Button
+          key="export"
+          type="primary"
+          icon={<FilePdfOutlined />}
+          onClick={handleExportPDF}
+        >
           Xuất PDF
         </Button>,
         <Button key="back" onClick={onCancel}>
@@ -83,10 +95,10 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
         </Button>,
       ]}
     >
-      <div 
-        id="invoice-content" 
+      <div
+        id="invoice-content"
         ref={invoiceRef}
-        style={{ padding: '10px' }}
+        style={{ padding: "10px" }}
         className="invoice-printable-content"
       >
         <div className="text-center pb-4 border-b">
@@ -104,7 +116,7 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
             HÓA ĐƠN THANH TOÁN
           </Title>
           <div className="text-gray-500">
-            Ngày: {dayjs(invoice.paidAt).format('DD/MM/YYYY')}
+            Ngày: {dayjs(invoice.paidAt).format("DD/MM/YYYY")}
           </div>
         </div>
 
@@ -115,7 +127,9 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
           </div>
           <div className="flex justify-between mt-1">
             <div className="text-gray-500">Khách hàng:</div>
-            <div className="font-medium">{customer?.fullName || "Khách hàng"}</div>
+            <div className="font-medium">
+              {customer?.fullName || "Khách hàng"}
+            </div>
           </div>
         </div>
 
@@ -123,27 +137,31 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
           <div className="font-medium">Chi tiết dịch vụ:</div>
           <div className="flex justify-between border-b pb-2">
             <div>{invoice.serviceName}</div>
-            <div className="font-medium">{
-              invoice.currency === 'USD'
+            <div className="font-medium">
+              {invoice.currency === "USD"
                 ? formatPrice(convertUsdToVnd(invoice.totalAmount))
-                : formatPrice(invoice.totalAmount)
-              }</div>
+                : formatPrice(invoice.totalAmount)}
+            </div>
           </div>
 
           <div className="flex justify-between font-bold text-lg pt-2">
             <div>Tổng tiền:</div>
-            <div className="font-medium">{
-              invoice.currency === 'USD'
+            <div className="font-medium">
+              {invoice.currency === "USD"
                 ? formatPrice(convertUsdToVnd(invoice.totalAmount))
-                : formatPrice(invoice.totalAmount)
-              }</div>
+                : formatPrice(invoice.totalAmount)}
+            </div>
           </div>
         </div>
 
         <div className="space-y-2 pb-3 mt-4">
           <div className="flex justify-between">
             <div className="text-gray-500">Phương thức thanh toán:</div>
-            <div>{getPaymentMethodText(invoice.paymentMethod)}</div>
+            <div>
+              {invoice.paymentMethod === "CASH"
+                ? "Tiền mặt"
+                : invoice.paymentMethod}
+            </div>
           </div>
           <div className="flex justify-between">
             <div className="text-gray-500">Trạng thái:</div>

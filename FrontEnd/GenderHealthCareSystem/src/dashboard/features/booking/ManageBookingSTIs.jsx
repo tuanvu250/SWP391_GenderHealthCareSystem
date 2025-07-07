@@ -41,7 +41,10 @@ import {
 import { getUserByIdAPI } from "../../../components/api/Auth.api";
 import { getServiceTestingByIdAPI } from "../../../components/api/ServiceTesting.api";
 import ViewResultStisModal from "../../components/modal/ViewResultStisModal";
-import { getInvoiceTestingAPI } from "../../../components/api/Payment.api";
+import {
+  getInvoiceTestingAPI,
+  markPaymentCashedAPI,
+} from "../../../components/api/Payment.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -214,8 +217,20 @@ const ManageBookingStis = () => {
     }
   };
 
-  const handleConfirmPayment = async (bookingId) => {
-  }
+  const handleConfirmPayment = async (record) => {
+    try {
+      const data = {
+        bookingId: record.bookingId,
+        totalAmount: record.servicePrice,
+      };
+      await markPaymentCashedAPI(data);
+      loadData();
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Không thể xác nhận thanh toán"
+      );
+    }
+  };
 
   const handleResultPending = async (bookingId) => {
     try {
@@ -265,7 +280,6 @@ const ManageBookingStis = () => {
     try {
       handleGetDataResult(booking);
       const response = await viewResultStisAPI(booking.bookingId);
-      console.log(">>> Result data:", response.data.data);
       setSelectedBooking(booking);
       setResultData(response.data.data || []);
       setAttachmentUrl(response.data.data[0]?.pdfResultUrl || "");
@@ -285,11 +299,9 @@ const ManageBookingStis = () => {
       setInvoiceData({
         ...response.data,
         serviceName: record.serviceName,
-      })
+      });
     } catch (error) {
-      message.error(
-        error.response?.data?.message || "Không thể tải hóa đơn"
-      );
+      message.error(error.response?.data?.message || "Không thể tải hóa đơn");
       return;
     }
     // Hiển thị modal hóa đơn
@@ -311,7 +323,7 @@ const ManageBookingStis = () => {
         label: "Không đến",
         icon: <CloseCircleOutlined />,
       });
-      if(record.paymentStatus === "UNPAID") {
+      if (record.paymentStatus === "UNPAID" && record.paymentMethod === "cash") {
         items.push({
           key: "confirm-payment",
           label: "Xác nhận thanh toán",
@@ -363,7 +375,7 @@ const ManageBookingStis = () => {
         handleEnterResultStis(record);
         break;
       case "confirm-payment":
-        handleConfirmPayment(record.id);
+        handleConfirmPayment(record);
         break;
       default:
         break;

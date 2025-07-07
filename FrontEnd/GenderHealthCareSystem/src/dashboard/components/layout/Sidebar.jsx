@@ -58,7 +58,7 @@ const Sidebar = ({
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan",
+            label: <Link to={"/consultant/dashboard"}>Tổng quan</Link>,
           },
           {
             key: "profile",
@@ -111,7 +111,7 @@ const Sidebar = ({
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan",
+            label: <Link to={"/staff/dashboard"}>Tổng quan</Link>,
           },
           {
             key: "appointments",
@@ -168,7 +168,7 @@ const Sidebar = ({
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan",
+            label: <Link to={"/manager/dashboard"}>Tổng quan</Link>,
           },
           {
             key: "analytics",
@@ -232,7 +232,7 @@ const Sidebar = ({
           {
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Tổng quan hệ thống",
+            label: <Link to={"/admin/dashboard"}>Tổng quan</Link>,
           },
           {
             key: "user-management",

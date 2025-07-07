@@ -1,4 +1,5 @@
 // src/api/payment.api.js
+import { data } from "react-router-dom";
 import apiClient from "./apiClient";
 
 export const paymentVNPayAPI = async (amount, orderInfo, bookingID) => {
@@ -39,4 +40,14 @@ export const createInvoiceAPI = async (query) => {
 
 export const getInvoiceTestingAPI = async (invoiceId) => {
   return apiClient.get(`/stis-invoices/${invoiceId}`);
-};
+};  
+
+export const markPaymentCashedAPI = async (values) => {
+  const data = {
+    bookingId: values.bookingId,
+    totalAmount: values.totalAmount,
+    currency: "VND",
+    paymentMethod: "CASH"
+  };
+  return apiClient.post("/stis-invoices", data);
+}
