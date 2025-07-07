@@ -149,11 +149,12 @@ public class BlogPostController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "publishedAt") String orderBy,//viewCount
             @RequestParam(defaultValue = "desc") String sort,
+            @RequestParam(required = false) String status,
             @AuthenticationPrincipal Jwt jwt
     ) {
         Integer userId = Integer.parseInt(jwt.getClaimAsString("userID"));
         System.out.println("orderBy: " + orderBy);
-        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, orderBy, page, size, sort, userId);
+        Page<BlogPostResponse> blogPosts = blogPostService.findBlogPostsByAuthor(title, tag, orderBy, page, size, sort, userId , status);
 
         PageResponse<BlogPostResponse> pageResponse = new PageResponse<>(
                 blogPosts.getContent(),

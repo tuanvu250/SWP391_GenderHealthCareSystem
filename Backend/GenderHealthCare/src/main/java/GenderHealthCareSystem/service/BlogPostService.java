@@ -77,7 +77,7 @@ public class BlogPostService {
         blogPostRepository.save(existingBlogPost);
     }
 
-    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, String orderBy, int page, int size, String sort,int Id) {
+    public Page<BlogPostResponse> findBlogPostsByAuthor(String title, String tag, String orderBy, int page, int size, String sort,int Id, String status) {
         Pageable pageable;
         if ("asc".equalsIgnoreCase(sort)) {
             pageable = PageRequest.of(page, size, Sort.by(orderBy).ascending());
@@ -86,7 +86,7 @@ public class BlogPostService {
         }
 
         Page<BlogPost> blogPosts;
-        blogPosts = this.blogPostRepository.searchBlogPostsByAuthor(title,tag, Id, pageable);
+        blogPosts = this.blogPostRepository.searchBlogPostsByAuthor(title,tag, Id, status, pageable);
         return blogPosts.map(this::mapToResponse);
     }
 
