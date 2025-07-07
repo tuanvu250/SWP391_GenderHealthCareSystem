@@ -12,11 +12,13 @@ import { useState } from "react";
 import LogoText from "../../assets/logo-text.svg";
 import LogoSign from "../../assets/logo-sign.svg";
 import { useAuth } from "../provider/AuthProvider";
+import LoginRequiredModal from "../common/LoginRequiredModal";
 
 const Header = () => {
   const navigate = useNavigate();
   const [menuVisible, setMenuVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [isLoginModal, setIsLoginModal] = useState(false);
   const auth = useAuth();
   const user = auth.user;
   const isLoggedIn = auth.isAuthenticated;
@@ -25,6 +27,22 @@ const Header = () => {
     auth.logoutAction();
     navigate("/");
   };
+
+  const handleLoginRequired = (service) => {
+    if(!isLoggedIn) {
+      setIsLoginModal(true);
+    } else {
+      switch (service) {
+        case "menstrual-tracker":
+          navigate("/menstrual-tracker");
+          break;
+        case "pill-tracker":
+          navigate("/pill-tracker");
+          break;
+      }
+      setMenuVisible(false);
+    }
+  }
 
   // Định nghĩa lại userMenu dưới dạng object cho Ant Design v5
   const userMenu = {
@@ -85,12 +103,12 @@ const Header = () => {
       {
         key: "1",
         label: "Theo dõi chu kì kinh nguyệt",
-        onClick: () => navigate("/menstrual-tracker"),
+        onClick: () => handleLoginRequired("menstrual-tracker"),
       },
       {
         key: "2",
         label: "Theo dõi lịch uống thuốc tránh thai",
-        onClick: () => navigate("/pill-tracker"),
+        onClick: () => handleLoginRequired("pill-tracker"),
       },
     ],
   };
@@ -297,7 +315,7 @@ const Header = () => {
               <li>
                 <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => navigate("/menstrual-tracker")}
+                  onClick={() => handleLoginRequired("menstrual-tracker")}
                 >
                   Theo dõi kỳ kinh
                 </a>
@@ -305,7 +323,7 @@ const Header = () => {
               <li>
                 <a
                   className="block py-2 font-medium hover:text-[#0099CF] !text-gray-800"
-                  onClick={() => navigate("/pill-tracker")}
+                  onClick={() => handleLoginRequired("pill-tracker")}
                 >
                   Theo dõi nhắc nhở uống thuốc tránh thai
                 </a>
@@ -386,6 +404,11 @@ const Header = () => {
           </div>
         </div>
       </Drawer>
+
+      <LoginRequiredModal
+       open={isLoginModal}
+       onClose={() => setIsLoginModal(false)}
+      />
     </header>
   );
 };

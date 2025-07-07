@@ -129,8 +129,8 @@ const Login = () => {
             </Form.Item>
 
             <div className="flex items-center justify-between">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+              <Form.Item name="remember" valuePropName="checked" noStyle initialValue={true}>
+                <Checkbox >Ghi nhớ đăng nhập</Checkbox>
               </Form.Item>
               <a
                 className="text-sm font-medium text-[#0099CF] hover:text-[#0088bb]"

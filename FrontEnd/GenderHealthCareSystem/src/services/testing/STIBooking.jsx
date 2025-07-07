@@ -167,7 +167,7 @@ const STIBooking = () => {
         packageId: allValues.package,
         appointmentDate: allValues.appointmentDate.format("YYYY-MM-DD"),
         appointmentTime: allValues.appointmentTime,
-        paymentMethod: allValues.paymentMethod,
+        paymentMethod: allValues.paymentMethod === "online" ? allValues.onlinePaymentMethod : allValues.paymentMethod,
         notes: allValues.notes,
       };
       const response = await bookStisAPI(bookingData);
@@ -179,7 +179,7 @@ const STIBooking = () => {
       } else {
         await handlePayment(
           response.data.data.bookingId,
-          allValues.paymentMethod
+          bookingData.paymentMethod
         );
       }
     } catch (error) {

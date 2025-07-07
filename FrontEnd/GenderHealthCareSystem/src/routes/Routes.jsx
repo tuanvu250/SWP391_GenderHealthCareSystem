@@ -77,6 +77,7 @@ function RouteMap() {
                 <Route path="/home" element={<Home />} />
                 <Route path="/pill-tracker" element={<PillTracker />} />
                 <Route path="/menstrual-tracker" element={<MenstrualTracker />} />
+
                 <Route
                     path="/user"
                     element={
@@ -110,6 +111,7 @@ function RouteMap() {
                 <Route path="/services/asking" element={<AskingSection />} />
                 <Route path="confirm-consultant" element={<ConfirmConsultationBooking />} />
                 <Route path="/my-questions" element={<MyQuestionsPage />} />
+
                 {/* Trang thông tin */}
                 <Route path="/about" element={<AboutPage />} />
                 <Route
@@ -195,6 +197,19 @@ function RouteMap() {
                 <Route index element={<Overview />} />
                 <Route path="overview" element={<Overview />} />
                 <Route path="manage-booking-stis" element={<ManageBookingStis />} />
+            </Route>
+
+            {/* Dashboard cho Admin */}
+            <Route
+                path="/admin/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles="Admin">
+                        <DashboardLayout userRole="Admin" />
+                    </ProtectedRoute>
+                }
+            >
+                <Route index element={<Overview />} />
+                <Route path="overview" element={<Overview />} />
             </Route>
         </Routes>
     );

@@ -217,16 +217,6 @@ const Home = () => {
               <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-blue-100/50 rounded-full blur-lg"></div>
             </div>
           </div>
-
-          {/* See All Services button */}
-          <div className="mt-12 text-center">
-            <Button
-              size="large"
-              className="h-12 px-8 rounded-full border-[#0099CF] text-[#0099CF] hover:text-[#0088bb] hover:border-[#0088bb] shadow-sm"
-            >
-              Xem tất cả dịch vụ <ArrowRightOutlined />
-            </Button>
-          </div>
         </div>
       </div>
 
