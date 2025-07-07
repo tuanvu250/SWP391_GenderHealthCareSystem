@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.service;
 
 
+import GenderHealthCareSystem.enums.AccountStatus;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.model.Users;
 import GenderHealthCareSystem.repository.AccountRepository;
@@ -62,7 +63,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OidcUserReques
                     Account newAccount = new Account();
                     newAccount.setEmail(email);
                     newAccount.setUserName(email); // Use email as username or generate a unique one
-                    newAccount.setStatus("ACTIVE");
+                    newAccount.setAccountStatus(AccountStatus.ACTIVE);
                     newAccount.setUsers(savedUser);
 
                     return accountRepository.save(newAccount);
