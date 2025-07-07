@@ -51,6 +51,7 @@ export const markPaymentCashedAPI = async (values) => {
   };
   return apiClient.post("/stis-invoices", data);
 }
+
 export const getConsultantPaymentRedirectURL = (bookingId, method) => {
   return apiClient.get("/consultant-payment/pay-url", {
     params: {

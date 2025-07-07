@@ -95,7 +95,7 @@ function RouteMap() {
             element={<HistoryFeedbackTesting />}
           />
           <Route
-            path="history-consultant"
+            path="history-consultation"
             element={<HistoryConsultantBooking />}
           />
         </Route>
