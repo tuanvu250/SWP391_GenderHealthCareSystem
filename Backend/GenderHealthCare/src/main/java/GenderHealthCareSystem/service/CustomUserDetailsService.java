@@ -1,10 +1,12 @@
 package GenderHealthCareSystem.service;
 
 
+import GenderHealthCareSystem.enums.AccountStatus;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.repository.AccountRepository;
 import GenderHealthCareSystem.util.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account account = accountRepository
                 .findByUserNameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với username/email: " + usernameOrEmail));
-        if (!account.getStatus().equals("ACTIVE")) {
-            throw new UsernameNotFoundException("Tài khoản không hoạt động");
+        if (!account.getAccountStatus().equals(AccountStatus.ACTIVE)) {
+            throw new BadCredentialsException("Tài khoản không có trạng thái ACTIVE: " + account.getAccountStatus().toString());
         }
         return new CustomUserDetails(account);
     }

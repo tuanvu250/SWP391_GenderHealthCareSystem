@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.model;
 
+import GenderHealthCareSystem.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,6 @@ public class Account {
     @Id
     @Column(name = "AccountID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer accountId;
 
     @OneToOne(fetch = FetchType.EAGER)
@@ -34,8 +34,10 @@ public class Account {
     @Column(name = "Password", length = 255)
     private String password; // Ensure this is stored securely (hashed)
 
-    @Column(name = "Status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Status", length = 20)
+    private AccountStatus accountStatus; // Enum to represent account status (e.g., ACTIVE, INACTIVE, SUSPENDED)
+
     @Column(name = "ResetOtpExpiry")
     private LocalDateTime resetOtpExpiry;
 
@@ -44,7 +46,4 @@ public class Account {
 
     @Column(name = "OtpVerified")
     private Boolean otpVerified;
-
- 
-
 }
