@@ -25,7 +25,7 @@ export default function OvulationCalendar() {
         }
 
         if (!calendarData || !calendarData.days?.length) {
-          navigate("/menstrual-tracker");
+          navigate("/menstrual/tracker");
           return;
         }
 
@@ -53,7 +53,7 @@ export default function OvulationCalendar() {
         setSelectedMonth(m - 1);
       } catch (err) {
         console.error("Lỗi tải lịch:", err);
-        navigate("/menstrual-tracker");
+        navigate("/menstrual/tracker");
       }
     };
 
@@ -201,7 +201,7 @@ export default function OvulationCalendar() {
 
       <div className="mt-8 flex justify-center gap-4">
         <button
-          onClick={() => navigate("/menstrual-tracker", { state: { forceInput: true } })}
+          onClick={() => navigate("/menstrual/tracker", { state: { forceInput: true } })}
           className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
         >
           ← Nhập kỳ kinh mới

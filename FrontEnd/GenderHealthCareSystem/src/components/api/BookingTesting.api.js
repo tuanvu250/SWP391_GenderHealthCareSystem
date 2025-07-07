@@ -104,3 +104,4 @@ export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
     },
   });
 };
+

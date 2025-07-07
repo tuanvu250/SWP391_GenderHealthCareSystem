@@ -139,3 +139,7 @@ export const likeBlogAPI = async (postId) => {
 export const relatedBlogsByIdAPI = async (postId) => {
   return apiClient.get(`/blog-posts/${postId}/related`);
 }
+
+export const relatedBlogsByTagAPI = async (tag) => {
+  return apiClient.get(`/blog-posts/${tag}/related-tags`);
+};

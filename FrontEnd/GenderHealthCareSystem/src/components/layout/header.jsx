@@ -34,7 +34,7 @@ const Header = () => {
     } else {
       switch (service) {
         case "menstrual-tracker":
-          navigate("/menstrual-tracker");
+          navigate("/menstrual/tracker");
           break;
         case "pill-tracker":
           navigate("/pill-tracker");

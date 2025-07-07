@@ -18,8 +18,6 @@ export default function MenstrualTracker() {
   const location = useLocation();
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (!token) return navigate('/login');
 
     const checkExistingCycle = async () => {
       try {
@@ -31,7 +29,7 @@ export default function MenstrualTracker() {
           data.days.length > 0 &&
           !location.state?.forceInput // Chỉ chuyển nếu không phải bấm "nhập lại"
         ) {
-          navigate('/menstrual-ovulation', { state: { calendar: data } });
+          navigate('/menstrual/ovulation', { state: { calendar: data } });
         }
       } catch (err) {
         console.error('Lỗi khi kiểm tra dữ liệu chu kỳ:', err);
@@ -73,7 +71,7 @@ export default function MenstrualTracker() {
 
       // Sau khi lưu thành công, lấy lại dữ liệu và điều hướng
       const updatedCalendar = await menstrualHistoryAPI();
-      navigate('/menstrual-ovulation', { state: { calendar: updatedCalendar.data } });
+      navigate('/menstrual/ovulation', { state: { calendar: updatedCalendar.data } });
     } catch (err) {
       console.error(err);
       setPopupMessage('Lỗi khi tính hoặc lưu chu kỳ.');
@@ -84,7 +82,7 @@ export default function MenstrualTracker() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
+    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6 my-16">
       <h2 className="text-2xl font-bold text-center">Tính Chu Kỳ Kinh Nguyệt</h2>
 
       <label className="block">
