@@ -119,4 +119,16 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(Map.of("message", result));
     }
 
+    @PutMapping("/update-meeting-link/{bookingId}")
+    @PreAuthorize("hasRole('Staff')")
+    public ResponseEntity<?> updateMeetingLink(
+            @PathVariable Integer bookingId,
+            @RequestParam String meetingLink) {
+        try {
+            invoiceService.updateMeetingLink(bookingId, meetingLink);
+            return ResponseEntity.ok("Meeting link updated successfully.");
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
+        }
+    }
 }
