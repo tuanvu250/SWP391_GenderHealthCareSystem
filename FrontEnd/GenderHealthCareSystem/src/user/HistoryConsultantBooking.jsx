@@ -7,6 +7,7 @@ import {
   Empty,
   Spin,
   Button,
+  message,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -28,29 +29,31 @@ const HistoryConsultantBooking = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      const userString = localStorage.getItem("user");
-      if (!userString) {
-        console.error("User not found in localStorage");
+      const token = sessionStorage.getItem("token"); // ✅ đổi từ localStorage → sessionStorage
+      const userString = sessionStorage.getItem("user"); // ✅ đồng bộ
+
+      if (!token || token.trim() === "" || !userString) {
+        message.error("Bạn chưa đăng nhập hoặc phiên đã hết hạn.");
         navigate("/login");
         return;
       }
 
-      let customer;
       try {
-        customer = JSON.parse(userString);
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-        navigate("/login");
-        return;
-      }
+        const response = await axios.get(`/api/bookings/history`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            page: 0,
+            size: 10,
+            sort: "createdAt,desc",
+          },
+        });
 
-      const customerId = customer?.customerId || 10; // 👈 Fix lại khi kết nối thật
-
-      try {
-        const response = await axios.get(`/api/bookings/history/${customerId}`);
-        setBookings(response.data.data || []);
+        setBookings(response.data?.data?.content || []);
       } catch (error) {
-        console.error("Failed to fetch booking history", error);
+        console.error("Lỗi khi lấy lịch sử booking:", error);
+        message.error("Không thể tải lịch sử đặt lịch.");
       } finally {
         setLoading(false);
       }
@@ -62,44 +65,24 @@ const HistoryConsultantBooking = () => {
   const renderStatus = (status) => {
     switch (status) {
       case "PENDING":
-        return (
-          <Tag icon={<ClockCircleOutlined />} color="blue">
-            Đang xử lý
-          </Tag>
-        );
+        return <Tag icon={<ClockCircleOutlined />} color="blue">Đang xử lý</Tag>;
       case "CONFIRMED":
-        return (
-          <Tag icon={<CheckCircleOutlined />} color="green">
-            Đã xác nhận
-          </Tag>
-        );
+        return <Tag icon={<CheckCircleOutlined />} color="green">Đã xác nhận</Tag>;
       case "CANCELLED":
-        return (
-          <Tag icon={<CloseCircleOutlined />} color="red">
-            Đã hủy
-          </Tag>
-        );
+        return <Tag icon={<CloseCircleOutlined />} color="red">Đã hủy</Tag>;
       default:
-        return <Tag color="default">{status}</Tag>;
+        return <Tag>{status}</Tag>;
     }
   };
 
   const renderPaymentStatus = (status) => {
     switch (status) {
       case "PAID":
-        return (
-          <Tag color="success">
-            Đã thanh toán
-          </Tag>
-        );
+        return <Tag color="green">Đã thanh toán</Tag>;
       case "UNPAID":
-        return (
-          <Tag color="warning">
-            Chưa thanh toán
-          </Tag>
-        );
+        return <Tag color="orange">Chưa thanh toán</Tag>;
       default:
-        return <Tag color="default">{status}</Tag>;
+        return <Tag>{status}</Tag>;
     }
   };
 
@@ -111,7 +94,7 @@ const HistoryConsultantBooking = () => {
       width: 60,
     },
     {
-      title: "Ngày tạo",
+      title: "Ngày đặt",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => dayjs(text).format("HH:mm DD/MM/YYYY"),
@@ -168,9 +151,7 @@ const HistoryConsultantBooking = () => {
           <UserOutlined className="mr-2 text-blue-500" />
           Lịch sử đặt lịch tư vấn
         </Title>
-        <Text type="secondary">
-          Xem các buổi tư vấn đã đặt trước đây của bạn.
-        </Text>
+        <Text type="secondary">Xem các buổi tư vấn đã đặt của bạn.</Text>
       </div>
 
       {loading ? (

@@ -51,3 +51,27 @@ export const markPaymentCashedAPI = async (values) => {
   };
   return apiClient.post("/stis-invoices", data);
 }
+export const getConsultantPaymentRedirectURL = (bookingId, method) => {
+  return apiClient.get("/consultant-payment/pay-url", {
+    params: {
+      bookingId,
+      method,
+    },
+  });
+};
+
+
+export const consultantPaypalSuccessAPI = async (paymentId, payerId) => {
+  return await apiClient.get("/consultant-payment/success", {
+    params: {
+      paymentId,
+      PayerID: payerId,
+    },
+  });
+};
+
+export const consultantVNPaySuccessAPI = (queryParamsObj) => {
+  return apiClient.get("/consultant-payment/vn-pay-return", {
+    params: queryParamsObj,
+  });
+};

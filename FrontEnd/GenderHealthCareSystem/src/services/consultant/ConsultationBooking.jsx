@@ -9,11 +9,17 @@ export default function ConsultationBooking() {
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Call API on load
+  // ✅ Lấy user từ sessionStorage
+  const user = JSON.parse(sessionStorage.getItem("user")) || {};
+  const defaultName = user?.fullName || "";
+  const defaultPhone = user?.phone || "";
+  const defaultEmail = user?.email || "";
+
   useEffect(() => {
     const fetchExperts = async () => {
       try {
         const data = await getAllConsultants();
+        console.log("Danh sách consultants:", data);
         setExperts(data);
       } catch (err) {
         console.error("Failed to fetch consultants", err);
@@ -35,6 +41,11 @@ export default function ConsultationBooking() {
   const handleSubmitBooking = (e) => {
     e.preventDefault();
     const form = e.target;
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const customerId = user?.customerId;
+
+    let rawMethod = form.paymentMethod.value;
+    let normalizedMethod = rawMethod.toLowerCase() === "bank" ? "VNPAY" : "PAYPAL";
 
     const bookingData = {
       name: form.fullName.value,
@@ -43,10 +54,10 @@ export default function ConsultationBooking() {
       date: form.date.value,
       timeSlot: form.timeSlot.value,
       notes: form.notes.value,
-      paymentMethod: form.paymentMethod.value,
+      paymentMethod: normalizedMethod,
       expertName: selectedExpert.fullName,
-      consultantId: selectedExpert.consultantId || selectedExpert.id,
-      customerId: 10, // Hardcoded
+      consultantId: selectedExpert.consultantId,
+      customerId: customerId, // thêm nếu cần thiết cho confirm
     };
 
     navigate("/confirm-consultant", { state: bookingData });
@@ -54,7 +65,6 @@ export default function ConsultationBooking() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="bg-[#E6F7FB] p-6 lg:p-8 rounded-xl shadow mb-10 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold text-[#0077aa] mb-2">
           Dịch vụ tư vấn sức khỏe cá nhân
@@ -68,7 +78,6 @@ export default function ConsultationBooking() {
         Đặt lịch tư vấn sức khỏe giới tính
       </h2>
 
-      {/* Expert List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {experts.length === 0 ? (
           <p className="text-center col-span-full">Đang tải danh sách tư vấn viên...</p>
@@ -78,15 +87,11 @@ export default function ConsultationBooking() {
               <div className="w-24 h-24 mx-auto rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
                 {expert.fullName?.charAt(0) || "?"}
               </div>
-              <h3 className="text-center mt-4 font-semibold">
-                {expert.fullName || "Tên chưa cập nhật"}
-              </h3>
-              <p className="text-center text-sm text-gray-500">
-                {expert.jobTitle || "Chức danh chưa có"}
-              </p>
+              <h3 className="text-center mt-4 font-semibold">{expert.fullName}</h3>
+              <p className="text-center text-sm text-gray-500">{expert.jobTitle}</p>
               <p
                 className="text-[#0099CF] hover:text-[#0077aa] text-sm underline text-center cursor-pointer mt-3"
-                onClick={() => navigate(`/expert/${expert.id || expert.consultantId}`)}
+                onClick={() => navigate(`/expert/${expert.id}`)}
               >
                 Xem thông tin chi tiết
               </p>
@@ -101,7 +106,6 @@ export default function ConsultationBooking() {
         )}
       </div>
 
-      {/* Booking Form */}
       {showForm && selectedExpert && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in-up">
@@ -131,27 +135,29 @@ export default function ConsultationBooking() {
             <h3 className="text-xl font-bold mb-4 text-[#0099CF]">Đặt lịch tư vấn</h3>
 
             <form className="space-y-4" onSubmit={handleSubmitBooking}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Họ và tên *"
-                  required
-                  className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-                />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Số điện thoại *"
-                  required
-                  className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-                />
-              </div>
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Họ và tên *"
+                required
+                defaultValue={defaultName}
+                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
+              />
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Số điện thoại *"
+                required
+                defaultValue={defaultPhone}
+                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
+              />
 
               <input
                 type="email"
                 name="email"
                 placeholder="Email (Tùy chọn)"
+                defaultValue={defaultEmail}
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               />
 
@@ -177,38 +183,24 @@ export default function ConsultationBooking() {
               </select>
 
               <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="bank"
-                  className="mt-1.5 accent-[#0099CF]"
-                  required
-                />
+                <input type="radio" name="paymentMethod" value="bank" className="mt-1.5 accent-[#0099CF]" required />
                 <div className="ml-3">
                   <div className="flex items-center space-x-2 text-gray-800 font-semibold">
-                    <AiFillBank className="text-xl " />
+                    <AiFillBank className="text-xl" />
                     <span>Thanh toán trực tuyến</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Thanh toán bằng ATM/Visa/MasterCard/QR Code
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng ATM/Visa/MasterCard/QR Code</p>
                 </div>
               </label>
+
               <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="paypal"
-                  className="mt-1.5 accent-[#0099CF]"
-                />
+                <input type="radio" name="paymentMethod" value="paypal" className="mt-1.5 accent-[#0099CF]" />
                 <div className="ml-3">
                   <div className="flex items-center space-x-2 text-gray-800 font-semibold">
                     🅿️
                     <span>Thanh toán qua PayPal</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Thanh toán bằng tài khoản PayPal hoặc thẻ quốc tế
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng tài khoản PayPal hoặc thẻ quốc tế</p>
                 </div>
               </label>
 

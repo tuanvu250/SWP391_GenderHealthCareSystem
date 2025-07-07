@@ -1,70 +1,91 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Row, Col, Divider, message, Alert } from "antd";
+import {
+  Button,
+  Card,
+  Row,
+  Col,
+  Divider,
+  message,
+  Alert,
+  Modal,
+} from "antd";
 import { createConsultationBooking } from "../../components/api/ConsultantBooking.api";
-import { paymentVNPayAPI, paymentPayPalAPI } from "../../components/api/Payment.api";
-import { convertVndToUsd } from "../../components/utils/format";
+import { getConsultantPaymentRedirectURL } from "../../components/api/Payment.api";
 import dayjs from "dayjs";
 
-export default function ConfirmConsultationBooking() {
+export default function ConfirmBookingConsultant() {
   const location = useLocation();
   const navigate = useNavigate();
   const bookingData = location.state;
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const handleConfirm = async () => {
     if (!bookingData) {
-      message.error("Không có dữ liệu đặt lịch.");
+      message.error("Vui lòng kiểm tra lại thông tin trước khi xác nhận đặt lịch");
       return;
     }
 
     setLoading(true);
+    setErrorMsg(null);
 
     try {
       const startTime = bookingData.timeSlot.split(" - ")[0];
       const bookingDate = dayjs(`${bookingData.date} ${startTime}`).toDate();
 
-      if (!bookingData.consultantId) {
-        throw new Error("Thiếu consultantId");
+      let consultantId = bookingData.consultantId;
+      let hourlyRate = 120000; // fallback mặc định
+
+      // ✅ Lấy từ localStorage nếu cần
+      if (!consultantId) {
+        const consultants = JSON.parse(localStorage.getItem("consultants")) || [];
+        const match = consultants.find(
+          (c) => c.fullName === bookingData.expertName
+        );
+        consultantId = match?.consultantId;
+        hourlyRate = match?.hourlyRate || hourlyRate;
+      }
+
+      if (!consultantId) {
+        throw new Error("Không xác định được consultantId từ thông tin chuyên gia.");
       }
 
       const payload = {
-        consultantId: bookingData.consultantId,
-        customerId: bookingData.customerId || 10,
         bookingDate,
         note: bookingData.notes || "",
-        paymentMethod: bookingData.paymentMethod === "bank" ? "VNPAY" : "PayPal",
+        consultantId,
       };
 
       const response = await createConsultationBooking(payload);
-      if (!response?.data?.bookingId) {
-        throw new Error("Không nhận được bookingId.");
-      }
+      const bookingId = response?.data?.data?.bookingId;
+      if (!bookingId) throw new Error("Không nhận được bookingId từ hệ thống.");
 
-      const bookingId = response.data.bookingId;
-      const amount = 100000;
-      const orderInfo = "Đặt lịch tư vấn";
+      const method = (bookingData.paymentMethod || "").toUpperCase();
 
+      // 👉 Lưu vào localStorage (vẫn giữ hourlyRate để hiển thị nếu cần)
       localStorage.setItem("bookingID", bookingId);
-      localStorage.setItem("amount", amount);
-      localStorage.setItem("orderInfo", orderInfo);
+      localStorage.setItem("amount", hourlyRate); // chỉ để hiển thị
+      localStorage.setItem("orderInfo", "Đặt lịch tư vấn");
+      localStorage.setItem("bookingType", "consultant");
 
-      if (payload.paymentMethod === "VNPAY") {
-        const payRes = await paymentVNPayAPI(amount, orderInfo, bookingId);
-        message.success("Đang chuyển đến cổng thanh toán...");
-        setTimeout(() => {
-          window.location.href = payRes.data;
-        }, 1000);
-      } else {
-        const payRes = await paymentPayPalAPI(convertVndToUsd(amount), bookingId);
-        message.success("Đang chuyển đến PayPal...");
-        setTimeout(() => {
-          window.location.href = payRes.data;
-        }, 1000);
-      }
+      await delay(1000);
+
+      // ❌ Không gửi amount nữa
+      const res = await getConsultantPaymentRedirectURL(bookingId, method);
+
+      message.success("Đang chuyển đến cổng thanh toán...");
+      window.location.href = res?.data;
     } catch (err) {
       console.error("Đặt lịch lỗi:", err);
-      message.error("Đặt lịch thất bại.");
+      const backendMsg = err?.response?.data?.message;
+      Modal.error({
+        title: "Lỗi đặt lịch",
+        content: backendMsg || err.message || "Đặt lịch thất bại.",
+      });
+      setErrorMsg(backendMsg || err.message || "Đặt lịch thất bại.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +97,14 @@ export default function ConfirmConsultationBooking() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-center mb-2">Xác nhận đặt lịch tư vấn</h1>
+      <h1 className="text-2xl font-bold text-center mb-2">
+        Xác nhận đặt lịch tư vấn
+      </h1>
+
+      {errorMsg && (
+        <Alert message={errorMsg} type="error" showIcon className="mb-4" />
+      )}
+
       <Alert
         message="Vui lòng kiểm tra lại thông tin trước khi xác nhận đặt lịch"
         type="warning"
@@ -96,21 +124,30 @@ export default function ConfirmConsultationBooking() {
             <p><strong>Ngày tư vấn:</strong> {bookingData.date}</p>
             <p><strong>Khung giờ:</strong> {bookingData.timeSlot}</p>
             <p><strong>Chuyên gia:</strong> {bookingData.expertName}</p>
-            <p><strong>Phương thức thanh toán:</strong> {bookingData.paymentMethod === "bank" ? "VNPAY" : "PayPal"}</p>
+            <p>
+              <strong>Phương thức thanh toán:</strong>{" "}
+              {bookingData.paymentMethod === "paypal" ? "PayPal" : "VNPay"}
+            </p>
           </Col>
         </Row>
       </Card>
 
       {bookingData.notes && (
         <Card className="mb-6 rounded-xl shadow" title="Ghi chú thêm">
-          <p className="text-gray-700 bg-gray-50 p-3 rounded">{bookingData.notes}</p>
+          <p className="text-gray-700 bg-gray-50 p-3 rounded">
+            {bookingData.notes}
+          </p>
         </Card>
       )}
 
       <Divider />
       <div className="flex justify-between mt-6">
         <Button onClick={() => navigate(-1)}>Quay lại</Button>
-        <Button type="primary" loading={loading} onClick={handleConfirm}>
+        <Button
+          type="primary"
+          loading={loading}
+          onClick={handleConfirm}
+        >
           Xác nhận đặt lịch
         </Button>
       </div>
