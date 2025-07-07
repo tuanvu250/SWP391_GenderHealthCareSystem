@@ -123,6 +123,7 @@ public class BlogPostService {
         }
 
         Page<BlogPost> blogPosts;
+        System.out.println("Searching blog posts with title: " + title + ", tag: " + tag + ", status: " + status);
         blogPosts = this.blogPostRepository.searchBlogPostsForManager(title,tag,status, pageable);
 
 
