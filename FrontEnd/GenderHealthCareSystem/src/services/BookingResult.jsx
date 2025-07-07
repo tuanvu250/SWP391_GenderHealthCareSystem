@@ -5,38 +5,42 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";
 
 import { convertVndToUsd } from "../components/utils/format";
-import { createInvoiceAPI, paymentPayPalAPI, paymentVNPayAPI, paypalSuccessAPI } from "../components/api/Payment.api";
+import {
+  createInvoiceAPI,
+  paymentPayPalAPI,
+  paymentVNPayAPI,
+  paypalSuccessAPI,
+  consultantPaypalSuccessAPI,
+  consultantVNPaySuccessAPI,
+  getConsultantPaymentRedirectURL,
+} from "../components/api/Payment.api";
 
-const { Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 const BookingResult = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [check, setCheck] = useState(false);
-  // Thêm flag để kiểm soát việc gọi API chỉ một lần
   const hasCreatedInvoice = useRef(false);
 
-  // Email mặc định là từ user auth hoặc từ bookingData
   const userEmail = user?.email || "";
-
-  // Sửa cách lấy query params để hoạt động đúng
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const fullQueryString = location.search.substring(1);
-  const vnpayResponseCode = queryParams.get("vnp_ResponseCode");
 
+  const vnpayResponseCode = queryParams.get("vnp_ResponseCode");
   const paymentId = queryParams.get("paymentId");
   const payerId = queryParams.get("PayerID");
 
-  const isVNpay = vnpayResponseCode !== null;
-  const isPaypal = paymentId && payerId;
+  const isVNpay = !!vnpayResponseCode;
+  const isPaypal = !!paymentId && !!payerId;
+
+  // ✅ THÊM VÀO ĐÂY — không còn lỗi nữa
+  const bookingType = localStorage.getItem("bookingType") || "sti";
 
   const isPaymentSuccessful = () => {
-    if (isVNpay) {
-      return vnpayResponseCode === "00";
-    } else if (isPaypal) {
-      return !!payerId;
-    }
+    if (isVNpay) return vnpayResponseCode === "00";
+    if (isPaypal) return !!payerId;
     return false;
   };
 
@@ -44,47 +48,50 @@ const BookingResult = () => {
     const onFinish = async () => {
       const checkResult = isPaymentSuccessful();
       setCheck(checkResult);
-      if (isVNpay && checkResult) {
-        // Xóa dữ liệu localStorage chỉ khi thanh toán thành công
-        localStorage.removeItem("bookingID");
-        localStorage.removeItem("amount");
-        localStorage.removeItem("orderInfo");
 
-        // Chỉ gọi API tạo hóa đơn nếu chưa gọi
-        if (!hasCreatedInvoice.current) {
-          hasCreatedInvoice.current = true;
-          try {
-            await createInvoiceAPI(fullQueryString);
-          } catch (error) {
-            console.error("Error creating invoice:", error);
-            message.error("Có lỗi xảy ra khi tạo hóa đơn, vui lòng thử lại.");
+      if (!hasCreatedInvoice.current && checkResult) {
+        hasCreatedInvoice.current = true;
+
+        try {
+          // ✅ DEBUG
+          console.log(">>> bookingType:", bookingType, "| isVNpay:", isVNpay, "| isPaypal:", isPaypal);
+
+          if (bookingType === "consultant") {
+            if (isVNpay) {
+              const queryParamsObj = Object.fromEntries(queryParams.entries());
+              await consultantVNPaySuccessAPI(queryParamsObj);
+            } else if (isPaypal) {
+              await consultantPaypalSuccessAPI(paymentId, payerId);
+            } else {
+              message.error("Không xác định phương thức thanh toán.");
+              return;
+            }
+          } else {
+            // STI hoặc loại khác
+            if (isVNpay || isPaypal) {
+              await createInvoiceAPI(fullQueryString);
+            } else {
+              message.error("Không xác định phương thức thanh toán.");
+              return;
+            }
           }
-        }
-      } else if (isPaypal && checkResult) {
-        if (!hasCreatedInvoice.current) {
-          hasCreatedInvoice.current = true;
-          try {
-            console.log(">>> Paypal paymentId:", paymentId);
-            console.log(">> Paypal payerId:", payerId);
-            await paypalSuccessAPI(paymentId, payerId);
-          } catch (error) {
-            console.error("Error creating invoice:", error);
-            message.error(
-              error.response?.data?.message ||
-                "Có lỗi xảy ra khi xác nhận thanh toán PayPal."
-            );
-          }
+
+          localStorage.removeItem("bookingID");
+          localStorage.removeItem("amount");
+          localStorage.removeItem("orderInfo");
+          localStorage.removeItem("bookingType");
+        } catch (error) {
+          console.error("❌ Error creating invoice:", error);
+          message.error(
+            error.response?.data?.message ||
+              "Có lỗi xảy ra khi xác nhận thanh toán."
+          );
         }
       }
     };
 
     onFinish();
-
-    // Cleanup function để đảm bảo xử lý đúng khi component unmount
-    return () => {
-      // Không cần làm gì trong cleanup function
-    };
-  }, [fullQueryString]); // Thêm các dependencies
+  }, [fullQueryString]);
 
   const handlePaymentAgain = async () => {
     try {
@@ -92,69 +99,75 @@ const BookingResult = () => {
       const amount = localStorage.getItem("amount");
       const orderInfo = localStorage.getItem("orderInfo");
 
-      // Kiểm tra xem các giá trị có tồn tại không
       if (!bookingID || !amount || !orderInfo) {
-        message.error(
-          "Thông tin thanh toán không đầy đủ. Vui lòng đặt lịch lại."
-        );
-        navigate("/sti-testing");
+        message.error("Thiếu thông tin. Vui lòng đặt lịch lại.");
+        navigate(bookingType === "consultant" ? "/consultation" : "/sti-testing");
         return;
       }
 
-      // Chỉ xóa localStorage sau khi đã lấy các giá trị
+      localStorage.setItem("bookingType", bookingType);
       localStorage.removeItem("bookingID");
       localStorage.removeItem("amount");
       localStorage.removeItem("orderInfo");
 
-      const response =
-        isVNpay
-          ? await paymentVNPayAPI(
-              amount,
-              "Đặt lịch xét nghiệm STI",
-              bookingID
-            )
+      let response;
+      if (bookingType === "consultant") {
+        response = await getConsultantPaymentRedirectURL(
+          bookingID,
+          isVNpay ? "VNPay" : "PayPal"
+        );
+      } else {
+        response = isVNpay
+          ? await paymentVNPayAPI(amount, orderInfo, bookingID)
           : await paymentPayPalAPI(convertVndToUsd(amount), bookingID);
+      }
 
       message.success("Đang chuyển hướng đến trang thanh toán ...");
-
       setTimeout(() => {
         window.location.href = response.data;
-      }, 1500); // Rút ngắn thời gian để tránh người dùng nghĩ trang bị treo
+      }, 1500);
     } catch (error) {
-      console.error("Error processing payment:", error);
-      message.error("Có lỗi xảy ra khi xử lý thanh toán, vui lòng thử lại.");
+      console.error("Error retrying payment:", error);
+      message.error("Lỗi khi xử lý lại thanh toán.");
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 text-center">
       {check ? (
-        // Hiển thị kết quả thành công
         <Result
           status="success"
           icon={<CheckCircleFilled style={{ color: "#52c41a" }} />}
-          title={`Đặt lịch thành công!`}
+          title="Đặt lịch thành công!"
           extra={[
             <Paragraph className="mb-5" key="email-info">
-              Cảm ơn bạn đã đặt lịch. Chúng tôi đã gửi email xác nhận chi tiết
-              đến địa chỉ {userEmail}.
+              Cảm ơn bạn đã đặt lịch. Thông tin đã được gửi tới {userEmail || "email của bạn"}.
             </Paragraph>,
             <Paragraph className="mb-8" key="payment-info">
-              Thanh toán của bạn đã được xử lý thành công. Vui lòng đến đúng giờ
-              đã đặt.
+              Thanh toán đã hoàn tất. Hẹn gặp bạn vào thời gian đã đặt!
             </Paragraph>,
             <Button
               type="primary"
-              key="dashboard"
+              key="history"
               size="large"
-              onClick={() => navigate("/user/history-testing")}
+              onClick={() =>
+                navigate(
+                  bookingType === "consultant"
+                    ? "/user/history-consultation"
+                    : "/user/history-testing"
+                )
+              }
             >
               Xem lịch sử đặt lịch
             </Button>,
             <Button
-              key="services"
+              key="back"
               size="large"
-              onClick={() => navigate("/sti-testing")}
+              onClick={() =>
+                navigate(
+                  bookingType === "consultant" ? "/consultation" : "/sti-testing"
+                )
+              }
               className="ml-4"
             >
               Quay lại trang dịch vụ
@@ -162,16 +175,14 @@ const BookingResult = () => {
           ]}
         />
       ) : (
-        // Hiển thị kết quả thất bại
         <Result
           status="error"
           icon={<CloseCircleFilled style={{ color: "#ff4d4f" }} />}
           title="Thanh toán thất bại!"
-          subTitle="Đã xảy ra lỗi trong quá trình xử lý thanh toán của bạn."
+          subTitle="Hệ thống không thể xác nhận thanh toán. Vui lòng thử lại."
           extra={[
             <Paragraph className="mb-5" key="error-info">
-              Việc đặt lịch của bạn chưa được xác nhận do thanh toán không thành
-              công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+              Bạn có thể thử lại hoặc chọn phương thức thanh toán khác.
             </Paragraph>,
             <Button
               type="primary"
@@ -179,7 +190,7 @@ const BookingResult = () => {
               size="large"
               onClick={handlePaymentAgain}
             >
-              Thử lại
+              Thử lại thanh toán
             </Button>,
             <Button
               key="home"

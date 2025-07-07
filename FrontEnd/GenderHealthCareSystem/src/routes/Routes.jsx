@@ -89,7 +89,7 @@ function RouteMap() {
                     <Route path="profile" element={<Profile />} />
                     <Route path="history-testing" element={<HistoryTesting />} />
                     <Route path="history-feedback-testing" element={<HistoryFeedbackTesting />} />
-                    <Route path="history-consultant" element={<HistoryConsultantBooking />} />
+                    <Route path="history-consultation" element={<HistoryConsultantBooking />} />
                 </Route>
 
                 <Route path="/sti-testing" element={<STITesting />} />

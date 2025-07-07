@@ -36,3 +36,27 @@ export const paypalSuccessAPI = async (paymentId, PayerID) => {
 export const createInvoiceAPI = async (query) => {
   return apiClient.get(`/payment/create-invoice?${query}`);
 };
+export const getConsultantPaymentRedirectURL = (bookingId, method) => {
+  return apiClient.get("/consultant-payment/pay-url", {
+    params: {
+      bookingId,
+      method,
+    },
+  });
+};
+
+
+export const consultantPaypalSuccessAPI = async (paymentId, payerId) => {
+  return await apiClient.get("/consultant-payment/success", {
+    params: {
+      paymentId,
+      PayerID: payerId,
+    },
+  });
+};
+
+export const consultantVNPaySuccessAPI = (queryParamsObj) => {
+  return apiClient.get("/consultant-payment/vn-pay-return", {
+    params: queryParamsObj,
+  });
+};
