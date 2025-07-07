@@ -6,6 +6,7 @@ import GenderHealthCareSystem.repository.StisInvoiceRepository;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.Sale;
 import com.paypal.api.payments.Transaction;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +17,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class StisInvoiceService {
 
-    @Autowired
-    private StisInvoiceRepository stisInvoiceRepository;
-    @Autowired
-    private StisBookingService stisBookingService;
+    private final StisInvoiceRepository stisInvoiceRepository;
+    private final StisBookingService stisBookingService;
 
     public List<StisInvoice> getAllInvoices() {
         return stisInvoiceRepository.findAll();
@@ -32,6 +32,23 @@ public class StisInvoiceService {
     }
 
     public StisInvoice saveInvoice(StisInvoice invoice) {
+        if ("PAID".equals(invoice.getStisBooking().getPaymentStatus()) ) {
+            throw new RuntimeException("Booking has already been paid");
+        }
+        String prefix = "TXN";
+
+        // Lấy thời gian hiện tại định dạng yyyyMMddHHmmss
+        String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        // Tạo số ngẫu nhiên 4 chữ số
+        int random = new java.util.Random().nextInt(9000) + 1000; // từ 1000 → 9999
+
+        String transID= prefix + timestamp + random; // Ví dụ: TXN202507071630451237
+        invoice.setTransactionId(transID);
+        invoice.setPaidAt(LocalDateTime.now());
+        invoice.getStisBooking().setPaymentStatus("PAID");
+        stisBookingService.saveBooking(invoice.getStisBooking());
         return stisInvoiceRepository.save(invoice);
     }
 
@@ -47,7 +64,7 @@ public class StisInvoiceService {
         StisInvoice invoice = new StisInvoice();
         invoice.setStisBooking(booking);
         invoice.setTransactionId(params.get("vnp_TransactionNo"));
-        invoice.setTotalAmount(Double.parseDouble(params.get("vnp_Amount")));
+        invoice.setTotalAmount(Double.parseDouble(params.get("vnp_Amount"))/100);
         invoice.setPaymentMethod("VNPay");
         invoice.setCurrency("VND");
         invoice.setPaidAt(LocalDateTime.now());
