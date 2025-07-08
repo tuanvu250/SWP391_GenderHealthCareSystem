@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -26,12 +28,7 @@ public class ConsultantFeedbackController {
 
     private final ConsultantFeedbackService feedbackService;
 
-    /**
-     * Creates a new feedback for a consultation booking
-     *
-     * @param req The feedback request containing bookingId, rating, and comment
-     * @return ResponseEntity with the created feedback or error message
-     */
+
     @PostMapping
     public ResponseEntity<ApiResponse<ConsultantFeedbackCreateResponse>> createFeedback(@RequestBody @Valid ConsultantFeedbackRequest req) {
         try {
@@ -57,12 +54,7 @@ public class ConsultantFeedbackController {
         }
     }
 
-    /**
-     * Gets feedback by booking ID
-     *
-     * @param bookingId The ID of the booking
-     * @return ResponseEntity with the feedback or error message
-     */
+
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<ApiResponse<ConsultantFeedbackResponse>> getFeedbackByBooking(@PathVariable Integer bookingId) {
         try {
@@ -119,6 +111,43 @@ public class ConsultantFeedbackController {
                     consultantId, page, size, sortBy, direction, rating);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá tư vấn viên",
+                            mapToPageResponse(feedbackPage), null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
+    }
+
+    @GetMapping("/my-feedback")
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantFeedbackResponse>>> getMyFeedback(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Integer rating) {
+        try {
+            Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getMyFeedback(
+                    page, size, sortBy, direction, rating);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá của tôi",
+                            mapToPageResponse(feedbackPage), null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
+    }
+
+    @GetMapping("/my-posted-feedback")
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantFeedbackResponse>>> getMyPostedFeedback(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        try {
+            Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getMyPostedFeedback(
+                    page, size, sortBy, direction);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách feedback tôi đã đăng",
                             mapToPageResponse(feedbackPage), null));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -228,11 +257,6 @@ public class ConsultantFeedbackController {
         }
     }
 
-
-
-    /**
-     * Helper method to map Page to PageResponse
-     */
     private PageResponse<ConsultantFeedbackResponse> mapToPageResponse(Page<ConsultantFeedbackResponse> page) {
         return PageResponseUtil.mapToPageResponse(page);
     }

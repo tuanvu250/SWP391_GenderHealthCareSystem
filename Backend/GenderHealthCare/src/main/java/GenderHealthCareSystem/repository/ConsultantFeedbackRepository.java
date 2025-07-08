@@ -14,29 +14,37 @@ import java.util.List;
 @Repository
 public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFeedback, Integer> {
 
-    // Booking-related queries
+    List<ConsultantFeedback> findByConsultantProfile_ProfileId(Integer profileId);
+    Page<ConsultantFeedback> findByConsultantProfile_ProfileId(Integer profileId, Pageable pageable);
+    Page<ConsultantFeedback> findByConsultantProfile_ProfileIdAndRating(Integer profileId, Integer rating, Pageable pageable);
+
+    List<ConsultantFeedback> findByConsultantProfile_Consultant_UserId(Integer consultantId);
+    Page<ConsultantFeedback> findByConsultantProfile_Consultant_UserId(Integer consultantId, Pageable pageable);
+    Page<ConsultantFeedback> findByConsultantProfile_Consultant_UserIdAndRating(Integer consultantId, Integer rating, Pageable pageable);
+
+    List<ConsultantFeedback> findByCustomer_UserId(Integer customerId);
+    Page<ConsultantFeedback> findByCustomer_UserId(Integer customerId, Pageable pageable);
+
     boolean existsByConsultationBooking_BookingId(Integer bookingId);
     ConsultantFeedback findByConsultationBooking_BookingId(Integer bookingId);
 
-    // Consultant-related queries
-    List<ConsultantFeedback> findByConsultationBooking_Consultant_UserId(Integer consultantId);
-    Page<ConsultantFeedback> findByConsultationBooking_Consultant_UserId(Integer consultantId, Pageable pageable);
+    boolean existsByCustomer_UserIdAndConsultantProfile_ProfileId(Integer customerId, Integer profileId);
 
-    Page<ConsultantFeedback> findByConsultationBooking_Consultant_UserIdAndRating(
-            Integer consultantId, Integer rating, Pageable pageable);
+    boolean existsByCustomer_UserIdAndConsultantProfile_Consultant_UserId(Integer customerId, Integer consultantId);
 
-    // Rating-related queries
     Page<ConsultantFeedback> findByRating(Integer rating, Pageable pageable);
 
-    // Customer-related queries
-    List<ConsultantFeedback> findByConsultationBooking_Customer_UserId(Integer customerId);
-
-    // Custom queries for statistics
-    @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf WHERE cf.consultationBooking.consultant.userId = :consultantId")
+    @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf WHERE cf.consultantProfile.consultant.userId = :consultantId")
     Double getAverageRatingByConsultantId(@Param("consultantId") Integer consultantId);
 
-    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.consultationBooking.consultant.userId = :consultantId")
+    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.consultantProfile.consultant.userId = :consultantId")
     Long getCountByConsultantId(@Param("consultantId") Integer consultantId);
+
+    @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf WHERE cf.consultantProfile.profileId = :profileId")
+    Double getAverageRatingByProfileId(@Param("profileId") Integer profileId);
+
+    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.consultantProfile.profileId = :profileId")
+    Long getCountByProfileId(@Param("profileId") Integer profileId);
 
     @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf")
     Double getTotalAverageRating();
@@ -47,7 +55,6 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
     @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf")
     Long countAllRatings();
 
-    // Custom delete operation
     @Modifying
     @Query(value = "DELETE FROM ConsultantFeedback WHERE FeedbackID = :feedbackId", nativeQuery = true)
     int deleteByFeedbackId(@Param("feedbackId") Integer feedbackId);
