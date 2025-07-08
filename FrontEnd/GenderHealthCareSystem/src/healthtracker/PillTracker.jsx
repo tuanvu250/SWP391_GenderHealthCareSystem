@@ -20,7 +20,6 @@ export default function PillTracker() {
         const data = res?.data ?? [];
 
         if (data.length > 0) {
-          // ✅ Có dữ liệu từ DB
           const firstItem = data.find(item => !item.isPlacebo);
           if (firstItem) {
             const inferredType = data.length === 21 ? '21' : '28';
@@ -34,7 +33,7 @@ export default function PillTracker() {
           }
         }
 
-        // ❌ Không có dữ liệu hợp lệ => clear
+        // Không có lịch
         setHasSchedule(false);
         setPillStartDate('');
         setPillType('28');
@@ -45,7 +44,16 @@ export default function PillTracker() {
       }
     };
 
+    const handleFocus = () => {
+      checkExistingSchedule();
+    };
+
     checkExistingSchedule();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchPillSchedule = async () => {
@@ -83,7 +91,6 @@ export default function PillTracker() {
   };
 
   const handleReset = () => {
-    // 👉 Không xóa localStorage, cho người dùng nhập lại
     setHasSchedule(false);
     setPillStartDate('');
     setPillType('28');

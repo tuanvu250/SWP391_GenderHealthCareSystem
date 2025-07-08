@@ -98,10 +98,11 @@ export default function ConsultationBooking() {
               <p className="text-center text-sm text-gray-500">{expert.jobTitle}</p>
               <p
                 className="text-[#0099CF] hover:text-[#0077aa] text-sm underline text-center cursor-pointer mt-3"
-                onClick={() => navigate(`/expert/${expert.id}`)}
+                onClick={() => navigate(`/expert/${expert.id}`, { state: expert })}
               >
                 Xem thông tin chi tiết
               </p>
+
               <button
                 onClick={() => handleSelect(expert)}
                 className="mt-4 w-full bg-[#0099CF] hover:bg-[#0077aa] text-white font-semibold py-2 rounded-lg"
