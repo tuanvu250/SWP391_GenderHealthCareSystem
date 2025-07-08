@@ -116,7 +116,8 @@ export default function ConsultationBooking() {
 
       {showForm && selectedExpert && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in-up">
+          <div className="bg-white w-full max-w-xl w-[95%] max-h-[90vh] p-6 md:p-8 rounded-2xl shadow-2xl relative animate-fade-in-up overflow-y-auto">
+
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
               onClick={handleCloseForm}
