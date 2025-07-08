@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import GenderHealthCareSystem.enums.BookingStatus;
+
 @RestController
 @RequestMapping("/api/consultant-payment")
 @RequiredArgsConstructor
@@ -56,12 +58,12 @@ public class ConsultantPaymentController {
                 });
 
         // Check if the slot is already being processed
-        if ("PROCESSING".equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() == BookingStatus.PROCESSING) { // Compare enums directly
             return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
         }
 
         // Mark the slot as processing
-        booking.setStatus("PROCESSING");
+        booking.setStatus(BookingStatus.PROCESSING);
         bookingRepository.save(booking);
 
         BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
@@ -164,8 +166,8 @@ public class ConsultantPaymentController {
             @Override
             public void run() {
                 ConsultationBooking booking = bookingRepository.findById(bookingId).orElse(null);
-                if (booking != null && "PROCESSING".equalsIgnoreCase(booking.getStatus())) {
-                    booking.setStatus("PENDING");
+                if (booking != null && booking.getStatus() == BookingStatus.PROCESSING) {
+                    booking.setStatus(BookingStatus.PENDING);
                     bookingRepository.save(booking);
                     logger.info("Slot status reset to PENDING for booking ID: {}", bookingId);
                 }

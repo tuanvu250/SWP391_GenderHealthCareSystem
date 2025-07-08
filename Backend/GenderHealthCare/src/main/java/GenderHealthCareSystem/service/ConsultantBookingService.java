@@ -18,6 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import GenderHealthCareSystem.enums.BookingStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,8 +32,6 @@ public class ConsultantBookingService {
     private final ConsultationBookingRepository bookingRepo;
     private final UserRepository userRepository;
 
-
-    private final GoogleCalendarService googleCalendarService; // Inject GoogleCalendarService
 
     /**
      * Tạo booking mới: PENDING/UNPAID và trả về URL thanh toán
@@ -75,7 +75,7 @@ public class ConsultantBookingService {
         booking.setCustomer(customer);
         booking.setBookingDate(req.getBookingDate());
         booking.setNote(req.getNote());
-        booking.setStatus("PENDING");
+        booking.setStatus(BookingStatus.PENDING);
         booking.setPaymentStatus("UNPAID");
         booking.setCreatedAt(LocalDateTime.now());
 
@@ -119,7 +119,7 @@ public class ConsultantBookingService {
                 b.getCustomer().getFullName(),
                 b.getCustomer().getUserId(),
                 b.getBookingDate(),
-                b.getStatus(),
+                b.getStatus().name(), // Convert BookingStatus to String
                 b.getPaymentStatus(),
                 b.getMeetLink()
         )).collect(Collectors.toList());
@@ -196,11 +196,18 @@ public class ConsultantBookingService {
             throw new IllegalArgumentException("Bạn không có quyền cập nhật trạng thái cho booking này");
         }
 
-        if (!"COMPLETED".equalsIgnoreCase(status) && !"CANCELLED".equalsIgnoreCase(status)) {
+        BookingStatus newStatus;
+        try {
+            newStatus = BookingStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED hoặc CANCELLED");
         }
 
-        booking.setStatus(status);
+        if (newStatus != BookingStatus.COMPLETED && newStatus != BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED hoặc CANCELLED");
+        }
+
+        booking.setStatus(newStatus);
         bookingRepo.save(booking);
     }
 }
