@@ -2,6 +2,7 @@ package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.StisFeedbackRequest;
 import GenderHealthCareSystem.dto.StisFeedbackResponse;
+import GenderHealthCareSystem.dto.RatingStatisticsResponse;
 import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.model.StisFeedback;
@@ -22,8 +23,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -285,4 +288,23 @@ public class StisFeedbackService {
         // Map to response DTOs
         return feedbackPage.map(this::mapToResponse);
     }
+
+    public RatingStatisticsResponse getRatingStatistics() {
+        Long totalRatings = feedbackRepo.countActiveRatings();
+        Double averageRating = feedbackRepo.getAverageRating();
+
+        Map<Integer, Long> ratingCounts = new HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            Long count = feedbackRepo.countByRating(i);
+            ratingCounts.put(i, count != null ? count : 0L);
+        }
+
+        return new RatingStatisticsResponse(
+            totalRatings != null ? totalRatings : 0L,
+            averageRating != null ? averageRating : 0.0,
+            ratingCounts
+        );
+    }
+
+
 }

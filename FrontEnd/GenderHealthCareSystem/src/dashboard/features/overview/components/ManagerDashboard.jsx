@@ -1,83 +1,293 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Table, Space, Button, Typography } from 'antd';
-import { 
-  ArrowUpOutlined, ArrowDownOutlined, UserOutlined, DollarOutlined, 
-  FileTextOutlined, StarOutlined, TeamOutlined, BarChartOutlined,
-  CheckCircleOutlined
-} from '@ant-design/icons';
-import ChartComponent from '../../../components/chart/ChartComponent';
-import { 
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Table,
+  Space,
+  Button,
+  Typography,
+  message,
+  Tag,
+} from "antd";
+import {
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  UserOutlined,
+  DollarOutlined,
+  FileTextOutlined,
+  StarOutlined,
+  TeamOutlined,
+  BarChartOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import ChartComponent from "../../../components/chart/ChartComponent";
+import {
   userAppointmentsChartOptions,
-  chartOptions,
   ratingBarChartOptions,
-} from '../utils/chartConfig';
+} from "../utils/chartConfig";
+import { useNavigate } from "react-router-dom";
+import {
+  approveBlogAPI,
+  rejectBlogAPI,
+  viewAllBlogsAPI,
+} from "../../../../components/api/Blog.api";
+import ViewBlogModal from "../../../components/modal/ViewBlogModal";
+import { formatDateTime } from "../../../../components/utils/format";
 
 const { Text } = Typography;
 
 const ManagerDashboard = ({ stats }) => {
-  // Biểu đồ đánh giá dịch vụ thay thế biểu đồ doanh thu consultant
-  const serviceRatingsChart = stats.serviceRatings ? {
-    labels: ['5 ★', '4 ★', '3 ★', '2 ★', '1 ★'],
-    datasets: [
-      {
-        label: 'Xét nghiệm',
-        data: [
-          stats.serviceRatings.testing?.five || 0,
-          stats.serviceRatings.testing?.four || 0,
-          stats.serviceRatings.testing?.three || 0,
-          stats.serviceRatings.testing?.two || 0,
-          stats.serviceRatings.testing?.one || 0,
-        ],
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Tư vấn',
-        data: [
-          stats.serviceRatings.consulting?.five || 0,
-          stats.serviceRatings.consulting?.four || 0,
-          stats.serviceRatings.consulting?.three || 0,
-          stats.serviceRatings.consulting?.two || 0,
-          stats.serviceRatings.consulting?.one || 0,
-        ],
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
+  const navigate = useNavigate();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 4,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [blogList, setBlogList] = useState([]);
+  const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState(null);
+
+  const getTagColor = (tag) => {
+    const tagColors = {
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
+      STIs: "red",
+      "Kinh nguyệt": "pink",
+    };
+
+    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
+  };
+
+  const fetchBlogList = async () => {
+    setLoading(true);
+    try {
+      const response = await viewAllBlogsAPI({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        status: "PENDING",
+      });
+      if (response && response.data) {
+        setTimeout(() => {
+          const formattedPosts = response.data.data.content.map((post) => {
+            // Chuyển đổi trường tags từ chuỗi thành mảng objects
+            const tagArray = post.tags
+              ? post.tags.split(",").map((tag) => ({
+                  text: tag.trim(),
+                  color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+                }))
+              : [];
+
+            return {
+              ...post,
+              tags: tagArray,
+              // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
+              thumbnailUrl:
+                post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
+                  ? post.thumbnailUrl
+                  : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
+            };
+          });
+          setBlogList(formattedPosts);
+          setPagination({
+            ...pagination,
+            total: response.data.data.totalElements,
+          });
+          setLoading(false);
+        }, 500);
       }
-    ],
-  } : null;
-  
+    } catch (error) {
+      console.error("Error fetching blog list:", error);
+      message.error("Không thể tải danh sách bài viết");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogList();
+  }, [pagination.current, pagination.pageSize]);
+
+  const serviceRatingsChart = stats.serviceRatings
+    ? {
+        labels: ["5 ★", "4 ★", "3 ★", "2 ★", "1 ★"],
+        datasets: [
+          {
+            label: "Xét nghiệm",
+            data: [
+              stats.serviceRatings.testing?.five || 0,
+              stats.serviceRatings.testing?.four || 0,
+              stats.serviceRatings.testing?.three || 0,
+              stats.serviceRatings.testing?.two || 0,
+              stats.serviceRatings.testing?.one || 0,
+            ],
+            backgroundColor: "rgba(54, 162, 235, 0.6)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+          },
+          {
+            label: "Tư vấn",
+            data: [
+              stats.serviceRatings.consulting?.five || 0,
+              stats.serviceRatings.consulting?.four || 0,
+              stats.serviceRatings.consulting?.three || 0,
+              stats.serviceRatings.consulting?.two || 0,
+              stats.serviceRatings.consulting?.one || 0,
+            ],
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 1,
+          },
+        ],
+      }
+    : null;
+
   // Biểu đồ đường cho users & appointments (giữ nguyên)
-  const usersAndAppointmentsChart = stats.usersAndAppointments ? {
-    labels: stats.usersAndAppointments.map(d => d.date),
-    datasets: [
-      {
-        label: 'Người dùng mới',
-        data: stats.usersAndAppointments.map(d => d.users),
-        borderColor: '#1677ff',
-        backgroundColor: 'rgba(22, 119, 255, 0.1)',
-        tension: 0.4,
-        yAxisID: 'y',
-      },
-      {
-        label: 'Lịch hẹn xét nghiệm',
-        data: stats.usersAndAppointments.map(d => d.testAppointments ?? 0),
-        borderColor: '#52c41a',
-        backgroundColor: 'rgba(82, 196, 26, 0.1)',
-        tension: 0.4,
-        yAxisID: 'y1',
-      },
-      {
-        label: 'Lịch hẹn tư vấn',
-        data: stats.usersAndAppointments.map(d => d.consultAppointments ?? 0),
-        borderColor: '#faad14',
-        backgroundColor: 'rgba(250, 173, 20, 0.1)',
-        tension: 0.4,
-        yAxisID: 'y1',
-      },
-    ],
-  } : null;
+  const usersAndAppointmentsChart = stats.usersAndAppointments
+    ? {
+        labels: stats.usersAndAppointments.map((d) => d.date),
+        datasets: [
+          {
+            label: "Người dùng mới",
+            data: stats.usersAndAppointments.map((d) => d.users),
+            borderColor: "#1677ff",
+            backgroundColor: "rgba(22, 119, 255, 0.1)",
+            tension: 0.4,
+            yAxisID: "y",
+          },
+          {
+            label: "Lịch hẹn xét nghiệm",
+            data: stats.usersAndAppointments.map(
+              (d) => d.testAppointments ?? 0
+            ),
+            borderColor: "#52c41a",
+            backgroundColor: "rgba(82, 196, 26, 0.1)",
+            tension: 0.4,
+            yAxisID: "y1",
+          },
+          {
+            label: "Lịch hẹn tư vấn",
+            data: stats.usersAndAppointments.map(
+              (d) => d.consultAppointments ?? 0
+            ),
+            borderColor: "#faad14",
+            backgroundColor: "rgba(250, 173, 20, 0.1)",
+            tension: 0.4,
+            yAxisID: "y1",
+          },
+        ],
+      }
+    : null;
+
+  const handleTableChange = (pagination) => {
+    setPagination(pagination);
+  };
+
+  const handleViewBlog = (blog) => {
+    if (blog) {
+      setSelectedBlog(blog);
+      setViewBlogModalVisible(true);
+    } else {
+      message.error("Không tìm thấy thông tin bài viết");
+    }
+  };
+
+  // Hàm xử lý duyệt bài viết
+  const handleApprove = async (blogId) => {
+    try {
+      setLoading(true);
+      await approveBlogAPI(blogId);
+      setTimeout(() => {
+        fetchBlogList();
+        message.success("Duyệt bài viết thành công!");
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error approving blog:", error);
+      message.error("Duyệt bài viết thất bại");
+      setLoading(false);
+    }
+  };
+
+  // Hàm xử lý từ chối bài viết
+  const handleReject = async (blogId) => {
+    try {
+      setLoading(true);
+      await rejectBlogAPI(blogId);
+      setTimeout(() => {
+        fetchBlogList();
+        message.success("Đã từ chối bài viết");
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error rejecting blog:", error);
+      message.error("Từ chối bài viết thất bại");
+      setLoading(false);
+    }
+  };
+
+  const columns = [
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Người đăng",
+      dataIndex: "consultantName",
+      key: "consultantName",
+    },
+    {
+      title: "Ngày đăng",
+      dataIndex: "publishedAt",
+      key: "publishedAt",
+      render: (date) => formatDateTime(date),
+    },
+    {
+      title: "Tags",
+      dataIndex: "tags",
+      key: "tags",
+      width: 200,
+      render: (tags) => (
+        <div className="flex flex-wrap gap-1">
+          {tags.map((tag) => (
+            <Tag
+              color={tag.color}
+              key={tag.text}
+              className="cursor-pointer"
+            >
+              {tag.text}
+            </Tag>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => (
+        <Space>
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => handleViewBlog(record)}
+          >
+            Xem
+          </Button>
+          <Button size="small" type="primary" className="bg-green-600"
+            onClick={() => handleApprove(record.postId)}>
+            Duyệt
+          </Button>
+          <Button size="small" danger
+            onClick={() => handleReject(record.postId)}>
+            Từ chối
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -88,18 +298,30 @@ const ManagerDashboard = ({ stats }) => {
               title="Tổng doanh thu tháng"
               value={stats.monthlyRevenue || 0}
               precision={0}
-              valueStyle={{ color: '#3f8600' }}
+              valueStyle={{ color: "#3f8600" }}
               prefix={<DollarOutlined />}
               suffix="VNĐ"
             />
             <div className="mt-1">
               {stats.monthlyRevenue > stats.previousMonthRevenue ? (
                 <Text type="success">
-                  <ArrowUpOutlined /> {Math.round((stats.monthlyRevenue - stats.previousMonthRevenue) / stats.previousMonthRevenue * 100)}% so với tháng trước
+                  <ArrowUpOutlined />{" "}
+                  {Math.round(
+                    ((stats.monthlyRevenue - stats.previousMonthRevenue) /
+                      stats.previousMonthRevenue) *
+                      100
+                  )}
+                  % so với tháng trước
                 </Text>
               ) : (
                 <Text type="danger">
-                  <ArrowDownOutlined /> {Math.round((stats.previousMonthRevenue - stats.monthlyRevenue) / stats.previousMonthRevenue * 100)}% so với tháng trước
+                  <ArrowDownOutlined />{" "}
+                  {Math.round(
+                    ((stats.previousMonthRevenue - stats.monthlyRevenue) /
+                      stats.previousMonthRevenue) *
+                      100
+                  )}
+                  % so với tháng trước
                 </Text>
               )}
             </div>
@@ -111,7 +333,7 @@ const ManagerDashboard = ({ stats }) => {
               title="Consultant hoạt động"
               value={stats.activeConsultants || 0}
               suffix={`/${stats.totalConsultants || 0}`}
-              valueStyle={{ color: '#1677ff' }}
+              valueStyle={{ color: "#1677ff" }}
               prefix={<UserOutlined />}
             />
           </Card>
@@ -121,12 +343,18 @@ const ManagerDashboard = ({ stats }) => {
             <Statistic
               title="Bài viết chờ duyệt"
               value={stats.pendingPosts || 0}
-              valueStyle={{ color: stats.pendingPosts > 5 ? '#faad14' : '' }}
+              valueStyle={{ color: stats.pendingPosts > 5 ? "#faad14" : "" }}
               prefix={<FileTextOutlined />}
             />
             {stats.pendingPosts > 0 && (
               <div className="mt-2">
-                <Button size="small" type="primary">
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() =>
+                    navigate("/manager/dashboard/manage-blog?status=PENDING")
+                  }
+                >
                   Duyệt ngay
                 </Button>
               </div>
@@ -139,7 +367,7 @@ const ManagerDashboard = ({ stats }) => {
               title="Đánh giá trung bình"
               value={stats.averageRating || 0}
               precision={1}
-              valueStyle={{ color: '#3f8600' }}
+              valueStyle={{ color: "#3f8600" }}
               prefix={<StarOutlined />}
               suffix="/5"
             />
@@ -149,8 +377,8 @@ const ManagerDashboard = ({ stats }) => {
 
       <Row gutter={[16, 16]} className="mt-4">
         <Col xs={24} md={12}>
-          <Card 
-            title="Đánh giá dịch vụ" 
+          <Card
+            title="Đánh giá dịch vụ"
             className="h-full"
             extra={
               <div>
@@ -190,41 +418,28 @@ const ManagerDashboard = ({ stats }) => {
         <Col xs={24}>
           <Card title="Bài viết cần duyệt">
             <Table
-              dataSource={stats.pendingContent || []}
-              columns={[
-                {
-                  title: 'Tiêu đề',
-                  dataIndex: 'title',
-                  key: 'title',
-                },
-                {
-                  title: 'Tác giả',
-                  dataIndex: 'author',
-                  key: 'author',
-                },
-                {
-                  title: 'Ngày gửi',
-                  dataIndex: 'submitted',
-                  key: 'submitted',
-                },
-                {
-                  title: 'Hành động',
-                  key: 'action',
-                  render: (_, record) => (
-                    <Space>
-                      <Button size="small" type="primary">Xem</Button>
-                      <Button size="small" type="primary" className="bg-green-600">Duyệt</Button>
-                      <Button size="small" danger>Từ chối</Button>
-                    </Space>
-                  ),
-                },
-              ]}
-              pagination={false}
+              dataSource={blogList}
+              columns={columns}
+              rowKey="postId"
+              loading={loading}
+              pagination={pagination}
               size="small"
+              onChange={handleTableChange}
+              scroll={{ x: true }}
+              locale={{
+                emptyText: "Không có bài viết nào cần duyệt",
+              }}
             />
           </Card>
         </Col>
       </Row>
+
+      <ViewBlogModal
+        visible={viewBlogModalVisible}
+        open={viewBlogModalVisible}
+        onClose={() => setViewBlogModalVisible(false)}
+        blog={selectedBlog}
+      />
 
       <Row gutter={[16, 16]} className="mt-4">
         <Col xs={24}>
@@ -233,15 +448,16 @@ const ManagerDashboard = ({ stats }) => {
               <Button icon={<FileTextOutlined />} type="primary">
                 Xem báo cáo chi tiết
               </Button>
-              <Button icon={<CheckCircleOutlined />}>
-                Tới trang duyệt nội dung
+              <Button
+                icon={<CheckCircleOutlined />}
+                onClick={() =>
+                  navigate("/manager/dashboard/manage-blog?status=PENDING")
+                }
+              >
+                Tới trang duyệt bài viết
               </Button>
-              <Button icon={<TeamOutlined />}>
-                Quản lý nhân viên
-              </Button>
-              <Button icon={<BarChartOutlined />}>
-                Báo cáo doanh thu
-              </Button>
+              <Button icon={<TeamOutlined />}>Quản lý nhân viên</Button>
+              <Button icon={<BarChartOutlined />}>Báo cáo doanh thu</Button>
             </Space>
           </Card>
         </Col>

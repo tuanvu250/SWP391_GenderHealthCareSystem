@@ -24,6 +24,10 @@ import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import GenderHealthCareSystem.enums.BookingStatus;
 
 @RestController
 @RequestMapping("/api/consultant-payment")
@@ -37,10 +41,10 @@ public class ConsultantPaymentController {
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
-//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
-//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
+      //   private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
+      //   private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
                                                      @RequestParam String method,
@@ -52,6 +56,15 @@ public class ConsultantPaymentController {
                     logger.error("Booking with ID {} not found", bookingId);
                     return new IllegalArgumentException("Booking không tồn tại");
                 });
+
+        // Check if the slot is already being processed
+        if (booking.getStatus() == BookingStatus.PROCESSING) { // Compare enums directly
+            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
+        }
+
+        // Mark the slot as processing
+        booking.setStatus(BookingStatus.PROCESSING);
+        bookingRepository.save(booking);
 
         BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
         logger.info("Calculated amount for booking ID {}: {}", bookingId, amount);
@@ -90,6 +103,9 @@ public class ConsultantPaymentController {
             return ResponseEntity.badRequest().body("Phương thức thanh toán không hợp lệ");
         }
 
+        // Schedule a task to reset the slot status if payment is not completed within 15 minutes
+        scheduleSlotReset(bookingId);
+
         logger.info("Generated payment URL for booking ID {}: {}", bookingId, paymentUrl);
         return ResponseEntity.ok(paymentUrl);
     }
@@ -100,8 +116,7 @@ public class ConsultantPaymentController {
     private double convertVNDtoUSD(double vndAmount) {
         final double USD_TO_VND_RATE = 24000.0;
         double usdAmount = vndAmount / USD_TO_VND_RATE;
-        logger.info("Converted VND amount {} to USD: {}", vndAmount, usdAmount);
-        return usdAmount;
+        return Math.round(usdAmount * 100.0) / 100.0; // Round to 2 decimal places
     }
 
     @GetMapping("/success")
@@ -143,6 +158,21 @@ public class ConsultantPaymentController {
 
         consultantInvoiceService.createInvoiceFromVNPay(params);
         return ResponseEntity.ok(ApiResponse.success("Hóa đơn đã được tạo thành công"));
+    }
+
+    private void scheduleSlotReset(Integer bookingId) {
+        // Schedule a task to reset the slot status after 15 minutes
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                ConsultationBooking booking = bookingRepository.findById(bookingId).orElse(null);
+                if (booking != null && booking.getStatus() == BookingStatus.PROCESSING) {
+                    booking.setStatus(BookingStatus.PENDING);
+                    bookingRepository.save(booking);
+                    logger.info("Slot status reset to PENDING for booking ID: {}", bookingId);
+                }
+            }
+        }, 15 * 60 * 1000); // 15 minutes
     }
 
 

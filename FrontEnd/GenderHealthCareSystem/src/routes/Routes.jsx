@@ -55,7 +55,7 @@ import ConsultantManagement from "../dashboard/features/profile/ConsultantManage
 import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerPage";
 
 import MinhTrang from "../site-info/Expert-info/MinhTrang";
-import PeriodHistory from "../healthtracker/PeriodHistory";
+
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -146,7 +146,7 @@ function RouteMap() {
           }
         />
 
-        <Route path="/period-history" element={<PeriodHistory />} />
+
         <Route path="/booking-result" element={<BookingResult />} />
         <Route path="/servicelist" element={<ServiceList />} />
         <Route path="/blog" element={<Blog />} />

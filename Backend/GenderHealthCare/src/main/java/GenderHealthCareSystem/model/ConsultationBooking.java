@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.model;
 
+import GenderHealthCareSystem.enums.BookingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,8 +34,9 @@ public class ConsultationBooking {
     @Column(name = "BookingDate")
     private LocalDateTime bookingDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "Status", length = 50)
-    private String status; // Consider Enum
+    private BookingStatus status;
 
     @Column(name = "Note", columnDefinition = "NVARCHAR(MAX)")
     private String note;

@@ -18,6 +18,7 @@ import GenderHealthCareSystem.repository.ConsultantInvoiceRepository;
 import GenderHealthCareSystem.repository.ConsultantProfileRepository;
 import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import lombok.RequiredArgsConstructor;
+import GenderHealthCareSystem.enums.BookingStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class ConsultantInvoiceService {
 
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
         Double expectedVnd = calculateFee(booking).doubleValue();
-        Double expectedUsd = Math.round((expectedVnd / 24000.0) * 100.0) / 100.0;
+        Double expectedUsd = Math.round((expectedVnd / 24000.0) * 100.0) / 100.0; // Round to 2 decimal places
 
         System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Expected USD = " + expectedUsd);
 
@@ -54,7 +55,7 @@ public class ConsultantInvoiceService {
 
         booking.setInvoice(invoice);
         booking.setPaymentStatus("PAID");
-        booking.setStatus("CONFIRMED");
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepo.save(booking);
     }
 
@@ -83,7 +84,7 @@ public class ConsultantInvoiceService {
 
         booking.setInvoice(invoice);
         booking.setPaymentStatus("PAID");
-        booking.setStatus("CONFIRMED");
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepo.save(booking);
     }
 
@@ -139,7 +140,7 @@ public class ConsultantInvoiceService {
         double rate = hoursBefore >= 24 ? 1.0 : (hoursBefore >= 2 ? 0.5 : 0.0);
         double refundAmount = invoice.getTotalAmount() * rate;
 
-        booking.setStatus("CANCELLED");
+        booking.setStatus(BookingStatus.CANCELLED);
         booking.setPaymentStatus(rate > 0 ? "REFUND_PENDING" : "NON_REFUNDABLE");
 
         invoice.setRefundAmount(refundAmount);
@@ -169,7 +170,7 @@ public class ConsultantInvoiceService {
         }
 
         booking.setBookingDate(newDateTime);
-        booking.setStatus("RESCHEDULED");
+        booking.setStatus(BookingStatus.RESCHEDULED);
         bookingRepo.save(booking);
         return "Đã đổi lịch thành công";
     }
