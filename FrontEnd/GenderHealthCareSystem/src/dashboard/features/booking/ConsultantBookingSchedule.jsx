@@ -6,50 +6,53 @@ import {
   Typography,
   Empty,
   Spin,
-  Input,
   message,
+  Button,
+  Popconfirm,
 } from "antd";
 import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  UserOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
 import dayjs from "dayjs";
+import { getConsultantSchedule } from "../../../components/api/ConsultantBooking.api";
+import axios from "axios";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
-const ConsultantBookingSchedule = () => {
+export default function ConsultantBookingSchedule() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [consultantId, setConsultantId] = useState("");
 
-  const fetchBookings = async () => {
-    if (!consultantId) {
-      message.warning("Vui lòng nhập consultantId");
-      return;
-    }
-
+  const fetchMySchedule = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `/api/bookings/consultant/${consultantId}/schedule`
-      );
-      setBookings(response.data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch consultant schedule", error);
-      message.error("Không thể tải lịch tư vấn");
+      const res = await getConsultantSchedule();
+      setBookings(res?.data?.data || []);
+    } catch (err) {
+      console.error("Lỗi tải lịch tư vấn của bạn:", err);
+      message.error("Không thể tải lịch tư vấn của bạn.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (consultantId) {
-      fetchBookings();
+    fetchMySchedule();
+  }, []);
+
+  const updateBookingStatus = async (bookingId, status) => {
+    try {
+      await axios.patch(`/api/bookings/${bookingId}/status`, { status });
+      message.success(`Cập nhật trạng thái thành công: ${status}`);
+      fetchMySchedule();
+    } catch (err) {
+      console.error("Lỗi cập nhật trạng thái:", err);
+      message.error("Không thể cập nhật trạng thái.");
     }
-  }, [consultantId]);
+  };
 
   const renderStatus = (status) => {
     switch (status) {
@@ -71,6 +74,12 @@ const ConsultantBookingSchedule = () => {
             Đã hủy
           </Tag>
         );
+      case "COMPLETED":
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="cyan">
+            Đã hoàn thành
+          </Tag>
+        );
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -79,7 +88,6 @@ const ConsultantBookingSchedule = () => {
   const columns = [
     {
       title: "#",
-      key: "index",
       render: (_, __, index) => index + 1,
       width: 50,
     },
@@ -95,8 +103,8 @@ const ConsultantBookingSchedule = () => {
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
-      title: "Thời gian",
-      key: "bookingTime",
+      title: "Giờ",
+      key: "time",
       render: (_, record) =>
         `${record.bookingTimeStart} - ${record.bookingTimeEnd}`,
     },
@@ -104,7 +112,7 @@ const ConsultantBookingSchedule = () => {
       title: "Ghi chú",
       dataIndex: "note",
       key: "note",
-      render: (note) => note || "—",
+      render: (text) => text || "—",
     },
     {
       title: "Trạng thái",
@@ -112,34 +120,49 @@ const ConsultantBookingSchedule = () => {
       key: "status",
       render: renderStatus,
     },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => {
+        if (record.status !== "CONFIRMED") return null;
+
+        return (
+          <div className="flex gap-2">
+            <Popconfirm
+              title="Xác nhận hoàn thành lịch hẹn này?"
+              onConfirm={() => updateBookingStatus(record.bookingId, "COMPLETED")}
+              okText="Hoàn thành"
+              cancelText="Hủy"
+            >
+              <Button type="primary" size="small">
+                Hoàn thành
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+              title="Xác nhận hủy lịch hẹn này?"
+              onConfirm={() => updateBookingStatus(record.bookingId, "CANCELLED")}
+              okText="Đồng ý"
+              cancelText="Không"
+            >
+              <Button danger size="small">Hủy</Button>
+            </Popconfirm>
+          </div>
+        );
+      },
+    },
   ];
 
   return (
-    <Card className="shadow-sm">
-      <div className="mb-4">
-        <Title level={4} className="flex items-center mb-2">
-          <UserOutlined className="mr-2 text-blue-500" />
-          Quản lý lịch tư vấn theo Consultant
-        </Title>
-        <Text type="secondary">
-          Nhập `consultantId` để xem lịch tư vấn tương ứng.
-        </Text>
-
-        <div className="mt-4 flex items-center gap-3">
-          <Input
-            placeholder="Nhập consultantId"
-            value={consultantId}
-            onChange={(e) => setConsultantId(e.target.value)}
-            style={{ width: 240 }}
-            onPressEnter={fetchBookings}
-          />
-        </div>
-      </div>
+    <Card className="shadow-md">
+      <Title level={4} className="flex items-center gap-2 mb-4">
+        <CalendarOutlined className="text-blue-500" />
+        Lịch tư vấn của bạn
+      </Title>
 
       {loading ? (
         <div className="text-center py-10">
           <Spin size="large" />
-          <div className="mt-4">Đang tải dữ liệu...</div>
+          <div className="mt-2">Đang tải dữ liệu...</div>
         </div>
       ) : bookings.length > 0 ? (
         <Table
@@ -147,17 +170,14 @@ const ConsultantBookingSchedule = () => {
           dataSource={bookings}
           rowKey="bookingId"
           pagination={{ pageSize: 5 }}
-          className="mt-4"
           scroll={{ x: 1000 }}
         />
       ) : (
         <Empty
-          description="Chưa có lịch tư vấn nào"
+          description="Bạn chưa có lịch tư vấn nào"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}
     </Card>
   );
-};
-
-export default ConsultantBookingSchedule;
+}

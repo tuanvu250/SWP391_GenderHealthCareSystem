@@ -77,7 +77,9 @@ const Sidebar = ({
           {
             key: "questions",
             icon: <MessageOutlined />,
-            label: "Câu hỏi chuyên môn",
+            label: (
+              <Link to={"/consultant/dashboard/consultant-answer"}>Câu hỏi chuyên môn</Link>
+            ),
           },
           {
             key: "reviews",
