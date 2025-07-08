@@ -14,10 +14,11 @@ import {
   message,
   Avatar,
   Tooltip,
-  Popconfirm
+  Popconfirm,
 } from "antd";
-import { getAllUsersAPI, updateUserStatusAPI, updateUserRoleAPI } from "../../../components/api/User.api";
 import { useAuth } from "../../../components/provider/AuthProvider";
+import { getAllUsersAPI } from "../../../components/api/Users.api";
+import Item from "antd/es/list/Item";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -28,76 +29,68 @@ const ManageUser = () => {
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === "Admin";
   const isManager = currentUser?.role === "Manager";
-  
+
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [activeTab, setActiveTab] = useState(isAdmin ? "all" : "staff");
-  
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 0,
+  });
+
   // State cho modal thêm/sửa user
   const [userModal, setUserModal] = useState({
     visible: false,
     mode: "add", // "add" hoặc "edit"
-    currentUser: null
+    currentUser: null,
   });
-  
+
   const [form] = Form.useForm();
-  
+
   // Fetch danh sách user
   useEffect(() => {
     fetchUsers();
   }, []);
-  
+
   // Lọc user dựa trên tab active và search text
   useEffect(() => {
-    filterUsers();
-  }, [users, searchText, activeTab]);
-  
+    fetchUsers();
+  }, [searchText, activeTab]);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await getAllUsersAPI();
-      if (response && response.data) {
-        setUsers(response.data);
-      }
+      const response = await getAllUsersAPI({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+        role: activeTab,
+        name: searchText,
+      });
+
+      setUsers(response.data.data.content);
+      setPagination({
+        ...pagination,
+        total: response.data.data.totalElements,
+      });
     } catch (error) {
-      message.error("Không thể tải danh sách người dùng");
+      message.error(
+        error.response?.data?.message || "Không thể tải danh sách người dùng"
+      );
       console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
-  
-  // Lọc user theo tab và search
-  const filterUsers = () => {
-    let filtered = [...users];
-    
-    // Lọc theo tab
-    if (activeTab !== "all") {
-      filtered = filtered.filter(user => 
-        user.role.toLowerCase() === activeTab.toLowerCase()
-      );
-    }
-    
-    // Lọc theo text search
-    if (searchText) {
-      filtered = filtered.filter(
-        user =>
-          user.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-          (user.phone && user.phone.includes(searchText))
-      );
-    }
-    
-    setFilteredUsers(filtered);
-  };
-  
+
+  const handleSubmitUserForm = async (values) => {};
+
   // Xử lý thay đổi tab
   const handleTabChange = (key) => {
     setActiveTab(key);
   };
-  
+
   // Tạo cấu hình cột cho từng loại user
   const getColumns = () => {
     // Cột chung
@@ -106,31 +99,27 @@ const ManageUser = () => {
         title: "ID",
         dataIndex: "userId",
         key: "userId",
-        width: 70
       },
       {
         title: "Họ tên",
         dataIndex: "fullName",
         key: "fullName",
         render: (text, record) => (
-          <div className="flex items-center">
-            <Avatar 
-              src={record.avatarUrl || `https://placehold.co/32x32/0099CF/FFF?text=${text[0]}`}
-              className="mr-2"
-            />
+          <div className="flex items-center gap-2">
+            <Avatar src={record.userImageUrl || ""} className="mr-2" />
             <span>{text}</span>
           </div>
-        )
+        ),
       },
       {
         title: "Email",
         dataIndex: "email",
-        key: "email"
+        key: "email",
       },
       {
         title: "Số điện thoại",
         dataIndex: "phone",
-        key: "phone"
+        key: "phone",
       },
       {
         title: "Trạng thái",
@@ -140,10 +129,10 @@ const ManageUser = () => {
           <Tag color={status === "ACTIVE" ? "green" : "red"}>
             {status === "ACTIVE" ? "Hoạt động" : "Vô hiệu"}
           </Tag>
-        )
-      }
+        ),
+      },
     ];
-    
+
     // Cột thao tác
     const actionColumn = {
       title: "Thao tác",
@@ -153,22 +142,24 @@ const ManageUser = () => {
           <Button size="small" onClick={() => handleEditUser(record)}>
             Sửa
           </Button>
-          
+
           {/* Kích hoạt/Vô hiệu hóa tài khoản */}
           <Popconfirm
-            title={`${record.status === "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt"} tài khoản này?`}
+            title={`${
+              record.status === "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt"
+            } tài khoản này?`}
             onConfirm={() => handleToggleStatus(record)}
             okText="Xác nhận"
             cancelText="Hủy"
           >
-            <Button 
-              size="small" 
+            <Button
+              size="small"
               type={record.status === "ACTIVE" ? "default" : "primary"}
             >
               {record.status === "ACTIVE" ? "Vô hiệu" : "Kích hoạt"}
             </Button>
           </Popconfirm>
-          
+
           {/* Admin có thêm quyền thay đổi role */}
           {isAdmin && (
             <Select
@@ -185,14 +176,14 @@ const ManageUser = () => {
             </Select>
           )}
         </Space>
-      )
+      ),
     };
-    
+
     // Cột đặc biệt cho từng loại user
     const staffColumns = [
       // Cột riêng cho staff
     ];
-    
+
     const consultantColumns = [
       {
         title: "Chuyên môn",
@@ -203,22 +194,22 @@ const ManageUser = () => {
         title: "Đánh giá",
         dataIndex: "rating",
         key: "rating",
-        render: (rating) => `${rating || 0}/5`
-      }
+        render: (rating) => `${rating || 0}/5`,
+      },
     ];
-    
+
     const customerColumns = [
       {
         title: "Số đơn hàng",
         dataIndex: "orderCount",
         key: "orderCount",
-        render: (count) => count || 0
-      }
+        render: (count) => count || 0,
+      },
     ];
-    
+
     // Lựa chọn cột theo tab
     let specificColumns = [];
-    
+
     switch (activeTab) {
       case "Staff":
         specificColumns = staffColumns;
@@ -233,18 +224,22 @@ const ManageUser = () => {
         // Không thêm cột đặc biệt
         break;
     }
-    
+
     return [...commonColumns, ...specificColumns, actionColumn];
   };
-  
+
   // Xử lý kích hoạt/vô hiệu hóa tài khoản
   const handleToggleStatus = async (record) => {
     try {
       const newStatus = record.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      await updateUserStatusAPI(record.userId, newStatus);
-      
-      message.success(`${newStatus === "ACTIVE" ? "Kích hoạt" : "Vô hiệu hóa"} tài khoản thành công`);
-      
+      //await updateUserStatusAPI(record.userId, newStatus);
+
+      message.success(
+        `${
+          newStatus === "ACTIVE" ? "Kích hoạt" : "Vô hiệu hóa"
+        } tài khoản thành công`
+      );
+
       // Cập nhật lại danh sách
       fetchUsers();
     } catch (error) {
@@ -252,11 +247,11 @@ const ManageUser = () => {
       console.error("Error updating user status:", error);
     }
   };
-  
+
   // Xử lý thay đổi role (chỉ dành cho Admin)
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await updateUserRoleAPI(userId, newRole);
+      //await updateUserRoleAPI(userId, newRole);
       message.success("Cập nhật vai trò thành công");
       fetchUsers();
     } catch (error) {
@@ -264,7 +259,7 @@ const ManageUser = () => {
       console.error("Error updating user role:", error);
     }
   };
-  
+
   // Xử lý chỉnh sửa thông tin user
   const handleEditUser = (user) => {
     form.setFieldsValue({
@@ -275,14 +270,14 @@ const ManageUser = () => {
       status: user.status,
       // Các trường khác tùy theo loại user
     });
-    
+
     setUserModal({
       visible: true,
       mode: "edit",
-      currentUser: user
+      currentUser: user,
     });
   };
-  
+
   return (
     <div className="p-6">
       <Card className="shadow-sm">
@@ -290,88 +285,87 @@ const ManageUser = () => {
           <Title level={4}>
             {isAdmin ? "Quản lý người dùng" : "Quản lý nhân sự"}
           </Title>
-          
+
           <Search
             placeholder="Tìm kiếm theo tên, email, số điện thoại"
             allowClear
             enterButton="Tìm kiếm"
             onSearch={(value) => setSearchText(value)}
-            style={{ width: 300 }}
+            style={{ width: 450 }}
           />
         </div>
-        
+
         <Tabs activeKey={activeTab} onChange={handleTabChange}>
-          {/* Tab cho Admin */}
           {isAdmin && (
-            <TabPane tab="Tất cả người dùng" key="all">
+            <Item tab="Tất cả người dùng" key="">
               <Table
                 columns={getColumns()}
-                dataSource={filteredUsers}
+                dataSource={users}
                 rowKey="userId"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={pagination}
               />
-            </TabPane>
+            </Item>
           )}
-          
+
           {/* Tab chung cho Admin và Manager */}
-          <TabPane tab="Nhân viên" key="Staff">
+          <Item tab="Nhân viên" key="Staff">
             <Table
               columns={getColumns()}
-              dataSource={filteredUsers}
+              dataSource={users}
               rowKey="userId"
               loading={loading}
-              pagination={{ pageSize: 10 }}
+              pagination={pagination}
             />
-          </TabPane>
-          
-          <TabPane tab="Tư vấn viên" key="Consultant">
+          </Item>
+
+          <Item tab="Tư vấn viên" key="Consultant">
             <Table
               columns={getColumns()}
-              dataSource={filteredUsers}
+              dataSource={users}
               rowKey="userId"
               loading={loading}
-              pagination={{ pageSize: 10 }}
+              pagination={pagination}
             />
-          </TabPane>
-          
-          <TabPane tab="Khách hàng" key="Customer">
+          </Item>
+
+          <Item tab="Khách hàng" key="Customer">
             <Table
               columns={getColumns()}
-              dataSource={filteredUsers}
+              dataSource={users}
               rowKey="userId"
               loading={loading}
-              pagination={{ pageSize: 10 }}
+              pagination={pagination}
             />
-          </TabPane>
-          
+          </Item>
+
           {/* Nếu là Admin thì có thêm tab Manager */}
           {isAdmin && (
-            <TabPane tab="Quản lý" key="Manager">
+            <Item tab="Quản lý" key="Manager">
               <Table
                 columns={getColumns()}
-                dataSource={filteredUsers}
+                dataSource={users}
                 rowKey="userId"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={pagination}
               />
-            </TabPane>
+            </Item>
           )}
         </Tabs>
       </Card>
-      
+
       {/* Modal thêm/sửa thông tin user */}
       <Modal
-        title={userModal.mode === "add" ? "Thêm người dùng mới" : "Chỉnh sửa thông tin"}
+        title={
+          userModal.mode === "add"
+            ? "Thêm người dùng mới"
+            : "Chỉnh sửa thông tin"
+        }
         open={userModal.visible}
         onCancel={() => setUserModal({ ...userModal, visible: false })}
         footer={null}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmitUserForm}
-        >
+        <Form form={form} layout="vertical" onFinish={handleSubmitUserForm}>
           {/* Các trường form tùy theo loại user */}
           <Form.Item
             name="fullName"
@@ -380,11 +374,14 @@ const ManageUser = () => {
           >
             <Input />
           </Form.Item>
-          
+
           {/* Các trường form khác */}
-          
+
           <div className="flex justify-end mt-4">
-            <Button className="mr-2" onClick={() => setUserModal({ ...userModal, visible: false })}>
+            <Button
+              className="mr-2"
+              onClick={() => setUserModal({ ...userModal, visible: false })}
+            >
               Hủy
             </Button>
             <Button type="primary" htmlType="submit">

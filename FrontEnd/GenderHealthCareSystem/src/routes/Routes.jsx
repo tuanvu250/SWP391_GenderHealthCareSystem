@@ -46,8 +46,9 @@ import MyQuestionsPage from "../services/asking/MyQuestionPage";
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import Overview from "../dashboard/features/overview/Overview";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
-import ManageBookingStis from "../dashboard/features/booking/ManageBookingStis";
+import ManageBookingStis from "../dashboard/features/booking/ManageBookingSTIs";
 import ManageService from "../dashboard/features/service/ManageService";
+import ManageUser from "../dashboard/features/user/ManageUser";
 import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
 import ConsultantBookingSchedule from "../dashboard/features/booking/ConsultantBookingSchedule";
 import ConsultantProfile from "../dashboard/features/profile/ConsultantProfile";
@@ -216,6 +217,7 @@ function RouteMap() {
           path="/manager/dashboard/manage-consultant-profile"
           element={<ConsultantManagement />}
         />
+        <Route path="manage-users" element={<ManageUser />} />
       </Route>
 
       {/* Dashboard cho Staff */}
@@ -243,6 +245,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="manage-users" element={<ManageUser />} />
       </Route>
     </Routes>
   );

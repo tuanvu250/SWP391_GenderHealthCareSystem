@@ -180,7 +180,7 @@ const Sidebar = ({
           {
             key: "staff-management",
             icon: <TeamOutlined />,
-            label: "Quản lý nhân viên",
+            label: <Link to={"/manager/dashboard/manage-users"}>Quản lý nhân sự</Link>,
           },
           {
             key: "consultant-management",
@@ -239,29 +239,7 @@ const Sidebar = ({
           {
             key: "user-management",
             icon: <TeamOutlined />,
-            label: "Quản lý người dùng",
-            children: [
-              {
-                key: "all-users",
-                label: "Tất cả người dùng",
-              },
-              {
-                key: "consultants",
-                label: "Consultant",
-              },
-              {
-                key: "staff",
-                label: "Nhân viên",
-              },
-              {
-                key: "managers",
-                label: "Quản lý",
-              },
-              {
-                key: "customers",
-                label: "Khách hàng",
-              },
-            ],
+            label: <Link to={"/admin/dashboard/manage-users"}>Quản lý người dùng</Link>,
           },
           {
             key: "content-management",

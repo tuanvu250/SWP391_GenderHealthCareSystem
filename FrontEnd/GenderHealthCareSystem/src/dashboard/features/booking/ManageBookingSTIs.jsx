@@ -249,7 +249,8 @@ const ManageBookingStis = () => {
   const handleGetDataResult = async (booking) => {
     try {
       const response = await getUserByIdAPI(booking.customerId);
-      setCustomer(response.data);
+      console.log("Customer data:", response.data.data);
+      setCustomer(response.data.data);
       const res = await getServiceTestingByIdAPI(booking.serviceId);
       setServiceData(res.data.data);
     } catch (error) {
@@ -259,14 +260,7 @@ const ManageBookingStis = () => {
   };
 
   const handleViewBooking = async (booking) => {
-    try {
-      const response = await getUserByIdAPI(booking.customerId);
-      if (response.data) {
-        setCustomer(response.data);
-      }
-    } catch (cerror) {
-      console.error("Error fetching customer data:", cerror);
-    }
+    handleGetDataResult(booking);
     setSelectedBooking(booking);
     setViewModalVisible(true);
   };
