@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Max;
 
 @Data
 public class ConsultantFeedbackRequest {
-    @NotNull(message = "Booking ID không được để trống")
-    private Integer bookingId;
+    @NotNull(message = "Consultant ID không được để trống")
+    private Integer consultantId;
 
     @NotNull(message = "Rating không được để trống")
     @Min(value = 1, message = "Rating phải từ 1 đến 5")
@@ -16,4 +16,6 @@ public class ConsultantFeedbackRequest {
     private Integer rating;
 
     private String comment;
+
+    private Integer bookingId;
 }
