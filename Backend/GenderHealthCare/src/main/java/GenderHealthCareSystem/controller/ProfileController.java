@@ -55,7 +55,9 @@ public class ProfileController {
                 user.getUserImageUrl(),
                 user.getBirthDate(),
                 user.getCreatedAt(),
-                user.getUpdatedAt());
+                user.getUpdatedAt(),
+                user.getProvider(),
+                account.getAccountStatus());
 
         return ResponseEntity.ok(dto);
     }

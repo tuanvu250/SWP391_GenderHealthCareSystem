@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.dto;
 
+import GenderHealthCareSystem.enums.AccountStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,4 +25,7 @@ public class UserInfoResponse {
     private LocalDate birthDate; // Date of birth (formatted as a string, can be LocalDate if needed)
     private LocalDateTime createdAt; // Record creation timestamp (formatted as a string)
     private LocalDateTime updatedAt; // Record update timestamp (formatted as a string)
+    private String provider; // OAuth provider (e.g., GOOGLE, FACEBOOK)
+    private AccountStatus status; // Account status (e.g., ACTIVE, INACTIVE, SUSPENDED)
+
 }

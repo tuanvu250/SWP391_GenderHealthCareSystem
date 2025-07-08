@@ -57,8 +57,8 @@ public interface ConsultationBookingRepository
                                                @Param("end") LocalDateTime end);
     boolean existsByConsultantAndBookingDate(Users consultant, LocalDateTime bookingDate);
 
+    List<ConsultationBooking> findByBookingDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
 
 
 }
-
