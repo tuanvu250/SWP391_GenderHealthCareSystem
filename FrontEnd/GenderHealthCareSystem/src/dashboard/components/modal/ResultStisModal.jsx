@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import {
   enterResultStisAPI,
   markCompletedBookingStisAPI,
+  markResultAtStisAPI,
   uploadStisAttachmentsAPI,
 } from "../../../components/api/BookingTesting.api";
 
@@ -60,11 +61,6 @@ const ResultStisModal = ({
     }
   }, [serviceData]);
 
-  // Xử lý khi nhập editor chi tiết xét nghiệm
-  const handleEditorChange = (content) => {
-    setTestDetails(content.target.value);
-  };
-
   // Xử lý khi tải file lên
   const handleFileChange = ({ fileList: newFileList }) => {
     setFileList(newFileList.slice(-1));
@@ -93,6 +89,8 @@ const ResultStisModal = ({
       );
 
       await markCompletedBookingStisAPI(booking.bookingId);
+
+      await markResultAtStisAPI(booking.bookingId);
 
       message.success("Lưu kết quả xét nghiệm thành công!");
       form.resetFields();
@@ -148,6 +146,12 @@ const ResultStisModal = ({
             <Col span={12}>
               <Text type="secondary">Số điện thoại:</Text>{" "}
               <Text strong>{customer?.phone}</Text>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Text type="secondary">Email:</Text>{" "}
+              <Text strong>{customer?.email}</Text>
             </Col>
           </Row>
         </Card>
