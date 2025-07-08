@@ -106,6 +106,17 @@ public class ConsultantFeedbackService {
         return getConsultantFeedback(consultantId, page, size, sortBy, direction, rating);
     }
 
+    public Page<ConsultantFeedbackResponse> getMyPostedFeedback(int page, int size, String sortBy, String direction) {
+        Integer customerId = extractUserIdFromToken();
+
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
+            Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByCustomer_UserId(customerId, pageable);
+        return feedbackPage.map(this::mapToResponse);
+    }
+
 
     public Page<ConsultantFeedbackResponse> getAllFeedback(
             int page, int size, String sortBy, String direction, Integer consultantId, Integer rating) {

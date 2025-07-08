@@ -137,6 +137,24 @@ public class ConsultantFeedbackController {
         }
     }
 
+    @GetMapping("/my-posted-feedback")
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantFeedbackResponse>>> getMyPostedFeedback(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        try {
+            Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getMyPostedFeedback(
+                    page, size, sortBy, direction);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Danh sách feedback tôi đã đăng",
+                            mapToPageResponse(feedbackPage), null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
+    }
+
     /**
      * Gets the average rating for a specific consultant
      *
