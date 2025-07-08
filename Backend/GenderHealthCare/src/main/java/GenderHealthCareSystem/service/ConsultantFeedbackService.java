@@ -2,6 +2,7 @@ package GenderHealthCareSystem.service;
 
 import GenderHealthCareSystem.dto.ConsultantFeedbackRequest;
 import GenderHealthCareSystem.dto.ConsultantFeedbackResponse;
+import GenderHealthCareSystem.dto.RatingStatisticsResponse;
 import GenderHealthCareSystem.model.ConsultantFeedback;
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.repository.ConsultantFeedbackRepository;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simple Service for handling Consultant feedback operations without Specification
@@ -198,4 +201,23 @@ public class ConsultantFeedbackService {
         
         return response;
     }
+
+    public RatingStatisticsResponse getRatingStatistics() {
+        Long totalRatings = feedbackRepo.countAllRatings();
+        Double averageRating = feedbackRepo.getTotalAverageRating();
+
+        Map<Integer, Long> ratingCounts = new HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            Long count = feedbackRepo.countByRating(i);
+            ratingCounts.put(i, count != null ? count : 0L);
+        }
+
+        return new RatingStatisticsResponse(
+            totalRatings != null ? totalRatings : 0L,
+            averageRating != null ? averageRating : 0.0,
+            ratingCounts
+        );
+    }
+
+
 }

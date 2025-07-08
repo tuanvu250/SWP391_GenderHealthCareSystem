@@ -41,6 +41,12 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
     @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf")
     Double getTotalAverageRating();
 
+    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.rating = :rating")
+    Long countByRating(@Param("rating") Integer rating);
+
+    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf")
+    Long countAllRatings();
+
     // Custom delete operation
     @Modifying
     @Query(value = "DELETE FROM ConsultantFeedback WHERE FeedbackID = :feedbackId", nativeQuery = true)
