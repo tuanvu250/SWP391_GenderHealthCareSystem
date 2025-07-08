@@ -5,6 +5,7 @@ import GenderHealthCareSystem.dto.ConsultantFeedbackRequest;
 import GenderHealthCareSystem.dto.ConsultantFeedbackResponse;
 import GenderHealthCareSystem.dto.ConsultantFeedbackCreateResponse;
 import GenderHealthCareSystem.dto.PageResponse;
+import GenderHealthCareSystem.dto.RatingStatisticsResponse;
 import GenderHealthCareSystem.model.ConsultantFeedback;
 import GenderHealthCareSystem.service.ConsultantFeedbackService;
 import GenderHealthCareSystem.util.PageResponseUtil;
@@ -214,6 +215,20 @@ public class ConsultantFeedbackController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
         }
     }
+
+    @GetMapping("/rating-statistics")
+    public ResponseEntity<ApiResponse<RatingStatisticsResponse>> getRatingStatistics() {
+        try {
+            RatingStatisticsResponse statistics = feedbackService.getRatingStatistics();
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK, "Thống kê rating tổng", statistics, null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
+        }
+    }
+
+
 
     /**
      * Helper method to map Page to PageResponse
