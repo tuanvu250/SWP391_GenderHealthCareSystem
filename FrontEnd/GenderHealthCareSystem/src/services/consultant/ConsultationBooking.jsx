@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiFillBank } from "react-icons/ai";
 import { getAllConsultants } from "../../components/api/Consultant.api";
@@ -9,7 +9,6 @@ export default function ConsultationBooking() {
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Lấy user từ sessionStorage
   const user = JSON.parse(sessionStorage.getItem("user")) || {};
   const defaultName = user?.fullName || "";
   const defaultPhone = user?.phone || "";
@@ -19,8 +18,12 @@ export default function ConsultationBooking() {
     const fetchExperts = async () => {
       try {
         const data = await getAllConsultants();
-        console.log("Danh sách consultants:", data);
-        setExperts(data);
+        const mappedExperts = data.map((e, index) => ({
+          ...e,
+          id: e.id ?? e.consultantId ?? e.userId ?? index,
+        }));
+        setExperts(mappedExperts);
+        localStorage.setItem("consultants", JSON.stringify(mappedExperts));
       } catch (err) {
         console.error("Failed to fetch consultants", err);
       }
@@ -41,11 +44,8 @@ export default function ConsultationBooking() {
   const handleSubmitBooking = (e) => {
     e.preventDefault();
     const form = e.target;
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    const customerId = user?.customerId;
-
-    let rawMethod = form.paymentMethod.value;
-    let normalizedMethod = rawMethod.toLowerCase() === "bank" ? "VNPAY" : "PAYPAL";
+    const rawMethod = form.paymentMethod.value;
+    const normalizedMethod = rawMethod.toLowerCase() === "bank" ? "VNPAY" : "PAYPAL";
 
     const bookingData = {
       name: form.fullName.value,
@@ -56,8 +56,7 @@ export default function ConsultationBooking() {
       notes: form.notes.value,
       paymentMethod: normalizedMethod,
       expertName: selectedExpert.fullName,
-      consultantId: selectedExpert.consultantId,
-      customerId: customerId, // thêm nếu cần thiết cho confirm
+      consultantId: selectedExpert.consultantId || selectedExpert.id,
     };
 
     navigate("/confirm-consultant", { state: bookingData });
@@ -84,9 +83,17 @@ export default function ConsultationBooking() {
         ) : (
           experts.map((expert, index) => (
             <div key={index} className="bg-white p-4 shadow rounded-xl">
-              <div className="w-24 h-24 mx-auto rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
-                {expert.fullName?.charAt(0) || "?"}
-              </div>
+              {expert.userImageUrl ? (
+                <img
+                  src={expert.userImageUrl}
+                  alt={expert.fullName}
+                  className="w-24 h-24 rounded-full object-cover mx-auto"
+                />
+              ) : (
+                <div className="w-24 h-24 mx-auto rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
+                  {expert.fullName?.charAt(0) || "?"}
+                </div>
+              )}
               <h3 className="text-center mt-4 font-semibold">{expert.fullName}</h3>
               <p className="text-center text-sm text-gray-500">{expert.jobTitle}</p>
               <p
@@ -117,9 +124,17 @@ export default function ConsultationBooking() {
             </button>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
-                {selectedExpert.fullName?.charAt(0) || "?"}
-              </div>
+              {selectedExpert.userImageUrl ? (
+                <img
+                  src={selectedExpert.userImageUrl}
+                  alt={selectedExpert.fullName}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
+                  {selectedExpert.fullName?.charAt(0) || "?"}
+                </div>
+              )}
               <div>
                 <h3 className="text-xl font-bold text-[#0099CF]">{selectedExpert.fullName}</h3>
                 <p className="text-gray-600 text-sm">{selectedExpert.jobTitle}</p>
@@ -143,7 +158,6 @@ export default function ConsultationBooking() {
                 defaultValue={defaultName}
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               />
-
               <input
                 type="tel"
                 name="phone"
@@ -152,7 +166,6 @@ export default function ConsultationBooking() {
                 defaultValue={defaultPhone}
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               />
-
               <input
                 type="email"
                 name="email"
@@ -160,14 +173,12 @@ export default function ConsultationBooking() {
                 defaultValue={defaultEmail}
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               />
-
               <input
                 type="date"
                 name="date"
                 required
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               />
-
               <select
                 name="timeSlot"
                 required
@@ -181,7 +192,6 @@ export default function ConsultationBooking() {
                 <option value="15:00 - 16:00">15:00 - 16:00</option>
                 <option value="16:30 - 17:30">16:30 - 17:30</option>
               </select>
-
               <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
                 <input type="radio" name="paymentMethod" value="bank" className="mt-1.5 accent-[#0099CF]" required />
                 <div className="ml-3">
@@ -189,28 +199,24 @@ export default function ConsultationBooking() {
                     <AiFillBank className="text-xl" />
                     <span>Thanh toán trực tuyến</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng ATM/Visa/MasterCard/QR Code</p>
+                  <p className="text-sm text-gray-500 mt-1">ATM/Visa/MasterCard/QR Code</p>
                 </div>
               </label>
-
               <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
                 <input type="radio" name="paymentMethod" value="paypal" className="mt-1.5 accent-[#0099CF]" />
                 <div className="ml-3">
                   <div className="flex items-center space-x-2 text-gray-800 font-semibold">
-                    🅿️
-                    <span>Thanh toán qua PayPal</span>
+                    🅿️ <span>Thanh toán qua PayPal</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng tài khoản PayPal hoặc thẻ quốc tế</p>
+                  <p className="text-sm text-gray-500 mt-1">Tài khoản PayPal hoặc thẻ quốc tế</p>
                 </div>
               </label>
-
               <textarea
                 name="notes"
                 rows={3}
                 placeholder="Ghi chú thêm (nếu có)"
                 className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
               ></textarea>
-
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"

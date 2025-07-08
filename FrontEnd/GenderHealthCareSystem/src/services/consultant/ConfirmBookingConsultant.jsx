@@ -126,7 +126,7 @@ export default function ConfirmBookingConsultant() {
             <p><strong>Chuyên gia:</strong> {bookingData.expertName}</p>
             <p>
               <strong>Phương thức thanh toán:</strong>{" "}
-              {bookingData.paymentMethod === "paypal" ? "PayPal" : "VNPay"}
+              {bookingData.paymentMethod === "PAYPAL" ? "PayPal" : "VNPay"}
             </p>
           </Col>
         </Row>
