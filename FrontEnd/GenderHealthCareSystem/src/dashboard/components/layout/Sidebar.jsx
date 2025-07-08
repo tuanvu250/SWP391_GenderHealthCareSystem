@@ -63,7 +63,9 @@ const Sidebar = ({
           {
             key: "profile",
             icon: <UserOutlined />,
-            label: "Hồ sơ tư vấn viên",
+           label: (
+              <Link to={"/consultant/dashboard/consultant-profile"}>Hồ sơ tư vấn viên</Link>
+            ),
           },
           {
             key: "appointments",
