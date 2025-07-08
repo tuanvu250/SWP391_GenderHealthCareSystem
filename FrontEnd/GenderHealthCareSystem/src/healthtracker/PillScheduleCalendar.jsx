@@ -30,6 +30,7 @@ export default function PillScheduleCalendar() {
 
       const map = {};
 
+      // ✅ Chỉ map các ngày >= startDate
       data.forEach(item => {
         const dateObj = dayjs(item.pillDate);
         if (!startDate || dateObj.isBefore(startDate)) return;
@@ -76,6 +77,7 @@ export default function PillScheduleCalendar() {
       if (autoMarkPromises.length > 0) {
         await Promise.all(autoMarkPromises);
 
+        // 👇 Reload lại lịch mới nhất sau khi auto-mark
         const updated = await getAllPillSchedules();
         updated?.data?.forEach(item => {
           const dateObj = dayjs(item.pillDate);
@@ -162,54 +164,66 @@ export default function PillScheduleCalendar() {
     }
   };
 
-  const daysInMonth = getMonthDates();
-  const firstDayOfWeek = dayjs().startOf('month').day();
-  const calendarRows = [];
-  let currentRow = [];
 
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    currentRow.push(<td key={`empty-${i}`} className="p-2"></td>);
+  const daysInMonth = getMonthDates();
+  const startDay = daysInMonth[0].day(); // thứ của ngày đầu tháng
+  const totalSlots = 42;
+  const calendarDays = [];
+
+  for (let i = 0; i < startDay; i++) {
+    calendarDays.push(null); // các ô trống đầu tháng
   }
 
-  daysInMonth.forEach((date, index) => {
-    const dateStr = date.format('YYYY-MM-DD');
-    const item = updatedSchedule[dateStr];
-    const hasTaken = item?.hasTaken ?? false;
-    const isToday = dayjs().format('YYYY-MM-DD') === dateStr;
-    const isPlacebo = item?.isPlacebo ?? false;
-    const showButton = item && !isPlacebo;
-
-    currentRow.push(
-      <td key={dateStr} className="p-2 text-center">
-        {showButton ? (
-          <button
-            onClick={() => handleToggleCheck(dateStr)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition
-              ${hasTaken ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}
-              ${isToday ? 'ring-2 ring-blue-500' : ''}
-              hover:scale-105`}
-          >
-            {date.date()}
-          </button>
-        ) : (
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-gray-300">
-            {date.date()}
-          </div>
-        )}
-      </td>
-    );
-
-    if ((currentRow.length + firstDayOfWeek) % 7 === 0) {
-      calendarRows.push(<tr key={`row-${index}`}>{currentRow}</tr>);
-      currentRow = [];
-    }
+  daysInMonth.forEach(date => {
+    calendarDays.push(date);
   });
 
-  if (currentRow.length > 0) {
-    while (currentRow.length < 7) {
-      currentRow.push(<td key={`end-empty-${currentRow.length}`} className="p-2"></td>);
-    }
-    calendarRows.push(<tr key="last-row">{currentRow}</tr>);
+  while (calendarDays.length < totalSlots) {
+    calendarDays.push(null); // các ô trống cuối tháng
+  }
+
+  const calendarRows = [];
+  for (let i = 0; i < totalSlots; i += 7) {
+    const row = calendarDays.slice(i, i + 7);
+    calendarRows.push(
+      <tr key={`row-${i}`}>
+        {row.map((date, index) => {
+          if (!date) {
+            return <td key={`empty-${i}-${index}`} className="p-2"></td>;
+          }
+
+          const dateStr = date.format('YYYY-MM-DD');
+          const item = updatedSchedule[dateStr];
+          const hasTaken = item?.hasTaken ?? false;
+          const isToday = dayjs().format('YYYY-MM-DD') === dateStr;
+          const isPlacebo = item?.isPlacebo ?? false;
+          const showButton = item && !isPlacebo;
+          const isFuture = date.isAfter(dayjs());
+
+          return (
+            <td key={dateStr} className="p-2 text-center">
+              {showButton ? (
+                <button
+                  onClick={() => handleToggleCheck(dateStr)}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition
+                    ${hasTaken ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}
+                    ${isToday ? 'ring-2 ring-blue-500' : ''}
+                    ${isFuture ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}
+                  `}
+                  disabled={isFuture}
+                >
+                  {date.date()}
+                </button>
+              ) : (
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-gray-300">
+                  {date.date()}
+                </div>
+              )}
+            </td>
+          );
+        })}
+      </tr>
+    );
   }
 
   const startDateStr = localStorage.getItem("pillStartDate");
@@ -221,7 +235,7 @@ export default function PillScheduleCalendar() {
       </h2>
       {startDateStr && (
         <p className="text-center text-gray-600 text-sm mb-4">
-          📅 Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
+          📅  Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
         </p>
       )}
 
@@ -246,20 +260,13 @@ export default function PillScheduleCalendar() {
           <div className="mt-6 flex justify-center gap-4">
             <button
               onClick={() => {
-                localStorage.removeItem("pillStartDate");
-                localStorage.removeItem("pillType");
-                window.location.reload(); // 🔁 reload toàn bộ component
+                navigate("/pill-tracker");
               }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
               ← Nhập lại lịch
             </button>
-            <button
-              onClick={fetchSchedule}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Làm mới
-            </button>
+
           </div>
         </>
       )}

@@ -4,6 +4,8 @@ import GenderHealthCareSystem.model.StisFeedback;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -140,4 +142,13 @@ public interface StisFeedbackRepository extends JpaRepository<StisFeedback, Inte
          */
         Page<StisFeedback> findByUserIdAndRatingAndStatus(
                         Integer userId, Integer rating, String status, Pageable pageable);
+
+        @Query("SELECT COUNT(sf) FROM StisFeedback sf WHERE sf.rating = :rating AND sf.status = 'ACTIVE'")
+        Long countByRating(@Param("rating") Integer rating);
+
+        @Query("SELECT COUNT(sf) FROM StisFeedback sf WHERE sf.status = 'ACTIVE'")
+        Long countActiveRatings();
+
+        @Query("SELECT AVG(sf.rating) FROM StisFeedback sf WHERE sf.status = 'ACTIVE'")
+        Double getAverageRating();
 }

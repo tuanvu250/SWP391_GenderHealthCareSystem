@@ -34,7 +34,7 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Integer> {
     SELECT b FROM BlogPost b
     WHERE (:title IS NULL OR b.title LIKE %:title%)
       AND (:tags IS NULL OR b.tags LIKE %:tags%)
-      AND (:status IS NULL OR b.status = :status)
+      AND (:status IS NULL OR b.status LIKE %:status%)
 """)
     Page<BlogPost> searchBlogPostsForManager(
             @Param("title") String title,
@@ -46,12 +46,14 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Integer> {
     SELECT b FROM BlogPost b
     WHERE (:title IS NULL OR b.title LIKE %:title%)
       AND (:tags IS NULL OR b.tags LIKE %:tags%)
+      AND (:status IS NULL OR b.status LIKE %:status%)
       AND (:consultantId IS NULL OR b.consultant.userId = :consultantId)
 """)
     Page<BlogPost> searchBlogPostsByAuthor(
             @Param("title") String title,
             @Param("tags") String tags,
             @Param("consultantId") Integer consultantId,
+            @Param("status") String status,
             Pageable pageable
     );
 

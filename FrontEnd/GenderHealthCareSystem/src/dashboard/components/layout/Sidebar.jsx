@@ -42,6 +42,7 @@ const Sidebar = ({
 }) => {
   const { user, logoutAction } = useAuth();
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
 
   // Xử lý đăng xuất
   const handleLogout = () => {
@@ -62,7 +63,9 @@ const Sidebar = ({
           {
             key: "profile",
             icon: <UserOutlined />,
-            label: "Hồ sơ tư vấn viên",
+           label: (
+              <Link to={"/consultant/dashboard/consultant-profile"}>Hồ sơ tư vấn viên</Link>
+            ),
           },
           {
             key: "appointments",

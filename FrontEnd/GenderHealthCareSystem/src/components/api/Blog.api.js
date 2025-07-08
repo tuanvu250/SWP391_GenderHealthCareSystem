@@ -49,6 +49,7 @@ export const viewMyBlogsAPI = async ({
   tag = "",
   sort = "",
   orderBy = "",
+  status = "",
 }) => {
   const query = new URLSearchParams({
     page,
@@ -57,6 +58,7 @@ export const viewMyBlogsAPI = async ({
     tag,
     sort,
     orderBy,
+    status
   }).toString();
   return apiClient.get(`/blog-posts/my-posts?${query}`);
 };
@@ -68,6 +70,7 @@ export const viewAllBlogsAPI = async ({
   tag = "",
   sort = "",
   orderBy = "",
+  status = "",
 }) => {
   const query = new URLSearchParams({
     page,
@@ -76,6 +79,7 @@ export const viewAllBlogsAPI = async ({
     tag,
     sort,
     orderBy,
+    status,
   }).toString();
   return apiClient.get(`/blog-posts/manager/search?${query}`);
 };
