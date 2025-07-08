@@ -42,6 +42,7 @@ const Sidebar = ({
 }) => {
   const { user, logoutAction } = useAuth();
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
 
   // Xử lý đăng xuất
   const handleLogout = () => {

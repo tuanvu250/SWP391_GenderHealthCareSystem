@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   Table,
   Space,
@@ -9,25 +9,21 @@ import {
   Tag,
   Typography,
   Tooltip,
-  Badge,
   Card,
-  Modal,
   Avatar,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  EyeOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
 import { formatDateTime } from "../../../components/utils/format";
 import BlogModal from "../../components/modal/BlogModal";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
 import { useAuth } from "../../../components/provider/AuthProvider";
-import { approveBlogAPI, deleteBlogAPI, rejectBlogAPI, viewAllBlogsAPI, viewMyBlogsAPI } from "../../../components/api/Blog.api";
+import {
+  approveBlogAPI,
+  deleteBlogAPI,
+  rejectBlogAPI,
+  viewAllBlogsAPI,
+  viewMyBlogsAPI,
+} from "../../../components/api/Blog.api";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -48,9 +44,12 @@ const ManageMyBlog = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentBlog, setCurrentBlog] = useState(null);
-  const [statusFilter, setStatusFilter] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
   const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Danh sách tags
   const tagOptions = [
@@ -61,7 +60,7 @@ const ManageMyBlog = () => {
     { value: "Kinh nguyệt", label: "Kinh nguyệt", color: "pink" },
   ];
 
-  // Cấu hình trạng thái bài viết - Đã bỏ trạng thái "draft"
+  // Cấu hình trạng thái bài viết
   const statusConfig = {
     PENDING: {
       status: "pending",
@@ -86,11 +85,11 @@ const ManageMyBlog = () => {
     },
   };
 
-  // Danh sách status options để lọc - Đã bỏ "draft"
+  // Danh sách status options để lọc
   const statusOptions = [
-    { value: "pending", label: "Chờ duyệt", color: "blue" },
-    { value: "approved", label: "Đã duyệt", color: "green" },
-    { value: "rejected", label: "Bị từ chối", color: "red" },
+    { value: "PENDING", label: "Chờ duyệt", color: "blue" },
+    { value: "PUBLISHED", label: "Đã duyệt", color: "green" },
+    { value: "Rejected", label: "Bị từ chối", color: "red" },
   ];
 
   // Lấy màu tương ứng cho tag
@@ -101,8 +100,20 @@ const ManageMyBlog = () => {
 
   // Fetch danh sách blog
   useEffect(() => {
-    fetchBlogList();
-  }, [pagination.current, searchText, selectedTags, statusFilter]);
+    !isInitialLoad && fetchBlogList();
+  }, [
+    pagination.current,
+    searchText,
+    selectedTags,
+    statusFilter,
+    isInitialLoad,
+  ]);
+
+  useEffect(() => {
+    setStatusFilter(searchParams.get("status") || "");
+    navigate(window.location.pathname, { replace: true });
+    setIsInitialLoad(false);
+  }, []);
 
   const fetchBlogList = async () => {
     setLoading(true);
@@ -113,14 +124,14 @@ const ManageMyBlog = () => {
             size: pagination.pageSize,
             title: searchText,
             tag: selectedTags.join(", "),
-            //status: statusFilter.join(', ')
+            status: statusFilter,
           })
         : await viewAllBlogsAPI({
             page: pagination.current - 1,
             size: pagination.pageSize,
             title: searchText,
             tag: selectedTags.join(", "),
-            //status: statusFilter.join(', ')
+            status: statusFilter,
           });
       if (response && response.data) {
         setTimeout(() => {
@@ -143,7 +154,6 @@ const ManageMyBlog = () => {
                   : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
             };
           });
-          console.log(">>> Formatted Posts:", formattedPosts);
           setBlogList(formattedPosts);
           setPagination({
             ...pagination,
@@ -164,8 +174,7 @@ const ManageMyBlog = () => {
   };
 
   // Mở modal xem chi tiết blog
-  const handleViewBlog = (postId) => {
-    const blog = blogList.find((blog) => blog.postId === postId);
+  const handleViewBlog = (blog) => {
     if (blog) {
       setSelectedBlog(blog);
       setViewBlogModalVisible(true);
@@ -264,66 +273,57 @@ const ManageMyBlog = () => {
     setPagination({ ...pagination, current: 1 });
   };
 
-  // Xử lý lọc theo trạng thái
+  // Xử lý lọc theo trạng thái - chỉ cho phép chọn 1
   const handleStatusFilter = (status) => {
-    const nextStatusFilter = statusFilter.includes(status)
-      ? statusFilter.filter((s) => s !== status)
-      : [...statusFilter, status];
-
-    setStatusFilter(nextStatusFilter);
+    if (statusFilter === status) {
+      setStatusFilter("");
+      return;
+    } else {
+      setStatusFilter(status);
+    }
     setPagination({ ...pagination, current: 1 });
   };
 
-  // Xử lý xem lý do từ chối
-  const handleViewRejectionReason = (reason) => {
-    message.info({
-      content: (
-        <div>
-          <strong>Lý do từ chối:</strong>
-          <p>{reason || "Không có lý do cụ thể được cung cấp."}</p>
-        </div>
-      ),
-      duration: 5,
-    });
-  };
-
-  // Cột của bảng
+  // Cột của bảng với các thao tác đã được thay đổi từ icon sang text
   const columns = [
     {
       title: "ID",
       dataIndex: "postId",
       key: "postId",
-      width: 60,
     },
-    ...(!isConsultant ? [
-      {
-        title: "Người đăng",
-        dataIndex: "consultantName",
-        key: "consultantName",
-        width: 150,
-        render: (text, record) => (
-          <Tooltip title={text}>
-            <Avatar
-              src={record.consultantImageUrl || "https://placehold.co/40x40/0099CF/white?text=Consultant"}
-              size="medium"
-              className="mr-2"
-            />
-            <span className="font-medium ml-2">{text}</span>
-          </Tooltip>
-        ),
-      },
-    ] : []),
+    ...(!isConsultant
+      ? [
+          {
+            title: "Người đăng",
+            dataIndex: "consultantName",
+            key: "consultantName",
+            render: (text, record) => (
+              <Tooltip title={text}>
+                <Avatar
+                  src={
+                    record.consultantImageUrl ||
+                    "https://placehold.co/40x40/0099CF/white?text=Consultant"
+                  }
+                  size="medium"
+                  className="mr-2"
+                />
+                <span className="font-medium ml-2">{text}</span>
+              </Tooltip>
+            ),
+          },
+        ]
+      : []),
     {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
-      width: "300px",
+      width: 300,
       render: (text, record) => (
         <div className="">
           <a
             onClick={() => handleViewBlog(record.postId)}
             className="font-medium hover:text-blue-500"
-            title={text} // Sử dụng HTML title thay vì Tooltip
+            title={text}
           >
             {text}
           </a>
@@ -354,7 +354,6 @@ const ManageMyBlog = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 150,
       render: (status, record) => {
         const config = statusConfig[status];
 
@@ -366,93 +365,62 @@ const ManageMyBlog = () => {
             >
               <span style={{ color: config.color }}>{config.text}</span>
             </div>
-            {status === "rejected" && record.rejectionReason && (
-              <Button
-                type="link"
-                size="small"
-                className="p-0"
-                onClick={() =>
-                  handleViewRejectionReason(record.rejectionReason)
-                }
-              >
-                Xem lý do
-              </Button>
-            )}
           </div>
         );
-      },
-      filters: [
-        { text: "Chờ duyệt", value: "pending" },
-        { text: "Đã duyệt", value: "approved" },
-        { text: "Bị từ chối", value: "rejected" },
-      ],
-      onFilter: (value, record) => record.status === value,
-      sorter: (a, b) => {
-        // Thứ tự ưu tiên: Chờ duyệt -> Bị từ chối -> Đã duyệt
-        const order = { pending: 0, rejected: 1, approved: 2 };
-        return order[a.status] - order[b.status];
       },
     },
     {
       title: "Ngày đăng",
       dataIndex: "publishedAt",
       key: "publishedAt",
-      width: 160,
       render: (date) => formatDateTime(date),
-      sorter: (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt),
     },
     {
       title: "Lượt xem",
       dataIndex: "viewCount",
       key: "viewCount",
-      width: 100,
-      sorter: (a, b) => a.views - b.views,
     },
     {
       title: "Lượt thích",
       dataIndex: "likeCount",
       key: "likeCount",
-      width: 100,
     },
     {
       title: "Thao tác",
       key: "action",
-      width: 150,
       render: (_, record) => (
         <Space size="small">
-          {/* Hiển thị button xem bài viết cho tất cả */}
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => handleViewBlog(record.postId)}
-            title="Xem bài viết"
-          />
+          {/* Thay thế icon bằng text */}
+          <Button size="small" onClick={() => handleViewBlog(record)}>
+            Xem
+          </Button>
 
           {/* Chỉ hiển thị chức năng duyệt/từ chối cho người không phải Consultant */}
           {!isConsultant && record.status === "PENDING" && (
             <>
               <Button
                 type="primary"
-                icon={<CheckCircleOutlined />}
+                size="small"
                 onClick={() => handleApprove(record.postId)}
-                title="Duyệt bài viết"
-              />
+              >
+                Duyệt
+              </Button>
               <Button
                 danger
-                icon={<CloseCircleOutlined />}
+                size="small"
                 onClick={() => handleReject(record.postId)}
-                title="Từ chối bài viết"
-              />
+              >
+                Từ chối
+              </Button>
             </>
           )}
 
           {/* Chỉ hiển thị chức năng sửa/xóa cho Consultant */}
           {isConsultant && (
             <>
-              <Button
-                icon={<EditOutlined />}
-                onClick={() => handleEdit(record)}
-                title="Chỉnh sửa"
-              />
+              <Button size="small" onClick={() => handleEdit(record)}>
+                Sửa
+              </Button>
               <Popconfirm
                 title="Xóa bài viết"
                 description="Bạn có chắc chắn muốn xóa bài viết này?"
@@ -461,7 +429,9 @@ const ManageMyBlog = () => {
                 cancelText="Hủy"
                 okButtonProps={{ danger: true }}
               >
-                <Button danger icon={<DeleteOutlined />} title="Xóa" />
+                <Button danger size="small">
+                  Xóa
+                </Button>
               </Popconfirm>
             </>
           )}
@@ -485,13 +455,9 @@ const ManageMyBlog = () => {
             </Text>
           </div>
 
-          {/* Chỉ hiển thị nút "Tạo bài viết mới" cho Consultant */}
+          {/* Chỉ hiển thị nút "Tạo bài viết mới" cho Consultant - đã bỏ icon */}
           {isConsultant && (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddNew}
-            >
+            <Button type="primary" onClick={handleAddNew}>
               Tạo bài viết mới
             </Button>
           )}
@@ -501,7 +467,7 @@ const ManageMyBlog = () => {
           <Search
             placeholder="Tìm kiếm theo tiêu đề"
             allowClear
-            enterButton={<SearchOutlined />}
+            enterButton="Tìm kiếm" // Đã thay icon bằng text
             onSearch={handleSearch}
             style={{ maxWidth: 400 }}
           />
@@ -513,9 +479,7 @@ const ManageMyBlog = () => {
               {statusOptions.map((status) => (
                 <Tag
                   color={
-                    statusFilter.includes(status.value)
-                      ? status.color
-                      : "default"
+                    statusFilter === status.value ? status.color : "default"
                   }
                   key={status.value}
                   className="cursor-pointer"
@@ -524,11 +488,11 @@ const ManageMyBlog = () => {
                   {status.label}
                 </Tag>
               ))}
-              {statusFilter.length > 0 && (
+              {statusFilter && (
                 <Button
                   type="link"
                   size="small"
-                  onClick={() => setStatusFilter([])}
+                  onClick={() => setStatusFilter("")}
                 >
                   Xóa bộ lọc
                 </Button>
