@@ -47,8 +47,7 @@ public class ConsultationBooking {
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
-    @OneToOne(mappedBy = "consultationBooking", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private ConsultantFeedback consultantFeedback;
+
 
     @OneToOne(mappedBy = "consultationBooking", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Invoice invoice; // Invoice for this consultation booking

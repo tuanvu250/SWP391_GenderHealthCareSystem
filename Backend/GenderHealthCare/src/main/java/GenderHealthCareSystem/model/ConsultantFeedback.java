@@ -17,11 +17,18 @@ public class ConsultantFeedback {
     @Id
     @Column(name = "FeedbackID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer feedbackId;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "BookingID", referencedColumnName = "BookingID", unique = true)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ConsultantProfileID", referencedColumnName = "ProfileID")
+    private ConsultantProfile consultantProfile;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "CustomerID", referencedColumnName = "UserID")
+    private Users customer;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "BookingID", referencedColumnName = "BookingID")
     private ConsultationBooking consultationBooking;
 
     @Column(name = "Rating")
