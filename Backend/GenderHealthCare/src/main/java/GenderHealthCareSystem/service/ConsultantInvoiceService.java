@@ -35,7 +35,7 @@ public class ConsultantInvoiceService {
 
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
         Double expectedVnd = calculateFee(booking).doubleValue();
-        Double expectedUsd = Math.round((expectedVnd / 24000.0) * 100.0) / 100.0;
+        Double expectedUsd = Math.round((expectedVnd / 24000.0) * 100.0) / 100.0; // Round to 2 decimal places
 
         System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Expected USD = " + expectedUsd);
 

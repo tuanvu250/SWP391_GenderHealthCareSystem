@@ -187,5 +187,20 @@ public class ConsultantBookingService {
         ));
     }
 
+    @Transactional
+    public void updateBookingStatus(Integer bookingId, Integer consultantId, String status) {
+        ConsultationBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
+        if (!booking.getConsultant().getUserId().equals(consultantId)) {
+            throw new IllegalArgumentException("Bạn không có quyền cập nhật trạng thái cho booking này");
+        }
+
+        if (!"COMPLETED".equalsIgnoreCase(status) && !"CANCELLED".equalsIgnoreCase(status)) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED hoặc CANCELLED");
+        }
+
+        booking.setStatus(status);
+        bookingRepo.save(booking);
+    }
 }

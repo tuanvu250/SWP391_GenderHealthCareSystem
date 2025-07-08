@@ -39,10 +39,10 @@ public class ConsultantPaymentController {
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
-//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
-//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
+      //   private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
+      //   private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
                                                      @RequestParam String method,
@@ -114,8 +114,7 @@ public class ConsultantPaymentController {
     private double convertVNDtoUSD(double vndAmount) {
         final double USD_TO_VND_RATE = 24000.0;
         double usdAmount = vndAmount / USD_TO_VND_RATE;
-        logger.info("Converted VND amount {} to USD: {}", vndAmount, usdAmount);
-        return usdAmount;
+        return Math.round(usdAmount * 100.0) / 100.0; // Round to 2 decimal places
     }
 
     @GetMapping("/success")

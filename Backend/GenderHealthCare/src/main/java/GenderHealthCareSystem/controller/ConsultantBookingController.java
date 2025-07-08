@@ -131,4 +131,21 @@ public class ConsultantBookingController {
             return ResponseEntity.badRequest().body("Error: " + ex.getMessage());
         }
     }
+
+    @PutMapping("/{bookingId}/status")
+    @PreAuthorize("hasRole('CONSULTANT')")
+    public ResponseEntity<ApiResponse<String>> updateBookingStatus(
+            @PathVariable Integer bookingId,
+            @RequestParam String status,
+            @AuthenticationPrincipal Jwt jwt) {
+        try {
+            int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
+            bookingService.updateBookingStatus(bookingId, consultantId, status);
+            return ResponseEntity.ok(ApiResponse.success("Booking status updated successfully."));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("An error occurred while updating the booking status."));
+        }
+    }
 }
