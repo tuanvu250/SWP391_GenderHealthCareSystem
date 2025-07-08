@@ -1,26 +1,39 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AiFillBank } from "react-icons/ai";
 import { getAllConsultants } from "../../components/api/Consultant.api";
+import { 
+  Modal, Form, Input, DatePicker, Select, Radio, Button, 
+  Avatar, Card, Space, Typography 
+} from "antd";
+import { 
+  BankOutlined, 
+  CreditCardOutlined, 
+  CheckCircleFilled 
+} from "@ant-design/icons";
+
+const { Option } = Select;
+const { TextArea } = Input;
+const { Text } = Typography;
 
 export default function ConsultationBooking() {
   const [experts, setExperts] = useState([]);
   const [selectedExpert, setSelectedExpert] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  // ✅ Lấy user từ sessionStorage
   const user = JSON.parse(sessionStorage.getItem("user")) || {};
-  const defaultName = user?.fullName || "";
-  const defaultPhone = user?.phone || "";
-  const defaultEmail = user?.email || "";
 
   useEffect(() => {
     const fetchExperts = async () => {
       try {
         const data = await getAllConsultants();
-        console.log("Danh sách consultants:", data);
-        setExperts(data);
+        const mappedExperts = data.map((e, index) => ({
+          ...e,
+          id: e.id ?? e.consultantId ?? e.userId ?? index + 1,
+        }));
+        setExperts(mappedExperts);
+        localStorage.setItem("consultants", JSON.stringify(mappedExperts));
       } catch (err) {
         console.error("Failed to fetch consultants", err);
       }
@@ -30,38 +43,46 @@ export default function ConsultationBooking() {
 
   const handleSelect = (expert) => {
     setSelectedExpert(expert);
-    setShowForm(true);
+    form.setFieldsValue({
+      fullName: user?.fullName || "",
+      phone: user?.phone || "",
+      email: user?.email || "",
+    });
+    setModalVisible(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCancel = () => {
+    setModalVisible(false);
     setSelectedExpert(null);
-    setShowForm(false);
+    form.resetFields();
   };
 
-  const handleSubmitBooking = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    const customerId = user?.customerId;
-
-    let rawMethod = form.paymentMethod.value;
-    let normalizedMethod = rawMethod.toLowerCase() === "bank" ? "VNPAY" : "PAYPAL";
+  const handleSubmitBooking = (values) => {
+    const normalizedMethod = values.paymentMethod.toLowerCase() === "bank" ? "VNPAY" : "PAYPAL";
 
     const bookingData = {
-      name: form.fullName.value,
-      phone: form.phone.value,
-      email: form.email.value,
-      date: form.date.value,
-      timeSlot: form.timeSlot.value,
-      notes: form.notes.value,
+      name: values.fullName,
+      phone: values.phone,
+      email: values.email,
+      date: values.date.format("YYYY-MM-DD"),
+      timeSlot: values.timeSlot,
+      notes: values.notes || "",
       paymentMethod: normalizedMethod,
       expertName: selectedExpert.fullName,
-      consultantId: selectedExpert.consultantId,
-      customerId: customerId, // thêm nếu cần thiết cho confirm
+      consultantId: selectedExpert.consultantId || selectedExpert.id,
     };
 
     navigate("/confirm-consultant", { state: bookingData });
   };
+
+  const timeSlots = [
+    "08:00 - 09:00",
+    "09:00 - 10:00",
+    "10:00 - 11:00",
+    "13:30 - 14:30",
+    "15:00 - 16:00",
+    "16:30 - 17:30"
+  ];
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -84,17 +105,26 @@ export default function ConsultationBooking() {
         ) : (
           experts.map((expert, index) => (
             <div key={index} className="bg-white p-4 shadow rounded-xl">
-              <div className="w-24 h-24 mx-auto rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
-                {expert.fullName?.charAt(0) || "?"}
-              </div>
+              {expert.userImageUrl ? (
+                <img
+                  src={expert.userImageUrl}
+                  alt={expert.fullName}
+                  className="w-24 h-24 rounded-full object-cover mx-auto"
+                />
+              ) : (
+                <div className="w-24 h-24 mx-auto rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
+                  {expert.fullName?.charAt(0) || "?"}
+                </div>
+              )}
               <h3 className="text-center mt-4 font-semibold">{expert.fullName}</h3>
               <p className="text-center text-sm text-gray-500">{expert.jobTitle}</p>
               <p
                 className="text-[#0099CF] hover:text-[#0077aa] text-sm underline text-center cursor-pointer mt-3"
-                onClick={() => navigate(`/expert/${expert.id}`)}
+                onClick={() => navigate(`/expert/${expert.id}`, { state: expert })}
               >
                 Xem thông tin chi tiết
               </p>
+
               <button
                 onClick={() => handleSelect(expert)}
                 className="mt-4 w-full bg-[#0099CF] hover:bg-[#0077aa] text-white font-semibold py-2 rounded-lg"
@@ -106,130 +136,190 @@ export default function ConsultationBooking() {
         )}
       </div>
 
-      {showForm && selectedExpert && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in-up">
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
-              onClick={handleCloseForm}
-            >
-              ✕
-            </button>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-[#f0f0f0] flex items-center justify-center text-xl font-bold text-[#0099CF]">
-                {selectedExpert.fullName?.charAt(0) || "?"}
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-[#0099CF]">{selectedExpert.fullName}</h3>
-                <p className="text-gray-600 text-sm">{selectedExpert.jobTitle}</p>
-                <p
-                  onClick={handleCloseForm}
-                  className="mt-2 text-sm text-[#0099CF] hover:underline cursor-pointer"
+      <Modal
+        title={
+          <div className="flex items-center gap-3">
+            {selectedExpert && (
+              <>
+                <Avatar 
+                  size={48}
+                  src={selectedExpert?.userImageUrl} 
+                  style={{ backgroundColor: '#0099CF' }}
                 >
-                  Chọn tư vấn viên khác
-                </p>
-              </div>
+                  {selectedExpert?.fullName?.charAt(0) || "?"}
+                </Avatar>
+                <div>
+                  <div className="text-lg font-medium">{selectedExpert?.fullName}</div>
+                  <div className="text-sm text-gray-500">{selectedExpert?.jobTitle}</div>
+                </div>
+              </>
+            )}
+          </div>
+        }
+        open={modalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        width={600}
+        centered
+        style={{ top: 20 }} // Điều chỉnh vị trí modal để tăng không gian hiển thị
+      >
+        <div className="mt-4">
+          <h3 className="text-lg font-medium mb-4">Đặt lịch tư vấn</h3>
+          
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmitBooking}
+            initialValues={{
+              fullName: user?.fullName || "",
+              phone: user?.phone || "",
+              email: user?.email || "",
+              paymentMethod: "vnpay"  // Đổi giá trị mặc định từ "bank" thành "vnpay"
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Form.Item
+                name="fullName"
+                label="Họ và tên"
+                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+              >
+                <Input placeholder="Nhập họ tên của bạn" />
+              </Form.Item>
+
+              <Form.Item
+                name="phone"
+                label="Số điện thoại"
+                rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+              >
+                <Input placeholder="Nhập số điện thoại" />
+              </Form.Item>
             </div>
 
-            <h3 className="text-xl font-bold mb-4 text-[#0099CF]">Đặt lịch tư vấn</h3>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { type: "email", message: "Email không hợp lệ" }
+              ]}
+            >
+              <Input placeholder="Nhập email (không bắt buộc)" />
+            </Form.Item>
 
-            <form className="space-y-4" onSubmit={handleSubmitBooking}>
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Họ và tên *"
-                required
-                defaultValue={defaultName}
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-              />
-
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Số điện thoại *"
-                required
-                defaultValue={defaultPhone}
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-              />
-
-              <input
-                type="email"
-                name="email"
-                placeholder="Email (Tùy chọn)"
-                defaultValue={defaultEmail}
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-              />
-
-              <input
-                type="date"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Form.Item
                 name="date"
-                required
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-              />
-
-              <select
-                name="timeSlot"
-                required
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
+                label="Ngày tư vấn"
+                rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
               >
-                <option value="">-- Chọn khung giờ tư vấn *</option>
-                <option value="08:00 - 09:00">08:00 - 09:00</option>
-                <option value="09:00 - 10:00">09:00 - 10:00</option>
-                <option value="10:00 - 11:00">10:00 - 11:00</option>
-                <option value="13:30 - 14:30">13:30 - 14:30</option>
-                <option value="15:00 - 16:00">15:00 - 16:00</option>
-                <option value="16:30 - 17:30">16:30 - 17:30</option>
-              </select>
+                <DatePicker 
+                  style={{ width: '100%' }} 
+                  placeholder="Chọn ngày tư vấn"
+                  disabledDate={(current) => {
+                    return current && current.valueOf() < Date.now() - 24 * 60 * 60 * 1000;
+                  }}
+                />
+              </Form.Item>
 
-              <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
-                <input type="radio" name="paymentMethod" value="bank" className="mt-1.5 accent-[#0099CF]" required />
-                <div className="ml-3">
-                  <div className="flex items-center space-x-2 text-gray-800 font-semibold">
-                    <AiFillBank className="text-xl" />
-                    <span>Thanh toán trực tuyến</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng ATM/Visa/MasterCard/QR Code</p>
-                </div>
-              </label>
+              <Form.Item
+                name="timeSlot"
+                label="Khung giờ"
+                rules={[{ required: true, message: "Vui lòng chọn khung giờ" }]}
+              >
+                <Select placeholder="Chọn khung giờ tư vấn">
+                  {timeSlots.map(slot => (
+                    <Option key={slot} value={slot}>{slot}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
 
-              <label className="flex items-start border rounded-lg p-4 cursor-pointer transition hover:shadow-md">
-                <input type="radio" name="paymentMethod" value="paypal" className="mt-1.5 accent-[#0099CF]" />
-                <div className="ml-3">
-                  <div className="flex items-center space-x-2 text-gray-800 font-semibold">
-                    🅿️
-                    <span>Thanh toán qua PayPal</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">Thanh toán bằng tài khoản PayPal hoặc thẻ quốc tế</p>
-                </div>
-              </label>
+            <Form.Item 
+              name="paymentMethod"
+              label="Phương thức thanh toán"
+              rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán" }]}
+            >
+              <Radio.Group className="w-full">
+                <Space direction="vertical" className="w-full">
+                  <Radio value="bank" className="w-full">
+                    <Card 
+                      className={`w-full border ${form.getFieldValue('paymentMethod') === 'vnpay' ? 'border-blue-500' : 'border-gray-200'}`}
+                      bodyStyle={{ padding: '12px' }}
+                      hoverable
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          <img 
+                            src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png" 
+                            alt="VNPAY" 
+                            className="h-10 w-auto"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <div className="font-medium">VNPAY</div>
+                          <Text type="secondary" className="text-xs">
+                            Thẻ ATM / Internet Banking / Visa / MasterCard / QR Code
+                          </Text>
+                        </div>
+                        {form.getFieldValue('paymentMethod') === 'vnpay' && (
+                          <CheckCircleFilled className="text-blue-500 text-lg" />
+                        )}
+                      </div>
+                    </Card>
+                  </Radio>
+                  
+                  <Radio value="paypal" className="w-full">
+                    <Card 
+                      className={`w-full border ${form.getFieldValue('paymentMethod') === 'paypal' ? 'border-blue-500' : 'border-gray-200'}`}
+                      bodyStyle={{ padding: '12px' }}
+                      hoverable
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          <img 
+                            src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" 
+                            alt="PayPal" 
+                            className="h-8 w-auto"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <div className="font-medium">PayPal</div>
+                          <Text type="secondary" className="text-xs">
+                            Thanh toán an toàn với tài khoản PayPal hoặc thẻ quốc tế
+                          </Text>
+                        </div>
+                        {form.getFieldValue('paymentMethod') === 'paypal' && (
+                          <CheckCircleFilled className="text-blue-500 text-lg" />
+                        )}
+                      </div>
+                    </Card>
+                  </Radio>
+                </Space>
+              </Radio.Group>
+            </Form.Item>
 
-              <textarea
-                name="notes"
-                rows={3}
-                placeholder="Ghi chú thêm (nếu có)"
-                className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]"
-              ></textarea>
+            <Form.Item
+              name="notes"
+              label="Ghi chú"
+            >
+              <TextArea 
+                rows={2}
+                placeholder="Nhập ghi chú (nếu có)"
+              />
+            </Form.Item>
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleCloseForm}
-                  className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300"
-                >
+            <Form.Item>
+              <div className="flex justify-end gap-3">
+                <Button onClick={handleCancel}>
                   Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="bg-[#0099CF] text-white px-6 py-2 rounded-lg hover:bg-[#0077aa]"
-                >
+                </Button>
+                <Button type="primary" htmlType="submit" style={{ backgroundColor: '#0099CF' }}>
                   Xác nhận đặt lịch
-                </button>
+                </Button>
               </div>
-            </form>
-          </div>
+            </Form.Item>
+          </Form>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

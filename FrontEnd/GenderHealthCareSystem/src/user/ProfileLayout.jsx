@@ -61,6 +61,7 @@ const UserProfile = () => {
     const path = location.pathname;
     if (path.includes("/user/history-testing")) return "2";
     if (path.includes("/user/history-feedback-testing")) return "3";
+        if (path.includes("/user/history-consultation")) return "4";
     return "1"; // Default tab - profile
   };
 
@@ -85,6 +86,14 @@ const UserProfile = () => {
       label: (
         <span onClick={() => navigate("/user/history-feedback-testing")}>
           Lịch sử đánh giá xét nghiệm
+        </span>
+      ),
+    },
+    {
+      key: "4",
+      label: (
+        <span onClick={() => navigate("/user/history-consultation")}>
+          Lịch sử đặt lịch tư vấn
         </span>
       ),
     },

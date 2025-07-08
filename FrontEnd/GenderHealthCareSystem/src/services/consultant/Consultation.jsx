@@ -44,7 +44,7 @@ export default function Consultation() {
                             </button>
                             <button
                                 className="h-10 px-6 rounded-md bg-white text-[#0099CF] font-medium border border-[#0099CF] shadow-sm hover:border-[#0088bb] hover:text-[#0088bb] transition"
-                                onClick={() => navigate("/history-consultant")}
+                                onClick={() => navigate("/user/history-consultation")}
                             >
                                 Xem lịch sử
                             </button>
