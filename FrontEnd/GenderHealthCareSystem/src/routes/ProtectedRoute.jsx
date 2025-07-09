@@ -26,7 +26,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Kiểm tra đã đăng nhập chưa
   if (!isAuthenticated) {
-    console.log("Chưa đăng nhập, chuyển hướng đến login");
     return <Navigate to="/login" replace />;
   }
 

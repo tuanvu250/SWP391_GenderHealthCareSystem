@@ -31,14 +31,13 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "../../../components/provider/AuthProvider";
 import {
-  createUserAPI,
   editUserAPI,
   getAllUsersAPI,
   pathStatusUserAPI,
 } from "../../../components/api/Users.api";
 import UserFormModal from "../../components/modal/UserFormModal";
 import { formatDateTime } from "../../../components/utils/format";
-
+import dayjs from "dayjs";
 import {
   UserOutlined,
   StopOutlined,
@@ -46,6 +45,7 @@ import {
   CheckCircleOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+import { editEmploymentStatusAPI, editHourlyRateAPI } from "../../../components/api/Consultant.api";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -166,10 +166,19 @@ const ManageUser = () => {
   const handleSubmitUser = async (values, userId) => {
     try {
       if (userId) {
-        await editUserAPI(userId, values);
+        const userData = {
+          fullName: values.fullName,
+          role: values.role,
+          phone: values.phone,
+        }
+        await editUserAPI(userId, userData);
+        if(values.role === "Consultant") {
+          await editHourlyRateAPI(userId, values.hourlyRate);
+          await editEmploymentStatusAPI(userId, values.employmentStatus);
+        }
         message.success("Cập nhật thông tin người dùng thành công!");
       } else {
-        await createUserAPI(values);
+        //await createUserAPI(values);
         message.success("Thêm người dùng mới thành công!");
       }
 
@@ -437,7 +446,9 @@ const ManageUser = () => {
       // Cập nhật lại danh sách
       fetchUsers();
     } catch (error) {
-      message.error(error.response?.data?.message || "Lỗi khi cập nhật trạng thái");
+      message.error(
+        error.response?.data?.message || "Lỗi khi cập nhật trạng thái"
+      );
       console.error("Error updating user status:", error);
     }
   };
