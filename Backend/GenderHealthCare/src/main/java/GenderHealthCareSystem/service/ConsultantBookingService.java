@@ -85,11 +85,12 @@ public class ConsultantBookingService {
                 booking.getBookingId(),
                 booking.getConsultant().getFullName(),
                 booking.getBookingDate(),
-                null,
+                BigDecimal.ZERO, // Default amount
                 booking.getPaymentStatus(),
-                null,
+                null, // Default payment method
                 booking.getMeetLink(),
-                booking.getStatus().name() // Added missing status argument
+                booking.getStatus().name(),
+                booking.getConsultant().getUserId() // Added consultantId
         );
     }
 
@@ -172,7 +173,8 @@ public class ConsultantBookingService {
                         ? cb.getInvoice().getPaymentMethod()
                         : null,
                 cb.getMeetLink(),
-                cb.getStatus().name() // Added missing status argument
+                cb.getStatus().name(),
+                cb.getConsultant().getUserId() // Populate consultantId
         ));
     }
 

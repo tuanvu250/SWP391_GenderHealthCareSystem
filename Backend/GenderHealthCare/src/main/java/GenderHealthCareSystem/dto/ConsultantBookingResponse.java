@@ -9,15 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class ConsultantBookingResponse {
-//    private Integer bookingId;
-//    private String consultantName;
-
-//    private String paymentUrl;    // URL thanh toán (VNPAY hoặc PayPal)
-//    private String paymentStatus;
-//    private String meetLink;      // URL họp (sau khi thanh toán)
-//    private BigDecimal totalAmount;
-//    private String paymentMethod;
-private Integer bookingId;
+    private Integer bookingId;
     private String consultantName;
     private LocalDateTime bookingDate;
     private BigDecimal amount;
@@ -25,4 +17,5 @@ private Integer bookingId;
     private String paymentMethod;
     private String meetLink;
     private String status;
+    private Integer consultantId; // Added consultantId field
 }
