@@ -11,6 +11,8 @@ import {
   Modal,
   DatePicker,
   Select,
+  Rate,
+  Input,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -20,6 +22,7 @@ import {
   UserOutlined,
   ExclamationCircleOutlined,
   EditOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +30,7 @@ import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const timeSlots = [
   "08:00 - 09:00",
@@ -41,8 +45,11 @@ const HistoryConsultantBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rescheduleModal, setRescheduleModal] = useState({ open: false, bookingId: null });
+  const [ratingModal, setRatingModal] = useState({ open: false, bookingId: null, consultantId: null });
   const [newDate, setNewDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingContent, setRatingContent] = useState("");
   const navigate = useNavigate();
 
   const fetchBookings = async () => {
@@ -146,6 +153,43 @@ const HistoryConsultantBooking = () => {
     }
   };
 
+  const handleOpenRatingModal = (bookingId, consultantId) => {
+    setRatingModal({ open: true, bookingId, consultantId });
+    setRatingValue(0);
+    setRatingContent("");
+  };
+
+  const handleSubmitRating = async () => {
+    if (!ratingValue || !ratingContent.trim()) {
+      message.warning("Vui lòng chọn sao và nhập nội dung đánh giá.");
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem("token");
+      await axios.post(
+        `/api/reviews`,
+        {
+          bookingId: ratingModal.bookingId,
+          consultantId: ratingModal.consultantId,
+          rating: ratingValue,
+          content: ratingContent,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      message.success("Đánh giá đã được gửi!");
+      setRatingModal({ open: false, bookingId: null, consultantId: null });
+      fetchBookings();
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể gửi đánh giá.");
+    }
+  };
+
   const renderStatus = (status) => {
     switch (status) {
       case "PENDING":
@@ -154,8 +198,8 @@ const HistoryConsultantBooking = () => {
         return <Tag icon={<CheckCircleOutlined />} color="green">Đã xác nhận</Tag>;
       case "CANCELLED":
         return <Tag icon={<CloseCircleOutlined />} color="red">Đã hủy</Tag>;
-      case "PAID":
-        return <Tag icon={<CheckCircleOutlined />} color="cyan">Đã thanh toán</Tag>;
+      case "COMPLETED":
+        return <Tag icon={<CheckCircleOutlined />} color="cyan">Hoàn thành</Tag>;
       default:
         return status ? <Tag>{status}</Tag> : "—";
     }
@@ -202,7 +246,7 @@ const HistoryConsultantBooking = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => renderStatus(status),
+      render: renderStatus,
     },
     {
       title: "Thanh toán",
@@ -226,17 +270,32 @@ const HistoryConsultantBooking = () => {
     {
       title: "Hành động",
       key: "actions",
-      render: (_, record) =>
-        record.paymentStatus === "PAID" && record.status !== "CANCELLED" ? (
+      render: (_, record) => {
+        const canAct = record.paymentStatus === "PAID" && record.status !== "CANCELLED";
+        return (
           <div className="flex gap-2">
-            <Button danger size="small" onClick={() => handleCancelBooking(record.bookingId)}>
-              Hủy
-            </Button>
-            <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenReschedule(record.bookingId)}>
-              Đổi lịch
-            </Button>
+            {record.status === "COMPLETED" && canAct && (
+              <Button
+                size="small"
+                icon={<StarOutlined />}
+                onClick={() => handleOpenRatingModal(record.bookingId, record.consultantId)}
+              >
+                Đánh giá
+              </Button>
+            )}
+            {canAct && record.status !== "COMPLETED" && (
+              <>
+                <Button danger size="small" onClick={() => handleCancelBooking(record.bookingId)}>
+                  Hủy
+                </Button>
+                <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenReschedule(record.bookingId)}>
+                  Đổi lịch
+                </Button>
+              </>
+            )}
           </div>
-        ) : null,
+        );
+      },
     },
   ];
 
@@ -247,7 +306,7 @@ const HistoryConsultantBooking = () => {
           <UserOutlined className="mr-2 text-blue-500" />
           Lịch sử đặt lịch tư vấn
         </Title>
-        <Text type="secondary">Xem, hủy hoặc đổi lịch các buổi tư vấn đã đặt.</Text>
+        <Text type="secondary">Xem, hủy, đổi lịch hoặc đánh giá chuyên gia.</Text>
       </div>
 
       {loading ? (
@@ -265,20 +324,14 @@ const HistoryConsultantBooking = () => {
           className="mt-4"
         />
       ) : (
-        <Empty
-          description="Bạn chưa có lịch tư vấn nào"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
+        <Empty description="Bạn chưa có lịch tư vấn nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       )}
 
+      {/* Modal đổi lịch */}
       <Modal
         open={rescheduleModal.open}
         title="Chọn ngày và khung giờ mới"
-        onCancel={() => {
-          setRescheduleModal({ open: false, bookingId: null });
-          setNewDate(null);
-          setSelectedSlot(null);
-        }}
+        onCancel={() => setRescheduleModal({ open: false, bookingId: null })}
         onOk={handleRescheduleSubmit}
         okText="Xác nhận"
         cancelText="Hủy"
@@ -289,7 +342,6 @@ const HistoryConsultantBooking = () => {
           onChange={(date) => setNewDate(date)}
           disabledDate={(current) => current && current < dayjs().startOf("day")}
         />
-
         <Select
           placeholder="-- Chọn khung giờ tư vấn *"
           className="w-full"
@@ -302,6 +354,30 @@ const HistoryConsultantBooking = () => {
             </Option>
           ))}
         </Select>
+      </Modal>
+
+      {/* Modal đánh giá */}
+      <Modal
+        open={ratingModal.open}
+        title="Đánh giá chuyên gia"
+        onCancel={() => setRatingModal({ open: false, bookingId: null, consultantId: null })}
+        onOk={handleSubmitRating}
+        okText="Gửi đánh giá"
+        cancelText="Hủy"
+      >
+        <div className="mb-3">
+          <Text strong>Chấm sao:</Text>
+          <Rate value={ratingValue} onChange={(val) => setRatingValue(val)} />
+        </div>
+        <div>
+          <Text strong>Nội dung:</Text>
+          <TextArea
+            rows={4}
+            value={ratingContent}
+            onChange={(e) => setRatingContent(e.target.value)}
+            placeholder="Viết đánh giá của bạn về buổi tư vấn..."
+          />
+        </div>
       </Modal>
     </Card>
   );

@@ -27,3 +27,8 @@ export const rescheduleBooking = ({ bookingId, newDate }) =>
 
 export const confirmPayment = (params) =>
   apiClient.get("/bookings/payment-return", { params }); 
+
+export const updateBookingStatus = (bookingId, status) =>
+  apiClient.put(`/bookings/${bookingId}/status`, null, {
+    params: { status },
+  });

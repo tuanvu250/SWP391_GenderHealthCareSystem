@@ -17,8 +17,10 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getConsultantSchedule } from "../../../components/api/ConsultantBooking.api";
-import axios from "axios";
+import {
+  getConsultantSchedule,
+  updateBookingStatus,
+} from "../../../components/api/ConsultantBooking.api";
 
 const { Title } = Typography;
 
@@ -43,13 +45,13 @@ export default function ConsultantBookingSchedule() {
     fetchMySchedule();
   }, []);
 
-  const updateBookingStatus = async (bookingId, status) => {
+  const handleUpdateStatus = async (bookingId, status) => {
     try {
-      await axios.patch(`/api/bookings/${bookingId}/status`, { status });
+      await updateBookingStatus(bookingId, status);
       message.success(`Cập nhật trạng thái thành công: ${status}`);
       fetchMySchedule();
     } catch (err) {
-      console.error("Lỗi cập nhật trạng thái:", err);
+      console.error("Lỗi cập nhật trạng thái:", err?.response?.data || err);
       message.error("Không thể cập nhật trạng thái.");
     }
   };
@@ -106,7 +108,7 @@ export default function ConsultantBookingSchedule() {
       title: "Giờ",
       key: "time",
       render: (_, record) =>
-        `${record.bookingTimeStart} - ${record.bookingTimeEnd}`,
+        `${record.bookingTimeStart || "?"} - ${record.bookingTimeEnd || "?"}`,
     },
     {
       title: "Ghi chú",
@@ -130,7 +132,7 @@ export default function ConsultantBookingSchedule() {
           <div className="flex gap-2">
             <Popconfirm
               title="Xác nhận hoàn thành lịch hẹn này?"
-              onConfirm={() => updateBookingStatus(record.bookingId, "COMPLETED")}
+              onConfirm={() => handleUpdateStatus(record.bookingId, "COMPLETED")}
               okText="Hoàn thành"
               cancelText="Hủy"
             >
@@ -140,11 +142,13 @@ export default function ConsultantBookingSchedule() {
             </Popconfirm>
             <Popconfirm
               title="Xác nhận hủy lịch hẹn này?"
-              onConfirm={() => updateBookingStatus(record.bookingId, "CANCELLED")}
+              onConfirm={() => handleUpdateStatus(record.bookingId, "CANCELLED")}
               okText="Đồng ý"
               cancelText="Không"
             >
-              <Button danger size="small">Hủy</Button>
+              <Button danger size="small">
+                Hủy
+              </Button>
             </Popconfirm>
           </div>
         );
