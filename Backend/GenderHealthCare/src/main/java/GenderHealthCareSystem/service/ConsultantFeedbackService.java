@@ -45,7 +45,15 @@ public class ConsultantFeedbackService {
      */
     @Transactional
     public ConsultantFeedbackResponse createFeedback(ConsultantFeedbackRequest request) {
-        Integer customerId = extractUserIdFromToken();
+        Integer customerId;
+        try {
+            customerId = extractUserIdFromToken();
+            if (customerId == null) {
+                throw new IllegalArgumentException("Không thể xác thực người dùng. Vui lòng đăng nhập lại.");
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Token không hợp lệ. Vui lòng đăng nhập lại.");
+        }
 
         ConsultantProfile consultantProfile = profileRepo.findByConsultantUserId(request.getConsultantId())
                 .orElseThrow(() -> new IllegalArgumentException("Consultant profile không tồn tại"));

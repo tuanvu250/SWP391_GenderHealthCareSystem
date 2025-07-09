@@ -28,7 +28,6 @@ public class StisResultController {
         private final StisResultService stisResultService;
         private final CloudinaryService cloudinaryService;
 
-        // API xử lý JSON request
         @PostMapping(value = "/return/{bookingId}", consumes = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<?> returnResultJson(
                         @PathVariable Integer bookingId,
@@ -47,13 +46,12 @@ public class StisResultController {
                 }
         }
 
-        // API upload PDF cho booking (chỉ gán vào result đầu tiên)
         @PutMapping(value = "/upload-pdf/{bookingId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<?> uploadPdfForBooking(
                         @PathVariable Integer bookingId,
                         @RequestParam("pdfFile") MultipartFile pdfFile) {
                 try {
-                        // Kiểm tra file PDF
+
                         if (pdfFile == null || pdfFile.isEmpty()) {
                                 return ResponseEntity.badRequest()
                                                 .body(new ApiResponse<>(HttpStatus.BAD_REQUEST,
@@ -69,10 +67,10 @@ public class StisResultController {
                                                                 "INVALID_FILE_TYPE"));
                         }
 
-                        // Upload file lên Cloudinary
+
                         String pdfUrl = cloudinaryService.uploadFile(pdfFile);
 
-                        // Cập nhật PDF cho result đầu tiên của booking
+
                         List<StisResultResponse> updatedResults = stisResultService
                                         .updatePdfUrlForBooking(bookingId, pdfUrl, false);
 
@@ -93,7 +91,7 @@ public class StisResultController {
                 }
         }
 
-        // API cập nhật kết quả (cho phép cập nhật từng trường riêng lẻ)
+
         @PutMapping(value = "/{resultId}", consumes = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<?> updateResult(
                         @PathVariable Integer resultId,
@@ -110,7 +108,7 @@ public class StisResultController {
                 }
         }
 
-        // API xóa kết quả
+
         @DeleteMapping("/{resultId}")
         public ResponseEntity<?> deleteResult(@PathVariable Integer resultId) {
                 try {

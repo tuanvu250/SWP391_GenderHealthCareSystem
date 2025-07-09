@@ -73,12 +73,10 @@ public class ProfileController {
             return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
 
         if (req.getEmail() != null && !req.getEmail().isEmpty()) {
-            // Kiểm tra định dạng email
             String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
             if (!req.getEmail().matches(emailRegex)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Email không đúng định dạng!"));
             }
-            // Kiểm tra email đã tồn tại cho user khác chưa
             Optional<Account> accOpt = accountRepository.findByEmail(req.getEmail());
             if (accOpt.isPresent() && !accOpt.get().getUsers().getUserId().equals(userId)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Email đã tồn tại!"));
@@ -86,12 +84,12 @@ public class ProfileController {
         }
 
         if (req.getPhone() != null && !req.getPhone().isEmpty()) {
-            // Kiểm tra định dạng phone (bắt đầu bằng 0, 10-11 số)
+
             String phoneRegex = "^(0[0-9]{9,10})$";
             if (!req.getPhone().matches(phoneRegex)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Số điện thoại không đúng định dạng!"));
             }
-            // Kiểm tra phone đã tồn tại cho user khác chưa
+
             Optional<Users> phoneOpt = userRepository.findByPhone(req.getPhone());
             if (phoneOpt.isPresent() && !phoneOpt.get().getUserId().equals(userId)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Số điện thoại đã tồn tại!"));
@@ -113,7 +111,6 @@ public class ProfileController {
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
 
-        // Cập nhật email ở bảng Account (nếu có thay đổi)
         if (req.getEmail() != null && !req.getEmail().isEmpty()) {
             Optional<Account> optionalAcc = accountRepository.findByUsers_UserId(userId);
             if (optionalAcc.isPresent()) {
@@ -141,7 +138,6 @@ public class ProfileController {
 
         Users user = optional.get();
 
-        // Nếu đã có avatar cũ, xóa nó trên Cloudinary
         if (user.getUserImageUrl() != null) {
             String publicId = cloudinaryService.getPublicIdFromUrl(user.getUserImageUrl());
             if (publicId != null) {
