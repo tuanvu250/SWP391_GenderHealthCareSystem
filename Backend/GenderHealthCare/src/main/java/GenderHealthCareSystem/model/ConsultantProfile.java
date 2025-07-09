@@ -30,7 +30,7 @@ public class ConsultantProfile {
     @Column(name = "Introduction", columnDefinition = "NVARCHAR(MAX)")
     private String introduction;
 
-    @Column(name = "JobTitle", length = 100, nullable = false)
+    @Column(name = "JobTitle", columnDefinition = "NVARCHAR(MAX)", nullable = false)
     private String jobTitle;
 
     @Column(name = "Specialization", columnDefinition = "NVARCHAR(MAX)")
@@ -45,7 +45,7 @@ public class ConsultantProfile {
     @Column(name = "HourlyRate", nullable = false)
     private Double hourlyRate;
 
-    @Column(name = "Location", length = 255)
+    @Column(name = "Location",  columnDefinition = "NVARCHAR(MAX)")
     private String location;
 
     @Column(name = "IsAvailable")
