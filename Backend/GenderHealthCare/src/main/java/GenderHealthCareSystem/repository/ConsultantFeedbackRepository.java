@@ -45,7 +45,6 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
            "(:consultantId IS NULL OR cf.consultantProfile.consultant.userId = :consultantId) AND " +
            "(:rating IS NULL OR cf.rating = :rating) AND " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(cf.customer.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(cf.consultantProfile.consultant.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<ConsultantFeedback> findAllWithFilters(@Param("consultantId") Integer consultantId,
@@ -57,7 +56,6 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
            "cf.consultantProfile.consultant.userId = :consultantId AND " +
            "(:rating IS NULL OR cf.rating = :rating) AND " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(cf.customer.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<ConsultantFeedback> findByConsultantIdWithSearchAndRating(@Param("consultantId") Integer consultantId,
                                                                    @Param("rating") Integer rating,
@@ -67,7 +65,6 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
     @Query("SELECT cf FROM ConsultantFeedback cf WHERE " +
            "cf.customer.userId = :customerId AND " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(cf.consultantProfile.consultant.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<ConsultantFeedback> findByCustomerIdWithSearch(@Param("customerId") Integer customerId,
                                                         @Param("search") String search,
