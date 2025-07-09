@@ -26,7 +26,7 @@ public class StisServiceService {
     }
 
     public Page<StisService> getAll(String searchName, String status, Pageable pageable) {
-        Specification<StisService> spec = Specification.where(null);
+        Specification<StisService> spec = (root, query, cb) -> cb.conjunction();
 
         if (searchName != null && !searchName.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("serviceName")),

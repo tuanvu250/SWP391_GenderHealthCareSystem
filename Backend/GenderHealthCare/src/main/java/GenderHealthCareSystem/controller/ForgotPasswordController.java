@@ -1,6 +1,5 @@
 package GenderHealthCareSystem.controller;
 
-import GenderHealthCareSystem.dto.ForgotPasswordRequest;
 import GenderHealthCareSystem.dto.ResetPasswordRequest;
 import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.repository.AccountRepository;
@@ -27,7 +26,6 @@ public class ForgotPasswordController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 1. Gửi OTP về email
     @PostMapping("/forgot-password")
     public ResponseEntity<?> sendOtp(@RequestBody ResetPasswordRequest request) {
         String input = request.getUsernameOrEmail();
@@ -55,7 +53,6 @@ public class ForgotPasswordController {
         ));
     }
 
-    // 2. Xác thực OTP
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody ResetPasswordRequest request) {
         String input = request.getUsernameOrEmail();
@@ -86,7 +83,6 @@ public class ForgotPasswordController {
         return ResponseEntity.ok(Map.of("message", "OTP valid! Please enter new password."));
     }
 
-    // 3. Đổi mật khẩu (chỉ đổi nếu đã xác thực OTP)
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
         String input = request.getUsernameOrEmail();
