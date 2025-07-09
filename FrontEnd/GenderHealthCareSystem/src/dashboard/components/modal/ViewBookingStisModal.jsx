@@ -93,12 +93,12 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
               <Avatar
                 size={80}
                 icon={<UserOutlined />}
-                src={customer.userImageUrl || ""}
+                src={customer?.userImageUrl || ""}
               />
               <Text className="mt-2 font-medium text-lg">
                 {booking.customerName}
               </Text>
-              <Text type="secondary">{customer.email || "Không có"}</Text>
+              <Text type="secondary">{customer?.email || "Không có"}</Text>
             </div>
           </Col>
           <Col span={24} md={18}>
@@ -119,7 +119,7 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
                   </Space>
                 }
               >
-                {customer.phone || "Không có"}
+                {customer?.phone || "Không có"}
               </Descriptions.Item>
               <Descriptions.Item
                 label={
@@ -128,7 +128,7 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
                   </Space>
                 }
               >
-                {customer.address || "Không có"}
+                {customer?.address || "Không có"}
               </Descriptions.Item>
             </Descriptions>
           </Col>

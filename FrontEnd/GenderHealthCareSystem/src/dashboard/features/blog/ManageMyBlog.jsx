@@ -37,7 +37,7 @@ const ManageMyBlog = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 8,
     total: 0,
   });
   const [searchText, setSearchText] = useState("");

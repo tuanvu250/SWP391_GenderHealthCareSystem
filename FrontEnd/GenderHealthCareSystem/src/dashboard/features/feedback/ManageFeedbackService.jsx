@@ -32,7 +32,7 @@ import {
 
 import FeedbackModal from "../../components/modal/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
-import { getAllFeedbackTestingAPI, hideFeedbackTestingAPI } from "../../../components/api/FeedbackTesting.api";
+import { getAllFeedbackTestingAPI, getAverageRatingAPI, hideFeedbackTestingAPI } from "../../../components/api/FeedbackTesting.api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -58,14 +58,7 @@ const ManageFeedbackService = () => {
     avgRating: 0,
   });
 
-  // Mock data cho các dịch vụ
-  const mockServices = [
-    { id: 1, name: "Xét nghiệm HIV" },
-    { id: 2, name: "Xét nghiệm Giang mai" },
-    { id: 3, name: "Xét nghiệm Chlamydia" },
-    { id: 4, name: "Gói xét nghiệm STI cơ bản" },
-    { id: 5, name: "Gói xét nghiệm STI toàn diện" },
-  ];
+  const mockServices = [];
 
   const fetchFeedbacks = async () => {
     setLoading(true);
@@ -75,9 +68,16 @@ const ManageFeedbackService = () => {
         size: pagination.pageSize,
         rating: ratingFilter,
       });
+      const res = await getAverageRatingAPI();
+
       setPagination({
         ...pagination,
-        total: response.data.totalElements,
+        total: response.data.data.totalElements,
+      });
+
+      setStats({
+        total: response.data.data.totalElements,
+        avgRating: res.data
       });
 
       setFeedbacks(response.data.data.content);
@@ -288,6 +288,7 @@ const ManageFeedbackService = () => {
             columns={columns}
             rowKey="feedbackId"
             pagination={pagination}
+            scroll={{ x: "max-content" }}
           />
         ) : (
           <Empty description="Không tìm thấy đánh giá nào phù hợp với điều kiện lọc" />

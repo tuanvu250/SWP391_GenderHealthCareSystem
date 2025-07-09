@@ -105,3 +105,7 @@ export const uploadStisAttachmentsAPI = async (bookingId, attachments) => {
   });
 };
 
+export const markResultAtStisAPI = async (bookingId) => {
+  return apiClient.put(`/stis-bookings/${bookingId}/resulted-at`);
+}
+

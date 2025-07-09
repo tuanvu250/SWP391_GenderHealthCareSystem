@@ -312,7 +312,7 @@ const ManageService = () => {
           loading={loading}
           pagination={pagination}
           onChange={handleTabeChange}
-          scroll={{ x: 1000 }}
+          scroll={{ x: "max-content" }}
           size="middle"
         />
       </Card>

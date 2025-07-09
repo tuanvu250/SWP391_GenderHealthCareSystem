@@ -10,6 +10,7 @@ import {
   Button,
 } from "antd";
 import { FileTextOutlined, DownloadOutlined } from "@ant-design/icons";
+import { formatDateTime } from "../../../components/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -58,7 +59,7 @@ const ViewResultStisModal = ({
             <Text strong>{booking?.serviceName}</Text>
           </Col>
         </Row>
-        <Row gutter={16}>
+        <Row gutter={16} className="mb-4">
           <Col span={12}>
             <Text type="secondary">Khách hàng:</Text>{" "}
             <Text strong>{booking?.customerName}</Text>
@@ -66,6 +67,16 @@ const ViewResultStisModal = ({
           <Col span={12}>
             <Text type="secondary">Số điện thoại:</Text>{" "}
             <Text strong>{customer?.phone}</Text>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Text type="secondary">Email:</Text>{" "}
+            <Text strong>{customer?.email}</Text>
+          </Col>
+          <Col span={12}>
+            <Text type="secondary">Ngày trả kết quả:</Text>{" "}
+            <Text strong>{formatDateTime(booking?.resultedAt)}</Text>
           </Col>
         </Row>
       </Card>

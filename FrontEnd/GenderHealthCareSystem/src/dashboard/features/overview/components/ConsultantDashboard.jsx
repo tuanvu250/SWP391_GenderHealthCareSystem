@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Row,
@@ -11,6 +11,7 @@ import {
   Button,
   Typography,
   Space,
+  message,
 } from "antd";
 import {
   ArrowUpOutlined,
@@ -24,43 +25,105 @@ import {
 } from "@ant-design/icons";
 import ChartComponent from "../../../components/chart/ChartComponent";
 import { pieChartOptions, ratingBarChartOptions } from "../utils/chartConfig";
+import { viewMyBlogsAPI } from "../../../../components/api/Blog.api";
+import { useNavigate } from "react-router-dom";
+import ViewBlogModal from "../../../components/modal/ViewBlogModal";
+import { formatDateTime } from "../../../../components/utils/format";
+import BlogModal from "../../../components/modal/BlogModal";
 
 const { Title, Text } = Typography;
 
 const ConsultantDashboard = ({ stats }) => {
-  // Biểu đồ đánh giá của consultant (thay thế biểu đồ doanh thu)
-  const consultantRatingsChart = stats.ratings
-    ? {
-        labels: ["5 ★", "4 ★", "3 ★", "2 ★", "1 ★"],
-        datasets: [
-          {
-            label: "Số lượng đánh giá",
-            data: [
-              stats.ratings.five || 0,
-              stats.ratings.four || 0,
-              stats.ratings.three || 0,
-              stats.ratings.two || 0,
-              stats.ratings.one || 0,
-            ],
-            backgroundColor: [
-              "rgba(82, 196, 26, 0.6)", // 5 sao - xanh lá
-              "rgba(22, 119, 255, 0.6)", // 4 sao - xanh dương
-              "rgba(250, 173, 20, 0.6)", // 3 sao - vàng
-              "rgba(245, 106, 0, 0.6)", // 2 sao - cam
-              "rgba(245, 34, 45, 0.6)", // 1 sao - đỏ
-            ],
-            borderColor: [
-              "rgba(82, 196, 26, 1)",
-              "rgba(22, 119, 255, 1)",
-              "rgba(250, 173, 20, 1)",
-              "rgba(245, 106, 0, 1)",
-              "rgba(245, 34, 45, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
+  const navigate = useNavigate();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 4,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [blogList, setBlogList] = useState([]);
+  const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const getTagColor = (tag) => {
+    const tagColors = {
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
+      STIs: "red",
+      "Kinh nguyệt": "pink",
+    };
+
+    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
+  };
+
+  const fetchBlogList = async () => {
+    setLoading(true);
+    try {
+      const response = await viewMyBlogsAPI({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+      });
+      if (response && response.data) {
+        setTimeout(() => {
+          const formattedPosts = response.data.data.content.map((post) => {
+            // Chuyển đổi trường tags từ chuỗi thành mảng objects
+            const tagArray = post.tags
+              ? post.tags.split(",").map((tag) => ({
+                  text: tag.trim(),
+                  color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+                }))
+              : [];
+
+            return {
+              ...post,
+              tags: tagArray,
+              // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
+              thumbnailUrl:
+                post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
+                  ? post.thumbnailUrl
+                  : "https://placehold.co/600x400/0099CF/white?text=Gender+Healthcare",
+            };
+          });
+          setBlogList(formattedPosts);
+          setPagination({
+            ...pagination,
+            total: response.data.data.totalElements,
+          });
+          setLoading(false);
+        }, 500);
       }
-    : null;
+    } catch (error) {
+      console.error("Error fetching blog list:", error);
+      message.error("Không thể tải danh sách bài viết");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogList();
+  }, [pagination.current, pagination.pageSize]);
+
+    // Xử lý khi modal thành công (thêm hoặc cập nhật)
+  const handleModalSuccess = () => {
+    setModalVisible(false);
+    fetchBlogList();
+  };
+
+  const handleEditBlog = (blog) => {
+    setModalVisible(true);
+    setSelectedBlog(blog);
+  }
+
+  const handleViewBlog = (blog) => {
+    if (blog) {
+      setSelectedBlog(blog);
+      setViewBlogModalVisible(true);
+    } else {
+      message.error("Không tìm thấy thông tin bài viết");
+    }
+  };
 
   // Biểu đồ thống kê loại hình tư vấn (giữ nguyên)
   const consultationTypesChart = stats.consultationTypes
@@ -295,14 +358,22 @@ const ConsultantDashboard = ({ stats }) => {
         <Col xs={24} md={12}>
           <Card title="Bài viết của tôi" className="h-full">
             <List
-              dataSource={stats.myArticles || []}
+              dataSource={blogList}
+              loading={loading}
+              rowKey="blogId"
               renderItem={(item) => (
                 <List.Item
                   actions={[
-                    <Button key="view" size="small" type="default">
+                    <Button
+                      key="view"
+                      size="small"
+                      type="default"
+                      onClick={() => handleViewBlog(item)}
+                    >
                       Xem
                     </Button>,
-                    <Button key="edit" size="small" type="primary">
+                    <Button key="edit" size="small" type="primary"
+                      onClick={() => handleEditBlog(item)}>
                       Chỉnh sửa
                     </Button>,
                   ]}
@@ -317,34 +388,45 @@ const ConsultantDashboard = ({ stats }) => {
                     description={
                       <>
                         <Text type="secondary">
-                          Đăng ngày {item.publishDate}
+                          Đăng lúc {formatDateTime(item.createdAt)}
                         </Text>
-                        <div className="mt-1">
-                          <Text type="secondary">
-                            <MessageOutlined /> {item.comments} bình luận ·
-                            <StarOutlined className="ml-2 mr-1" /> {item.likes}{" "}
-                            lượt thích
-                          </Text>
-                        </div>
                       </>
                     }
                   />
                   <div>
-                    {item.status === "published" ? (
+                    {item.status === "PUBLISHED" ? (
                       <Tag color="green">Đã đăng</Tag>
-                    ) : item.status === "pending" ? (
+                    ) : item.status === "PENDING" ? (
                       <Tag color="orange">Chờ duyệt</Tag>
                     ) : (
-                      <Tag color="default">Bản nháp</Tag>
+                      <Tag color="red">Từ chối</Tag>
                     )}
                   </div>
                 </List.Item>
               )}
               pagination={{
-                pageSize: 3,
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                onChange: (page, pageSize) => {
+                  setPagination({ current: page, pageSize });
+                },
               }}
             />
           </Card>
+          <ViewBlogModal
+            visible={viewBlogModalVisible}
+            open={viewBlogModalVisible}
+            onClose={() => setViewBlogModalVisible(false)}
+            blog={selectedBlog}
+          />
+          <BlogModal
+            visible={modalVisible}
+            open={modalVisible}
+            onCancel={() => setModalVisible(false)}
+            onSuccess={handleModalSuccess}
+            blog={selectedBlog}
+          />
         </Col>
       </Row>
 
