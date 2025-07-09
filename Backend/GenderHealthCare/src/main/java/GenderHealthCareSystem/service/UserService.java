@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.CreateUserRequest;
 import GenderHealthCareSystem.dto.UpdateUserRequest;
 import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.enums.AccountStatus;
@@ -40,24 +41,53 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void createUser(CreateUserRequest createRequest) {
+        // Find the role
+        Role role = roleRepository.findByRoleName(createRequest.getRole())
+                .orElseThrow(() -> new RuntimeException("Role not found: " + createRequest.getRole()));
+
+        // Create new user
+        Users user = new Users();
+        user.setFullName(createRequest.getFullName());
+        user.setPhone(createRequest.getPhone());
+        user.setRole(role);
+        user.setCreatedAt(LocalDateTime.now());
+        System.out.println("Creating user with role: " + role.getRoleName());
+        // Create new account
+        Account account = new Account();
+        account.setUserName(createRequest.getUsername());
+        account.setEmail(createRequest.getEmail());
+        account.setPassword(passwordEncoder.encode(createRequest.getPassword()));
+        account.setAccountStatus(AccountStatus.ACTIVE);
+        System.out.println("Creating account with username: " + createRequest.getUsername());
+        // Save user first
+        Users savedUser = userRepository.save(user);
+
+        // Set user for account and save
+        account.setUsers(savedUser);
+        accountRepository.save(account);
+        System.out.println("Account saved with user ID: " + savedUser.getUserId());
+        // Return the created user info
+    }
+
     public UserInfoResponse mapToResponse(Users user) {
-        Account account = user.getAccount();
         return new UserInfoResponse(
-            user.getUserId(),
-            account != null ? account.getAccountId() : null,
-            account != null ? account.getUserName() : null,
-            account != null ? account.getEmail() : null,
-            user.getRole() != null ? user.getRole().getRoleName() : null,
-            user.getFullName(),
-            user.getPhone(),
-            user.getGender(),
-            user.getAddress(),
-            user.getUserImageUrl(),
-            user.getBirthDate(),
-            user.getCreatedAt(),
-            user.getUpdatedAt(),
-            user.getProvider(),
-            account != null ? account.getAccountStatus() : null
+                user.getUserId(),
+                user.getAccount().getAccountId(),
+                user.getAccount().getUserName(),
+                user.getAccount().getEmail(),
+                user.getRole().getRoleName(),
+                user.getFullName(),
+                user.getPhone(),
+                user.getGender(),
+                user.getAddress(),
+                user.getUserImageUrl(),
+                user.getBirthDate(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getProvider(),
+                user.getAccount().getAccountStatus()
         );
     }
 
@@ -65,85 +95,40 @@ public class UserService {
                                              String sortBy, String sort, LocalDateTime startDate,
                                              LocalDateTime endDate, String role, AccountStatus status) {
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, direction, sortBy);
 
-        Page<Users> users = userRepository.searchUsers(name, email, phone, startDate, endDate, status, role, pageable);
+        Page<Users> usersPage = userRepository.searchUsers(name, email, phone, startDate, endDate, status, role, pageable);
 
-        List<UserInfoResponse> userInfoResponses = users.getContent().stream()
+        List<UserInfoResponse> userResponses = usersPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(userInfoResponses, pageable, users.getTotalElements());
+        return new PageImpl<>(userResponses, pageable, usersPage.getTotalElements());
     }
 
     @Transactional
     public UserInfoResponse updateUser(int userId, UpdateUserRequest updateRequest) {
         Users user = getUserById(userId);
 
-        // Update user fields if provided
         if (updateRequest.getFullName() != null) {
             user.setFullName(updateRequest.getFullName());
         }
-
         if (updateRequest.getPhone() != null) {
             user.setPhone(updateRequest.getPhone());
         }
-
         if (updateRequest.getGender() != null) {
             user.setGender(updateRequest.getGender());
         }
-
         if (updateRequest.getAddress() != null) {
             user.setAddress(updateRequest.getAddress());
         }
-
-        if (updateRequest.getUserImageUrl() != null) {
-            user.setUserImageUrl(updateRequest.getUserImageUrl());
-        }
-
         if (updateRequest.getBirthDate() != null) {
             user.setBirthDate(updateRequest.getBirthDate());
         }
 
-        // Update role if provided
-        if (updateRequest.getRole() != null) {
-            Role role = roleRepository.findByRoleName(updateRequest.getRole())
-                    .orElseThrow(() -> new RuntimeException("Role not found: " + updateRequest.getRole()));
-            user.setRole(role);
-        }
-        if (updateRequest.getPassword() != null) {
-            if (user.getAccount() == null) {
-                throw new RuntimeException("User account not found for user ID: " + userId);
-            }
-            // Assuming you have a method to encode the password
-            String encodedPassword = passwordEncoder.encode(updateRequest.getPassword());
-            user.getAccount().setPassword(encodedPassword);
-        }
-
-        // Update account fields if provided
-        if (user.getAccount() != null) {
-            if (updateRequest.getUsername() != null) {
-                user.getAccount().setUserName(updateRequest.getUsername());
-            }
-
-            if (updateRequest.getEmail() != null) {
-                user.getAccount().setEmail(updateRequest.getEmail());
-            }
-
-            if (updateRequest.getStatus() != null) {
-                user.getAccount().setAccountStatus(updateRequest.getStatus());
-            }
-        }
-
-        // Update the updatedAt timestamp
         user.setUpdatedAt(LocalDateTime.now());
 
-        // Save the updated user
         Users updatedUser = userRepository.save(user);
-
-        // Return the updated user info
         return mapToResponse(updatedUser);
     }
-
-
 }

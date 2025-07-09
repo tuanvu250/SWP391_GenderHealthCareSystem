@@ -21,9 +21,24 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account account = accountRepository
                 .findByUserNameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với username/email: " + usernameOrEmail));
-        if (!account.getAccountStatus().equals(AccountStatus.ACTIVE)) {
-            throw new BadCredentialsException("Tài khoản không có trạng thái ACTIVE: " + account.getAccountStatus().toString());
+
+        // Throw different exception messages based on account status
+        switch (account.getAccountStatus()) {
+            case ACTIVE:
+                // Account is active, proceed normally
+                break;
+            case INACTIVE:
+                throw new BadCredentialsException("Tài khoản chưa được kích hoạt. ");
+            case SUSPENDED:
+                throw new BadCredentialsException("Tài khoản đã bị tạm khóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.");
+            case DELETED:
+                throw new BadCredentialsException("Tài khoản đã bị xóa. Vui lòng liên hệ quản trị viên nếu đây là lỗi.");
+            case BANNED:
+                throw new BadCredentialsException("Tài khoản đã bị cấm vĩnh viễn. Vui lòng liên hệ quản trị viên nếu đây là lỗi.");
+            default:
+                throw new BadCredentialsException("Tài khoản không hoạt động: " + account.getAccountStatus().toString());
         }
+
         return new CustomUserDetails(account);
     }
 }
