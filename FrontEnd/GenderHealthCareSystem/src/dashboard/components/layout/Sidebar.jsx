@@ -84,7 +84,7 @@ const Sidebar = ({
           {
             key: "reviews",
             icon: <StarOutlined />,
-            label: "Đánh giá và phản hồi",
+            label: <Link to={"/consultant/dashboard/manage-feedback"}>Quản lý đánh giá</Link>,
           },
           {
             key: "blog-management",
@@ -196,8 +196,17 @@ const Sidebar = ({
           },
           {
             key: "feedback-management",
-            icon: <MessageOutlined />,
-            label: <Link to={"/manager/dashboard/manage-feedback-service"}>Quản lý phản hồi dịch vụ</Link>,
+            icon: <StarOutlined />,
+            children: [
+              {
+                key: "manage-feedback-service",
+                label: <Link to={"/manager/dashboard/manage-feedback-service"}>Quản lý đánh giá dịch vụ</Link>,
+              },
+              {
+                key: "manage-feedback-consultant",
+                label: <Link to={"/manager/dashboard/manage-feedback-consultant"}>Quản lý đánh giá tư vấn viên</Link>,
+              },
+            ],
           },
           {
             key: "blog-oversight",
@@ -213,11 +222,6 @@ const Sidebar = ({
             key: "financial",
             icon: <BankOutlined />,
             label: "Tài chính",
-          },
-          {
-            key: "quality-control",
-            icon: <StarOutlined />,
-            label: "Kiểm soát chất lượng",
           },
           {
             key: "reports",
