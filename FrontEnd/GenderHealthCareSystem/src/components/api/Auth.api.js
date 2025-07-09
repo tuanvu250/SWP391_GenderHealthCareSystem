@@ -29,7 +29,7 @@ export const getUserByIdAPI = async (userId) => {
 };
 
 export const getUserProfile = async () => {
-  return apiClient.get("/users/me");
+  return apiClient.get("/profile/me");
 };
 
 export const forgotPasswordAPI = async (usernameOrEmail) => {
