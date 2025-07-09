@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class ConsultantBookingResponse {
 //    private Integer bookingId;
 //    private String consultantName;
-//    private String status;
+
 //    private String paymentUrl;    // URL thanh toán (VNPAY hoặc PayPal)
 //    private String paymentStatus;
 //    private String meetLink;      // URL họp (sau khi thanh toán)
@@ -24,4 +24,5 @@ private Integer bookingId;
     private String paymentStatus;
     private String paymentMethod;
     private String meetLink;
+    private String status;
 }

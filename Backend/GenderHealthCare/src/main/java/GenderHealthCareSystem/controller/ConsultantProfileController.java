@@ -24,7 +24,7 @@ public class ConsultantProfileController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('Consultant')")
+    @PreAuthorize("hasAnyRole('Consultant','Manager','Admin')")
     public ResponseEntity<?> create(@RequestBody ConsultantProfileRequest req,
                                     @AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
@@ -60,7 +60,7 @@ public class ConsultantProfileController {
         }
 
         @GetMapping("/{id}")
-    @PreAuthorize("hasRole('Customer')")
+    @PreAuthorize("hasAnyRole('Customer','Manager','Admin')")
     public ResponseEntity<?> getConsultantProfile(@PathVariable Integer id) {
         try {
             var profile = service.get(id);
