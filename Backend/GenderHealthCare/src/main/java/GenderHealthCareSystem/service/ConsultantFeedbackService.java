@@ -83,11 +83,20 @@ public class ConsultantFeedbackService {
 
     private Integer extractUserIdFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken) {
-            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
-            return jwt.getClaim("userId");
+
+        if (!(authentication instanceof JwtAuthenticationToken)) {
+            throw new IllegalStateException("Xác thực không hợp lệ. Vui lòng đăng nhập lại.");
         }
-        throw new IllegalStateException("Không thể xác thực người dùng");
+
+        JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
+        Jwt jwt = jwtToken.getToken();
+        Long userIdLong = jwt.getClaim("userID");
+
+        if (userIdLong == null) {
+            throw new IllegalStateException("Không tìm thấy thông tin người dùng trong token.");
+        }
+
+        return userIdLong.intValue();
     }
 
 
