@@ -88,24 +88,12 @@ public class ConsultantBookingService {
                 null,
                 booking.getPaymentStatus(),
                 null,
-                booking.getMeetLink()
+                booking.getMeetLink(),
+                booking.getStatus().name() // Added missing status argument
         );
     }
 
 
-
-    public List<ConsultantBookingResponse> getBookingHistory(Integer customerId) {
-        List<ConsultationBooking> bookings = bookingRepo.findByCustomer_UserId(customerId);
-        return bookings.stream().map(b -> new ConsultantBookingResponse(
-                b.getBookingId(),
-                b.getConsultant().getFullName(),
-                b.getBookingDate(),
-                b.getInvoice() != null ? new BigDecimal(b.getInvoice().getTotalAmount()) : null,
-                b.getPaymentStatus(),
-                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null,
-                b.getMeetLink()
-        )).collect(Collectors.toList());
-    }
 
 
 
@@ -183,7 +171,8 @@ public class ConsultantBookingService {
                 cb.getInvoice() != null
                         ? cb.getInvoice().getPaymentMethod()
                         : null,
-                cb.getMeetLink()
+                cb.getMeetLink(),
+                cb.getStatus().name() // Added missing status argument
         ));
     }
 
