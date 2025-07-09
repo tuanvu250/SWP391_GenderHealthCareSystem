@@ -32,7 +32,7 @@ public class ConsultantProfileController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('Consultant')")
+    @PreAuthorize("hasAnyRole('Consultant','Manager','Admin')")
     public ResponseEntity<?> update(@RequestBody ConsultantProfileRequest req,
                                     @AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();

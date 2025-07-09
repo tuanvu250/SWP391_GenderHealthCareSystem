@@ -23,10 +23,10 @@ public class ProfileDetail {
     @Column(name = "DetailType", nullable = false, length = 10)
     private String detailType; // WORK, EDU, CERT
 
-    @Column(name = "Title", length = 100)
+    @Column(name = "Title", length = 100, columnDefinition = "NVARCHAR(100)")
     private String title;
 
-    @Column(name = "Organization", length = 255)
+    @Column(name = "Organization",  columnDefinition = "NVARCHAR(MAX)")
     private String organization;
 
     @Column(name = "FromDate")
