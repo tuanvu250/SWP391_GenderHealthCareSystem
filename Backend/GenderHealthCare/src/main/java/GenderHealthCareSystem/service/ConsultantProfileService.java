@@ -205,6 +205,7 @@ public class ConsultantProfileService {
         res.setHourlyRate(profile.getHourlyRate());
         res.setLocation(profile.getLocation());
         res.setIsAvailable(profile.getIsAvailable());
+        res.setConsultantId(profile.getConsultant().getUserId()); // Added consultantId field
         res.setDetails(profile.getDetails().stream().map(d -> {
             ProfileDetailResponse dr = new ProfileDetailResponse();
             dr.setDetailType(d.getDetailType());
@@ -219,5 +220,3 @@ public class ConsultantProfileService {
         return res;
     }
 }
-
-
