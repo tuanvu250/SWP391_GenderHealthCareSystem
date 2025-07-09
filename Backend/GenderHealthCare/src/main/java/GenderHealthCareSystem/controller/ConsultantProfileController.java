@@ -71,7 +71,7 @@ public class ConsultantProfileController {
     }
 
     @PutMapping("/{id}/employment-status")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
     public ResponseEntity<?> updateEmploymentStatus(@PathVariable Integer id, @RequestParam Boolean employmentStatus) {
         try {
             String result = service.updateEmploymentStatus(id, employmentStatus);
@@ -82,7 +82,7 @@ public class ConsultantProfileController {
     }
 
     @PutMapping("/{id}/hourly-rate")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
     public ResponseEntity<?> updateHourlyRate(@PathVariable Integer id, @RequestParam Double hourlyRate) {
         try {
             String result = service.updateHourlyRate(id, hourlyRate);

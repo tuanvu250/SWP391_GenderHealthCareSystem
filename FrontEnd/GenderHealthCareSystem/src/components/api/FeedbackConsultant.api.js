@@ -38,11 +38,13 @@ export const getMyFeedbackConsultantAPI = async ({
   page = 0,
   size = 10,
   rating = "",
+  search = "",
 }) => {
   const queryParams = new URLSearchParams({
     page,
     size,
     rating,
+    search,
   }).toString();
   return apiClient.get(`/consultant-feedback/my-feedback?${queryParams}`);
 };
@@ -52,12 +54,14 @@ export const getAllFeedbackConsultantAPI = async ({
   size = 10,
   rating = "",
   consultantId = "",
+  search = "",
 }) => {
   const queryParams = new URLSearchParams({
     page,
     size,
     rating,
     consultantId,
+    search,
   }).toString();
   return apiClient.get(`/consultant-feedback?${queryParams}`);
 };

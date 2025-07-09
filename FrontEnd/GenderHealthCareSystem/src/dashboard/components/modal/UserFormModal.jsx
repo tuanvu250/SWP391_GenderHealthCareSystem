@@ -14,7 +14,8 @@ import {
   Typography,
   Tabs,
   Tooltip,
-  Collapse
+  Collapse,
+  Spin
 } from "antd";
 import { 
   CheckCircleOutlined, 
@@ -29,6 +30,7 @@ import {
   BookOutlined,
   BankOutlined
 } from "@ant-design/icons";
+import { getConsultantProfileAPI } from "../../../components/api/Consultant.api";
 import dayjs from "dayjs";
 
 const { Option } = Select;
@@ -47,47 +49,129 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
   const [form] = Form.useForm();
   const isEdit = mode === "edit";
   const [activeTab, setActiveTab] = useState("basic");
+  const [dataDetails, setDataDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Thiết lập giá trị form khi userData thay đổi (chế độ chỉnh sửa)
+  // Reset form và dataDetails khi visible hoặc mode thay đổi
   useEffect(() => {
-    if (userData && visible && isEdit) {
+    // Khi modal mở, kiểm tra nếu là mode thêm mới thì reset hoàn toàn
+    if (visible && !isEdit) {
+      form.resetFields();
+      setDataDetails(null);  // Reset dataDetails để tránh tự động điền
+      setActiveTab("basic");
+      
+      // Set giá trị mặc định cho form thêm mới
       form.setFieldsValue({
+        status: "ACTIVE",
+        isAvailable: true,
+        employmentStatus: true,
+        details: []
+      });
+    }
+    
+    // Khi modal đóng, reset form và data
+    if (!visible) {
+      setActiveTab("basic");
+      setDataDetails(null);
+    }
+  }, [visible, isEdit, form]);
+
+  // Tách việc gọi API ra riêng
+  useEffect(() => {
+    if (userData && visible && isEdit && (userData.role === "Consultant" || userData.roleId === "5")) {
+      getInfoConsultant(userData.userId);
+    }
+  }, [userData, visible, isEdit]);
+
+  // Cập nhật form sau khi có dữ liệu
+  useEffect(() => {
+    if (!userData || !visible) return;
+
+    if (isEdit) {
+      // Cập nhật thông tin cơ bản
+      const basicValues = {
         fullName: userData.fullName,
         username: userData.username,
         email: userData.email,
         phone: userData.phone,
         role: userData.roleId || userData.role,
         status: userData.status,
-        // Thông tin tư vấn viên
-        jobTitle: userData.jobTitle,
-        introduction: userData.introduction,
-        specialization: userData.specialization,
-        languages: userData.languages,
-        experienceYears: userData.experienceYears,
-        hourlyRate: userData.hourlyRate,
-        location: userData.location,
-        isAvailable: userData.isAvailable,
-        employmentStatus: userData.employmentStatus,
-        details: userData.details || [],
-      });
-    } else if (!isEdit) {
-      // Reset form khi mở modal thêm mới và thiết lập giá trị mặc định
-      form.resetFields();
-      form.setFieldsValue({
-        status: "ACTIVE", // Trạng thái mặc định khi thêm mới
+      };
+
+      // Nếu là tư vấn viên và đã có dữ liệu chi tiết
+      if ((userData.role === "Consultant" || userData.roleId === "5") && dataDetails) {
+        // Chuyển đổi các trường ngày tháng trong details
+        const formattedDetails = dataDetails.details?.map(detail => ({
+          ...detail,
+          // Chuyển đổi các chuỗi ngày thành đối tượng dayjs
+          fromDate: detail.fromDate ? dayjs(detail.fromDate) : null,
+          toDate: detail.toDate ? dayjs(detail.toDate) : null,
+          issuedDate: detail.issuedDate ? dayjs(detail.issuedDate) : null,
+        })) || [];
+
+        form.setFieldsValue({
+          ...basicValues,
+          // Thông tin tư vấn viên
+          jobTitle: dataDetails.jobTitle || "",
+          specialization: dataDetails.specialization || "",
+          languages: dataDetails.languages || "",
+          experienceYears: dataDetails.experienceYears || 0,
+          hourlyRate: dataDetails.hourlyRate || 0,
+          location: dataDetails.location || "",
+          introduction: dataDetails.introduction || "",
+          isAvailable: dataDetails.isAvailable ?? true,
+          employmentStatus: dataDetails.employmentStatus ?? true,
+          details: formattedDetails,
+        });
+      } else {
+        // Chỉ set thông tin cơ bản nếu chưa có dữ liệu chi tiết
+        form.setFieldsValue(basicValues);
+      }
+    }
+    // Không cần else ở đây vì đã xử lý trong useEffect khác
+  }, [userData, visible, isEdit, dataDetails, form]);
+
+  const getInfoConsultant = async (consultantId) => {
+    setLoading(true);
+    try {
+      const response = await getConsultantProfileAPI(consultantId);
+      setDataDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching consultant profile:", error);
+      // Set mặc định để tránh lỗi khi không lấy được dữ liệu
+      setDataDetails({
+        jobTitle: "",
+        specialization: "",
+        languages: "",
+        experienceYears: 0,
+        hourlyRate: 0,
+        location: "",
+        introduction: "",
         isAvailable: true,
         employmentStatus: true,
         details: []
       });
+    } finally {
+      setLoading(false);
     }
-  }, [userData, visible, isEdit, form]);
-
+  }
+  
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      // Chỉ validate tab thông tin cơ bản khi thêm mới
+      const allFieldNames = form.getFieldsValue(true);
+      const fieldsToValidate = isEdit 
+        ? Object.keys(allFieldNames) 
+        : ['fullName', 'username', 'email', 'phone', 'password', 'role'];
       
-      // Nếu là tư vấn viên, chuyển đổi các giá trị ngày tháng trong details
-      if (values.role === "Consultant" || values.role === "5") {
+      // Validate các field dựa theo mode
+      await form.validateFields(fieldsToValidate);
+      
+      // Lấy tất cả giá trị form
+      const values = form.getFieldsValue(true);
+      
+      // Nếu là tư vấn viên và đang ở chế độ edit, chuyển đổi các giá trị ngày tháng trong details
+      if (isEdit && (values.role === "Consultant" || values.role === "5") && values.details) {
         if (values.details && values.details.length > 0) {
           values.details = values.details.map(detail => ({
             ...detail,
@@ -96,8 +180,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
             issuedDate: detail.issuedDate ? detail.issuedDate.format('YYYY-MM-DD') : null,
           }));
         }
-      }
-      
+      }    
       onSubmit(values, isEdit ? userData?.userId : undefined);
       
       if (!isEdit) {
@@ -265,17 +348,18 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="jobTitle"
           label="Chức danh"
-          rules={[{ required: true, message: "Vui lòng nhập chức danh" }]}
+          rules={[{ required: isEdit, message: "Vui lòng nhập chức danh" }]}
         >
-          <Input placeholder="Ví dụ: Chuyên gia tư vấn sức khỏe sinh sản" />
+          <Input placeholder="Ví dụ: Chuyên gia tư vấn sức khỏe sinh sản" 
+           disabled/>
         </Form.Item>
 
         <Form.Item
           name="specialization"
           label="Chuyên môn"
-          rules={[{ required: true, message: "Vui lòng nhập chuyên môn" }]}
+          rules={[{ required: isEdit, message: "Vui lòng nhập chuyên môn" }]}
         >
-          <Input placeholder="Ví dụ: Sức khỏe sinh sản, Kế hoạch hóa gia đình" />
+          <Input placeholder="Ví dụ: Sức khỏe sinh sản, Kế hoạch hóa gia đình" disabled />
         </Form.Item>
       </div>
 
@@ -283,13 +367,13 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="experienceYears"
           label="Số năm kinh nghiệm"
-          rules={[{ required: true, message: "Vui lòng nhập số năm kinh nghiệm" }]}
+          rules={[{ required: isEdit, message: "Vui lòng nhập số năm kinh nghiệm" }]}
         >
           <InputNumber 
             min={0} 
             max={50} 
             className="w-full"
-            placeholder="Ví dụ: 5" 
+            placeholder="Ví dụ: 5"  disabled
           />
         </Form.Item>
 
@@ -303,7 +387,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
               </Tooltip>
             </span>
           }
-          rules={[{ required: true, message: "Vui lòng nhập phí tư vấn" }]}
+          rules={[{ required: isEdit, message: "Vui lòng nhập phí tư vấn" }]}
         >
           <InputNumber 
             min={0}
@@ -319,30 +403,30 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="location"
           label="Địa điểm"
-          rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
+          rules={[{ required: isEdit, message: "Vui lòng nhập địa điểm" }]}
         >
-          <Input placeholder="Ví dụ: Hà Nội" />
+          <Input placeholder="Ví dụ: Hà Nội" disabled />
         </Form.Item>
       </div>
 
       <Form.Item
         name="languages"
         label="Ngôn ngữ"
-        rules={[{ required: true, message: "Vui lòng nhập ngôn ngữ" }]}
+        rules={[{ required: isEdit, message: "Vui lòng nhập ngôn ngữ" }]}
       >
-        <Input placeholder="Ví dụ: Tiếng Việt, Tiếng Anh" />
+        <Input placeholder="Ví dụ: Tiếng Việt, Tiếng Anh" disabled/>
       </Form.Item>
 
       <Form.Item
         name="introduction"
         label="Giới thiệu"
-        rules={[{ required: true, message: "Vui lòng nhập giới thiệu" }]}
+        rules={[{ required: isEdit, message: "Vui lòng nhập giới thiệu" }]}
       >
         <Input.TextArea 
           rows={4} 
           placeholder="Giới thiệu ngắn gọn về bản thân và kinh nghiệm làm việc"
           showCount
-          maxLength={500}
+          maxLength={500} disabled
         />
       </Form.Item>
 
@@ -354,7 +438,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         >
           <Switch 
             checkedChildren="Có thể nhận tư vấn" 
-            unCheckedChildren="Không nhận tư vấn" 
+            unCheckedChildren="Không nhận tư vấn" disabled
           />
         </Form.Item>
 
@@ -370,151 +454,136 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         </Form.Item>
       </div>
 
-      <Divider orientation="left">Thông tin chi tiết</Divider>
+      {isEdit && (
+        <>
+          <Divider orientation="left">Thông tin chi tiết</Divider>
 
-      <Form.List name="details">
-        {(fields, { add, remove }) => (
-          <>
-            {fields.map(({ key, name, ...restField }) => (
-              <div key={key} className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-                <div className="flex justify-between items-center mb-2">
-                  <Text strong>Thông tin #{name + 1}</Text>
-                  <Button 
-                    type="text" 
-                    danger
-                    onClick={() => remove(name)} 
-                    icon={<MinusCircleOutlined />} 
-                  >
-                    Xóa
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Form.Item
-                    {...restField}
-                    name={[name, "detailType"]}
-                    label="Loại thông tin"
-                    rules={[{ required: true, message: "Vui lòng chọn loại thông tin" }]}
-                  >
-                    <Select placeholder="Chọn loại thông tin">
-                      {detailTypes.map(type => (
-                        <Option key={type.value} value={type.value}>
-                          <Space>
-                            {type.icon}
-                            {type.label}
-                          </Space>
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item
-                    {...restField}
-                    name={[name, "title"]}
-                    label="Tiêu đề"
-                    rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
-                  >
-                    <Input placeholder="Ví dụ: Bác sĩ Y khoa, Chứng chỉ tư vấn..." />
-                  </Form.Item>
-                </div>
-
-                <Form.Item
-                  {...restField}
-                  name={[name, "organization"]}
-                  label="Tổ chức/Đơn vị"
-                  rules={[{ required: true, message: "Vui lòng nhập tên tổ chức" }]}
-                >
-                  <Input placeholder="Ví dụ: Đại học Y Hà Nội, Bệnh viện Bạch Mai..." />
-                </Form.Item>
-
-                <Form.Item 
-                  noStyle 
-                  shouldUpdate={(prevValues, currentValues) => {
-                    const prevType = prevValues.details?.[name]?.detailType;
-                    const currentType = currentValues.details?.[name]?.detailType;
-                    return prevType !== currentType;
-                  }}
-                >
-                  {({ getFieldValue }) => {
-                    const detailType = getFieldValue(['details', name, 'detailType']);
+          <Form.List name="details">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <div key={key} className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <Text strong>Thông tin #{name + 1}</Text>
+                    </div>
                     
-                    if (detailType === 'CERTIFICATION') {
-                      return (
-                        <Form.Item
-                          {...restField}
-                          name={[name, "issuedDate"]}
-                          label="Ngày cấp"
-                        >
-                          <DatePicker 
-                            className="w-full" 
-                            placeholder="Chọn ngày" 
-                            format="DD/MM/YYYY" 
-                          />
-                        </Form.Item>
-                      );
-                    }
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item
+                        {...restField}
+                        name={[name, "detailType"]}
+                        label="Loại thông tin"
+                        rules={[{ required: isEdit, message: "Vui lòng chọn loại thông tin" }]}
+                      >
+                        <Select placeholder="Chọn loại thông tin">
+                          {detailTypes.map(type => (
+                            <Option key={type.value} value={type.value}>
+                              <Space>
+                                {type.icon}
+                                {type.label}
+                              </Space>
+                            </Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
 
-                    if (detailType === 'EDUCATION' || detailType === 'EXPERIENCE') {
-                      return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Form.Item
-                            {...restField}
-                            name={[name, "fromDate"]}
-                            label="Từ ngày"
-                          >
-                            <DatePicker 
-                              className="w-full" 
-                              placeholder="Chọn ngày bắt đầu" 
-                              format="DD/MM/YYYY" 
-                            />
-                          </Form.Item>
+                      <Form.Item
+                        {...restField}
+                        name={[name, "title"]}
+                        label="Tiêu đề"
+                        rules={[{ required: isEdit, message: "Vui lòng nhập tiêu đề" }]}
+                      >
+                        <Input placeholder="Ví dụ: Bác sĩ Y khoa, Chứng chỉ tư vấn..." disabled />
+                      </Form.Item>
+                    </div>
 
-                          <Form.Item
-                            {...restField}
-                            name={[name, "toDate"]}
-                            label="Đến ngày"
-                          >
-                            <DatePicker 
-                              className="w-full" 
-                              placeholder="Chọn ngày kết thúc" 
-                              format="DD/MM/YYYY" 
-                            />
-                          </Form.Item>
-                        </div>
-                      );
-                    }
+                    <Form.Item
+                      {...restField}
+                      name={[name, "organization"]}
+                      label="Tổ chức/Đơn vị"
+                      rules={[{ required: isEdit, message: "Vui lòng nhập tên tổ chức" }]}
+                    >
+                      <Input placeholder="Ví dụ: Đại học Y Hà Nội, Bệnh viện Bạch Mai..." disabled />
+                    </Form.Item>
 
-                    return null;
-                  }}
-                </Form.Item>
+                    <Form.Item 
+                      noStyle 
+                      shouldUpdate={(prevValues, currentValues) => {
+                        const prevType = prevValues.details?.[name]?.detailType;
+                        const currentType = currentValues.details?.[name]?.detailType;
+                        return prevType !== currentType;
+                      }}
+                    >
+                      {({ getFieldValue }) => {
+                        const detailType = getFieldValue(['details', name, 'detailType']);
+                        
+                        if (detailType === 'CERTIFICATION') {
+                          return (
+                            <Form.Item
+                              {...restField}
+                              name={[name, "issuedDate"]}
+                              label="Ngày cấp"
+                            >
+                              <DatePicker 
+                                className="w-full" 
+                                placeholder="Chọn ngày" 
+                                format="DD/MM/YYYY"  disabled
+                              />
+                            </Form.Item>
+                          );
+                        }
 
-                <Form.Item
-                  {...restField}
-                  name={[name, "description"]}
-                  label="Mô tả"
-                >
-                  <Input.TextArea rows={2} placeholder="Mô tả chi tiết..." />
-                </Form.Item>
-              </div>
-            ))}
+                        if (detailType === 'EDUCATION' || detailType === 'EXPERIENCE') {
+                          return (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <Form.Item
+                                {...restField}
+                                name={[name, "fromDate"]}
+                                label="Từ ngày"
+                              >
+                                <DatePicker 
+                                  className="w-full" 
+                                  placeholder="Chọn ngày bắt đầu" 
+                                  format="DD/MM/YYYY" disabled
+                                />
+                              </Form.Item>
 
-            <Form.Item>
-              <Button 
-                type="dashed" 
-                onClick={() => add()} 
-                block 
-                icon={<PlusOutlined />}
-                className="mt-2"
-              >
-                Thêm thông tin chi tiết
-              </Button>
-            </Form.Item>
-          </>
-        )}
-      </Form.List>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "toDate"]}
+                                label="Đến ngày"
+                              >
+                                <DatePicker 
+                                  className="w-full" 
+                                  placeholder="Chọn ngày kết thúc" 
+                                  format="DD/MM/YYYY" disabled
+                                />
+                              </Form.Item>
+                            </div>
+                          );
+                        }
+
+                        return null;
+                      }}
+                    </Form.Item>
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, "description"]}
+                      label="Mô tả"
+                    >
+                      <Input.TextArea rows={2} placeholder="Mô tả chi tiết..." disabled/>
+                    </Form.Item>
+                  </div>
+                ))}
+              </>
+            )}
+          </Form.List>
+        </>
+      )}
     </div>
   );
 
+  // Cập nhật phần render Tab với thông báo chỉ dẫn cho người dùng
   return (
     <Modal
       title={isEdit ? "Chỉnh sửa thông tin người dùng" : "Thêm người dùng mới"}
@@ -523,56 +592,82 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
       footer={null}
       destroyOnClose={true}
       width={800}
+      confirmLoading={loading}
     >
-      <Form 
-        form={form} 
-        layout="vertical"
-        initialValues={{
-          details: [],
-          isAvailable: true,
-          employmentStatus: true
-        }}
-      >
-        <Form.Item
-          noStyle
-          shouldUpdate={(prevValues, currentValues) => 
-            prevValues.role !== currentValues.role
-          }
-        >
-          {({ getFieldValue }) => {
-            const role = getFieldValue("role");
-            const isConsultant = role === "Consultant" || role === "5";
-            
-            if (isConsultant) {
-              return (
-                <Tabs 
-                  activeKey={activeTab} 
-                  onChange={setActiveTab}
-                  className="mb-4"
-                >
-                  <TabPane tab="Thông tin cơ bản" key="basic">
-                    {renderBasicInfo()}
-                  </TabPane>
-                  <TabPane tab="Thông tin tư vấn viên" key="consultant">
-                    {renderConsultantInfo()}
-                  </TabPane>
-                </Tabs>
-              );
-            }
-            
-            return renderBasicInfo();
-          }}
-        </Form.Item>
-
-        <div className="flex justify-end mt-4">
-          <Button className="mr-2" onClick={onCancel}>
-            Hủy
-          </Button>
-          <Button type="primary" onClick={handleSubmit}>
-            {isEdit ? "Lưu thay đổi" : "Thêm người dùng"}
-          </Button>
+      {loading && isEdit && (userData?.role === "Consultant" || userData?.roleId === "5") ? (
+        <div className="flex justify-center py-8">
+          <Spin tip="Đang tải thông tin tư vấn viên..." />
         </div>
-      </Form>
+      ) : (
+        <Form 
+          form={form} 
+          layout="vertical"
+          initialValues={{
+            details: [],
+            isAvailable: true,
+            employmentStatus: true
+          }}
+        >
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => 
+              prevValues.role !== currentValues.role
+            }
+          >
+            {({ getFieldValue }) => {
+              const role = getFieldValue("role");
+              const isConsultant = role === "Consultant" || role === "5";
+              
+              if (isConsultant) {
+                if (isEdit) {
+                  // Hiển thị tab đầy đủ khi là chế độ edit
+                  return (
+                    <Tabs 
+                      activeKey={activeTab} 
+                      onChange={setActiveTab}
+                      className="mb-4"
+                    >
+                      <TabPane tab="Thông tin cơ bản" key="basic" forceRender={true}>
+                        {renderBasicInfo()}
+                      </TabPane>
+                      <TabPane tab="Thông tin tư vấn viên" key="consultant" forceRender={true}>
+                        {renderConsultantInfo()}
+                      </TabPane>
+                    </Tabs>
+                  );
+                } else {
+                  // Chỉ hiển thị thông tin cơ bản với thông báo khi thêm mới
+                  return (
+                    <>
+                      {renderBasicInfo()}
+                      <div className="mt-4 p-4 bg-blue-50 text-blue-700 rounded-md border border-blue-200">
+                        <div className="flex items-center">
+                          <InfoCircleOutlined className="text-blue-500 text-lg mr-2" />
+                          <Text strong>Bạn đã chọn thêm tài khoản tư vấn viên</Text>
+                        </div>
+                        <Text className="block mt-2">
+                          Thông tin chi tiết của tư vấn viên sẽ được bổ sung sau khi tạo tài khoản thành công. Hãy điền đầy đủ các thông tin cơ bản trước.
+                        </Text>
+                      </div>
+                    </>
+                  );
+                }
+              }
+              
+              return renderBasicInfo();
+            }}
+          </Form.Item>
+
+          <div className="flex justify-end mt-4">
+            <Button className="mr-2" onClick={onCancel}>
+              Hủy
+            </Button>
+            <Button type="primary" onClick={handleSubmit}>
+              {isEdit ? "Lưu thay đổi" : "Thêm người dùng"}
+            </Button>
+          </div>
+        </Form>
+      )}
     </Modal>
   );
 };

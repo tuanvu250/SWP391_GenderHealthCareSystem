@@ -97,7 +97,7 @@ const ManageFeedbackConsultant = () => {
           page: pagination.current - 1,
           size: pagination.pageSize,
           rating: ratingFilter,
-          //search: searchText,
+          search: searchText,
         });
 
         // Get average rating for this consultant
@@ -114,7 +114,7 @@ const ManageFeedbackConsultant = () => {
           size: pagination.pageSize,
           rating: ratingFilter,
           consultantId: consultantFilter || "",
-          //search: searchText,
+          search: searchText,
         });
 
         // Get overall average rating
@@ -339,9 +339,8 @@ const ManageFeedbackConsultant = () => {
             enterButton={<SearchOutlined />}
             onSearch={setSearchText}
             onChange={(e) => {
-              if (!e.target.value) {
-                setSearchText("");
-              }
+              setSearchText(e.target.value);
+              setPagination({ ...pagination, current: 1 });
             }}
           />
 
