@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<Users,Integer> {
             "AND (:startDate IS NULL OR u.createdAt >= :startDate) " +
             "AND (:endDate IS NULL OR u.createdAt <= :endDate)" +
             "AND (:status IS NULL OR u.account.accountStatus = :status) " +
-            "AND (:role IS NULL OR u.role.roleName = :role)")
+            "AND (:role IS NULL OR u.role.roleName Like %:role%)")
     Page<Users> searchUsers(@Param("name") String name,
                             @Param("email") String email,
                             @Param("phone") String phone,

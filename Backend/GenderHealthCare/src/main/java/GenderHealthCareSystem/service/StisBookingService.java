@@ -56,7 +56,7 @@ public class StisBookingService {
         return stisBookingRepository.findById(id);
     }
 
-    public StisBooking createBooking(StisBookingRequest booking) {
+    public StisBookingResponse createBooking(StisBookingRequest booking) {
         StisBooking stisBooking = new StisBooking();
         if (this.stisBookingRepository.countByUserIdAndBookingDate(booking.getCustomerId(),
                 booking.getBookingDate().atStartOfDay(), booking.getBookingDate().atTime(LocalTime.MAX)) > 0) {
@@ -79,7 +79,7 @@ public class StisBookingService {
         stisBooking.setCreatedAt(LocalDateTime.now());
         stisBooking.setUpdatedAt(LocalDateTime.now());
 
-        return stisBookingRepository.save(stisBooking);
+        return mapToResponse(stisBookingRepository.save(stisBooking)) ;
     }
 
     public StisBooking updateBooking(StisBookingRequest newBooking, Integer id) {

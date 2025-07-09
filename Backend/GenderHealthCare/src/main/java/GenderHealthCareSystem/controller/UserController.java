@@ -2,6 +2,7 @@ package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.dto.ChangePasswordRequest;
+import GenderHealthCareSystem.dto.UpdateUserRequest;
 import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.enums.AccountStatus;
 import GenderHealthCareSystem.model.Account;
@@ -45,6 +46,7 @@ public class UserController {
                 HttpStatus.OK
         );
     }
+
 
     @GetMapping("/me")
     public UserInfoResponse getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
@@ -105,5 +107,21 @@ public class UserController {
         }
 
         return accountService.changePassword(Integer.parseInt(accountId), request);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<?>> updateUser(@PathVariable int id, @RequestBody UpdateUserRequest updateRequest) {
+        try {
+            UserInfoResponse updatedUser = userService.updateUser(id, updateRequest);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK, "User updated successfully", updatedUser, null),
+                    HttpStatus.OK
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to update user", null, e.getMessage()),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 }

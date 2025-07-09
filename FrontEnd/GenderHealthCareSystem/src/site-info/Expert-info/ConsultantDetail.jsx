@@ -92,70 +92,16 @@ export default function ConsultantDetail() {
         </div>
 
         <button
-          onClick={() => setShowForm(true)}
-          className="mt-6 bg-[#0099CF] hover:bg-[#0077aa] text-white font-semibold py-2 px-6 rounded-lg"
+          onClick={() => navigate(-1)}
+          className="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg"
         >
-          Đặt lịch tư vấn
+          ← Quay lại
         </button>
+
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in-up">
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
-              onClick={handleCloseForm}
-            >✕</button>
 
-            <h3 className="text-xl font-bold mb-4 text-[#0099CF]">Đặt lịch tư vấn với {expert.fullName}</h3>
-
-            <form className="space-y-4" onSubmit={handleSubmitBooking}>
-              <input type="text" name="fullName" placeholder="Họ và tên *" required defaultValue={defaultName}
-                     className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]" />
-              <input type="tel" name="phone" placeholder="Số điện thoại *" required defaultValue={defaultPhone}
-                     className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]" />
-              <input type="email" name="email" placeholder="Email (Tùy chọn)" defaultValue={defaultEmail}
-                     className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]" />
-              <input type="date" name="date" required
-                     className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]" />
-              <select name="timeSlot" required
-                      className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]">
-                <option value="">-- Chọn khung giờ tư vấn *</option>
-                <option value="08:00 - 09:00">08:00 - 09:00</option>
-                <option value="09:00 - 10:00">09:00 - 10:00</option>
-                <option value="10:00 - 11:00">10:00 - 11:00</option>
-                <option value="13:30 - 14:30">13:30 - 14:30</option>
-                <option value="15:00 - 16:00">15:00 - 16:00</option>
-                <option value="16:30 - 17:30">16:30 - 17:30</option>
-              </select>
-              <label className="flex items-start border rounded-lg p-4 cursor-pointer hover:shadow-md">
-                <input type="radio" name="paymentMethod" value="bank" required className="mt-1.5 accent-[#0099CF]" />
-                <div className="ml-3">
-                  <div className="flex items-center space-x-2 text-gray-800 font-semibold">
-                    <AiFillBank className="text-xl" /><span>Thanh toán trực tuyến</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">ATM/Visa/MasterCard/QR Code</p>
-                </div>
-              </label>
-              <label className="flex items-start border rounded-lg p-4 cursor-pointer hover:shadow-md">
-                <input type="radio" name="paymentMethod" value="paypal" className="mt-1.5 accent-[#0099CF]" />
-                <div className="ml-3">
-                  <div className="flex items-center space-x-2 text-gray-800 font-semibold">🅿️<span>PayPal</span></div>
-                  <p className="text-sm text-gray-500 mt-1">Tài khoản PayPal hoặc thẻ quốc tế</p>
-                </div>
-              </label>
-              <textarea name="notes" rows={3} placeholder="Ghi chú thêm (nếu có)"
-                        className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-[#0099CF]" />
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={handleCloseForm}
-                        className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300">Hủy</button>
-                <button type="submit"
-                        className="bg-[#0099CF] text-white px-6 py-2 rounded-lg hover:bg-[#0077aa]">Xác nhận đặt lịch</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    
+      </div>
+);
 }

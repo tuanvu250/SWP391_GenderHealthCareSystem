@@ -35,8 +35,8 @@ const BookingResult = () => {
   const isVNpay = !!vnpayResponseCode;
   const isPaypal = !!paymentId && !!payerId;
 
+  // ✅ THÊM VÀO ĐÂY — không còn lỗi nữa
   const bookingType = localStorage.getItem("bookingType") || "sti";
-  const paypalFlagKey = `paypal_success_${paymentId}`;
 
   const isPaymentSuccessful = () => {
     if (isVNpay) return vnpayResponseCode === "00";
@@ -44,60 +44,54 @@ const BookingResult = () => {
     return false;
   };
 
-useEffect(() => {
-  const onFinish = async () => {
-    const checkResult = isPaymentSuccessful();
-    setCheck(checkResult);
+  useEffect(() => {
+    const onFinish = async () => {
+      const checkResult = isPaymentSuccessful();
+      setCheck(checkResult);
 
-    if (!hasCreatedInvoice.current && checkResult) {
-      hasCreatedInvoice.current = true;
+      if (!hasCreatedInvoice.current && checkResult) {
+        hasCreatedInvoice.current = true;
 
-      try {
-        console.log(">>> bookingType:", bookingType, "| isVNpay:", isVNpay, "| isPaypal:", isPaypal);
+        try {
+          // ✅ DEBUG
+          console.log(">>> bookingType:", bookingType, "| isVNpay:", isVNpay, "| isPaypal:", isPaypal);
 
-        if (bookingType === "consultant") {
-          if (isVNpay) {
-            const queryParamsObj = Object.fromEntries(queryParams.entries());
-            await consultantVNPaySuccessAPI(queryParamsObj);
-          } else if (isPaypal) {
-            // ✅ Thêm flag sessionStorage để không gọi lại
-            const flag = `paypal_success_${paymentId}`;
-            if (!sessionStorage.getItem(flag)) {
+          if (bookingType === "consultant") {
+            if (isVNpay) {
+              const queryParamsObj = Object.fromEntries(queryParams.entries());
+              await consultantVNPaySuccessAPI(queryParamsObj);
+            } else if (isPaypal) {
               await consultantPaypalSuccessAPI(paymentId, payerId);
-              sessionStorage.setItem(flag, "true");
             } else {
-              console.log("✅ PayPal already handled in backend, skipping re-call.");
+              message.error("Không xác định phương thức thanh toán.");
+              return;
             }
           } else {
-            message.error("Không xác định phương thức thanh toán.");
-            return;
+            // STI hoặc loại khác
+            if (isVNpay || isPaypal) {
+              await createInvoiceAPI(fullQueryString);
+            } else {
+              message.error("Không xác định phương thức thanh toán.");
+              return;
+            }
           }
-        } else {
-          if (isVNpay || isPaypal) {
-            await createInvoiceAPI(fullQueryString);
-          } else {
-            message.error("Không xác định phương thức thanh toán.");
-            return;
-          }
+
+          localStorage.removeItem("bookingID");
+          localStorage.removeItem("amount");
+          localStorage.removeItem("orderInfo");
+          localStorage.removeItem("bookingType");
+        } catch (error) {
+          console.error("❌ Error creating invoice:", error);
+          message.error(
+            error.response?.data?.message ||
+              "Có lỗi xảy ra khi xác nhận thanh toán."
+          );
         }
-
-        localStorage.removeItem("bookingID");
-        localStorage.removeItem("amount");
-        localStorage.removeItem("orderInfo");
-        localStorage.removeItem("bookingType");
-      } catch (error) {
-        console.error("❌ Error creating invoice:", error);
-        message.error(
-          error.response?.data?.message ||
-            "Có lỗi xảy ra khi xác nhận thanh toán."
-        );
       }
-    }
-  };
+    };
 
-  onFinish();
-}, [fullQueryString]);
-
+    onFinish();
+  }, [fullQueryString]);
 
   const handlePaymentAgain = async () => {
     try {

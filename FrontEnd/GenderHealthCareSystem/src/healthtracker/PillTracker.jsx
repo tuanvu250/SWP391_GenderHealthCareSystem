@@ -13,40 +13,53 @@ export default function PillTracker() {
   const [hasSchedule, setHasSchedule] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkExistingSchedule = async () => {
-      try {
-        const res = await getAllPillSchedules();
-        const data = res?.data ?? [];
+const checkExistingSchedule = async () => {
+  try {
+    const res = await getAllPillSchedules();
+    const data = res?.data ?? [];
 
-        if (data.length > 0) {
-          // ✅ Có dữ liệu từ DB
-          const firstItem = data.find(item => !item.isPlacebo);
-          if (firstItem) {
-            const inferredType = data.length === 21 ? '21' : '28';
-            const dateOnly = firstItem.pillDate.slice(0, 10);
-            setPillStartDate(dateOnly);
-            setPillType(inferredType);
-            setHasSchedule(true);
-            localStorage.setItem('pillStartDate', dateOnly);
-            localStorage.setItem('pillType', inferredType);
-            return;
-          }
-        }
+    const valid = data.filter(item => !item.isPlacebo && item.createdAt);
 
-        // ❌ Không có dữ liệu hợp lệ => clear
-        setHasSchedule(false);
-        setPillStartDate('');
-        setPillType('28');
-        localStorage.removeItem('pillStartDate');
-        localStorage.removeItem('pillType');
-      } catch (err) {
-        console.error('❌ Lỗi kiểm tra lịch thuốc:', err);
-      }
-    };
+    if (valid.length === 0) {
+      // ❌ Không có viên thuốc nào hợp lệ
+      setHasSchedule(false);
+      setPillStartDate('');
+      setPillType('28');
+      localStorage.removeItem('pillStartDate');
+      localStorage.removeItem('pillType');
+      return;
+    }
 
-    checkExistingSchedule();
-  }, []);
+    // ✅ Nhóm theo createdAt
+    const grouped = {};
+    valid.forEach(item => {
+      const key = item.createdAt;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    });
+
+    // ✅ Tìm createdAt mới nhất
+    const createdAts = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+    const latestGroup = grouped[createdAts[0]];
+
+    // ✅ Lấy ngày bắt đầu và loại thuốc
+    const sortedByDate = latestGroup.sort((a, b) => new Date(a.pillDate) - new Date(b.pillDate));
+    const start = sortedByDate[0].pillDate.slice(0, 10);
+    const type = sortedByDate.length >= 28 ? '28' : '21';
+
+    // ✅ Set state và localStorage
+    setPillStartDate(start);
+    setPillType(type);
+    setHasSchedule(true);
+    localStorage.setItem('pillStartDate', start);
+    localStorage.setItem('pillType', type);
+  } catch (err) {
+    console.error('❌ Lỗi kiểm tra lịch thuốc:', err);
+    setHasSchedule(false); // fallback
+  }
+};
+
+
 
   const fetchPillSchedule = async () => {
     if (!pillStartDate) {
@@ -62,7 +75,7 @@ export default function PillTracker() {
         pillType,
         timeOfDay: '08:00:00',
         isActive: true,
-        notificationFrequency: notificationDaily ? 'DAILY' : 'NONE'
+        notificationFrequency: notificationDaily ? 'DAILY' : 'NONE',
       };
 
       const res = await pillAPI(pillData);
@@ -70,8 +83,8 @@ export default function PillTracker() {
 
       localStorage.setItem('pillStartDate', pillStartDate);
       localStorage.setItem('pillType', pillType);
-
       setHasSchedule(true);
+
       navigate('/pill-schedule', { state: { schedule: scheduleArray } });
     } catch (err) {
       console.error('❌ Lỗi khi tạo lịch thuốc:', err);
@@ -83,10 +96,11 @@ export default function PillTracker() {
   };
 
   const handleReset = () => {
-    // 👉 Không xóa localStorage, cho người dùng nhập lại
     setHasSchedule(false);
     setPillStartDate('');
     setPillType('28');
+    localStorage.removeItem('pillStartDate');
+    localStorage.removeItem('pillType');
   };
 
   return (

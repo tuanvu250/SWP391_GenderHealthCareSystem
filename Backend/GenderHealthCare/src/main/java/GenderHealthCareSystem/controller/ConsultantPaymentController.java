@@ -41,10 +41,10 @@ public class ConsultantPaymentController {
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-      //   private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-      //   private static final String CANCEL_URL = "http://localhost:5173/booking-result";
-    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
-    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
+         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
+         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
                                                      @RequestParam String method,
