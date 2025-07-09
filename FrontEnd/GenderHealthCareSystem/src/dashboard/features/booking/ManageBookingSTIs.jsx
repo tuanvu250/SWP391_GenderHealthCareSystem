@@ -574,7 +574,7 @@ const ManageBookingStis = () => {
           loading={loading}
           pagination={pagination}
           onChange={(pagination) => setPagination(pagination)}
-          scroll={{ x: 1300 }}
+          scroll={{ x: "max-content" }}
           size="middle"
         />
 

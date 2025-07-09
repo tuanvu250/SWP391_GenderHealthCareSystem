@@ -55,3 +55,7 @@ export const deleteFeedbackTestingAPI = async (feedbackId) => {
 export const hideFeedbackTestingAPI = async (feedbackId) => {
   return apiClient.put(`/stis-feedback/${feedbackId}/hide`);
 };
+
+export const getAverageRatingAPI = async () => {
+  return apiClient.get(`/stis-feedback/total-average`);
+}

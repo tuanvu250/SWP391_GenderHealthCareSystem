@@ -172,6 +172,8 @@ const STIBooking = () => {
       };
       const response = await bookStisAPI(bookingData);
 
+      console.log("Booking response:", response.data);
+
       if (allValues.paymentMethod === "cash") {
         // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
@@ -195,7 +197,6 @@ const STIBooking = () => {
 
   const handlePayment = async (bookingID, paymentMethod) => {
     try {
-      console.log(">>> $$$: ", convertVndToUsd(totalPrice));
       const response =
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(

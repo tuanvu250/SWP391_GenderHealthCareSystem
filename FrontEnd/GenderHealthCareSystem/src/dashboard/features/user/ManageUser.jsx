@@ -8,46 +8,74 @@ import {
   Card,
   Typography,
   Tabs,
-  Modal,
-  Form,
   Select,
   message,
   Avatar,
   Tooltip,
   Popconfirm,
+  DatePicker,
+  Dropdown,
+  Menu,
+  Form,
+  Row,
+  Col,
+  Divider,
+  Modal,
 } from "antd";
+import {
+  UserAddOutlined,
+  FilterOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  DownOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../../../components/provider/AuthProvider";
-import { getAllUsersAPI } from "../../../components/api/Users.api";
-import Item from "antd/es/list/Item";
+import {
+  createUserAPI,
+  editUserAPI,
+  getAllUsersAPI,
+  pathStatusUserAPI,
+} from "../../../components/api/Users.api";
+import UserFormModal from "../../components/modal/UserFormModal";
+import { formatDateTime } from "../../../components/utils/format";
+
+import {
+  UserOutlined,
+  StopOutlined,
+  LockOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
 const { TabPane } = Tabs;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const ManageUser = () => {
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === "Admin";
   const isManager = currentUser?.role === "Manager";
+  const [form] = Form.useForm();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState(isAdmin ? "all" : "staff");
+  const [searchType, setSearchType] = useState("name"); // name, email, phone
+  const [dateRange, setDateRange] = useState(null);
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [activeTab, setActiveTab] = useState(isAdmin ? "" : "Staff");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 8,
     total: 0,
   });
 
-  // State cho modal thêm/sửa user
-  const [userModal, setUserModal] = useState({
-    visible: false,
-    mode: "add", // "add" hoặc "edit"
-    currentUser: null,
-  });
-
-  const [form] = Form.useForm();
+  // State cho modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Fetch danh sách user
   useEffect(() => {
@@ -57,17 +85,37 @@ const ManageUser = () => {
   // Lọc user dựa trên tab active và search text
   useEffect(() => {
     fetchUsers();
-  }, [searchText, activeTab]);
+  }, [
+    searchText,
+    searchType,
+    activeTab,
+    pagination.current,
+    pagination.pageSize,
+    dateRange,
+  ]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await getAllUsersAPI({
+      // Chuẩn bị các tham số cho API
+      const params = {
         page: pagination.current - 1,
         size: pagination.pageSize,
         role: activeTab,
-        name: searchText,
-      });
+      };
+
+      // Thêm điều kiện tìm kiếm theo loại
+      if (searchText) {
+        params[searchType] = searchText;
+      }
+
+      // Thêm điều kiện lọc theo ngày tạo
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params.startDate = dateRange[0].format("YYYY-MM-DDT00:00");
+        params.endDate = dateRange[1].format("YYYY-MM-DDT00:00");
+      }
+
+      const response = await getAllUsersAPI(params);
 
       setUsers(response.data.data.content);
       setPagination({
@@ -84,12 +132,76 @@ const ManageUser = () => {
     }
   };
 
-  const handleSubmitUserForm = async (values) => {};
+  const handleResetFilter = () => {
+    setSearchText("");
+    setSearchType("name");
+    setDateRange(null);
+    form.resetFields();
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  const handleDateRangeChange = (dates) => {
+    setDateRange(dates);
+    setPagination({ ...pagination, current: 1 });
+  };
+
+  // Xử lý thêm người dùng mới
+  const handleAddUser = () => {
+    setModalMode("add");
+    setSelectedUser(null);
+    setModalVisible(true);
+  };
+
+  // Xử lý chỉnh sửa thông tin người dùng
+  const handleEditUser = (user) => {
+    setModalMode("edit");
+    setSelectedUser(user);
+    setModalVisible(true);
+  };
+
+  // Xử lý submit form từ modal
+  const handleSubmitUser = async (values, userId) => {
+    try {
+      if (userId) {
+        await editUserAPI(userId, values);
+        message.success("Cập nhật thông tin người dùng thành công!");
+      } else {
+        await createUserAPI(values);
+        message.success("Thêm người dùng mới thành công!");
+      }
+
+      setModalVisible(false);
+      fetchUsers(); // Refresh danh sách
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi xử lý người dùng"
+      );
+      console.error("Error processing user:", error);
+    }
+  };
 
   // Xử lý thay đổi tab
   const handleTabChange = (key) => {
     setActiveTab(key);
+    setPagination({ ...pagination, current: 1 });
   };
+
+  // Xử lý thay đổi pagination
+  const handleTableChange = (pagination) => {
+    setPagination(pagination);
+  };
+
+  // Menu cho dropdown search type
+  const searchTypeMenu = (
+    <Menu selectedKeys={[searchType]} onClick={({ key }) => setSearchType(key)}>
+      <Menu.Item key="name">Họ tên</Menu.Item>
+      <Menu.Item key="email">Email</Menu.Item>
+      <Menu.Item key="phone">Số điện thoại</Menu.Item>
+    </Menu>
+  );
 
   // Tạo cấu hình cột cho từng loại user
   const getColumns = () => {
@@ -99,6 +211,7 @@ const ManageUser = () => {
         title: "ID",
         dataIndex: "userId",
         key: "userId",
+        width: 80,
       },
       {
         title: "Họ tên",
@@ -106,7 +219,13 @@ const ManageUser = () => {
         key: "fullName",
         render: (text, record) => (
           <div className="flex items-center gap-2">
-            <Avatar src={record.userImageUrl || ""} className="mr-2" />
+            <Avatar
+              src={
+                record.userImageUrl ||
+                `https://placehold.co/32x32/0099CF/FFF?text=${text[0]}`
+              }
+              className="mr-2"
+            />
             <span>{text}</span>
           </div>
         ),
@@ -122,68 +241,107 @@ const ManageUser = () => {
         key: "phone",
       },
       {
+        title: "Ngày tạo",
+        dataIndex: "createdAt",
+        key: "createdAt",
+        render: (date) => (date ? formatDateTime(date) : "Chưa xác định"),
+      },
+      {
         title: "Trạng thái",
         dataIndex: "status",
         key: "status",
-        render: (status) => (
-          <Tag color={status === "ACTIVE" ? "green" : "red"}>
-            {status === "ACTIVE" ? "Hoạt động" : "Vô hiệu"}
-          </Tag>
-        ),
+        render: (status) => {
+          let color, text, icon;
+
+          switch (status) {
+            case "ACTIVE":
+              color = "green";
+              text = "Hoạt động";
+              icon = <CheckCircleOutlined />;
+              break;
+            case "SUSPENDED":
+              color = "orange";
+              text = "Tạm khóa";
+              icon = <StopOutlined />;
+              break;
+            case "BANNED":
+              color = "red";
+              text = "Vô hiệu hóa vĩnh viễn";
+              icon = <LockOutlined />;
+              break;
+            case "DELETED":
+              color = "default";
+              text = "Đã xóa";
+              icon = <DeleteOutlined />;
+              break;
+            default:
+              color = "default";
+              text = "Không xác định";
+              icon = <UserOutlined />;
+          }
+
+          return (
+            <Tag color={color} icon={icon}>
+              {text}
+            </Tag>
+          );
+        },
       },
     ];
 
-    // Cột thao tác
+    // Cột thao tác - cập nhật với menu dropdown để chọn trạng thái
     const actionColumn = {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => (
-        <Space size="small">
-          <Button size="small" onClick={() => handleEditUser(record)}>
-            Sửa
-          </Button>
+      width: 200,
+      render: (_, record) => {
+        // Không hiển thị các action với tài khoản đã xóa
+        if (record.status === "DELETED") {
+          return <Tag color="default">Không có thao tác</Tag>;
+        }
 
-          {/* Kích hoạt/Vô hiệu hóa tài khoản */}
-          <Popconfirm
-            title={`${
-              record.status === "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt"
-            } tài khoản này?`}
-            onConfirm={() => handleToggleStatus(record)}
-            okText="Xác nhận"
-            cancelText="Hủy"
-          >
-            <Button
-              size="small"
-              type={record.status === "ACTIVE" ? "default" : "primary"}
-            >
-              {record.status === "ACTIVE" ? "Vô hiệu" : "Kích hoạt"}
+        // Menu cho dropdown action
+        const actionMenu = (
+          <Menu onClick={({ key }) => handleStatusChange(record, key)}>
+            {record.status !== "ACTIVE" && (
+              <Menu.Item key="ACTIVE" icon={<CheckCircleOutlined />}>
+                Kích hoạt
+              </Menu.Item>
+            )}
+            {record.status !== "SUSPENDED" && (
+              <Menu.Item key="SUSPENDED" icon={<StopOutlined />}>
+                Tạm khóa
+              </Menu.Item>
+            )}
+            {record.status !== "BANNED" && (
+              <Menu.Item key="BANNED" icon={<LockOutlined />}>
+                Vô hiệu hóa vĩnh viễn
+              </Menu.Item>
+            )}
+            <Menu.Divider />
+            <Menu.Item key="DELETED" icon={<DeleteOutlined />} danger>
+              Xóa tài khoản
+            </Menu.Item>
+          </Menu>
+        );
+
+        return (
+          <Space size="small">
+            <Button size="small" onClick={() => handleEditUser(record)}>
+              Sửa
             </Button>
-          </Popconfirm>
 
-          {/* Admin có thêm quyền thay đổi role */}
-          {isAdmin && (
-            <Select
-              defaultValue={record.role}
-              style={{ width: 120 }}
-              onChange={(value) => handleRoleChange(record.userId, value)}
-              size="small"
-            >
-              <Option value="Staff">Nhân viên</Option>
-              <Option value="Consultant">Tư vấn viên</Option>
-              <Option value="Customer">Khách hàng</Option>
-              <Option value="Manager">Quản lý</Option>
-              <Option value="Admin">Quản trị</Option>
-            </Select>
-          )}
-        </Space>
-      ),
+            <Dropdown overlay={actionMenu} placement="bottomRight">
+              <Button size="small" type="primary">
+                Trạng thái <DownOutlined />
+              </Button>
+            </Dropdown>
+          </Space>
+        );
+      },
     };
 
     // Cột đặc biệt cho từng loại user
-    const staffColumns = [
-      // Cột riêng cho staff
-    ];
-
     const consultantColumns = [
       {
         title: "Chuyên môn",
@@ -211,9 +369,6 @@ const ManageUser = () => {
     let specificColumns = [];
 
     switch (activeTab) {
-      case "Staff":
-        specificColumns = staffColumns;
-        break;
       case "Consultant":
         specificColumns = consultantColumns;
         break;
@@ -228,168 +383,235 @@ const ManageUser = () => {
     return [...commonColumns, ...specificColumns, actionColumn];
   };
 
-  // Xử lý kích hoạt/vô hiệu hóa tài khoản
-  const handleToggleStatus = async (record) => {
-    try {
-      const newStatus = record.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      //await updateUserStatusAPI(record.userId, newStatus);
+  // Thêm hàm xử lý thay đổi trạng thái
+  const handleStatusChange = (record, newStatus) => {
+    const action = statusMapping[newStatus] || "thay đổi trạng thái";
 
-      message.success(
-        `${
-          newStatus === "ACTIVE" ? "Kích hoạt" : "Vô hiệu hóa"
-        } tài khoản thành công`
-      );
+    Modal.confirm({
+      title: `Xác nhận ${action} tài khoản`,
+      content: (
+        <div className="text-gray-700 w-full">
+          <p>
+            Bạn có chắc chắn muốn {action} tài khoản của{" "}
+            <strong>{record.fullName}</strong>?
+          </p>
+          {newStatus === "SUSPENDED" && (
+            <p>
+              Tài khoản sẽ bị tạm thời vô hiệu hóa và có thể kích hoạt lại sau.
+            </p>
+          )}
+          {newStatus === "BANNED" && (
+            <p>
+              Tài khoản sẽ bị vô hiệu hóa vĩnh viễn và không thể sử dụng các
+              dịch vụ.
+            </p>
+          )}
+          {newStatus === "DELETED" && (
+            <p className="text-red-500 font-semibold">
+              Hành động này không thể hoàn tác và tài khoản sẽ bị xóa khỏi hệ
+              thống.
+            </p>
+          )}
+        </div>
+      ),
+      okText: "Xác nhận",
+      okType: newStatus === "DELETED" ? "danger" : "primary",
+      cancelText: "Hủy",
+      onOk: () => updateUserStatus(record.userId, newStatus),
+    });
+  };
+
+  const statusMapping = {
+    ACTIVE: "Kích hoạt",
+    SUSPENDED: "Tạm khóa",
+    BANNED: "Vô hiệu hóa vĩnh viễn",
+    DELETED: "Xóa",
+  };
+
+  // Thêm hàm cập nhật trạng thái người dùng
+  const updateUserStatus = async (userId, status) => {
+    try {
+      await pathStatusUserAPI(userId, status);
+      message.success(`${statusMapping[status]} tài khoản thành công`);
 
       // Cập nhật lại danh sách
       fetchUsers();
     } catch (error) {
-      message.error("Không thể cập nhật trạng thái tài khoản");
+      message.error(error.response?.data?.message || "Lỗi khi cập nhật trạng thái");
       console.error("Error updating user status:", error);
     }
-  };
-
-  // Xử lý thay đổi role (chỉ dành cho Admin)
-  const handleRoleChange = async (userId, newRole) => {
-    try {
-      //await updateUserRoleAPI(userId, newRole);
-      message.success("Cập nhật vai trò thành công");
-      fetchUsers();
-    } catch (error) {
-      message.error("Không thể cập nhật vai trò người dùng");
-      console.error("Error updating user role:", error);
-    }
-  };
-
-  // Xử lý chỉnh sửa thông tin user
-  const handleEditUser = (user) => {
-    form.setFieldsValue({
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      status: user.status,
-      // Các trường khác tùy theo loại user
-    });
-
-    setUserModal({
-      visible: true,
-      mode: "edit",
-      currentUser: user,
-    });
   };
 
   return (
     <div className="p-6">
       <Card className="shadow-sm">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
           <Title level={4}>
             {isAdmin ? "Quản lý người dùng" : "Quản lý nhân sự"}
           </Title>
 
-          <Search
-            placeholder="Tìm kiếm theo tên, email, số điện thoại"
-            allowClear
-            enterButton="Tìm kiếm"
-            onSearch={(value) => setSearchText(value)}
-            style={{ width: 450 }}
-          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="primary"
+              icon={<UserAddOutlined />}
+              onClick={handleAddUser}
+            >
+              Thêm người dùng
+            </Button>
+
+            <Button
+              icon={<FilterOutlined />}
+              onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+              type={showAdvancedFilter ? "primary" : "default"}
+            >
+              Bộ lọc nâng cao
+            </Button>
+
+            <Button icon={<ReloadOutlined />} onClick={handleResetFilter}>
+              Làm mới
+            </Button>
+          </div>
         </div>
+
+        {showAdvancedFilter && (
+          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+            <Form form={form} layout="vertical">
+              <Row gutter={16}>
+                <Col xs={24} md={8}>
+                  <Form.Item label="Tìm kiếm theo">
+                    <Input.Group compact>
+                      <Dropdown overlay={searchTypeMenu}>
+                        <Button style={{ width: "30%" }}>
+                          {searchType === "name"
+                            ? "Họ tên"
+                            : searchType === "email"
+                            ? "Email"
+                            : "Số điện thoại"}{" "}
+                          <DownOutlined />
+                        </Button>
+                      </Dropdown>
+                      <Input
+                        style={{ width: "70%" }}
+                        placeholder={`Tìm theo ${
+                          searchType === "name"
+                            ? "tên"
+                            : searchType === "email"
+                            ? "email"
+                            : "số điện thoại"
+                        }`}
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        allowClear
+                        onPressEnter={() =>
+                          setPagination({ ...pagination, current: 1 })
+                        }
+                      />
+                    </Input.Group>
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={8}>
+                  <Form.Item label="Thời gian tạo">
+                    <RangePicker
+                      style={{ width: "100%" }}
+                      onChange={handleDateRangeChange}
+                      value={dateRange}
+                      format="DD/MM/YYYY"
+                      placeholder={["Từ ngày", "Đến ngày"]}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={8} className="flex items-end mt-7">
+                  <Form.Item>
+                    <div className="flex gap-2">
+                      <Button onClick={handleResetFilter}>Xóa bộ lọc</Button>
+                    </div>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </div>
+        )}
 
         <Tabs activeKey={activeTab} onChange={handleTabChange}>
           {isAdmin && (
-            <Item tab="Tất cả người dùng" key="">
+            <TabPane tab="Tất cả người dùng" key="">
               <Table
                 columns={getColumns()}
                 dataSource={users}
                 rowKey="userId"
                 loading={loading}
                 pagination={pagination}
+                onChange={handleTableChange}
+                scroll={{ x: "max-content" }}
               />
-            </Item>
+            </TabPane>
           )}
 
           {/* Tab chung cho Admin và Manager */}
-          <Item tab="Nhân viên" key="Staff">
+          <TabPane tab="Nhân viên" key="Staff">
             <Table
               columns={getColumns()}
               dataSource={users}
               rowKey="userId"
               loading={loading}
               pagination={pagination}
+              onChange={handleTableChange}
+              scroll={{ x: "max-content" }}
             />
-          </Item>
+          </TabPane>
 
-          <Item tab="Tư vấn viên" key="Consultant">
+          <TabPane tab="Tư vấn viên" key="Consultant">
             <Table
               columns={getColumns()}
               dataSource={users}
               rowKey="userId"
               loading={loading}
               pagination={pagination}
+              onChange={handleTableChange}
+              scroll={{ x: "max-content" }}
             />
-          </Item>
+          </TabPane>
 
-          <Item tab="Khách hàng" key="Customer">
+          <TabPane tab="Khách hàng" key="Customer">
             <Table
               columns={getColumns()}
               dataSource={users}
               rowKey="userId"
               loading={loading}
               pagination={pagination}
+              onChange={handleTableChange}
+              scroll={{ x: "max-content" }}
             />
-          </Item>
+          </TabPane>
 
           {/* Nếu là Admin thì có thêm tab Manager */}
           {isAdmin && (
-            <Item tab="Quản lý" key="Manager">
+            <TabPane tab="Quản lý" key="Manager">
               <Table
                 columns={getColumns()}
                 dataSource={users}
                 rowKey="userId"
                 loading={loading}
                 pagination={pagination}
+                onChange={handleTableChange}
+                scroll={{ x: "max-content" }}
               />
-            </Item>
+            </TabPane>
           )}
         </Tabs>
       </Card>
 
-      {/* Modal thêm/sửa thông tin user */}
-      <Modal
-        title={
-          userModal.mode === "add"
-            ? "Thêm người dùng mới"
-            : "Chỉnh sửa thông tin"
-        }
-        open={userModal.visible}
-        onCancel={() => setUserModal({ ...userModal, visible: false })}
-        footer={null}
-      >
-        <Form form={form} layout="vertical" onFinish={handleSubmitUserForm}>
-          {/* Các trường form tùy theo loại user */}
-          <Form.Item
-            name="fullName"
-            label="Họ tên"
-            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          {/* Các trường form khác */}
-
-          <div className="flex justify-end mt-4">
-            <Button
-              className="mr-2"
-              onClick={() => setUserModal({ ...userModal, visible: false })}
-            >
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit">
-              {userModal.mode === "add" ? "Thêm" : "Lưu thay đổi"}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      {/* Modal chung cho thêm và sửa người dùng */}
+      <UserFormModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onSubmit={handleSubmitUser}
+        userData={selectedUser}
+        isAdmin={isAdmin}
+        mode={modalMode}
+      />
     </div>
   );
 };
