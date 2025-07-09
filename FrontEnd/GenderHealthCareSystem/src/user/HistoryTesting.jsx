@@ -40,6 +40,7 @@ import {
   paymentVNPayAPI,
 } from "../components/api/Payment.api";
 import { postFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
+import FeedbackModal from "./FeedbackModal";
 
 const { Title, Text } = Typography;
 
@@ -148,7 +149,6 @@ const HistoryTesting = () => {
     }
   };
 
-
   const handleFeedback = (record) => {
     setSelectedBooking(record);
     setOpenFeedback(true);
@@ -160,21 +160,21 @@ const HistoryTesting = () => {
   };
 
   // Thêm hàm xử lý gửi đánh giá
-  const handleSubmitFeedback = async () => {
+  const handleSubmitFeedback = async (feedback) => {
     try {
       setSubmittingFeedback(true);
-
-      const values = await feedbackForm.validateFields();
-      // Validate form
+      // Gọi API với các giá trị từ feedback object
       await postFeedbackTestingAPI(
-        selectedBooking.id,
-        feedbackRating,
-        values.content
+        feedback.id,
+        feedback.rating,
+        feedback.content
       );
 
       setOpenFeedback(false);
       setSubmittingFeedback(false);
       message.success("Cảm ơn bạn đã gửi đánh giá!");
+      // Refresh danh sách nếu cần
+      fetchBookingHistory();
     } catch (error) {
       setSubmittingFeedback(false);
       console.error("Error submitting feedback:", error);
@@ -853,7 +853,17 @@ const HistoryTesting = () => {
       {/* Các modal */}
       {renderDetailModal()}
       {renderTestResultModal()}
-      {renderFeedbackModal()} {/* Modal đánh giá đã được cập nhật */}
+      
+      {/* Thay thế renderFeedbackModal() bằng component mới */}
+      <FeedbackModal
+        visible={openFeedback}
+        onCancel={() => setOpenFeedback(false)}
+        onSubmit={handleSubmitFeedback}
+        data={selectedBooking}
+        type="service"
+        loading={submittingFeedback}
+        mode="create"
+      />
     </Card>
   );
 };

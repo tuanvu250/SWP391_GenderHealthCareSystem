@@ -11,8 +11,7 @@ import {
   Modal,
   DatePicker,
   Select,
-  Rate,
-  Input,
+  Divider,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -24,13 +23,14 @@ import {
   EditOutlined,
   StarOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import FeedbackModal from "./FeedbackModal";
+import { postFeedbackConsultantAPI } from "../components/api/FeedbackConsultant.api";
+import { cancelBooking, getBookingHistory, rescheduleBooking } from "../components/api/ConsultantBooking.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { TextArea } = Input;
 
 const timeSlots = [
   "08:00 - 09:00",
@@ -44,36 +44,36 @@ const timeSlots = [
 const HistoryConsultantBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rescheduleModal, setRescheduleModal] = useState({ open: false, bookingId: null });
-  const [ratingModal, setRatingModal] = useState({ open: false, bookingId: null, consultantId: null });
+  const [rescheduleModal, setRescheduleModal] = useState({
+    open: false,
+    bookingId: null,
+  });
+
+  // Cập nhật state cho modal đánh giá
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
   const [newDate, setNewDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [ratingValue, setRatingValue] = useState(0);
-  const [ratingContent, setRatingContent] = useState("");
   const navigate = useNavigate();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 0,
+  });
 
   const fetchBookings = async () => {
-    const token = sessionStorage.getItem("token");
-    const userString = sessionStorage.getItem("user");
-
-    if (!token || !userString) {
-      message.error("Bạn chưa đăng nhập hoặc phiên đã hết hạn.");
-      navigate("/login");
-      return;
-    }
-
     try {
-      const response = await axios.get(`/api/bookings/history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          page: 0,
-          size: 10,
-          sort: "createdAt,desc",
-        },
+      const response = await getBookingHistory({
+        page: pagination.current - 1,
+        size: pagination.pageSize,
       });
-
+      setLoading(true);
+      setPagination({
+        ...pagination,
+        total: response.data?.data?.totalElements || 0,
+      });
       setBookings(response.data?.data?.content || []);
     } catch (error) {
       console.error("Lỗi khi lấy lịch sử booking:", error);
@@ -85,7 +85,7 @@ const HistoryConsultantBooking = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, [navigate]);
+  }, []);
 
   const handleCancelBooking = (bookingId) => {
     Modal.confirm({
@@ -97,17 +97,12 @@ const HistoryConsultantBooking = () => {
       cancelText: "Không",
       async onOk() {
         try {
-          const token = sessionStorage.getItem("token");
-          await axios.put(`/api/bookings/cancel/${bookingId}`, null, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          await cancelBooking(bookingId);
           message.success("Đã hủy lịch thành công!");
           fetchBookings();
         } catch (err) {
           console.error(err);
-          message.error("Không thể hủy lịch.");
+          message.error(err.response?.data?.message || "Không thể hủy lịch.");
         }
       },
     });
@@ -126,22 +121,15 @@ const HistoryConsultantBooking = () => {
     }
 
     const [startTime] = selectedSlot.split(" - ");
-    const dateTimeStr = dayjs(newDate.format("YYYY-MM-DD") + "T" + startTime).format("YYYY-MM-DDTHH:mm:ss");
+    const dateTimeStr = dayjs(
+      newDate.format("YYYY-MM-DD") + "T" + startTime
+    ).format("YYYY-MM-DDTHH:mm:ss");
 
     try {
-      const token = sessionStorage.getItem("token");
-      await axios.put(
-        `/api/bookings/reschedule`,
-        {
-          bookingId: rescheduleModal.bookingId,
-          newBookingDate: dateTimeStr,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await rescheduleBooking({
+        bookingId: rescheduleModal.bookingId,
+        newDate: dateTimeStr,
+      });
       message.success("Đổi lịch thành công!");
       setRescheduleModal({ open: false, bookingId: null });
       setNewDate(null);
@@ -153,53 +141,69 @@ const HistoryConsultantBooking = () => {
     }
   };
 
-  const handleOpenRatingModal = (bookingId, consultantId) => {
-    setRatingModal({ open: true, bookingId, consultantId });
-    setRatingValue(0);
-    setRatingContent("");
+  // Cập nhật hàm mở modal đánh giá sử dụng FeedbackModal
+  const handleOpenRatingModal = (booking) => {
+    setSelectedBooking({
+      ...booking,
+      id: booking.bookingId, // Đảm bảo có trường id cho FeedbackModal
+      consultantName: booking.consultantName,
+      consultationTime: dayjs(booking.bookingDate).format("DD/MM/YYYY HH:mm"),
+      consultationType: "Trực tuyến", // Hoặc lấy từ booking nếu có
+    });
+    setFeedbackVisible(true);
   };
 
-  const handleSubmitRating = async () => {
-    if (!ratingValue || !ratingContent.trim()) {
-      message.warning("Vui lòng chọn sao và nhập nội dung đánh giá.");
-      return;
-    }
-
+  // Cập nhật hàm xử lý gửi đánh giá
+  const handleSubmitFeedback = async (feedback) => {
     try {
-      const token = sessionStorage.getItem("token");
-      await axios.post(
-        `/api/reviews`,
-        {
-          bookingId: ratingModal.bookingId,
-          consultantId: ratingModal.consultantId,
-          rating: ratingValue,
-          content: ratingContent,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      setSubmittingFeedback(true);
+      await postFeedbackConsultantAPI({
+        bookingId: selectedBooking.bookingId,
+        rating: feedback.rating,
+        content: feedback.content,
+        consultantId: selectedBooking.consultantId,
+      });
       message.success("Đánh giá đã được gửi!");
-      setRatingModal({ open: false, bookingId: null, consultantId: null });
+      setFeedbackVisible(false);
+      setSelectedBooking(null);
+      setSubmittingFeedback(false);
       fetchBookings();
     } catch (err) {
+      setSubmittingFeedback(false);
       console.error(err);
-      message.error("Không thể gửi đánh giá.");
+      message.error(
+        err.response?.data?.message ||
+          "Không thể gửi đánh giá. Vui lòng thử lại."
+      );
     }
   };
 
   const renderStatus = (status) => {
     switch (status) {
       case "PENDING":
-        return <Tag icon={<ClockCircleOutlined />} color="blue">Đang xử lý</Tag>;
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="blue">
+            Đang xử lý
+          </Tag>
+        );
       case "CONFIRMED":
-        return <Tag icon={<CheckCircleOutlined />} color="green">Đã xác nhận</Tag>;
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="green">
+            Đã xác nhận
+          </Tag>
+        );
       case "CANCELLED":
-        return <Tag icon={<CloseCircleOutlined />} color="red">Đã hủy</Tag>;
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="red">
+            Đã hủy
+          </Tag>
+        );
       case "COMPLETED":
-        return <Tag icon={<CheckCircleOutlined />} color="cyan">Hoàn thành</Tag>;
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="cyan">
+            Hoàn thành
+          </Tag>
+        );
       default:
         return status ? <Tag>{status}</Tag> : "—";
     }
@@ -260,7 +264,12 @@ const HistoryConsultantBooking = () => {
       key: "meetLink",
       render: (text) =>
         text ? (
-          <Button type="link" href={text} target="_blank" icon={<VideoCameraOutlined />}>
+          <Button
+            type="link"
+            href={text}
+            target="_blank"
+            icon={<VideoCameraOutlined />}
+          >
             Tham gia
           </Button>
         ) : (
@@ -271,24 +280,33 @@ const HistoryConsultantBooking = () => {
       title: "Hành động",
       key: "actions",
       render: (_, record) => {
-        const canAct = record.paymentStatus === "PAID" && record.status !== "CANCELLED";
+        const canAct =
+          record.paymentStatus === "PAID" && record.status !== "CANCELLED";
         return (
           <div className="flex gap-2">
             {record.status === "COMPLETED" && canAct && (
               <Button
                 size="small"
                 icon={<StarOutlined />}
-                onClick={() => handleOpenRatingModal(record.bookingId, record.consultantId)}
+                onClick={() => handleOpenRatingModal(record)}
               >
                 Đánh giá
               </Button>
             )}
             {canAct && record.status !== "COMPLETED" && (
               <>
-                <Button danger size="small" onClick={() => handleCancelBooking(record.bookingId)}>
+                <Button
+                  danger
+                  size="small"
+                  onClick={() => handleCancelBooking(record.bookingId)}
+                >
                   Hủy
                 </Button>
-                <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenReschedule(record.bookingId)}>
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => handleOpenReschedule(record.bookingId)}
+                >
                   Đổi lịch
                 </Button>
               </>
@@ -306,7 +324,9 @@ const HistoryConsultantBooking = () => {
           <UserOutlined className="mr-2 text-blue-500" />
           Lịch sử đặt lịch tư vấn
         </Title>
-        <Text type="secondary">Xem, hủy, đổi lịch hoặc đánh giá chuyên gia.</Text>
+        <Text type="secondary">
+          Xem, hủy, đổi lịch hoặc đánh giá chuyên gia.
+        </Text>
       </div>
 
       {loading ? (
@@ -319,66 +339,151 @@ const HistoryConsultantBooking = () => {
           columns={columns}
           dataSource={bookings}
           rowKey="bookingId"
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 1000 }}
+          pagination={pagination}
+          onChange={(pagination) => {
+            setPagination({
+              ...pagination,
+              current: pagination.current,
+            });
+            fetchBookings();
+          }}
+          scroll={{ x: "max-content" }}
           className="mt-4"
         />
       ) : (
-        <Empty description="Bạn chưa có lịch tư vấn nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty
+          description="Bạn chưa có lịch tư vấn nào"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       )}
 
-      {/* Modal đổi lịch */}
+      {/* Modal đổi lịch cải tiến */}
       <Modal
         open={rescheduleModal.open}
-        title="Chọn ngày và khung giờ mới"
+        title={
+          <div className="text-lg flex items-center">
+            <EditOutlined className="mr-2 text-blue-500" />
+            <span>Đổi lịch tư vấn</span>
+          </div>
+        }
         onCancel={() => setRescheduleModal({ open: false, bookingId: null })}
         onOk={handleRescheduleSubmit}
-        okText="Xác nhận"
+        okText="Xác nhận đổi lịch"
         cancelText="Hủy"
+        width={500}
+        okButtonProps={{ 
+          disabled: !newDate || !selectedSlot,
+          className: !newDate || !selectedSlot ? "" : "bg-blue-500"
+        }}
       >
-        <DatePicker
-          className="w-full mb-4"
-          value={newDate}
-          onChange={(date) => setNewDate(date)}
-          disabledDate={(current) => current && current < dayjs().startOf("day")}
-        />
-        <Select
-          placeholder="-- Chọn khung giờ tư vấn *"
-          className="w-full"
-          value={selectedSlot}
-          onChange={(value) => setSelectedSlot(value)}
-        >
-          {timeSlots.map((slot) => (
-            <Option key={slot} value={slot}>
-              {slot}
-            </Option>
-          ))}
-        </Select>
+        <div className="space-y-5">
+          {/* Thông tin lịch hiện tại */}
+          {rescheduleModal.bookingId && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+              <div className="text-gray-500 mb-2 font-medium">Lịch hiện tại:</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="text-gray-500">Mã đặt lịch:</span>
+                  <div className="font-medium">{rescheduleModal.bookingId}</div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Chuyên gia:</span>
+                  <div className="font-medium">
+                    {bookings.find(b => b.bookingId === rescheduleModal.bookingId)?.consultantName || "Không xác định"}
+                  </div>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Thời gian hiện tại:</span>
+                  <div className="font-medium">
+                    {bookings.find(b => b.bookingId === rescheduleModal.bookingId)
+                      ? dayjs(bookings.find(b => b.bookingId === rescheduleModal.bookingId)?.bookingDate)
+                          .format("HH:mm - DD/MM/YYYY")
+                      : "Không xác định"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Divider orientation="center">Chọn thời gian mới</Divider>
+          
+          {/* Chọn ngày */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label htmlFor="newDate" className="font-medium">Ngày tư vấn mới:</label>
+              <Tag color="orange" className="ml-auto">Bắt buộc</Tag>
+            </div>
+            <DatePicker
+              id="newDate"
+              className="w-full"
+              value={newDate}
+              onChange={(date) => setNewDate(date)}
+              disabledDate={(current) => current && current < dayjs().startOf("day")}
+              format="DD/MM/YYYY"
+              placeholder="Chọn ngày tư vấn mới"
+              size="large"
+            />
+            {!newDate && (
+              <div className="text-red-500 text-xs mt-1">
+                Vui lòng chọn ngày tư vấn
+              </div>
+            )}
+          </div>
+
+          {/* Chọn khung giờ */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label htmlFor="timeSlot" className="font-medium">Khung giờ mới:</label>
+              <Tag color="orange" className="ml-auto">Bắt buộc</Tag>
+            </div>
+            <Select
+              id="timeSlot"
+              placeholder="Chọn khung giờ tư vấn mới"
+              className="w-full"
+              value={selectedSlot}
+              onChange={(value) => setSelectedSlot(value)}
+              size="large"
+            >
+              {timeSlots.map((slot) => (
+                <Option key={slot} value={slot}>
+                  <span className="font-medium">{slot}</span>
+                </Option>
+              ))}
+            </Select>
+            {!selectedSlot && (
+              <div className="text-red-500 text-xs mt-1">
+                Vui lòng chọn khung giờ tư vấn
+              </div>
+            )}
+          </div>
+
+          {/* Hiển thị thời gian đã chọn */}
+          {newDate && selectedSlot && (
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
+              <div className="text-blue-700 mb-2 font-medium">Thời gian tư vấn mới:</div>
+              <div className="text-lg font-semibold flex items-center">
+                <ClockCircleOutlined className="mr-2 text-blue-500" />
+                {dayjs(newDate).format("DD/MM/YYYY")} {selectedSlot}
+              </div>
+            </div>
+          )}
+
+          <div className="text-gray-500 text-sm pt-2">
+             Sau khi đổi lịch, bạn sẽ nhận được email xác nhận về lịch tư vấn mới.
+          </div>
+        </div>
       </Modal>
 
-      {/* Modal đánh giá */}
-      <Modal
-        open={ratingModal.open}
-        title="Đánh giá chuyên gia"
-        onCancel={() => setRatingModal({ open: false, bookingId: null, consultantId: null })}
-        onOk={handleSubmitRating}
-        okText="Gửi đánh giá"
-        cancelText="Hủy"
-      >
-        <div className="mb-3">
-          <Text strong>Chấm sao:</Text>
-          <Rate value={ratingValue} onChange={(val) => setRatingValue(val)} />
-        </div>
-        <div>
-          <Text strong>Nội dung:</Text>
-          <TextArea
-            rows={4}
-            value={ratingContent}
-            onChange={(e) => setRatingContent(e.target.value)}
-            placeholder="Viết đánh giá của bạn về buổi tư vấn..."
-          />
-        </div>
-      </Modal>
+      {/* Thay thế Modal đánh giá cũ bằng FeedbackModal */}
+      <FeedbackModal
+        visible={feedbackVisible}
+        onCancel={() => setFeedbackVisible(false)}
+        onSubmit={handleSubmitFeedback}
+        data={selectedBooking}
+        type="consultant"
+        loading={submittingFeedback}
+        mode="create"
+      />
     </Card>
   );
 };

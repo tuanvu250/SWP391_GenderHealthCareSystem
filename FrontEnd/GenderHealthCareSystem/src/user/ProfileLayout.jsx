@@ -60,8 +60,9 @@ const UserProfile = () => {
   const getActiveTabFromPath = () => {
     const path = location.pathname;
     if (path.includes("/user/history-testing")) return "2";
-    if (path.includes("/user/history-feedback-testing")) return "3";
-        if (path.includes("/user/history-consultation")) return "4";
+    if (path.includes("/user/history-feedback")) return "4";
+    if (path.includes("/user/history-consultation")) return "3";
+    if (path.includes("/user/account-settings")) return "5";
     return "1"; // Default tab - profile
   };
 
@@ -84,16 +85,24 @@ const UserProfile = () => {
     {
       key: "3",
       label: (
-        <span onClick={() => navigate("/user/history-feedback-testing")}>
-          Lịch sử đánh giá xét nghiệm
+        <span onClick={() => navigate("/user/history-consultation")}>
+          Lịch sử đặt lịch tư vấn
         </span>
       ),
     },
     {
       key: "4",
       label: (
-        <span onClick={() => navigate("/user/history-consultation")}>
-          Lịch sử đặt lịch tư vấn
+        <span onClick={() => navigate("/user/history-feedback")}>
+          Lịch sử đánh giá xét nghiệm
+        </span>
+      ),
+    },
+    {
+      key: "5",
+      label: (
+        <span onClick={() => navigate("/user/account-settings")}>
+          Cài đặt tài khoản
         </span>
       ),
     },
