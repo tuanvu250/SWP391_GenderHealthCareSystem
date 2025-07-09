@@ -83,10 +83,11 @@ public class ConsultantFeedbackController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) Integer consultantId,
-            @RequestParam(required = false) Integer rating) {
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String search) {
         try {
             Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getAllFeedback(
-                    page, size, sortBy, direction, consultantId, rating);
+                    page, size, sortBy, direction, consultantId, rating, search);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách tất cả đánh giá tư vấn",
                             mapToPageResponse(feedbackPage), null));
@@ -106,10 +107,11 @@ public class ConsultantFeedbackController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
-            @RequestParam(required = false) Integer rating) {
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String search) {
         try {
             Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getConsultantFeedback(
-                    consultantId, page, size, sortBy, direction, rating);
+                    consultantId, page, size, sortBy, direction, rating, search);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá tư vấn viên",
                             mapToPageResponse(feedbackPage), null));
@@ -125,10 +127,11 @@ public class ConsultantFeedbackController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
-            @RequestParam(required = false) Integer rating) {
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String search) {
         try {
             Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getMyFeedback(
-                    page, size, sortBy, direction, rating);
+                    page, size, sortBy, direction, rating, search);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách đánh giá của tôi",
                             mapToPageResponse(feedbackPage), null));
@@ -143,10 +146,11 @@ public class ConsultantFeedbackController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String search) {
         try {
             Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getMyPostedFeedback(
-                    page, size, sortBy, direction);
+                    page, size, sortBy, direction, search);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách feedback tôi đã đăng",
                             mapToPageResponse(feedbackPage), null));

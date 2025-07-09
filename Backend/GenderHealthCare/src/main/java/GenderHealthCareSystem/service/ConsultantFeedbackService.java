@@ -101,58 +101,44 @@ public class ConsultantFeedbackService {
 
 
     public Page<ConsultantFeedbackResponse> getConsultantFeedback(
-            Integer consultantId, int page, int size, String sortBy, String direction, Integer rating) {
+            Integer consultantId, int page, int size, String sortBy, String direction, Integer rating, String search) {
 
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
             Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        Page<ConsultantFeedback> feedbackPage;
-
-        if (rating != null) {
-            feedbackPage = feedbackRepo.findByConsultantProfile_Consultant_UserIdAndRating(consultantId, rating, pageable);
-        } else {
-            feedbackPage = feedbackRepo.findByConsultantProfile_Consultant_UserId(consultantId, pageable);
-        }
+        Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByConsultantIdWithSearchAndRating(
+            consultantId, rating, search, pageable);
 
         return feedbackPage.map(this::mapToResponse);
     }
 
-    public Page<ConsultantFeedbackResponse> getMyFeedback(int page, int size, String sortBy, String direction, Integer rating) {
+    public Page<ConsultantFeedbackResponse> getMyFeedback(int page, int size, String sortBy, String direction, Integer rating, String search) {
         Integer consultantId = extractUserIdFromToken();
-        return getConsultantFeedback(consultantId, page, size, sortBy, direction, rating);
+        return getConsultantFeedback(consultantId, page, size, sortBy, direction, rating, search);
     }
 
-    public Page<ConsultantFeedbackResponse> getMyPostedFeedback(int page, int size, String sortBy, String direction) {
+    public Page<ConsultantFeedbackResponse> getMyPostedFeedback(int page, int size, String sortBy, String direction, String search) {
         Integer customerId = extractUserIdFromToken();
 
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
             Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByCustomer_UserId(customerId, pageable);
+        Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByCustomerIdWithSearch(customerId, search, pageable);
         return feedbackPage.map(this::mapToResponse);
     }
 
 
     public Page<ConsultantFeedbackResponse> getAllFeedback(
-            int page, int size, String sortBy, String direction, Integer consultantId, Integer rating) {
+            int page, int size, String sortBy, String direction, Integer consultantId, Integer rating, String search) {
 
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
                 Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        Page<ConsultantFeedback> feedbacks;
-
-        if (consultantId != null && rating != null) {
-            feedbacks = feedbackRepo.findByConsultantProfile_Consultant_UserIdAndRating(consultantId, rating, pageable);
-        } else if (consultantId != null) {
-            feedbacks = feedbackRepo.findByConsultantProfile_Consultant_UserId(consultantId, pageable);
-        } else if (rating != null) {
-            feedbacks = feedbackRepo.findByRating(rating, pageable);
-        } else {
-            feedbacks = feedbackRepo.findAll(pageable);
-        }
+        Page<ConsultantFeedback> feedbacks = feedbackRepo.findAllWithFilters(
+            consultantId, rating, search, pageable);
 
         return feedbacks.map(this::mapToResponse);
     }

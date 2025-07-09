@@ -14,37 +14,18 @@ import java.util.List;
 @Repository
 public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFeedback, Integer> {
 
-    List<ConsultantFeedback> findByConsultantProfile_ProfileId(Integer profileId);
-    Page<ConsultantFeedback> findByConsultantProfile_ProfileId(Integer profileId, Pageable pageable);
-    Page<ConsultantFeedback> findByConsultantProfile_ProfileIdAndRating(Integer profileId, Integer rating, Pageable pageable);
-
-    List<ConsultantFeedback> findByConsultantProfile_Consultant_UserId(Integer consultantId);
-    Page<ConsultantFeedback> findByConsultantProfile_Consultant_UserId(Integer consultantId, Pageable pageable);
-    Page<ConsultantFeedback> findByConsultantProfile_Consultant_UserIdAndRating(Integer consultantId, Integer rating, Pageable pageable);
-
-    List<ConsultantFeedback> findByCustomer_UserId(Integer customerId);
-    Page<ConsultantFeedback> findByCustomer_UserId(Integer customerId, Pageable pageable);
-
     boolean existsByConsultationBooking_BookingId(Integer bookingId);
     ConsultantFeedback findByConsultationBooking_BookingId(Integer bookingId);
 
-    boolean existsByCustomer_UserIdAndConsultantProfile_ProfileId(Integer customerId, Integer profileId);
-
     boolean existsByCustomer_UserIdAndConsultantProfile_Consultant_UserId(Integer customerId, Integer consultantId);
-
-    Page<ConsultantFeedback> findByRating(Integer rating, Pageable pageable);
-
+    
     @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf WHERE cf.consultantProfile.consultant.userId = :consultantId")
     Double getAverageRatingByConsultantId(@Param("consultantId") Integer consultantId);
 
     @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.consultantProfile.consultant.userId = :consultantId")
     Long getCountByConsultantId(@Param("consultantId") Integer consultantId);
 
-    @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf WHERE cf.consultantProfile.profileId = :profileId")
-    Double getAverageRatingByProfileId(@Param("profileId") Integer profileId);
-
-    @Query("SELECT COUNT(cf) FROM ConsultantFeedback cf WHERE cf.consultantProfile.profileId = :profileId")
-    Long getCountByProfileId(@Param("profileId") Integer profileId);
+    // Removed unused ProfileId statistics methods
 
     @Query("SELECT AVG(cf.rating) FROM ConsultantFeedback cf")
     Double getTotalAverageRating();
@@ -58,4 +39,37 @@ public interface ConsultantFeedbackRepository extends JpaRepository<ConsultantFe
     @Modifying
     @Query(value = "DELETE FROM ConsultantFeedback WHERE FeedbackID = :feedbackId", nativeQuery = true)
     int deleteByFeedbackId(@Param("feedbackId") Integer feedbackId);
+
+    // Search methods
+    @Query("SELECT cf FROM ConsultantFeedback cf WHERE " +
+           "(:consultantId IS NULL OR cf.consultantProfile.consultant.userId = :consultantId) AND " +
+           "(:rating IS NULL OR cf.rating = :rating) AND " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(cf.customer.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(cf.consultantProfile.consultant.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ConsultantFeedback> findAllWithFilters(@Param("consultantId") Integer consultantId,
+                                                @Param("rating") Integer rating,
+                                                @Param("search") String search,
+                                                Pageable pageable);
+
+    @Query("SELECT cf FROM ConsultantFeedback cf WHERE " +
+           "cf.consultantProfile.consultant.userId = :consultantId AND " +
+           "(:rating IS NULL OR cf.rating = :rating) AND " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(cf.customer.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ConsultantFeedback> findByConsultantIdWithSearchAndRating(@Param("consultantId") Integer consultantId,
+                                                                   @Param("rating") Integer rating,
+                                                                   @Param("search") String search,
+                                                                   Pageable pageable);
+
+    @Query("SELECT cf FROM ConsultantFeedback cf WHERE " +
+           "cf.customer.userId = :customerId AND " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(cf.comment) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(cf.consultantProfile.consultant.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<ConsultantFeedback> findByCustomerIdWithSearch(@Param("customerId") Integer customerId,
+                                                        @Param("search") String search,
+                                                        Pageable pageable);
 }

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StisResultRepository extends JpaRepository<StisResult, Integer> {
-    // Sử dụng query để lấy kết quả đầu tiên, tránh lỗi khi có nhiều kết quả
     @Query(value = "SELECT TOP 1 * FROM STIsResult WHERE booking_id = :bookingId ORDER BY ResultID ASC", nativeQuery = true)
     Optional<StisResult> findByStisBooking_BookingId(@Param("bookingId") Integer bookingId);
 
