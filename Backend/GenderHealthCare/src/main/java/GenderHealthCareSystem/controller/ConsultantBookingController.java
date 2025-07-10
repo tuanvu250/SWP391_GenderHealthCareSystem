@@ -59,7 +59,7 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 
-    @GetMapping("/consultant/schedule/search")
+        @GetMapping("/consultant/schedule/search")
     public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> searchConsultantSchedule(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -192,16 +192,19 @@ public class ConsultantBookingController {
             @RequestParam(required = false) String consultantName,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) LocalDateTime endDate,
-            @RequestParam(required = false) BookingStatus status) {
+            @RequestParam(required = false) String status) {
 
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
+        BookingStatus bookingStatus = (status != null && !status.isEmpty()) ? BookingStatus.valueOf(status.toUpperCase()) : null;
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        PageResponse<ConsultantBookingResponse> bookings = bookingService.searchBookings(customerName, consultantName, startDate, endDate, status, pageable);
+        PageResponse<ConsultantBookingResponse> bookings = bookingService.searchBookings(customerName, consultantName, startDate, endDate, bookingStatus, pageable);
 
         return ResponseEntity.ok(bookings);
     }
 }
+
 

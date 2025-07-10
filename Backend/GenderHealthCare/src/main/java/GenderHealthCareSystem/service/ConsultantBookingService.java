@@ -205,7 +205,9 @@ public class ConsultantBookingService {
 
 
     public PageResponse<ConsultantBookingResponse> searchBookings(String customerName, String consultantName, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Pageable pageable) {
-        Page<ConsultationBooking> bookingsPage = bookingRepo.findByCustomerOrConsultantNameAndDateAndStatus(customerName, consultantName, startDate, endDate, status, pageable);
+        String statusString = status != null ? status.name() : null;
+        Page<ConsultationBooking> bookingsPage = bookingRepo.findByCustomerOrConsultantNameAndDateAndStatus(customerName, consultantName, startDate, endDate, statusString, pageable);
+
         Page<ConsultantBookingResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingResponse(
                 b.getBookingId(),
                 b.getConsultant().getFullName(),
@@ -243,10 +245,9 @@ public class ConsultantBookingService {
 
     public PageResponse<ConsultantBookingDetailResponse> searchConsultantSchedule(Integer consultantId, int page, int size, String status, String customerName, LocalDateTime startDate, LocalDateTime endDate) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("bookingDate"));
-        BookingStatus bookingStatus = status != null ? BookingStatus.valueOf(status.toUpperCase()) : null;
 
         Page<ConsultationBooking> bookingsPage = bookingRepo.findByConsultantAndFilters(
-                consultantId, bookingStatus, customerName, startDate, endDate, pageable);
+                consultantId, status, customerName, startDate, endDate, pageable);
 
         Page<ConsultantBookingDetailResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingDetailResponse(
                 b.getBookingId(),
