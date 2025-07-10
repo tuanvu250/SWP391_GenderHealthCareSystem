@@ -98,11 +98,14 @@ public class ConsultantProfileService {
     }
 
     public ConsultantProfileRequest get(Integer consultantId) {
-        Users user = usersRepo.findById(consultantId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Users user = usersRepo.findById(consultantId).orElse(null);
+        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId).orElse(null);
 
-        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        if (user == null || profile == null) {
+            ConsultantProfileRequest response = new ConsultantProfileRequest();
+            response.setFullName("Không tìm thấy người dùng hoặc hồ sơ");
+            return response;
+        }
 
         ConsultantProfileRequest response = new ConsultantProfileRequest();
         response.setJobTitle(profile.getJobTitle());
@@ -125,8 +128,7 @@ public class ConsultantProfileService {
             return detailRequest;
         }).toList());
 
-        response.setFullName(user.getFullName()); // Add fullName from Users
-
+        response.setFullName(user.getFullName());
         return response;
     }
 

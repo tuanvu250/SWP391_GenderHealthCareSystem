@@ -53,7 +53,7 @@ public class ConsultantProfileController {
         return ResponseEntity.ok(service.get(consultantId));
     }
 
-        @GetMapping("/all")
+    @GetMapping("/all")
         @PreAuthorize("hasAnyRole('Customer', 'Manager')")
         public ResponseEntity<?> getAll() {
             return ResponseEntity.ok(service.getAllConsultants());
