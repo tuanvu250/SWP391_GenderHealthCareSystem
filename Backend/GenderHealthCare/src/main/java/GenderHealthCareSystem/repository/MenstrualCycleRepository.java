@@ -9,4 +9,5 @@ public interface MenstrualCycleRepository extends JpaRepository<MenstrualCycle, 
     // Có thể custom thêm: findByCustomerId, findByStartDateBetween,...
     Optional<MenstrualCycle> findFirstByCustomerUserIdOrderByStartDateDesc(Integer userId);
 
+
 }

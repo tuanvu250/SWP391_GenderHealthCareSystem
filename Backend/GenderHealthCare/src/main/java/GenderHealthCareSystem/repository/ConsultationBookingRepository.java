@@ -66,4 +66,7 @@ public interface ConsultationBookingRepository
     int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
     @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%'))) AND (:startDate IS NULL OR b.bookingDate >= :startDate) AND (:endDate IS NULL OR b.bookingDate <= :endDate) AND (:status IS NULL OR b.status = :status)")
     Page<ConsultationBooking> findByCustomerOrConsultantNameAndDateAndStatus(@Param("customerName") String customerName, @Param("consultantName") String consultantName, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("status") BookingStatus status, Pageable pageable);
+
+    @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId")
+    Page<ConsultationBooking> findByConsultant(@Param("consultantId") Integer consultantId, Pageable pageable);
 }

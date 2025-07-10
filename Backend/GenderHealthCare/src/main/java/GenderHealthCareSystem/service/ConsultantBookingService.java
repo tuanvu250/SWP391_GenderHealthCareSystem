@@ -203,25 +203,6 @@ public class ConsultantBookingService {
         bookingRepo.save(booking);
     }
 
-    public PageResponse<ConsultantBookingResponse> getAllConsultantBookings(Pageable pageable) {
-        Page<ConsultationBooking> bookingsPage = bookingRepo.findAll(pageable);
-        Page<ConsultantBookingResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingResponse(
-                b.getBookingId(),
-                b.getConsultant().getFullName(),
-                b.getBookingDate(),
-                b.getInvoice() != null && b.getInvoice().getTotalAmount() != null
-                        ? BigDecimal.valueOf(b.getInvoice().getTotalAmount())
-                        : BigDecimal.ZERO,
-                b.getPaymentStatus(),
-                b.getInvoice() != null
-                        ? b.getInvoice().getPaymentMethod()
-                        : null,
-                b.getMeetLink(),
-                b.getStatus().name(),
-                b.getConsultant().getUserId()
-        ));
-        return PageResponseUtil.mapToPageResponse(responsePage);
-    }
 
     public PageResponse<ConsultantBookingResponse> searchBookings(String customerName, String consultantName, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Pageable pageable) {
         Page<ConsultationBooking> bookingsPage = bookingRepo.findByCustomerOrConsultantNameAndDateAndStatus(customerName, consultantName, startDate, endDate, status, pageable);
@@ -240,6 +221,23 @@ public class ConsultantBookingService {
                 b.getStatus().name(),
                 b.getConsultant().getUserId()
         ));
+        return PageResponseUtil.mapToPageResponse(responsePage);
+    }
+
+    public PageResponse<ConsultantBookingDetailResponse> getPaginatedScheduleForConsultant(Integer consultantId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("bookingDate"));
+        Page<ConsultationBooking> bookingsPage = bookingRepo.findByConsultant(consultantId, pageable);
+
+        Page<ConsultantBookingDetailResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingDetailResponse(
+                b.getBookingId(),
+                b.getCustomer().getFullName(),
+                b.getCustomer().getUserId(),
+                b.getBookingDate(),
+                b.getStatus().name(),
+                b.getPaymentStatus(),
+                b.getMeetLink()
+        ));
+
         return PageResponseUtil.mapToPageResponse(responsePage);
     }
 }
