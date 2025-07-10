@@ -35,5 +35,7 @@ public interface UserRepository extends JpaRepository<Users,Integer> {
                             @Param("status") AccountStatus status,
                             @Param("role") String role,
                             Pageable pageable);
+
+    int countByCreatedAtBetween(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
 }
 

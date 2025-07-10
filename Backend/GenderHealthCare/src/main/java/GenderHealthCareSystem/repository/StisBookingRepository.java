@@ -58,4 +58,6 @@ public interface StisBookingRepository extends JpaRepository<StisBooking, Intege
             "AND sb.status = 'CONFIRMED' " +
             "AND sb.bookingDate BETWEEN :startDateTime AND :endDateTime")
     long countBookingsInTimeSlot(@Param("serviceId") Integer serviceId, @Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime);
+
+    int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
 }

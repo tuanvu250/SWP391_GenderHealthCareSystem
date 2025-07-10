@@ -60,5 +60,5 @@ public interface ConsultationBookingRepository
     List<ConsultationBooking> findByBookingDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
 
-
+    int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
 }
