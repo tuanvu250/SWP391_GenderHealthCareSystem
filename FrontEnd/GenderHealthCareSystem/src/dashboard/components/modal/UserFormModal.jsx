@@ -24,7 +24,6 @@ import {
   DeleteOutlined,
   PlusOutlined,
   InfoCircleOutlined,
-  MinusCircleOutlined,
   FileTextOutlined,
   TrophyOutlined,
   BookOutlined,
@@ -34,7 +33,7 @@ import { getConsultantProfileAPI } from "../../../components/api/Consultant.api"
 import dayjs from "dayjs";
 
 const { Option } = Select;
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
 
@@ -348,16 +347,13 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="jobTitle"
           label="Chức danh"
-          rules={[{ required: isEdit, message: "Vui lòng nhập chức danh" }]}
         >
-          <Input placeholder="Ví dụ: Chuyên gia tư vấn sức khỏe sinh sản" 
-           disabled/>
+          <Input placeholder="Ví dụ: Chuyên gia tư vấn sức khỏe sinh sản" disabled />
         </Form.Item>
 
         <Form.Item
           name="specialization"
           label="Chuyên môn"
-          rules={[{ required: isEdit, message: "Vui lòng nhập chuyên môn" }]}
         >
           <Input placeholder="Ví dụ: Sức khỏe sinh sản, Kế hoạch hóa gia đình" disabled />
         </Form.Item>
@@ -367,13 +363,13 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="experienceYears"
           label="Số năm kinh nghiệm"
-          rules={[{ required: isEdit, message: "Vui lòng nhập số năm kinh nghiệm" }]}
         >
           <InputNumber 
             min={0} 
             max={50} 
             className="w-full"
-            placeholder="Ví dụ: 5"  disabled
+            placeholder="Ví dụ: 5" 
+            disabled
           />
         </Form.Item>
 
@@ -387,7 +383,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
               </Tooltip>
             </span>
           }
-          rules={[{ required: isEdit, message: "Vui lòng nhập phí tư vấn" }]}
+          rules={[{ required: true, message: "Vui lòng nhập phí tư vấn" }]}
         >
           <InputNumber 
             min={0}
@@ -403,7 +399,6 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         <Form.Item
           name="location"
           label="Địa điểm"
-          rules={[{ required: isEdit, message: "Vui lòng nhập địa điểm" }]}
         >
           <Input placeholder="Ví dụ: Hà Nội" disabled />
         </Form.Item>
@@ -412,21 +407,20 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
       <Form.Item
         name="languages"
         label="Ngôn ngữ"
-        rules={[{ required: isEdit, message: "Vui lòng nhập ngôn ngữ" }]}
       >
-        <Input placeholder="Ví dụ: Tiếng Việt, Tiếng Anh" disabled/>
+        <Input placeholder="Ví dụ: Tiếng Việt, Tiếng Anh" disabled />
       </Form.Item>
 
       <Form.Item
         name="introduction"
         label="Giới thiệu"
-        rules={[{ required: isEdit, message: "Vui lòng nhập giới thiệu" }]}
       >
         <Input.TextArea 
           rows={4} 
           placeholder="Giới thiệu ngắn gọn về bản thân và kinh nghiệm làm việc"
           showCount
-          maxLength={500} disabled
+          maxLength={500} 
+          disabled
         />
       </Form.Item>
 
@@ -438,7 +432,8 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         >
           <Switch 
             checkedChildren="Có thể nhận tư vấn" 
-            unCheckedChildren="Không nhận tư vấn" disabled
+            unCheckedChildren="Không nhận tư vấn"
+            disabled
           />
         </Form.Item>
 
@@ -446,6 +441,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
           name="employmentStatus" 
           label="Trạng thái làm việc" 
           valuePropName="checked"
+          rules={[{ required: true, message: "Vui lòng chọn trạng thái làm việc" }]}
         >
           <Switch 
             checkedChildren="Đang làm việc" 
@@ -454,130 +450,55 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
         </Form.Item>
       </div>
 
-      {isEdit && (
+      {isEdit && dataDetails?.details && dataDetails.details.length > 0 && (
         <>
           <Divider orientation="left">Thông tin chi tiết</Divider>
-
-          <Form.List name="details">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <div key={key} className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-                    <div className="flex justify-between items-center mb-2">
-                      <Text strong>Thông tin #{name + 1}</Text>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Form.Item
-                        {...restField}
-                        name={[name, "detailType"]}
-                        label="Loại thông tin"
-                        rules={[{ required: isEdit, message: "Vui lòng chọn loại thông tin" }]}
-                      >
-                        <Select placeholder="Chọn loại thông tin">
-                          {detailTypes.map(type => (
-                            <Option key={type.value} value={type.value}>
-                              <Space>
-                                {type.icon}
-                                {type.label}
-                              </Space>
-                            </Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-
-                      <Form.Item
-                        {...restField}
-                        name={[name, "title"]}
-                        label="Tiêu đề"
-                        rules={[{ required: isEdit, message: "Vui lòng nhập tiêu đề" }]}
-                      >
-                        <Input placeholder="Ví dụ: Bác sĩ Y khoa, Chứng chỉ tư vấn..." disabled />
-                      </Form.Item>
-                    </div>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "organization"]}
-                      label="Tổ chức/Đơn vị"
-                      rules={[{ required: isEdit, message: "Vui lòng nhập tên tổ chức" }]}
-                    >
-                      <Input placeholder="Ví dụ: Đại học Y Hà Nội, Bệnh viện Bạch Mai..." disabled />
-                    </Form.Item>
-
-                    <Form.Item 
-                      noStyle 
-                      shouldUpdate={(prevValues, currentValues) => {
-                        const prevType = prevValues.details?.[name]?.detailType;
-                        const currentType = currentValues.details?.[name]?.detailType;
-                        return prevType !== currentType;
-                      }}
-                    >
-                      {({ getFieldValue }) => {
-                        const detailType = getFieldValue(['details', name, 'detailType']);
-                        
-                        if (detailType === 'CERTIFICATION') {
-                          return (
-                            <Form.Item
-                              {...restField}
-                              name={[name, "issuedDate"]}
-                              label="Ngày cấp"
-                            >
-                              <DatePicker 
-                                className="w-full" 
-                                placeholder="Chọn ngày" 
-                                format="DD/MM/YYYY"  disabled
-                              />
-                            </Form.Item>
-                          );
-                        }
-
-                        if (detailType === 'EDUCATION' || detailType === 'EXPERIENCE') {
-                          return (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <Form.Item
-                                {...restField}
-                                name={[name, "fromDate"]}
-                                label="Từ ngày"
-                              >
-                                <DatePicker 
-                                  className="w-full" 
-                                  placeholder="Chọn ngày bắt đầu" 
-                                  format="DD/MM/YYYY" disabled
-                                />
-                              </Form.Item>
-
-                              <Form.Item
-                                {...restField}
-                                name={[name, "toDate"]}
-                                label="Đến ngày"
-                              >
-                                <DatePicker 
-                                  className="w-full" 
-                                  placeholder="Chọn ngày kết thúc" 
-                                  format="DD/MM/YYYY" disabled
-                                />
-                              </Form.Item>
-                            </div>
-                          );
-                        }
-
-                        return null;
-                      }}
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, "description"]}
-                      label="Mô tả"
-                    >
-                      <Input.TextArea rows={2} placeholder="Mô tả chi tiết..." disabled/>
-                    </Form.Item>
-                  </div>
-                ))}
-              </>
-            )}
-          </Form.List>
+          
+          {/* Hiển thị thông tin chi tiết dưới dạng card thay vì form */}
+          <div className="space-y-4">
+            {dataDetails.details.map((detail, index) => (
+              <div key={index} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+                <div className="mb-2">
+                  <Tag 
+                    color={
+                      detail.detailType === "EDUCATION" ? "blue" :
+                      detail.detailType === "EXPERIENCE" ? "green" :
+                      detail.detailType === "CERTIFICATION" ? "purple" : 
+                      "default"
+                    }
+                  >
+                    {detail.detailType === "EDUCATION" ? "Học vấn" :
+                     detail.detailType === "EXPERIENCE" ? "Kinh nghiệm" :
+                     detail.detailType === "CERTIFICATION" ? "Chứng chỉ" : 
+                     "Khác"}
+                  </Tag>
+                </div>
+                
+                <Text strong className="block">{detail.title}</Text>
+                <Text className="block text-blue-500">{detail.organization}</Text>
+                
+                {detail.detailType === "CERTIFICATION" && detail.issuedDate && (
+                  <Text type="secondary" className="block mt-1">
+                    Ngày cấp: {dayjs(detail.issuedDate).format('DD/MM/YYYY')}
+                  </Text>
+                )}
+                
+                {(detail.detailType === "EDUCATION" || detail.detailType === "EXPERIENCE") && (
+                  <Text type="secondary" className="block mt-1">
+                    {detail.fromDate ? dayjs(detail.fromDate).format('DD/MM/YYYY') : ""} 
+                    {" - "}
+                    {detail.toDate ? dayjs(detail.toDate).format('DD/MM/YYYY') : "Hiện tại"}
+                  </Text>
+                )}
+                
+                {detail.description && (
+                  <Paragraph ellipsis={{ rows: 2, expandable: true, symbol: 'Xem thêm' }} className="mt-2">
+                    {detail.description}
+                  </Paragraph>
+                )}
+              </div>
+            ))}
+          </div>
         </>
       )}
     </div>
