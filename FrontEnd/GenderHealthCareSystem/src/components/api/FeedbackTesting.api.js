@@ -59,3 +59,7 @@ export const hideFeedbackTestingAPI = async (feedbackId) => {
 export const getAverageRatingAPI = async () => {
   return apiClient.get(`/stis-feedback/total-average`);
 }
+
+export const getStatisticsFeedbackTestingAPI = async () => {
+  return apiClient.get(`/stis-feedback/rating-statistics`);
+}

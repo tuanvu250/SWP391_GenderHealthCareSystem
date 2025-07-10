@@ -7,6 +7,7 @@ import StaffDashboard from './components/StaffDashboard';
 import ManagerDashboard from './components/ManagerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import { getMockDataForRole } from './utils/mockData';
+import { getDashboardStats } from './utils/fetchData';
 
 const { Title } = Typography;
 
@@ -29,7 +30,8 @@ const Overview = () => {
         // setStats(response.data);
         
         // Mock data cho từng role
-        const mockData = getMockDataForRole(role);
+        const mockData = role !== "Manager" ? getMockDataForRole(role) : await getDashboardStats(role);
+        console.log(">>> Mock data for role:", role, mockData);
         setStats(mockData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -98,7 +100,7 @@ const Overview = () => {
       {renderPageTitle()}
       
       {/* Common components shared by all roles */}
-      <CommonStats stats={stats} />
+      {/* <CommonStats stats={stats} /> */}
       
       {/* Role-specific sections */}
       {loading ? (
