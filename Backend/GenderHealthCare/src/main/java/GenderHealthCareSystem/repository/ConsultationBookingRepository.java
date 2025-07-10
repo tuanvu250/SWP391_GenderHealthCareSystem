@@ -69,4 +69,16 @@ public interface ConsultationBookingRepository
 
     @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId")
     Page<ConsultationBooking> findByConsultant(@Param("consultantId") Integer consultantId, Pageable pageable);
+
+    @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId " +
+           "AND (:status IS NULL OR cb.status = :status) " +
+           "AND (:customerName IS NULL OR LOWER(cb.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
+           "AND (:startDate IS NULL OR cb.bookingDate >= :startDate) " +
+           "AND (:endDate IS NULL OR cb.bookingDate <= :endDate)")
+    Page<ConsultationBooking> findByConsultantAndFilters(@Param("consultantId") Integer consultantId,
+                                                         @Param("status") BookingStatus status,
+                                                         @Param("customerName") String customerName,
+                                                         @Param("startDate") LocalDateTime startDate,
+                                                         @Param("endDate") LocalDateTime endDate,
+                                                         Pageable pageable);
 }

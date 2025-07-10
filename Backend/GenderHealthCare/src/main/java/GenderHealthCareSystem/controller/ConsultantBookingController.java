@@ -59,6 +59,30 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 
+    @GetMapping("/consultant/schedule/search")
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> searchConsultantSchedule(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @AuthenticationPrincipal Jwt jwt) {
+        int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
+        String role = jwt.getClaimAsString("role");
+        if (!"CONSULTANT".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Bạn không có quyền truy cập lịch tư vấn."));
+        }
+
+        LocalDateTime start = startDate != null && !startDate.isEmpty() ? LocalDateTime.parse(startDate) : null;
+        LocalDateTime end = endDate != null && !endDate.isEmpty() ? LocalDateTime.parse(endDate) : null;
+
+        PageResponse<ConsultantBookingDetailResponse> schedule = bookingService.searchConsultantSchedule(
+                consultantId, page, size, status, customerName, start, end);
+        return ResponseEntity.ok(ApiResponse.success(schedule));
+    }
+
+
     @GetMapping("/calendar/{consultantId}")
     public ResponseEntity<?> getConsultantCalendar(@PathVariable Integer consultantId) {
         var calendar = bookingService.getConsultantCalendar(consultantId);
@@ -180,3 +204,4 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(bookings);
     }
 }
+

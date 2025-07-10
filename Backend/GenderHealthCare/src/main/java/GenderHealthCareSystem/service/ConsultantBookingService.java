@@ -240,4 +240,24 @@ public class ConsultantBookingService {
 
         return PageResponseUtil.mapToPageResponse(responsePage);
     }
+
+    public PageResponse<ConsultantBookingDetailResponse> searchConsultantSchedule(Integer consultantId, int page, int size, String status, String customerName, LocalDateTime startDate, LocalDateTime endDate) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("bookingDate"));
+        BookingStatus bookingStatus = status != null ? BookingStatus.valueOf(status.toUpperCase()) : null;
+
+        Page<ConsultationBooking> bookingsPage = bookingRepo.findByConsultantAndFilters(
+                consultantId, bookingStatus, customerName, startDate, endDate, pageable);
+
+        Page<ConsultantBookingDetailResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingDetailResponse(
+                b.getBookingId(),
+                b.getCustomer().getFullName(),
+                b.getCustomer().getUserId(),
+                b.getBookingDate(),
+                b.getStatus().name(),
+                b.getPaymentStatus(),
+                b.getMeetLink()
+        ));
+
+        return PageResponseUtil.mapToPageResponse(responsePage);
+    }
 }
