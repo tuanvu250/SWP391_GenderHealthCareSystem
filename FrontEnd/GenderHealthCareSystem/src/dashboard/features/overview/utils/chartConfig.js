@@ -248,3 +248,55 @@ export const ratingBarChartOptions = {
     },
   },
 };
+
+// Thêm cấu hình biểu đồ doanh thu
+
+export const revenueChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "top",
+      labels: {
+        boxWidth: 15,
+      },
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || "";
+          if (label) {
+            label += ": ";
+          }
+          if (context.parsed.y !== null) {
+            // Định dạng số thành tiền tệ VNĐ
+            label += new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(context.parsed.y);
+          }
+          return label;
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        // Định dạng trục y thành tiền tệ
+        callback: function (value) {
+          if (value >= 1000000) {
+            return (value / 1000000) + " triệu";
+          }
+          return value;
+        },
+      },
+    },
+  },
+};

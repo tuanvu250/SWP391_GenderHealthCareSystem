@@ -26,6 +26,7 @@ import ChartComponent from "../../../components/chart/ChartComponent";
 import {
   userAppointmentsChartOptions,
   ratingBarChartOptions,
+  revenueChartOptions,
 } from "../utils/chartConfig";
 import { useNavigate } from "react-router-dom";
 import {
@@ -181,6 +182,24 @@ const ManagerDashboard = ({ stats }) => {
       }
     : null;
 
+  // Thêm dữ liệu biểu đồ doanh thu
+  const revenueChart = stats.monthlyRevenue
+    ? {
+        labels: stats.revenueStats?.map((item) => item.months) || [],
+        datasets: [
+          {
+            label: "Doanh thu (VNĐ)",
+            data: stats.revenueStats?.map((item) => item.values) || [],
+            backgroundColor: "rgba(75, 192, 192, 0.5)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+          },
+        ],
+      }
+    : null;
+
   const handleTableChange = (pagination) => {
     setPagination(pagination);
   };
@@ -246,25 +265,6 @@ const ManagerDashboard = ({ stats }) => {
       render: (date) => formatDateTime(date),
     },
     {
-      title: "Tags",
-      dataIndex: "tags",
-      key: "tags",
-      width: 200,
-      render: (tags) => (
-        <div className="flex flex-wrap gap-1">
-          {tags.map((tag) => (
-            <Tag
-              color={tag.color}
-              key={tag.text}
-              className="cursor-pointer"
-            >
-              {tag.text}
-            </Tag>
-          ))}
-        </div>
-      ),
-    },
-    {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
@@ -288,6 +288,27 @@ const ManagerDashboard = ({ stats }) => {
       ),
     },
   ];
+
+  // Tính tổng số liệu từ stats.usersAndAppointments
+  const calculateTotals = () => {
+    if (!stats.usersAndAppointments || !Array.isArray(stats.usersAndAppointments)) {
+      return {
+        totalUsers: 0,
+        totalTestAppointments: 0,
+        totalConsultAppointments: 0
+      };
+    }
+    
+    return stats.usersAndAppointments.reduce((acc, day) => {
+      return {
+        totalUsers: acc.totalUsers + (day.users || 0),
+        totalTestAppointments: acc.totalTestAppointments + (day.testAppointments || 0),
+        totalConsultAppointments: acc.totalConsultAppointments + (day.consultAppointments || 0)
+      };
+    }, { totalUsers: 0, totalTestAppointments: 0, totalConsultAppointments: 0 });
+  };
+
+  const weeklyTotals = calculateTotals();
 
   return (
     <>
@@ -375,6 +396,90 @@ const ManagerDashboard = ({ stats }) => {
         </Col>
       </Row>
 
+      {/* Thêm hàng mới hiển thị tổng 7 ngày */}
+      <Row gutter={[16, 16]} className="mt-4">
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic
+              title="Người dùng mới (7 ngày)"
+              value={weeklyTotals.totalUsers}
+              valueStyle={{ color: "#1677ff" }}
+              prefix={<UserOutlined />}
+            />
+            <div className="mt-2">
+              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalUsers / 7)} người/ngày</Text>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic
+              title="Xét nghiệm đã đặt (7 ngày)"
+              value={weeklyTotals.totalTestAppointments}
+              valueStyle={{ color: "#52c41a" }}
+              prefix={<CheckCircleOutlined />}
+            />
+            <div className="mt-2">
+              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalTestAppointments / 7)} lịch/ngày</Text>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card>
+            <Statistic
+              title="Tư vấn đã đặt (7 ngày)"
+              value={weeklyTotals.totalConsultAppointments}
+              valueStyle={{ color: "#faad14" }}
+              prefix={<TeamOutlined />}
+            />
+            <div className="mt-2">
+              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalConsultAppointments / 7)} lịch/ngày</Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Hàng thứ ba: Biểu đồ người dùng & lịch hẹn + Biểu đồ doanh thu (đã thay đổi) */}
+      <Row gutter={[16, 16]} className="mt-4">
+        <Col xs={24} md={12}>
+          <Card title="Người dùng mới & Lịch hẹn theo ngày" className="h-full">
+            <ChartComponent
+              data={usersAndAppointmentsChart}
+              options={userAppointmentsChartOptions}
+              type="line"
+              height="300px"
+            />
+          </Card>
+        </Col>
+        <Col xs={24} md={12}>
+          <Card 
+            title="Doanh thu 6 tháng gần nhất" 
+            className="h-full"
+            extra={
+              <div>
+                <Text strong>Tổng: </Text>
+                <Text>
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                    .format(revenueChart?.datasets[0].data.reduce((a, b) => a + b, 0) || 0)}
+                </Text>
+              </div>
+            }
+          >
+            {revenueChart ? (
+              <ChartComponent
+                data={revenueChart}
+                options={revenueChartOptions}
+                type="line"
+                height="300px"
+              />
+            ) : (
+              <div className="text-center p-6">Không có dữ liệu doanh thu</div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Hàng thứ tư: Biểu đồ đánh giá + Bài viết cần duyệt (đã thay đổi) */}
       <Row gutter={[16, 16]} className="mt-4">
         <Col xs={24} md={12}>
           <Card
@@ -403,20 +508,7 @@ const ManagerDashboard = ({ stats }) => {
           </Card>
         </Col>
         <Col xs={24} md={12}>
-          <Card title="Người dùng mới & Lịch hẹn theo ngày" className="h-full">
-            <ChartComponent
-              data={usersAndAppointmentsChart}
-              options={userAppointmentsChartOptions}
-              type="line"
-              height="300px"
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]} className="mt-4">
-        <Col xs={24}>
-          <Card title="Bài viết cần duyệt">
+          <Card title="Bài viết cần duyệt" className="h-full">
             <Table
               dataSource={blogList}
               columns={columns}
@@ -441,6 +533,7 @@ const ManagerDashboard = ({ stats }) => {
         blog={selectedBlog}
       />
 
+      {/* Giữ nguyên hàng cuối (hành động nhanh) */}
       <Row gutter={[16, 16]} className="mt-4">
         <Col xs={24}>
           <Card title="Hành động nhanh" className="text-center">
