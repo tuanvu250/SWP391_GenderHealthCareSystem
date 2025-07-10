@@ -63,20 +63,33 @@ public interface ConsultationBookingRepository
     @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%')))")
     Page<ConsultationBooking> findByCustomerOrConsultantName(@Param("customerName") String customerName, @Param("consultantName") String consultantName, Pageable pageable);
 
+
     int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
     @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%'))) AND (:startDate IS NULL OR b.bookingDate >= :startDate) AND (:endDate IS NULL OR b.bookingDate <= :endDate) AND (:status IS NULL OR b.status = :status)")
     Page<ConsultationBooking> findByCustomerOrConsultantNameAndDateAndStatus(@Param("customerName") String customerName, @Param("consultantName") String consultantName, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("status") BookingStatus status, Pageable pageable);
+
+    @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
+           "AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%'))) " +
+           "AND (:startDate IS NULL OR b.bookingDate >= :startDate) " +
+           "AND (:endDate IS NULL OR b.bookingDate <= :endDate) " +
+           "AND (:status IS NULL OR LOWER(b.status) LIKE LOWER(CONCAT('%', :status, '%')))")
+    Page<ConsultationBooking> findByCustomerOrConsultantNameAndDateAndStatus(@Param("customerName") String customerName,
+                                                                             @Param("consultantName") String consultantName,
+                                                                             @Param("startDate") LocalDateTime startDate,
+                                                                             @Param("endDate") LocalDateTime endDate,
+                                                                             @Param("status") String status, Pageable pageable);
+
 
     @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId")
     Page<ConsultationBooking> findByConsultant(@Param("consultantId") Integer consultantId, Pageable pageable);
 
     @Query("SELECT cb FROM ConsultationBooking cb WHERE cb.consultant.userId = :consultantId " +
-           "AND (:status IS NULL OR cb.status = :status) " +
+           "AND (:status IS NULL OR LOWER(cb.status) LIKE LOWER(CONCAT('%', :status, '%'))) " +
            "AND (:customerName IS NULL OR LOWER(cb.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
            "AND (:startDate IS NULL OR cb.bookingDate >= :startDate) " +
            "AND (:endDate IS NULL OR cb.bookingDate <= :endDate)")
     Page<ConsultationBooking> findByConsultantAndFilters(@Param("consultantId") Integer consultantId,
-                                                         @Param("status") BookingStatus status,
+                                                         @Param("status") String status,
                                                          @Param("customerName") String customerName,
                                                          @Param("startDate") LocalDateTime startDate,
                                                          @Param("endDate") LocalDateTime endDate,
