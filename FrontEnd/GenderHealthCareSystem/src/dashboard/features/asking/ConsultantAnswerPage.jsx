@@ -9,6 +9,7 @@ import {
 } from "../../../components/api/Question.api";
 
 export default function ConsultantAnswerPage() {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [tab, setTab] = useState("pending");
   const [pending, setPending] = useState([]);
   const [answered, setAnswered] = useState([]);
@@ -36,11 +37,7 @@ export default function ConsultantAnswerPage() {
   const fetchAnswered = async () => {
     try {
       const res = await getAnsweredQuestionsAPI(0, 100);
-      const list = Array.isArray(res)
-        ? res
-        : Array.isArray(res?.data?.data?.content)
-        ? res.data.data.content
-        : [];
+      const list = Array.isArray(res) ? res : Array.isArray(res?.data?.data?.content) ? res.data.data.content : [];
       setAnswered(list);
       list.forEach((q) => fetchComments(q.questionId));
     } catch (err) {
@@ -77,63 +74,85 @@ export default function ConsultantAnswerPage() {
   const handleCommentSubmit = async (id) => {
     const content = newComments[id];
     if (!content || content.trim() === "") return;
+
     try {
       await postCommentAPI(id, content);
-      message.success("Đã thêm bình luận.");
+
+      const newComment = {
+        content: content.trim(),
+        userFullName: user?.fullName || "Bạn",
+        userImageUrl: user?.imageUrl || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      setComments((prev) => ({
+        ...prev,
+        [id]: [...(prev[id] || []), newComment],
+      }));
+
       setNewComments((prev) => ({ ...prev, [id]: "" }));
-      fetchComments(id);
+
+      message.success("Đã thêm bình luận.");
     } catch (err) {
       console.error("Lỗi khi gửi bình luận:", err);
       message.error("Không thể gửi bình luận.");
     }
   };
 
-  // Group theo chủ đề (lowercase để tránh trùng)
-  const groupByTopic = (list) => {
-    return list.reduce((acc, q) => {
-      const rawTitle = q.title || "";
-      const topic = rawTitle.split(" - ")[0].trim().toLowerCase() || "khác";
-      if (!acc[topic]) acc[topic] = [];
-      acc[topic].push(q);
-      return acc;
-    }, {});
+  // ✅ Hàm bỏ dấu tiếng Việt
+  const removeVietnameseTones = (str) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d").replace(/Đ/g, "D");
   };
 
-  // Lọc theo selectedTopic
+  // ✅ Chuẩn hoá chủ đề
+  const normalizeTopic = (title = "") => {
+    const raw = title.split(" - ")[0] || "";
+    return removeVietnameseTones(raw.trim().toLowerCase());
+  };
+
   const filterBySelectedTopic = (list) => {
     if (selectedTopic === "all") return list;
-    return list.filter((q) => (q.title || "").toLowerCase().startsWith(selectedTopic + " -"));
+    return list.filter((q) => normalizeTopic(q.title) === selectedTopic);
   };
 
-  // Tạo allTopics: lowercase, bỏ trùng
   const rawTopics = [
-    ...pending.map((q) => (q.title || "").split(" - ")[0].trim().toLowerCase()),
-    ...answered.map((q) => (q.title || "").split(" - ")[0].trim().toLowerCase()),
+    ...pending.map((q) => normalizeTopic(q.title)),
+    ...answered.map((q) => normalizeTopic(q.title)),
   ];
   const allTopics = Array.from(new Set(rawTopics)).filter((t) => t);
 
-  // Capitalize để hiển thị đẹp
   const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
   const renderComments = (q) => (
-    <div className="mt-4">
-      <p className="font-semibold text-[#0099CF] mb-2">Bình luận</p>
-      <ul className="space-y-2 mb-2">
-        {(comments[q.questionId] || []).map((c, idx) => (
-          <li key={idx} className="bg-gray-100 px-3 py-2 rounded">{c.content}</li>
-        ))}
-      </ul>
-      <div className="flex gap-2">
+    <div className="mt-6">
+      <h4 className="text-base font-semibold text-slate-800 mb-3">Thảo luận</h4>
+      {(comments[q.questionId] || []).length > 0 && (
+        <ul className="space-y-3 mb-4">
+          {(comments[q.questionId] || []).map((c, idx) => (
+            <li key={idx} className="bg-slate-100 px-4 py-3 rounded-lg text-slate-700 text-sm">
+              <div className="flex items-center gap-3 mb-1">
+                {c.userImageUrl && <img src={c.userImageUrl} className="w-5 h-5 rounded-full" alt="avatar" />}
+                <span className="font-medium text-slate-800 text-sm">{c.userFullName || "Ẩn danh"}</span>
+              </div>
+              <p>{c.content}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-3 items-center">
         <textarea
-          rows={2}
+          rows={1}
           value={newComments[q.questionId] || ""}
           onChange={(e) => setNewComments((prev) => ({ ...prev, [q.questionId]: e.target.value }))}
-          className="flex-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#0099CF] resize-none"
-          placeholder="Thêm bình luận..."
+          className="flex-1 border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#0099CF] focus:border-[#0099CF] resize-none transition"
+          placeholder="Viết bình luận..."
         />
         <button
           onClick={() => handleCommentSubmit(q.questionId)}
-          className="bg-[#0099CF] text-white px-4 py-1.5 rounded-lg hover:bg-[#007ca8] transition-colors"
+          className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors shrink-0 text-sm font-medium"
         >
           Gửi
         </button>
@@ -141,103 +160,111 @@ export default function ConsultantAnswerPage() {
     </div>
   );
 
+  const renderEmptyState = (message) => (
+    <div className="text-center py-16 px-6 bg-white rounded-lg border border-dashed border-slate-300">
+      <h3 className="text-lg font-medium text-slate-600">{message}</h3>
+    </div>
+  );
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-center text-[#0099CF] mb-8">
-        Quản lý câu hỏi tư vấn
-      </h1>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-[#0099CF]">Câu hỏi từ người dùng</h1>
+        </div>
 
-      {/* Tabs */}
-      <div className="flex justify-center mb-6 gap-2">
-        <button
-          onClick={() => setTab("pending")}
-          className={`px-5 py-2 rounded font-medium ${tab === "pending" ? "bg-[#0099CF] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
-        >
-          Chưa trả lời ({pending.length})
-        </button>
-        <button
-          onClick={() => setTab("answered")}
-          className={`px-5 py-2 rounded font-medium ${tab === "answered" ? "bg-[#0099CF] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
-        >
-          Đã trả lời ({answered.length})
-        </button>
-      </div>
+        <div className="flex justify-between mb-4 gap-4 flex-wrap">
+          <div className="flex gap-3 border-b border-gray-200">
+            <button
+              onClick={() => setTab("pending")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === "pending" ? "border-[#0099CF] text-[#0099CF]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              Chưa trả lời
+            </button>
+            <button
+              onClick={() => setTab("answered")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === "answered" ? "border-[#0099CF] text-[#0099CF]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              Đã trả lời
+            </button>
+          </div>
 
-      {/* Dropdown lọc chủ đề */}
-      <div className="flex justify-end mb-4">
-        <select
-          value={selectedTopic}
-          onChange={(e) => setSelectedTopic(e.target.value)}
-          className="px-3 py-2 border rounded-lg"
-        >
-          <option value="all">Tất cả chủ đề</option>
-          {allTopics.map((topic) => (
-            <option key={topic} value={topic}>{capitalize(topic)}</option>
-          ))}
-        </select>
-      </div>
+          <select
+            value={selectedTopic}
+            onChange={(e) => setSelectedTopic(e.target.value)}
+            className="px-3 py-2 border rounded-md shadow-sm text-sm"
+          >
+            <option value="all">Tất cả chủ đề</option>
+            {allTopics.map((topic) => (
+              <option key={topic} value={topic}>{capitalize(topic)}</option>
+            ))}
+          </select>
+        </div>
 
-      {/* Pending questions */}
-      {tab === "pending" && (
-        filterBySelectedTopic(pending).length === 0 ? (
-          <p className="text-center text-gray-500">Không có câu hỏi nào chờ trả lời.</p>
-        ) : (
-          Object.entries(groupByTopic(filterBySelectedTopic(pending))).map(([topic, questions]) => (
-            <div key={topic} className="mb-6">
-              <h2 className="text-xl font-semibold text-[#0099CF] mb-4">{capitalize(topic)} ({questions.length})</h2>
-              <div className="space-y-4">
-                {questions.map((q) => (
-                  <div key={q.questionId} className="bg-white border rounded-xl shadow-sm p-5 hover:shadow-md transition">
-                    <h3 className="font-semibold text-lg mb-2">{q.title}</h3>
-                    <p className="text-gray-700 mb-4 whitespace-pre-line">{q.content}</p>
-                    <textarea
-                      rows={3}
-                      value={answers[q.questionId] || ""}
-                      onChange={(e) => setAnswers((prev) => ({ ...prev, [q.questionId]: e.target.value }))}
-                      placeholder="Nhập câu trả lời..."
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0099CF] resize-none mb-3"
-                    />
-                    <div className="text-right">
-                      <button
-                        onClick={() => handleSubmit(q.questionId)}
-                        className="bg-[#0099CF] text-white px-4 py-2 rounded-lg hover:bg-[#007ca8] transition-colors"
-                      >
-                        Gửi trả lời
-                      </button>
-                    </div>
+        {tab === "pending" && (
+          filterBySelectedTopic(pending).length === 0 ? (
+            renderEmptyState("Không có câu hỏi nào đang chờ trả lời.")
+          ) : (
+            <div className="space-y-6">
+              {filterBySelectedTopic(pending).map((q) => (
+                <div key={q.questionId} className="bg-white p-5 rounded-xl shadow border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+                    {q.customerImageUrl && (
+                      <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
+                    )}
+                    <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))
-        )
-      )}
-
-      {/* Answered questions */}
-      {tab === "answered" && (
-        filterBySelectedTopic(answered).length === 0 ? (
-          <p className="text-center text-gray-500">Bạn chưa trả lời câu hỏi nào.</p>
-        ) : (
-          Object.entries(groupByTopic(filterBySelectedTopic(answered))).map(([topic, questions]) => (
-            <div key={topic} className="mb-6">
-              <h2 className="text-xl font-semibold text-[#0099CF] mb-4">{capitalize(topic)} ({questions.length})</h2>
-              <div className="space-y-4">
-                {questions.map((q) => (
-                  <div key={q.questionId} className="bg-white border rounded-xl shadow-sm p-5 hover:shadow-md transition">
-                    <h3 className="font-semibold text-lg mb-2">{q.title}</h3>
-                    <p className="text-gray-700 mb-3 whitespace-pre-line">{q.content}</p>
-                    <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-3">
-                      <p className="font-medium text-[#0099CF] mb-1">Câu trả lời:</p>
-                      <p className="text-gray-800 whitespace-pre-line">{q.answer}</p>
-                    </div>
-                    {renderComments(q)}
+                  <h3 className="text-lg font-semibold text-[#0099CF] mb-2">{q.title}</h3>
+                  <p className="text-gray-700 mb-4">{q.content}</p>
+                  <textarea
+                    rows={4}
+                    value={answers[q.questionId] || ""}
+                    onChange={(e) => setAnswers((prev) => ({ ...prev, [q.questionId]: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none focus:ring focus:ring-[#0099CF]"
+                    placeholder="Nhập câu trả lời tại đây..."
+                  ></textarea>
+                  <div className="text-right mt-3">
+                    <button
+                      onClick={() => handleSubmit(q.questionId)}
+                      className="bg-[#0099CF] text-white px-5 py-2 rounded hover:bg-[#007ca8]"
+                    >
+                      Gửi trả lời
+                    </button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))
-        )
-      )}
+          )
+        )}
+
+        {tab === "answered" && (
+          filterBySelectedTopic(answered).length === 0 ? (
+            renderEmptyState("Bạn chưa trả lời câu hỏi nào.")
+          ) : (
+            <div className="space-y-6">
+              {filterBySelectedTopic(answered).map((q) => (
+                <div key={q.questionId} className="bg-white p-5 rounded-xl shadow border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+                    {q.customerImageUrl && (
+                      <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
+                    )}
+                    <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#0099CF] mb-2">{q.title}</h3>
+                  <p className="text-gray-700 mb-4">{q.content}</p>
+
+                  <div className="bg-blue-50 border-l-4 border-[#0099CF] p-4 rounded">
+                    <p className="text-sm font-medium text-[#007ca8] mb-1">Câu trả lời:</p>
+                    <p className="text-gray-800 text-sm leading-relaxed">{q.answer}</p>
+                  </div>
+
+                  {renderComments(q)}
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

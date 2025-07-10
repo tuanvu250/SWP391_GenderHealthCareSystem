@@ -41,7 +41,7 @@ import Consultation from "../services/consultant/Consultation";
 import AskingSection from "../services/asking/AskingSection";
 import BookingResult from "../services/BookingResult";
 import ConfirmConsultationBooking from "../services/consultant/ConfirmBookingConsultant";
-import MyQuestionsPage from "../services/asking/MyQuestionPage";
+
 
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import Overview from "../dashboard/features/overview/Overview";
@@ -131,7 +131,7 @@ function RouteMap() {
           path="confirm-consultant"
           element={<ConfirmConsultationBooking />}
         />
-        <Route path="/my-questions" element={<MyQuestionsPage />} />
+      
 
         {/* Trang thông tin */}
         <Route path="/about" element={<AboutPage />} />

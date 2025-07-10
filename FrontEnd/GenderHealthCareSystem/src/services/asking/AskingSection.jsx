@@ -1,10 +1,8 @@
-"use client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   getAnsweredQuestionsAPI,
   createQuestionAPI,
-  getMyQuestionsAPI,
   getCommentsAPI,
   postCommentAPI,
 } from "../../components/api/Question.api";
@@ -15,12 +13,10 @@ export default function AskingSection() {
   const [form, setForm] = useState({ email: "", question: "", tag: "" });
   const [submitted, setSubmitted] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
-  const [myQuestions, setMyQuestions] = useState([]);
   const [selectedTag, setSelectedTag] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const navigate = useNavigate();
 
   const tagOptions = [
     { label: "Sức Khỏe", value: "suckhoe", color: "bg-green-100 text-green-800" },
@@ -31,45 +27,29 @@ export default function AskingSection() {
   ];
 
   const fetchAnswered = async (pageIndex = 0) => {
-  try {
-    const res = await getAnsweredQuestionsAPI(pageIndex, 5);
-    const mapped = (Array.isArray(res) ? res : []).map((q) => {
-      const titlePrefix = q.title?.split(" - ")[0]?.trim().toLowerCase();
-      const matchedTag = tagOptions.find(tag => tag.label.toLowerCase() === titlePrefix);
-      return {
-        customerName: q.customerFullName || "Ẩn danh",
-        consultantName: q.answerByFullName || "Tư vấn viên",
-        question: q.title || q.content,
-        answer: q.answer,
-        tag: matchedTag?.value || "tuvan",
-      };
-    });
-    if (pageIndex === 0) {
-      setAnsweredQuestions(mapped);
-    } else {
-      setAnsweredQuestions((prev) => [...prev, ...mapped]);
-    }
-    if (mapped.length < 5) setHasMore(false);
-  } catch (err) {
-    console.error("Lỗi khi tải câu hỏi:", err);
-  }
-};
-
-
-  const fetchMyQuestions = async () => {
     try {
-      if (!user?.id) return;
-      const res = await getMyQuestionsAPI(user.id);
-      setMyQuestions(Array.isArray(res) ? res : []);
+      const res = await getAnsweredQuestionsAPI(pageIndex, 5);
+      const mapped = (Array.isArray(res) ? res : []).map((q) => {
+        const titlePrefix = q.title?.split(" - ")[0]?.trim().toLowerCase();
+        const matchedTag = tagOptions.find(tag => tag.label.toLowerCase() === titlePrefix);
+        return {
+          ...q,
+          tag: matchedTag?.value || "tuvan",
+        };
+      });
+      if (pageIndex === 0) {
+        setAnsweredQuestions(mapped);
+      } else {
+        setAnsweredQuestions((prev) => [...prev, ...mapped]);
+      }
+      if (mapped.length < 5) setHasMore(false);
     } catch (err) {
-      console.error("Lỗi khi tải câu hỏi của bạn:", err);
-      setMyQuestions([]);
+      console.error("Lỗi khi tải câu hỏi:", err);
     }
   };
 
   useEffect(() => {
     fetchAnswered(0);
-    fetchMyQuestions();
   }, []);
 
   const handleChange = (e) => {
@@ -78,7 +58,6 @@ export default function AskingSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lưu title bắt đầu bằng tag.value để dễ xử lý
     const payload = {
       title: `${form.tag} - ${form.question.slice(0, 60)}`,
       content: form.question,
@@ -88,7 +67,6 @@ export default function AskingSection() {
       await createQuestionAPI(payload);
       setSubmitted(true);
       setForm({ email: "", question: "", tag: "" });
-      fetchMyQuestions();
       setTimeout(() => setSubmitted(false), 3000);
     } catch (err) {
       console.error("Gửi câu hỏi thất bại:", err);
@@ -96,29 +74,32 @@ export default function AskingSection() {
     }
   };
 
-  const getTagColor = (tagValue) => tagOptions.find((t) => t.value === tagValue)?.color || "bg-gray-100 text-gray-800";
-  const getTagLabel = (tagValue) => tagOptions.find((t) => t.value === tagValue)?.label || tagValue;
+  const getTagColor = (tagValue) =>
+    tagOptions.find((t) => t.value === tagValue)?.color || "bg-gray-100 text-gray-800";
+  const getTagLabel = (tagValue) =>
+    tagOptions.find((t) => t.value === tagValue)?.label || tagValue;
 
   const filteredAnswered = answeredQuestions.filter((q) => {
     const matchTag = selectedTag === "all" || q.tag === selectedTag;
     const search = searchText.toLowerCase();
-    const matchSearch = q.question.toLowerCase().includes(search) || q.customerName.toLowerCase().includes(search);
+    const matchSearch =
+      q.title?.toLowerCase().includes(search) || q.customerFullName?.toLowerCase().includes(search);
     return matchTag && matchSearch;
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 bg-gradient-to-br from-blue-50 to-cyan-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 py-12 bg-white min-h-screen">
       <div className="grid lg:grid-cols-[400px_1fr] gap-8 items-start">
         {/* FORM */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 sticky top-4">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-200">
           <div className="p-6 border-b text-center">
-            <h2 className="text-2xl font-bold text-[#0099CF]">Đặt câu hỏi</h2>
-            <p className="text-gray-600 text-sm">Gửi câu hỏi của bạn để nhận tư vấn từ chuyên gia</p>
+            <h2 className="text-2xl font-bold text-[#0099CF]">Gửi câu hỏi mới</h2>
+            <p className="text-gray-500 text-sm">Nhận tư vấn riêng tư và bảo mật từ chuyên gia.</p>
           </div>
-          <div className="p-6">
+          <div className="p-6 space-y-4">
             {submitted && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">
-                ✅ Gửi câu hỏi thành công!
+              <div className="p-3 bg-green-100 text-green-800 rounded-md text-sm border border-green-300">
+                ✅ Câu hỏi đã được gửi!
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,17 +109,17 @@ export default function AskingSection() {
                 required
                 value={form.email}
                 onChange={handleChange}
-                placeholder="Email của bạn"
-                className="w-full px-3 py-2 border rounded"
+                placeholder="fpt@email.com"
+                className="w-full px-4 py-2 border rounded-md text-sm focus:outline-none focus:ring focus:ring-blue-200"
               />
               <select
                 name="tag"
                 required
                 value={form.tag}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-4 py-2 border rounded-md text-sm focus:outline-none focus:ring focus:ring-blue-200"
               >
-                <option value="">-- Chủ đề --</option>
+                <option value="">Chọn chủ đề</option>
                 {tagOptions.map((tag) => (
                   <option key={tag.value} value={tag.value}>{tag.label}</option>
                 ))}
@@ -148,14 +129,14 @@ export default function AskingSection() {
                 required
                 value={form.question}
                 onChange={handleChange}
-                placeholder="Nội dung câu hỏi"
-                className="w-full px-3 py-2 border rounded min-h-[100px]"
+                placeholder="Nhập chi tiết câu hỏi của bạn ở đây..."
+                className="w-full px-4 py-2 border rounded-md min-h-[100px] text-sm focus:outline-none focus:ring focus:ring-blue-200"
               />
               <button
                 type="submit"
-                className="w-full bg-[#0099CF] hover:bg-[#007ca8] text-white font-semibold py-3 px-4 rounded"
+                className="w-full bg-gradient-to-r from-[#0099CF] to-[#2F3C7E] hover:brightness-110 text-white font-semibold py-2 px-4 rounded-md transition"
               >
-                Gửi câu hỏi
+                Gửi đi
               </button>
             </form>
           </div>
@@ -163,13 +144,14 @@ export default function AskingSection() {
 
         {/* DANH SÁCH CÂU HỎI */}
         <div className="space-y-6">
-          <h3 className="text-2xl font-bold text-[#0099CF]">Câu hỏi đã được tư vấn</h3>
+          <h3 className="text-2xl font-bold text-gray-800">Câu hỏi thường gặp</h3>
+          <p className="text-sm text-gray-600">Tham khảo các câu hỏi đã được chuyên gia của chúng tôi trả lời.</p>
 
           <div className="flex flex-wrap gap-4">
             <select
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
-              className="px-3 py-2 border rounded-lg"
+              className="px-3 py-2 border rounded-md shadow-sm text-sm focus:ring focus:ring-blue-200"
             >
               <option value="all">Tất cả chủ đề</option>
               {tagOptions.map((tag) => (
@@ -178,67 +160,42 @@ export default function AskingSection() {
             </select>
             <input
               type="text"
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm trong các câu hỏi..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="px-3 py-2 border rounded-lg flex-1 min-w-[200px]"
+              className="px-3 py-2 border rounded-md flex-1 min-w-[200px] text-sm focus:ring focus:ring-blue-200"
             />
           </div>
 
           <div className="space-y-4">
             {filteredAnswered.map((q, i) => (
-              <div key={i} className="bg-white border rounded-xl p-4 shadow">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold text-[#0099CF]">{q.customerName}</span>
+              <div key={i} className="bg-white border rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="font-bold text-slate-800 text-sm md:text-base">{q.customerFullName}</p>
                   <span className={`text-xs px-3 py-1 rounded-full ${getTagColor(q.tag)}`}>
                     {getTagLabel(q.tag)}
                   </span>
                 </div>
-                <p className="text-gray-800 font-medium">Câu hỏi: {q.question}</p>
-                <p className="text-sm mt-1 text-gray-600"><strong>TVV:</strong> {q.consultantName}</p>
-                <p className="mt-1 text-gray-800">{q.answer}</p>
+                <div className="text-gray-800 text-sm md:text-base">{q.content}</div>
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+                  <p className="text-sm font-semibold text-gray-700">Phản hồi từ chuyên gia:</p>
+                  <p className="text-gray-800 text-sm mt-1 whitespace-pre-line">{q.answer}</p>
+                </div>
+                <CommentBox questionId={q.questionId} />
               </div>
             ))}
-          </div>
-
-          {hasMore && (
-            <div className="text-center pt-4">
-              <button
-                onClick={() => {
-                  const nextPage = page + 1;
-                  setPage(nextPage);
-                  fetchAnswered(nextPage);
-                }}
-                className="text-[#0099CF] underline text-sm"
-              >
-                Tải thêm câu hỏi
-              </button>
-            </div>
-          )}
-
-          <div className="mt-10">
-            <button
-              onClick={() => navigate("/my-questions")}
-              className="text-sm text-[#0099CF] hover:underline mb-4"
-            >
-              👉 Xem chi tiết tất cả
-            </button>
-            {myQuestions.length === 0 ? (
-              <p className="text-gray-500">Bạn chưa gửi câu hỏi nào.</p>
-            ) : (
-              <div className="space-y-4">
-                {myQuestions.map((q) => (
-                  <div key={q.id} className="bg-white border rounded-lg p-4 shadow">
-                    <p className="font-medium mb-1">🔹 {q.title}</p>
-                    <p className="text-sm text-gray-500">
-                      Trạng thái:{" "}
-                      <span className={q.answer ? "text-green-600" : "text-yellow-600"}>
-                        {q.answer ? "Đã được tư vấn" : "Đang chờ tư vấn"}
-                      </span>
-                    </p>
-                    <CommentBox questionId={q.id} />
-                  </div>
-                ))}
+            {hasMore && (
+              <div className="text-center pt-4">
+                <button
+                  onClick={() => {
+                    const nextPage = page + 1;
+                    setPage(nextPage);
+                    fetchAnswered(nextPage);
+                  }}
+                  className="text-[#0099CF] underline text-sm hover:text-[#2F3C7E]"
+                >
+                  Tải thêm câu hỏi
+                </button>
               </div>
             )}
           </div>
@@ -253,13 +210,13 @@ function CommentBox({ questionId }) {
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-  if (questionId) fetchComments();
-}, [questionId]);
+    if (questionId) fetchComments();
+  }, [questionId]);
 
   const fetchComments = async () => {
     try {
-      const data = await getCommentsAPI(questionId);
-      setComments(data);
+      const res = await getCommentsAPI(questionId);
+      setComments(res || []);
     } catch (err) {
       console.error("Lỗi khi tải bình luận:", err);
     }
@@ -278,26 +235,39 @@ function CommentBox({ questionId }) {
   };
 
   return (
-    <div className="mt-4 border-t pt-3">
-      <h4 className="text-sm font-semibold mb-2 text-gray-700">Bình luận</h4>
-      <div className="space-y-2 max-h-[200px] overflow-y-auto">
-        {comments.map((c, i) => (
-          <div key={i} className="text-sm text-gray-700 bg-gray-100 p-2 rounded">
-            {c.content}
+    <div className="mt-4 border-t pt-4 space-y-3">
+      <h4 className="text-sm font-semibold text-gray-700">Thảo luận</h4>
+      <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
+        {comments.map((c) => (
+          <div key={c.commentId} className="flex gap-3 items-start bg-gray-100 p-3 rounded-md">
+            {c.userImageUrl ? (
+              <img
+                src={c.userImageUrl}
+                alt="avatar"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-300" />
+            )}
+            <div className="text-sm">
+              <div className="font-semibold text-gray-800">{c.userFullName || "Người dùng"}</div>
+              <div className="text-gray-700 whitespace-pre-line">{c.content}</div>
+              <div className="text-xs text-gray-400 mt-1">{new Date(c.createdAt).toLocaleString()}</div>
+            </div>
           </div>
         ))}
       </div>
-      <div className="flex items-center mt-2 gap-2">
+      <div className="flex items-center gap-2">
         <input
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Nhập bình luận..."
-          className="flex-1 px-3 py-2 border rounded"
+          placeholder="Viết bình luận của bạn..."
+          className="flex-1 px-3 py-2 border rounded-md text-sm focus:ring focus:ring-blue-200"
         />
         <button
           onClick={handlePost}
-          className="bg-[#0099CF] text-white px-3 py-2 rounded hover:bg-[#007ca8]"
+          className="bg-[#2F3C7E] text-white px-4 py-2 text-sm rounded hover:bg-[#1d285a]"
         >
           Gửi
         </button>
