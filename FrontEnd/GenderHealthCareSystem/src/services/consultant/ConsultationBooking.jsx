@@ -174,7 +174,7 @@ export default function ConsultationBooking() {
               fullName: user?.fullName || "",
               phone: user?.phone || "",
               email: user?.email || "",
-              paymentMethod: "vnpay"  // Đổi giá trị mặc định từ "bank" thành "vnpay"
+              paymentMethod: ""  // Đổi giá trị mặc định từ "bank" thành "vnpay"
             }}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

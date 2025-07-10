@@ -163,7 +163,7 @@ public class ConsultantBookingController {
     }
 
     @PutMapping("/{bookingId}/status")
-    @PreAuthorize("hasRole('Consultant')")
+    @PreAuthorize("hasAnyRole('Consultant', 'Staff')")
     public ResponseEntity<ApiResponse<String>> updateBookingStatus(
             @PathVariable Integer bookingId,
             @RequestParam String status,
@@ -182,7 +182,7 @@ public class ConsultantBookingController {
 
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin', 'Staff')")
     public ResponseEntity<PageResponse<ConsultantBookingResponse>> searchBookings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

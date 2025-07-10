@@ -120,7 +120,7 @@ const Sidebar = ({
           {
             key: "appointments",
             icon: <CalendarOutlined />,
-            label: "Quản lý lịch hẹn",
+            label: <Link to={"/staff/dashboard/manage-booking-consultant"}>Quản lý lịch hẹn tư vấn</Link>,
           },
           {
             key: "patients",
@@ -216,7 +216,16 @@ const Sidebar = ({
           {
             key: "booking-management",
             icon: <CalendarOutlined />,
-            label: <Link to={"/manager/dashboard/manage-booking-stis"}>Quản lý đặt lịch</Link>,
+            children: [
+              {
+                key: "manage-booking-stis",
+                label: <Link to={"/manager/dashboard/manage-booking-stis"}>Quản lý đặt lịch xét nghiệm STI</Link>,
+              },
+              {
+                key: "manage-booking-consultant",
+                label: <Link to={"/manager/dashboard/manage-booking-consultant"}>Quản lý đặt lịch tư vấn</Link>,
+              },
+            ],
           },
           {
             key: "financial",

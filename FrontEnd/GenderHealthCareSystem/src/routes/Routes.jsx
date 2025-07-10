@@ -4,7 +4,6 @@ import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/Home";
-
 import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
@@ -57,6 +56,7 @@ import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerP
 
 import ConsultantDetail from "../site-info/Expert-info/ConsultantDetail";
 import ManageFeedbackConsultant from "../dashboard/features/feedback/ManageFeedbackConsultant";
+import ManageBookingConsultant from "../dashboard/features/booking/ManageBookingConsultant";
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -201,6 +201,10 @@ function RouteMap() {
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
         <Route path="manage-service" element={<ManageService />} />
         <Route
+          path="manage-booking-consultant"
+          element={<ManageBookingConsultant />}
+        />
+        <Route
           path="manage-feedback-service"
           element={<ManageFeedbackService />}
         />
@@ -227,6 +231,10 @@ function RouteMap() {
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
+        <Route
+          path="manage-booking-consultant"
+          element={<ManageBookingConsultant />}
+        />
       </Route>
 
       {/* Dashboard cho Admin */}
