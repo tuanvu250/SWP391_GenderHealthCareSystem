@@ -98,11 +98,14 @@ public class ConsultantProfileService {
     }
 
     public ConsultantProfileRequest get(Integer consultantId) {
-        Users user = usersRepo.findById(consultantId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Users user = usersRepo.findById(consultantId).orElse(null);
+        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId).orElse(null);
 
-        ConsultantProfile profile = profileRepo.findByConsultantUserId(consultantId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        if (user == null || profile == null) {
+            ConsultantProfileRequest response = new ConsultantProfileRequest();
+            response.setFullName("Không tìm thấy người dùng hoặc hồ sơ");
+            return response;
+        }
 
         ConsultantProfileRequest response = new ConsultantProfileRequest();
         response.setJobTitle(profile.getJobTitle());
@@ -125,8 +128,7 @@ public class ConsultantProfileService {
             return detailRequest;
         }).toList());
 
-        response.setFullName(user.getFullName()); // Add fullName from Users
-
+        response.setFullName(user.getFullName());
         return response;
     }
 
@@ -205,6 +207,7 @@ public class ConsultantProfileService {
         res.setHourlyRate(profile.getHourlyRate());
         res.setLocation(profile.getLocation());
         res.setIsAvailable(profile.getIsAvailable());
+        res.setConsultantId(profile.getConsultant().getUserId()); // Added consultantId field
         res.setDetails(profile.getDetails().stream().map(d -> {
             ProfileDetailResponse dr = new ProfileDetailResponse();
             dr.setDetailType(d.getDetailType());
@@ -219,5 +222,3 @@ public class ConsultantProfileService {
         return res;
     }
 }
-
-

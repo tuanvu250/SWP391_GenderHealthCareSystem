@@ -53,8 +53,9 @@ public class ConsultantProfileController {
         return ResponseEntity.ok(service.get(consultantId));
     }
 
+
         @GetMapping("/all")
-        @PreAuthorize("hasAnyRole('Customer', 'Manager')")
+        @PreAuthorize("hasAnyRole('Customer', 'Manager', 'Admin')")
         public ResponseEntity<?> getAll() {
             return ResponseEntity.ok(service.getAllConsultants());
         }
@@ -71,7 +72,7 @@ public class ConsultantProfileController {
     }
 
     @PutMapping("/{id}/employment-status")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
     public ResponseEntity<?> updateEmploymentStatus(@PathVariable Integer id, @RequestParam Boolean employmentStatus) {
         try {
             String result = service.updateEmploymentStatus(id, employmentStatus);
@@ -82,7 +83,7 @@ public class ConsultantProfileController {
     }
 
     @PutMapping("/{id}/hourly-rate")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
     public ResponseEntity<?> updateHourlyRate(@PathVariable Integer id, @RequestParam Double hourlyRate) {
         try {
             String result = service.updateHourlyRate(id, hourlyRate);

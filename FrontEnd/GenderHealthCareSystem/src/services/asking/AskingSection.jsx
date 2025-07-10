@@ -1,4 +1,3 @@
-// AskingSection.jsx
 "use client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -32,31 +31,30 @@ export default function AskingSection() {
   ];
 
   const fetchAnswered = async (pageIndex = 0) => {
-    try {
-      const res = await getAnsweredQuestionsAPI(pageIndex, 5);
-      const mapped = (Array.isArray(res) ? res : []).map((q) => {
-        const titlePrefix = q.title?.split(" - ")[0]?.trim().toLowerCase();
-        const matchedTag = tagOptions.find(
-          (tag) => tag.label.toLowerCase() === titlePrefix
-        );
-        return {
-          customerName: q.customerFullName || "Ẩn danh",
-          consultantName: q.answerByFullName || "Tư vấn viên",
-          question: q.title || q.content,
-          answer: q.answer,
-          tag: matchedTag?.value || "tuvan",
-        };
-      });
-      if (pageIndex === 0) {
-        setAnsweredQuestions(mapped);
-      } else {
-        setAnsweredQuestions((prev) => [...prev, ...mapped]);
-      }
-      if (mapped.length < 5) setHasMore(false);
-    } catch (err) {
-      console.error("Lỗi khi tải câu hỏi:", err);
+  try {
+    const res = await getAnsweredQuestionsAPI(pageIndex, 5);
+    const mapped = (Array.isArray(res) ? res : []).map((q) => {
+      const titlePrefix = q.title?.split(" - ")[0]?.trim().toLowerCase();
+      const matchedTag = tagOptions.find(tag => tag.label.toLowerCase() === titlePrefix);
+      return {
+        customerName: q.customerFullName || "Ẩn danh",
+        consultantName: q.answerByFullName || "Tư vấn viên",
+        question: q.title || q.content,
+        answer: q.answer,
+        tag: matchedTag?.value || "tuvan",
+      };
+    });
+    if (pageIndex === 0) {
+      setAnsweredQuestions(mapped);
+    } else {
+      setAnsweredQuestions((prev) => [...prev, ...mapped]);
     }
-  };
+    if (mapped.length < 5) setHasMore(false);
+  } catch (err) {
+    console.error("Lỗi khi tải câu hỏi:", err);
+  }
+};
+
 
   const fetchMyQuestions = async () => {
     try {
@@ -80,9 +78,9 @@ export default function AskingSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const selectedTagLabel = tagOptions.find((t) => t.value === form.tag)?.label || "Câu hỏi";
+    // Lưu title bắt đầu bằng tag.value để dễ xử lý
     const payload = {
-      title: `${selectedTagLabel} - ${form.question.slice(0, 60)}`,
+      title: `${form.tag} - ${form.question.slice(0, 60)}`,
       content: form.question,
       consultantId: null,
     };
@@ -117,14 +115,12 @@ export default function AskingSection() {
             <h2 className="text-2xl font-bold text-[#0099CF]">Đặt câu hỏi</h2>
             <p className="text-gray-600 text-sm">Gửi câu hỏi của bạn để nhận tư vấn từ chuyên gia</p>
           </div>
-
           <div className="p-6">
             {submitted && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">
                 ✅ Gửi câu hỏi thành công!
               </div>
             )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="email"
@@ -221,14 +217,12 @@ export default function AskingSection() {
           )}
 
           <div className="mt-10">
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={() => navigate("/my-questions")}
-                className="text-sm text-[#0099CF] hover:underline"
-              >
-                👉 Xem chi tiết tất cả
-              </button>
-            </div>
+            <button
+              onClick={() => navigate("/my-questions")}
+              className="text-sm text-[#0099CF] hover:underline mb-4"
+            >
+              👉 Xem chi tiết tất cả
+            </button>
             {myQuestions.length === 0 ? (
               <p className="text-gray-500">Bạn chưa gửi câu hỏi nào.</p>
             ) : (
@@ -237,7 +231,7 @@ export default function AskingSection() {
                   <div key={q.id} className="bg-white border rounded-lg p-4 shadow">
                     <p className="font-medium mb-1">🔹 {q.title}</p>
                     <p className="text-sm text-gray-500">
-                      Trạng thái: {" "}
+                      Trạng thái:{" "}
                       <span className={q.answer ? "text-green-600" : "text-yellow-600"}>
                         {q.answer ? "Đã được tư vấn" : "Đang chờ tư vấn"}
                       </span>
@@ -259,8 +253,8 @@ function CommentBox({ questionId }) {
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-    fetchComments();
-  }, []);
+  if (questionId) fetchComments();
+}, [questionId]);
 
   const fetchComments = async () => {
     try {

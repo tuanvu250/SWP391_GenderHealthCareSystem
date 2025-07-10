@@ -22,12 +22,11 @@ export const getAllUsersAPI = async ({
     role,
     status,
   }).toString();
-  return apiClient.get(`/users/Search?${params.toString()}`);
+  return apiClient.get(`/users?${params.toString()}`);
 };
 
 export const createUserAPI = async (userData) => {
   //userData.account.usename = userData.usename;
-  console.log(">>> userData", userData);
   return apiClient.post("/users/create", userData);
 }
 

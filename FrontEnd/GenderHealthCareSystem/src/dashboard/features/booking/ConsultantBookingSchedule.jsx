@@ -132,7 +132,9 @@ export default function ConsultantBookingSchedule() {
           <div className="flex gap-2">
             <Popconfirm
               title="Xác nhận hoàn thành lịch hẹn này?"
-              onConfirm={() => handleUpdateStatus(record.bookingId, "COMPLETED")}
+              onConfirm={() =>
+                handleUpdateStatus(record.bookingId, "COMPLETED")
+              }
               okText="Hoàn thành"
               cancelText="Hủy"
             >
@@ -142,7 +144,9 @@ export default function ConsultantBookingSchedule() {
             </Popconfirm>
             <Popconfirm
               title="Xác nhận hủy lịch hẹn này?"
-              onConfirm={() => handleUpdateStatus(record.bookingId, "CANCELLED")}
+              onConfirm={() =>
+                handleUpdateStatus(record.bookingId, "CANCELLED")
+              }
               okText="Đồng ý"
               cancelText="Không"
             >
@@ -157,31 +161,33 @@ export default function ConsultantBookingSchedule() {
   ];
 
   return (
-    <Card className="shadow-md">
-      <Title level={4} className="flex items-center gap-2 mb-4">
-        <CalendarOutlined className="text-blue-500" />
-        Lịch tư vấn của bạn
-      </Title>
+    <div className="p-6">
+      <Card className="shadow-md">
+        <Title level={4} className="flex items-center gap-2 mb-4">
+          <CalendarOutlined className="text-blue-500" />
+          Lịch tư vấn của bạn
+        </Title>
 
-      {loading ? (
-        <div className="text-center py-10">
-          <Spin size="large" />
-          <div className="mt-2">Đang tải dữ liệu...</div>
-        </div>
-      ) : bookings.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={bookings}
-          rowKey="bookingId"
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 1000 }}
-        />
-      ) : (
-        <Empty
-          description="Bạn chưa có lịch tư vấn nào"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
-      )}
-    </Card>
+        {loading ? (
+          <div className="text-center py-10">
+            <Spin size="large" />
+            <div className="mt-2">Đang tải dữ liệu...</div>
+          </div>
+        ) : bookings.length > 0 ? (
+          <Table
+            columns={columns}
+            dataSource={bookings}
+            rowKey="bookingId"
+            pagination={{ pageSize: 5 }}
+            scroll={{ x: 1000 }}
+          />
+        ) : (
+          <Empty
+            description="Bạn chưa có lịch tư vấn nào"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        )}
+      </Card>
+    </div>  
   );
 }

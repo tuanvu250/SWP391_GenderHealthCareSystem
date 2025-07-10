@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.repository;
 
+import GenderHealthCareSystem.enums.BookingStatus;
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.model.Users;
 import org.springframework.data.domain.Page;
@@ -59,6 +60,10 @@ public interface ConsultationBookingRepository
 
     List<ConsultationBooking> findByBookingDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
+    @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%')))")
+    Page<ConsultationBooking> findByCustomerOrConsultantName(@Param("customerName") String customerName, @Param("consultantName") String consultantName, Pageable pageable);
 
     int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
+    @Query("SELECT b FROM ConsultationBooking b WHERE (:customerName IS NULL OR LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :customerName, '%'))) AND (:consultantName IS NULL OR LOWER(b.consultant.fullName) LIKE LOWER(CONCAT('%', :consultantName, '%'))) AND (:startDate IS NULL OR b.bookingDate >= :startDate) AND (:endDate IS NULL OR b.bookingDate <= :endDate) AND (:status IS NULL OR b.status = :status)")
+    Page<ConsultationBooking> findByCustomerOrConsultantNameAndDateAndStatus(@Param("customerName") String customerName, @Param("consultantName") String consultantName, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("status") BookingStatus status, Pageable pageable);
 }
