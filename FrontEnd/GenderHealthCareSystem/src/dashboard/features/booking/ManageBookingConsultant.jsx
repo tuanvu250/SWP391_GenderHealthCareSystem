@@ -2,69 +2,238 @@ import React, { useEffect, useState } from "react";
 import {
   Card,
   Table,
+  Tag,
   Typography,
-  Button,
-  Input,
-  message,
-  Popconfirm,
   Empty,
   Spin,
+  message,
+  Button,
+  Popconfirm,
+  Input,
+  Select,
+  Space,
+  DatePicker,
+  Tooltip,
+  Form,
+  Modal,
 } from "antd";
-import { CalendarOutlined, LinkOutlined } from "@ant-design/icons";
 import {
-  getConsultantSchedule,
-  updateMeetingLink,
-} from "../../../components/api/ConsultantBooking.api";
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  CalendarOutlined,
+  LinkOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import { getAllBookings, updateBookingMeetLink, updateBookingStatus } from "../../../components/api/ConsultantBooking.api";
+import { useAuth } from "../../../components/provider/AuthProvider";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { Search } = Input;
+const { RangePicker } = DatePicker;
+const { Option } = Select;
+const { TextArea } = Input;
 
-export default function ManageBookingConsultant(){
+export default function ManageBookingConsultant() {
+  const { user } = useAuth(); // Lấy thông tin người dùng từ context
+  const isStaff = user?.role === "Staff"; // Kiểm tra xem người dùng có phải là staff không
+  
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newLinks, setNewLinks] = useState({}); // bookingId => link
+  const [searchText, setSearchText] = useState("");
+  const [status, setStatus] = useState(""); 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [loadingModal, setLoadingModal] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  const fetchData = async () => {
+  // State cho modal cập nhật link meet
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
+  const [meetLinkForm] = Form.useForm();
+
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      // Giả sử tạm dùng API lấy schedule consultant, bạn nên tạo API riêng cho staff
-      const res = await getConsultantSchedule();
-      const list = Array.isArray(res?.data?.data) ? res.data.data : [];
-      // Lọc ra những booking chưa có meetLink
-      const filtered = list.filter((b) => !b.meetLink);
-      setBookings(filtered);
+      const res = await getAllBookings({
+        consultantName: searchText,
+        status: status,
+        startDate: startDate ? dayjs(startDate).format('YYYY-MM-DDT00:00') : '',
+        endDate: endDate ? dayjs(endDate).format('YYYY-MM-DDT00:00') : '',
+        page: pagination.current - 1,
+        size: pagination.pageSize,
+      });
+      setPagination({
+        ...pagination,
+        total: res?.data?.totalElements || 0,
+      });
+      const data = res.data.content.map((item) => ({
+        ...item,
+        key: item.bookingId,
+        bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
+        bookingTimeEnd: dayjs(item.bookingDate).add(1, 'hour').format("HH:mm"),
+      }));
+      setBookings(data);
     } catch (err) {
-      console.error("Lỗi tải lịch tư vấn:", err);
-      message.error("Không thể tải danh sách lịch tư vấn.");
+      console.error("Lỗi tải danh sách lịch tư vấn:", err);
+      message.error(err?.response?.data?.message || "Không thể tải danh sách lịch tư vấn.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchBookings();
+  }, [pagination.current, pagination.pageSize, searchText, status, startDate, endDate]);
 
-  const handleUpdateLink = async (bookingId) => {
-    const link = newLinks[bookingId];
-    if (!link || link.trim() === "") {
-      return message.warning("Vui lòng nhập link trước khi lưu.");
+  const handleTableChange = (newPagination) => {
+    setPagination(newPagination);
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  const handleDateRangeChange = (dates) => {
+    if (dates) {
+      setStartDate(dates[0]);
+      setEndDate(dates[1]);
+    } else {
+      setStartDate(null);
+      setEndDate(null);
     }
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  const handleStatusFilterChange = (value) => {
+    setStatus(value);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  const handleUpdateStatus = async (bookingId, status) => {
     try {
-      await updateMeetingLink(bookingId, link.trim());
-      message.success("Cập nhật link thành công.");
-      setNewLinks((prev) => ({ ...prev, [bookingId]: "" }));
-      fetchData(); // Làm mới lại danh sách
+      await updateBookingStatus(bookingId, status);
+      message.success(`Cập nhật trạng thái thành công: ${status}`);
+      fetchBookings();
     } catch (err) {
-      console.error("Lỗi cập nhật link:", err);
-      message.error("Không thể cập nhật link.");
+      console.error("Lỗi cập nhật trạng thái:", err);
+      message.error("Không thể cập nhật trạng thái.");
     }
   };
 
-  const columns = [
+  const showMeetLinkModal = (booking) => {
+    setCurrentBooking(booking);
+    meetLinkForm.setFieldsValue({
+      meetLink: booking.meetLink || '',
+      note: booking.note || '',
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleMeetLinkUpdate = async (values) => {
+    if (!currentBooking) return;
+    setLoadingModal(true);
+    try {
+      await updateBookingMeetLink(currentBooking.bookingId, values.meetLink);
+      message.success("Cập nhật link cuộc họp thành công!");
+      setIsModalVisible(false);
+      fetchBookings();
+      setLoadingModal(false);
+    } catch (err) {
+      console.error("Lỗi cập nhật link cuộc họp:", err);
+      message.error(err?.response?.data?.message || "Không thể cập nhật link cuộc họp.");
+    }
+  };
+
+  const cancelMeetLinkUpdate = () => {
+    setIsModalVisible(false);
+    setCurrentBooking(null);
+  };
+
+  const renderStatus = (status) => {
+    switch (status) {
+      case "PROCESSING":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="blue">
+            Chờ xác nhận
+          </Tag>
+        );
+      case "CONFIRMED":
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="green">
+            Đã xác nhận
+          </Tag>
+        );
+      case "CANCELLED":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="red">
+            Đã hủy
+          </Tag>
+        );
+      case "COMPLETED":
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="cyan">
+            Đã hoàn thành
+          </Tag>
+        );
+      case "SCHEDULED":
+        return (
+          <Tag color="purple">
+            Đã lên lịch
+          </Tag>
+        );
+      default:
+        return <Tag color="default">{status}</Tag>;
+    }
+  };
+
+  const renderPaymentStatus = (paymentStatus) => {
+    switch (paymentStatus) {
+      case "PAID":
+        return (
+          <Tag color="green">
+            Đã thanh toán
+          </Tag>
+        );
+      case "UNPAID":
+        return (
+          <Tag color="orange">
+            Chờ thanh toán
+          </Tag>
+        );
+      case "REFUNDED":
+        return (
+          <Tag color="blue">
+            Đã hoàn tiền
+          </Tag>
+        );
+      default:
+        return <Tag color="default">{paymentStatus || "Không xác định"}</Tag>;
+    }
+  };
+
+  // Tạo columns cơ bản không có cột hành động
+  let columns = [
     {
       title: "#",
-      render: (_, __, index) => index + 1,
-      width: 50,
+      dataIndex: "bookingId",
+      key: "bookingId",
+      width: 80,
     },
     {
       title: "Khách hàng",
@@ -72,77 +241,206 @@ export default function ManageBookingConsultant(){
       key: "customerName",
     },
     {
+      title: "Consultant",
+      dataIndex: "consultantName",
+      key: "consultantName",
+    },
+    {
       title: "Ngày hẹn",
       dataIndex: "bookingDate",
       key: "bookingDate",
-      render: (date) =>
-        date ? new Date(date).toLocaleDateString("vi-VN") : "—",
+      render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
-      title: "Ghi chú",
-      dataIndex: "note",
-      key: "note",
-      render: (text) => text || "—",
+      title: "Giờ",
+      key: "time",
+      render: (_, record) =>
+        `${record.bookingTimeStart || "?"} - ${record.bookingTimeEnd || "?"}`,
     },
     {
-      title: "Link mới",
-      key: "newLink",
-      render: (_, record) => (
-        <Input
-          placeholder="Nhập link meet..."
-          value={newLinks[record.bookingId] || ""}
-          onChange={(e) =>
-            setNewLinks((prev) => ({
-              ...prev,
-              [record.bookingId]: e.target.value,
-            }))
-          }
-        />
-      ),
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: renderStatus,
     },
     {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Popconfirm
-          title="Xác nhận gắn link này?"
-          onConfirm={() => handleUpdateLink(record.bookingId)}
-          okText="Lưu"
-          cancelText="Hủy"
-        >
-          <Button type="primary" icon={<LinkOutlined />}>
-            Gắn link
-          </Button>
-        </Popconfirm>
+      title: "Thanh toán",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
+      render: renderPaymentStatus,
+    },
+    {
+      title: "Link Meet",
+      dataIndex: "meetLink",
+      key: "meetLink",
+      render: (meetLink) => (
+        <div className="max-w-[200px] truncate">
+          {meetLink ? (
+            <Tooltip title={meetLink}>
+              <Text className="text-blue-500">
+                <LinkOutlined className="mr-1" />
+                {meetLink.substring(0, 25)}...
+              </Text>
+            </Tooltip>
+          ) : (
+            <Text type="secondary">Chưa có</Text>
+          )}
+        </div>
       ),
     },
   ];
 
-  return (
-    <Card className="shadow-md">
-      <Title level={4} className="flex items-center gap-2 mb-4">
-        <CalendarOutlined className="text-blue-500" />
-        Quản lý link Meet cho lịch tư vấn
-      </Title>
+  // Nếu người dùng là Staff, thêm cột hành động
+  if (isStaff) {
+    columns.push({
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => {
+        return (
+          <div className="flex gap-2 flex-wrap">
+            {/* Hiển thị nút Cập nhật link cho tất cả trạng thái trừ CANCELLED và COMPLETED */}
+            {record.status !== "CANCELLED" && record.status !== "COMPLETED" && (
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                size="small"
+                onClick={() => showMeetLinkModal(record)}
+              >
+                Cập nhật link
+              </Button>
+            )}
+            
+            {record.status === "CONFIRMED" && (
+              <Popconfirm
+                title="Xác nhận đã lên lịch cho buổi tư vấn này?"
+                onConfirm={() => handleUpdateStatus(record.bookingId, "SCHEDULED")}
+                okText="Xác nhận"
+                cancelText="Hủy"
+              >
+                <Button type="primary" size="small" className="bg-purple-600">
+                  Lên lịch
+                </Button>
+              </Popconfirm>
+            )}
+          </div>
+        );
+      },
+    });
+  }
 
-      {loading ? (
-        <div className="text-center py-10">
-          <Spin size="large" />
-          <div className="mt-2">Đang tải dữ liệu...</div>
+  return (
+    <div className="p-6">
+      <Card className="shadow-md">
+        <Title level={4} className="flex items-center gap-2 mb-4">
+          <CalendarOutlined className="text-blue-500" />
+          Quản lý lịch tư vấn
+        </Title>
+
+        {/* Thanh tìm kiếm */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Search
+              placeholder="Tìm kiếm theo tên consultant"
+              allowClear
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+
+            <RangePicker
+              onChange={handleDateRangeChange}
+              placeholder={["Từ ngày", "Đến ngày"]}
+              format="DD/MM/YYYY"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Select
+              placeholder="Lọc trạng thái đặt lịch"
+              style={{ minWidth: 200 }}
+              onChange={handleStatusFilterChange}
+              defaultValue={""}
+              allowClear
+            >
+              <Option value="PROCESSING">Chờ xác nhận</Option>
+              <Option value="CONFIRMED">Đã xác nhận</Option>
+              <Option value="SCHEDULED">Đã lên lịch</Option>
+              <Option value="COMPLETED">Hoàn thành</Option>
+              <Option value="CANCELLED">Đã hủy</Option>
+              <Option value="">Tất cả</Option>
+            </Select>
+          </div>
         </div>
-      ) : bookings.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={bookings}
-          rowKey="bookingId"
-          pagination={{ pageSize: 5 }}
-        />
-      ) : (
-        <Empty
-          description="Tất cả lịch tư vấn đã có link meet hoặc không có lịch nào"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
+
+        {/* Table hiển thị dữ liệu */}
+        {loading ? (
+          <div className="text-center py-10">
+            <Spin size="large" />
+            <div className="mt-2">Đang tải dữ liệu...</div>
+          </div>
+        ) : bookings.length > 0 ? (
+          <Table
+            columns={columns}
+            dataSource={bookings}
+            rowKey="bookingId"
+            pagination={pagination}
+            onChange={handleTableChange}
+            loading={loading}
+            scroll={{ x: "max-content" }}
+          />
+        ) : (
+          <Empty
+            description="Không tìm thấy lịch tư vấn nào"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        )}
+      </Card>
+
+      {/* Modal cập nhật link cuộc họp - chỉ hiển thị khi người dùng là staff */}
+      {isStaff && (
+        <Modal
+          loading={loadingModal}
+          title={
+            <div className="flex items-center gap-2">
+              <LinkOutlined className="text-blue-500" />
+              <span>Cập nhật link cuộc họp</span>
+            </div>
+          }
+          open={isModalVisible}
+          onCancel={cancelMeetLinkUpdate}
+          footer={null}
+        >
+          <Form
+            form={meetLinkForm}
+            layout="vertical"
+            onFinish={handleMeetLinkUpdate}
+            className="mt-4"
+          >
+            <Form.Item
+              name="meetLink"
+              label="Link cuộc họp"
+              rules={[
+                { required: true, message: 'Vui lòng nhập link cuộc họp!' },
+              ]}
+            >
+              <Input 
+                prefix={<LinkOutlined className="text-gray-400" />} 
+                placeholder="Nhập link cuộc họp (vd: https://meet.google.com/xxx-xxxx-xxx)" 
+              />
+            </Form.Item>
+            
+            <Form.Item className="mb-0 flex justify-end">
+              <Space>
+                <Button onClick={cancelMeetLinkUpdate}>
+                  Hủy
+                </Button>
+                <Button type="primary" htmlType="submit">
+                  Cập nhật
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
       )}
-    </Card>
+    </div>
   );
 }

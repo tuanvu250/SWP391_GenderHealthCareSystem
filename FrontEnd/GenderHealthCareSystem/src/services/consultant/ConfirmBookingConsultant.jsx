@@ -22,6 +22,7 @@ export default function ConfirmBookingConsultant() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+    
 
   const handleConfirm = async () => {
     if (!bookingData) {
@@ -33,9 +34,9 @@ export default function ConfirmBookingConsultant() {
     setErrorMsg(null);
 
     try {
-      const startTime = bookingData.timeSlot.split(" - ")[0];
-      const bookingDate = dayjs(`${bookingData.date} ${startTime}`).toDate();
-
+      const startTime = bookingData.timeSlot.split(" - ")[0].trim();
+      const bookingDate = dayjs(dayjs(`${bookingData.date} ${startTime}`).toDate()).format("YYYY-MM-DDTHH:mm:ss");
+      //const endTime = dayjs(bookingDate).add(1, "hour").format("HH:mm");
       let consultantId = bookingData.consultantId;
       let hourlyRate = 120000; // fallback mặc định
 
@@ -59,21 +60,19 @@ export default function ConfirmBookingConsultant() {
         consultantId,
       };
 
+
       const response = await createConsultationBooking(payload);
       const bookingId = response?.data?.data?.bookingId;
       if (!bookingId) throw new Error("Không nhận được bookingId từ hệ thống.");
 
       const method = (bookingData.paymentMethod || "").toUpperCase();
 
-      // 👉 Lưu vào localStorage (vẫn giữ hourlyRate để hiển thị nếu cần)
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", hourlyRate); // chỉ để hiển thị
       localStorage.setItem("orderInfo", "Đặt lịch tư vấn");
       localStorage.setItem("bookingType", "consultant");
 
       await delay(1000);
-
-      // ❌ Không gửi amount nữa
       const res = await getConsultantPaymentRedirectURL(bookingId, method);
 
       message.success("Đang chuyển đến cổng thanh toán...");

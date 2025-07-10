@@ -1,4 +1,4 @@
-import { Avatar, Badge, Button, Dropdown, Drawer } from "antd";
+import { Avatar, Badge, Button, Dropdown, Drawer, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   CaretDownFilled,
@@ -14,6 +14,7 @@ import LogoSign from "../../assets/logo-sign.svg";
 import { useAuth } from "../provider/AuthProvider";
 import LoginRequiredModal from "../common/LoginRequiredModal";
 
+const { Text, Title } = Typography;
 const Header = () => {
   const navigate = useNavigate();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -29,7 +30,7 @@ const Header = () => {
   };
 
   const handleLoginRequired = (service) => {
-    if(!isLoggedIn) {
+    if (!isLoggedIn) {
       setIsLoginModal(true);
     } else {
       switch (service) {
@@ -42,7 +43,7 @@ const Header = () => {
       }
       setMenuVisible(false);
     }
-  }
+  };
 
   // Định nghĩa lại userMenu dưới dạng object cho Ant Design v5
   const userMenu = {
@@ -152,45 +153,27 @@ const Header = () => {
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => navigate("/blog")}>Blog</a>
             </li>
+            {user?.role !== "Customer" && (
+              <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
+                <a onClick={() => navigate(`/${user.role.toLowerCase()}/dashboard`)}>Dashboard</a>
+              </li>
+            )}
           </ul>
         </nav>
 
         {/* Search and Login - Desktop and Tablet */}
         <div className="flex items-center gap-3">
-          {/* Search Bar - Desktop */}
-          <div className="relative hidden md:block">
-            <div className="flex items-center bg-gray-50 rounded-full overflow-hidden border border-gray-200 hover:border-gray-300">
-              <input
-                type="text"
-                placeholder="Tìm kiếm nhanh..."
-                className="bg-transparent px-4 py-2 focus:outline-none text-sm w-44"
-              />
-              <button
-                type="submit"
-                className="text-gray-500 hover:text-[#0099CF] px-3 py-2 transition-colors"
-              >
-                <SearchOutlined />
-              </button>
-            </div>
-          </div>
-
-          {/* Search Icon - Mobile */}
-          <button
-            className="md:hidden text-gray-500 hover:text-[#0099CF] p-2"
-            onClick={() => setSearchVisible(!searchVisible)}
-          >
-            <SearchOutlined className="text-lg" />
-          </button>
-
           {/* User Profile/Login - All sizes */}
           {isLoggedIn ? (
             <div className="md:flex items-center gap-3 md:gap-6 md:show hidden">
-              <Badge count={5} className="hidden sm:block">
-                <button className="text-gray-500 hover:text-[#0099CF] p-1">
-                  <BellOutlined className="text-xl md:text-2xl" />
-                </button>
-              </Badge>
-
+              <div>
+                <span className="text-sm text-gray-500 mr-2 hidden md:inline-block">
+                  {user?.role === "Customer" ? "Khách hàng" : user?.role}
+                </span>
+                <p className="text-[14px] font-semibold m-0">
+                  {user?.fullName || "Người dùng"}
+                </p>
+              </div>
               <Dropdown menu={userMenu} trigger={["click"]}>
                 <Avatar
                   src={user?.userImageUrl}
@@ -217,26 +200,6 @@ const Header = () => {
           </button>
         </div>
       </div>
-
-      {/* Mobile Search Bar */}
-      {searchVisible && (
-        <div className="md:hidden py-3 px-4 animate-fadeIn">
-          <div className="flex items-center bg-gray-50 rounded-full overflow-hidden border border-gray-200">
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              className="bg-transparent px-4 py-2 focus:outline-none text-sm w-full"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="text-gray-500 hover:text-[#0099CF] px-3 py-2 transition-colors"
-            >
-              <SearchOutlined />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Mobile Menu Drawer */}
       <Drawer
@@ -406,8 +369,8 @@ const Header = () => {
       </Drawer>
 
       <LoginRequiredModal
-       open={isLoginModal}
-       onClose={() => setIsLoginModal(false)}
+        open={isLoginModal}
+        onClose={() => setIsLoginModal(false)}
       />
     </header>
   );
