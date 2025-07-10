@@ -4,11 +4,12 @@ package GenderHealthCareSystem.service;
 import GenderHealthCareSystem.dto.ConsultantBookingDetailResponse;
 import GenderHealthCareSystem.dto.ConsultantBookingRequest;
 import GenderHealthCareSystem.dto.ConsultantBookingResponse;
+import GenderHealthCareSystem.dto.PageResponse;
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.model.Users;
-import GenderHealthCareSystem.repository.ConsultantProfileRepository;
 import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import GenderHealthCareSystem.repository.UserRepository;
+import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -200,5 +201,45 @@ public class ConsultantBookingService {
 
         booking.setStatus(newStatus);
         bookingRepo.save(booking);
+    }
+
+    public PageResponse<ConsultantBookingResponse> getAllConsultantBookings(Pageable pageable) {
+        Page<ConsultationBooking> bookingsPage = bookingRepo.findAll(pageable);
+        Page<ConsultantBookingResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingResponse(
+                b.getBookingId(),
+                b.getConsultant().getFullName(),
+                b.getBookingDate(),
+                b.getInvoice() != null && b.getInvoice().getTotalAmount() != null
+                        ? BigDecimal.valueOf(b.getInvoice().getTotalAmount())
+                        : BigDecimal.ZERO,
+                b.getPaymentStatus(),
+                b.getInvoice() != null
+                        ? b.getInvoice().getPaymentMethod()
+                        : null,
+                b.getMeetLink(),
+                b.getStatus().name(),
+                b.getConsultant().getUserId()
+        ));
+        return PageResponseUtil.mapToPageResponse(responsePage);
+    }
+
+    public PageResponse<ConsultantBookingResponse> searchBookings(String customerName, String consultantName, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Pageable pageable) {
+        Page<ConsultationBooking> bookingsPage = bookingRepo.findByCustomerOrConsultantNameAndDateAndStatus(customerName, consultantName, startDate, endDate, status, pageable);
+        Page<ConsultantBookingResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingResponse(
+                b.getBookingId(),
+                b.getConsultant().getFullName(),
+                b.getBookingDate(),
+                b.getInvoice() != null && b.getInvoice().getTotalAmount() != null
+                        ? BigDecimal.valueOf(b.getInvoice().getTotalAmount())
+                        : BigDecimal.ZERO,
+                b.getPaymentStatus(),
+                b.getInvoice() != null
+                        ? b.getInvoice().getPaymentMethod()
+                        : null,
+                b.getMeetLink(),
+                b.getStatus().name(),
+                b.getConsultant().getUserId()
+        ));
+        return PageResponseUtil.mapToPageResponse(responsePage);
     }
 }

@@ -1,12 +1,16 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.*;
+import GenderHealthCareSystem.enums.BookingStatus;
 import GenderHealthCareSystem.service.ConsultantBookingService;
 import GenderHealthCareSystem.service.ConsultantInvoiceService;
 import GenderHealthCareSystem.util.PageResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -147,5 +151,46 @@ public class ConsultantBookingController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("An error occurred while updating the booking status."));
         }
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
+    public ResponseEntity<PageResponse<ConsultantBookingResponse>> getAllConsultantBookings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "bookingId") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        PageResponse<ConsultantBookingResponse> bookings = bookingService.getAllConsultantBookings(pageable);
+
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
+    public ResponseEntity<PageResponse<ConsultantBookingResponse>> searchBookings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "bookingId") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String consultantName,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDateTime endDate,
+            @RequestParam(required = false) BookingStatus status) {
+
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        PageResponse<ConsultantBookingResponse> bookings = bookingService.searchBookings(customerName, consultantName, startDate, endDate, status, pageable);
+
+        return ResponseEntity.ok(bookings);
     }
 }
