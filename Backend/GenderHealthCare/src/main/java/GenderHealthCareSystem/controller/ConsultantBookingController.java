@@ -2,6 +2,7 @@ package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.*;
 import GenderHealthCareSystem.enums.BookingStatus;
+import GenderHealthCareSystem.model.Invoice;
 import GenderHealthCareSystem.service.ConsultantBookingService;
 import GenderHealthCareSystem.service.ConsultantInvoiceService;
 import GenderHealthCareSystem.util.PageResponseUtil;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 
@@ -46,14 +46,16 @@ public class ConsultantBookingController {
 
     // 3. Consultant: view all bookings with customer info
     @GetMapping("/consultant/schedule")
-    public ResponseEntity<ApiResponse<List<ConsultantBookingDetailResponse>>> getConsultantSchedule(
+    public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> getConsultantSchedule(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Jwt jwt) {
         int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
         String role = jwt.getClaimAsString("role");
         if (!"CONSULTANT".equalsIgnoreCase(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Bạn không có quyền truy cập lịch tư vấn."));
         }
-        List<ConsultantBookingDetailResponse> schedule = bookingService.getScheduleForConsultant(consultantId);
+        PageResponse<ConsultantBookingDetailResponse> schedule = bookingService.getPaginatedScheduleForConsultant(consultantId, page, size);
         return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 
@@ -99,10 +101,10 @@ public class ConsultantBookingController {
         Integer customerId = ((Number) jwt.getClaim("userID")).intValue();
         String msg = invoiceService.requestRefund(bookingId, customerId);
         Double amount = invoiceService.getInvoiceByBooking(bookingId)
-                .map(inv -> inv.getRefundAmount())
+                .map(Invoice::getRefundAmount)
                 .orElse(0.0);
         String status = invoiceService.getInvoiceByBooking(bookingId)
-                .map(inv -> inv.getRefundStatus())
+                .map(Invoice::getRefundStatus)
                 .orElse("UNKNOWN");
 
         return ResponseEntity.ok(new RefundResponse(msg, amount, status));
@@ -153,23 +155,7 @@ public class ConsultantBookingController {
         }
     }
 
-    @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('Manager', 'Admin')")
-    public ResponseEntity<PageResponse<ConsultantBookingResponse>> getAllConsultantBookings(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "bookingId") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
 
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        PageResponse<ConsultantBookingResponse> bookings = bookingService.getAllConsultantBookings(pageable);
-
-        return ResponseEntity.ok(bookings);
-    }
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('Manager', 'Admin')")

@@ -37,6 +37,12 @@ public class MenstrualCycle {
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
+    @Column(name = "LastNotificationDate")
+    private LocalDate lastNotificationDate;
+
+    @Column(name = "LastNotificationType")
+    private String lastNotificationType;
+
     // If bidirectional:
     // @OneToMany(mappedBy = "menstrualCycle", cascade = CascadeType.ALL, orphanRemoval = true)
     // private List<Remind> reminds;
