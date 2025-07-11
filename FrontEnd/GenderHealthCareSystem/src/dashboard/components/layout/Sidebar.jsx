@@ -94,19 +94,9 @@ const Sidebar = ({
             ),
           },
           {
-            key: "availability",
-            icon: <CalendarOutlined />,
-            label: "Lịch làm việc",
-          },
-          {
-            key: "earnings",
-            icon: <BankOutlined />,
-            label: "Thu nhập",
-          },
-          {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt",
+            label: <Link to={"/consultant/dashboard/account-settings"}>Cài đặt tài khoản</Link>,
           },
         ];
 
@@ -123,37 +113,9 @@ const Sidebar = ({
             label: <Link to={"/staff/dashboard/manage-booking-consultant"}>Quản lý lịch hẹn tư vấn</Link>,
           },
           {
-            key: "patients",
-            icon: <TeamOutlined />,
-            label: "Quản lý bệnh nhân",
-          },
-          {
             key: "sti-test-management",
             icon: <MedicineBoxOutlined />,
             label: <Link to={"/staff/dashboard/manage-booking-stis"}>Quản lý xét nghiệm STI</Link>,
-          },
-          {
-            key: "customer-support",
-            icon: <MessageOutlined />,
-            label: "Hỗ trợ khách hàng",
-            children: [
-              {
-                key: "general-questions",
-                label: "Câu hỏi thường gặp",
-              },
-              {
-                key: "technical-support",
-                label: "Hỗ trợ kỹ thuật",
-              },
-              {
-                key: "forward-questions",
-                label: "Chuyển câu hỏi chuyên môn",
-              },
-              {
-                key: "chat-support",
-                label: "Chat trực tuyến",
-              },
-            ],
           },
           {
             key: "reports",
@@ -163,7 +125,7 @@ const Sidebar = ({
           {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt",
+            label: <Link to={"/staff/dashboard/account-settings"}>Cài đặt tài khoản</Link>,
           },
         ];
 
@@ -185,14 +147,9 @@ const Sidebar = ({
             label: <Link to={"/manager/dashboard/manage-users"}>Quản lý nhân sự</Link>,
           },
           {
-            key: "consultant-management",
-            icon: <UserOutlined />,
-            label: "Quản lý consultant",
-          },
-          {
             key: "service-management",
             icon: <MedicineBoxOutlined />,
-            label: <Link to={"/manager/dashboard/manage-service"}>Quản lý dịch vụ</Link>,
+            label: <Link to={"/manager/dashboard/manage-service"}>Quản lý dịch vụ xét nghiệm</Link>,
           },
           {
             key: "feedback-management",
@@ -240,7 +197,7 @@ const Sidebar = ({
           {
             key: "settings",
             icon: <SettingOutlined />,
-            label: "Cài đặt",
+            label: <Link to={"/manager/dashboard/account-settings"}>Cài đặt tài khoản</Link>,
           },
         ];
 
@@ -390,22 +347,6 @@ const Sidebar = ({
             label: "Tổng quan",
           },
         ];
-    }
-  };
-
-  // Title cho từng role
-  const getRoleTitle = (role) => {
-    switch (role) {
-      case "Consultant":
-        return "Trang Tư Vấn Viên";
-      case "Staff":
-        return "Trang Nhân Viên";
-      case "Manager":
-        return "Trang Quản Lý";
-      case "Admin":
-        return "Trang Quản Trị";
-      default:
-        return "Bảng Điều Khiển";
     }
   };
 

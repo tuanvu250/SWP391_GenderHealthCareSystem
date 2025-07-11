@@ -30,7 +30,7 @@ const Overview = () => {
         // setStats(response.data);
         
         // Mock data cho từng role
-        const mockData = role !== "Manager" ? getMockDataForRole(role) : await getDashboardStats(role);
+        const mockData = role !== "Manager" && role !== "Consultant"? getMockDataForRole(role) : await getDashboardStats(role);
         console.log(">>> Mock data for role:", role, mockData);
         setStats(mockData);
       } catch (error) {

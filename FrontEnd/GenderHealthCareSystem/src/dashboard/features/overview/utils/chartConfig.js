@@ -292,9 +292,70 @@ export const revenueChartOptions = {
         // Định dạng trục y thành tiền tệ
         callback: function (value) {
           if (value >= 1000000) {
-            return (value / 1000000) + " triệu";
+            return value / 1000000 + " triệu";
           }
           return value;
+        },
+      },
+    },
+  },
+};
+
+export const appointmentsChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+      },
+      title: {
+        display: true,
+        text: "Số lịch hẹn",
+        color: "#666",
+        font: {
+          size: 12,
+        },
+      },
+    },
+    x: {
+      title: {
+        display: true,
+        text: "Ngày",
+        color: "#666",
+        font: {
+          size: 12,
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: "top",
+      align: "end",
+      labels: {
+        boxWidth: 10,
+        usePointStyle: true,
+      },
+    },
+    tooltip: {
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      padding: 10,
+      titleFont: {
+        size: 14,
+      },
+      bodyFont: {
+        size: 13,
+      },
+      displayColors: false,
+      callbacks: {
+        title: function (context) {
+          return context[0].label;
+        },
+        label: function (context) {
+          return `Số lịch hẹn: ${context.raw}`;
         },
       },
     },

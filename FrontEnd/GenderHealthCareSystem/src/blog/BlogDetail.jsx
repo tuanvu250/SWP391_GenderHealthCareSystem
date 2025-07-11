@@ -32,7 +32,7 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { formatDateTime } from "../components/utils/format";
+import { formatDateTime, getTagColor } from "../components/utils/format";
 import { useAuth } from "../components/provider/AuthProvider";
 import { blogDetailAPI, deleteCommentBlogAPI, editCommentBlogAPI, getCommentsBlogAPI, likeBlogAPI, postCommentBlogAPI, relatedBlogsByIdAPI } from "../components/api/Blog.api";
 import RelatedBlog from "./RelatedBlog"; 
@@ -60,19 +60,6 @@ const BlogDetail = () => {
   // State cho việc sửa comment
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentValue, setEditCommentValue] = useState("");
-
-  // Dữ liệu mẫu cho bài viết chi tiết
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   const fetchBlog = async () => {
     setLoading(true);
@@ -165,29 +152,6 @@ const BlogDetail = () => {
   // Hàm xử lý chia sẻ
   const handleShare = () => {
     setShareMenuVisible(!shareMenuVisible);
-  };
-
-  // Hàm xử lý gửi comment
-  const handleSubmitComment = (values) => {
-    // Trong thực tế, bạn sẽ gọi API để gửi comment
-    console.log("Comment submitted:", values);
-    message.success("Bình luận của bạn đã được gửi!");
-    commentForm.resetFields();
-    setCommentModalVisible(false);
-  };
-
-  // Hàm xử lý sao chép link
-  const handleCopyLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(
-      function () {
-        message.success("Đã sao chép liên kết!");
-        setShareMenuVisible(false);
-      },
-      function () {
-        message.error("Không thể sao chép liên kết!");
-      }
-    );
   };
 
   // Hàm xử lý gửi bình luận từ modal

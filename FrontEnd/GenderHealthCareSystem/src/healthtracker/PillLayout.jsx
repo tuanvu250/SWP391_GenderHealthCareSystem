@@ -4,22 +4,12 @@ import { MedicineBoxOutlined, SafetyOutlined } from "@ant-design/icons";
 import RelatedBlog from "../blog/RelatedBlog";
 import { useEffect, useState } from "react";
 import { relatedBlogsByTagAPI } from "../components/api/Blog.api";
+import { getTagColor } from "../components/utils/format";
 
 const { Title, Text } = Typography;
 
 const PillLayout = () => {
   const [relatedBlogs, setRelatedBlogs] = useState([]);
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   useEffect(() => {
     const fetchRelatedPosts = async () => {
