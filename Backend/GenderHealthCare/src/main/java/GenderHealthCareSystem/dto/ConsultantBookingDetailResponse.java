@@ -15,5 +15,6 @@ public class ConsultantBookingDetailResponse {
     private LocalDateTime bookingDate;
     private String status;
     private String paymentStatus;
+    private String paymentMethod; // Added paymentMethod field
     private String meetLink;
 }
