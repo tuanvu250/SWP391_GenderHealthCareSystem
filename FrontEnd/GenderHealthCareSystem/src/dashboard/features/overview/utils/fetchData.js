@@ -49,7 +49,7 @@ export const getDashboardStats = async (role) => {
           two: ratingStats.consulting.two,
           one: ratingStats.consulting.one,
         },
-        
+
         Appointments: {
           labels: usersAndAppointments.map((item) => item.date),
           data: usersAndAppointments.map((item) => item.consultAppointments),
@@ -113,6 +113,19 @@ export const getDashboardStats = async (role) => {
             status: "confirmed",
           },
         ],
+      };
+    }
+
+    case "Staff": {
+      const usersAndAppointments = await getUsersAndAppointmentsStats();
+      return {
+        todayTestings: 12,
+        todayConsultations: 8,
+        appointmentTypeData: usersAndAppointments.map((item) => ({
+          date: item.date,
+          testAppointments: item.testAppointments,
+          consultAppointments: item.consultAppointments,
+        })),
       };
     }
   }

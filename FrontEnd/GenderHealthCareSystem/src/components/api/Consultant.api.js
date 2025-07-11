@@ -2,7 +2,7 @@ import apiClient from "./apiClient";
 
 export const getAllConsultants = async () => {
   try {
-    const response = await apiClient.get("/consultant/profile/all");
+    const response = await apiClient.get("/consultant/profile/active");
     return response.data;
   } catch (error) {
     console.error("Error fetching consultants:", error);

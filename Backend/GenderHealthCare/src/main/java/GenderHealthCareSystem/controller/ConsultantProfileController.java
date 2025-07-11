@@ -102,7 +102,7 @@ public class ConsultantProfileController {
     }
 
     @GetMapping("/active")
-    @PreAuthorize("hasRole('Manager')")
+    @PreAuthorize("hasAnyRole('Manager', 'Customer')")
     public ResponseEntity<List<ConsultantProfileResponse>> getActiveConsultants() {
         List<ConsultantProfileResponse> activeConsultants = service.getActiveConsultants();
         return ResponseEntity.ok(activeConsultants);

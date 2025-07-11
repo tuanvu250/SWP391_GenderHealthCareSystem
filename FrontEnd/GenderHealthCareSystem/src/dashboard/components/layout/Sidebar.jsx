@@ -120,7 +120,7 @@ const Sidebar = ({
           {
             key: "reports",
             icon: <FileTextOutlined />,
-            label: "Báo cáo",
+            label: <Link to={"/staff/dashboard/report"}>Báo cáo</Link>,
           },
           {
             key: "settings",
@@ -192,7 +192,7 @@ const Sidebar = ({
           {
             key: "reports",
             icon: <FileTextOutlined />,
-            label: "Báo cáo quản lý",
+            label: <Link to={"/manager/dashboard/report"}>Báo cáo</Link>,
           },
           {
             key: "settings",
