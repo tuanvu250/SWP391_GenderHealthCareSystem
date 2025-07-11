@@ -26,3 +26,18 @@ export function convertUsdToVnd(usdAmount, exchangeRate = 24000) {
     maximumFractionDigits: 0
   }).format(vndAmount);
 }
+
+export function getTagColor(tag) {
+  const Tag = (tag) => {
+    const tagColors = {
+      "Sức khỏe": "green",
+      "Giới tính": "blue",
+      "Tư vấn": "purple",
+      STIs: "red",
+      "Kinh nguyệt": "pink",
+    };
+
+    return tagColors[tag] || "cyan";
+  };
+  return Tag(tag);
+}

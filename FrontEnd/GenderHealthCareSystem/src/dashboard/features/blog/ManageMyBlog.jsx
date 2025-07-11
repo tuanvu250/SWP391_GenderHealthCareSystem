@@ -12,7 +12,7 @@ import {
   Card,
   Avatar,
 } from "antd";
-import { formatDateTime } from "../../../components/utils/format";
+import { formatDateTime, getTagColor } from "../../../components/utils/format";
 import BlogModal from "../../components/modal/BlogModal";
 import ViewBlogModal from "../../components/modal/ViewBlogModal";
 import { useAuth } from "../../../components/provider/AuthProvider";
@@ -92,11 +92,6 @@ const ManageMyBlog = () => {
     { value: "Rejected", label: "Bị từ chối", color: "red" },
   ];
 
-  // Lấy màu tương ứng cho tag
-  const getTagColor = (tagName) => {
-    const tag = tagOptions.find((t) => t.value === tagName);
-    return tag ? tag.color : "default";
-  };
 
   // Fetch danh sách blog
   useEffect(() => {
