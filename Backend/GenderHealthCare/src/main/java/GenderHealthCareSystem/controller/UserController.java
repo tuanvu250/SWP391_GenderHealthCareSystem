@@ -6,21 +6,28 @@ import GenderHealthCareSystem.dto.CreateUserRequest;
 import GenderHealthCareSystem.dto.UpdateUserRequest;
 import GenderHealthCareSystem.dto.UserInfoResponse;
 import GenderHealthCareSystem.enums.AccountStatus;
+import GenderHealthCareSystem.service.AccountService;
 import GenderHealthCareSystem.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final AccountService accountService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<?>> createUser(@Valid @RequestBody CreateUserRequest createRequest) {
@@ -63,7 +70,15 @@ public class UserController {
             );
         }
     }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal Jwt jwt, @RequestBody ChangePasswordRequest request) {
+        String accountId = jwt.getClaimAsString("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
 
+        }
+        return accountService.changePassword(Integer.parseInt(accountId), request);
+}
     @GetMapping
     public ResponseEntity<ApiResponse<?>> searchUsers(
             @RequestParam(required = false) String name,
