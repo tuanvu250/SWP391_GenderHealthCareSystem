@@ -57,6 +57,7 @@ import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerP
 import ConsultantDetail from "../site-info/Expert-info/ConsultantDetail";
 import ManageFeedbackConsultant from "../dashboard/features/feedback/ManageFeedbackConsultant";
 import ManageBookingConsultant from "../dashboard/features/booking/ManageBookingConsultant";
+import AccountSetting from "../user/AccountSetting";
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -96,7 +97,9 @@ function RouteMap() {
             path="history-consultation"
             element={<HistoryConsultantBooking />}
           />
+          <Route path="account-settings" element={<AccountSetting/>} />
         </Route>
+
         {/* Menstrual */}
         <Route
           path="/menstrual"
