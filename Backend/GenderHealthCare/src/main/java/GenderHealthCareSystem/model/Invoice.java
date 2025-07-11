@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Invoice {
+public class    Invoice {
 
     @Id
     @Column(name = "invoice_id")

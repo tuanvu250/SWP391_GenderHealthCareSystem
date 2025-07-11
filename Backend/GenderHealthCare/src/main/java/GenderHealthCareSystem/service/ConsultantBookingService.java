@@ -112,6 +112,7 @@ public class ConsultantBookingService {
                 b.getBookingDate(),
                 b.getStatus().name(), // Convert BookingStatus to String
                 b.getPaymentStatus(),
+                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null, // Added paymentMethod mapping
                 b.getMeetLink()
         )).collect(Collectors.toList());
     }
@@ -240,6 +241,7 @@ public class ConsultantBookingService {
                 b.getBookingDate(),
                 b.getStatus().name(),
                 b.getPaymentStatus(),
+                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null, // Added paymentMethod
                 b.getMeetLink()
         ));
 
@@ -259,6 +261,7 @@ public class ConsultantBookingService {
                 b.getBookingDate(),
                 b.getStatus().name(),
                 b.getPaymentStatus(),
+                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null, // Added paymentMethod
                 b.getMeetLink()
         ));
 
