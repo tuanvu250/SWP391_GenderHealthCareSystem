@@ -7,15 +7,19 @@ import GenderHealthCareSystem.enums.StisBookingStatus;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisServiceRepository;
 import GenderHealthCareSystem.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -66,6 +70,13 @@ public class StisBookingService {
                 LocalDateTime.of(booking.getBookingDate(), booking.getBookingTime()))) {
             throw new RuntimeException(
                     "Số lượng đặt lịch đã vượt quá giới hạn cho dịch vụ này trong khoảng thời gian đã chọn.");
+        }
+        if (booking.getBookingDate().isBefore(LocalDate.now()) ) {
+
+            throw new RuntimeException("Không thể đặt lịch trong quá khứ. Vui lòng chọn thời gian hợp lệ.");
+        }
+        if (booking.getBookingTime().isBefore(LocalTime.now()) && booking.getBookingDate().isEqual(LocalDate.now())) {
+            throw new RuntimeException("Không thể đặt lịch trong quá khứ. Vui lòng chọn thời gian hợp lệ.");
         }
 
         stisBooking.setCustomer(this.userRepository.findById(booking.getCustomerId()).get());
@@ -223,5 +234,21 @@ public class StisBookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         booking.setResultedAt(LocalDateTime.now());
         stisBookingRepository.save(booking);
+    }
+    @Scheduled(fixedRate = 60000) // chạy mỗi phút
+    @Transactional
+    public void autoCancelUnpaidBookings() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(30); // Cắt đứt sau 30 phút
+
+        List<StisBooking> bookingsToCancel =
+                stisBookingRepository.findByPaymentStatusAndStatusAndCreatedAtBeforeAndPaymentMethodNot(
+                        "UNPAID", StisBookingStatus.CONFIRMED, cutoff,"CASH");
+
+        for (StisBooking booking : bookingsToCancel) {
+            booking.setStatus(StisBookingStatus.FAILED_PAYMENT);
+            booking.setUpdatedAt(LocalDateTime.now());
+            stisBookingRepository.save(booking);
+            System.out.println("Canceled booking id: " + booking.getBookingId());
+        }
     }
 }

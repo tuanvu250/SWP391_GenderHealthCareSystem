@@ -60,4 +60,13 @@ public interface StisBookingRepository extends JpaRepository<StisBooking, Intege
     long countBookingsInTimeSlot(@Param("serviceId") Integer serviceId, @Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime);
 
     int countByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore);
+
+    List<StisBooking> findByPaymentStatusAndStatusNotAndCreatedAtBefore(
+            String paymentStatus,
+            StisBookingStatus status,
+            LocalDateTime beforeTime
+    );
+
+
+    List<StisBooking> findByPaymentStatusAndStatusAndCreatedAtBeforeAndPaymentMethodNot(String unpaid, StisBookingStatus stisBookingStatus, LocalDateTime cutoff, String paymentMethodNot);
 }
