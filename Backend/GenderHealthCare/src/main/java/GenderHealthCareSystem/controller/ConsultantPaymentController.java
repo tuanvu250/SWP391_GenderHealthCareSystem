@@ -172,9 +172,9 @@ public class ConsultantPaymentController {
             public void run() {
                 ConsultationBooking booking = bookingRepository.findById(bookingId).orElse(null);
                 if (booking != null && booking.getStatus() == BookingStatus.PROCESSING) {
-                    booking.setStatus(BookingStatus.PENDING);
+                    booking.setStatus(BookingStatus.CANCELLED); // Change to CANCELLED instead of PENDING
                     bookingRepository.save(booking);
-                    logger.info("Slot status reset to PENDING for booking ID: {}", bookingId);
+                    logger.info("Slot status reset to CANCELLED for booking ID: {}", bookingId);
                 }
             }
         }, 15 * 60 * 1000); // 15 minutes
