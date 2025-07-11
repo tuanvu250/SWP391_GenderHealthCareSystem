@@ -44,8 +44,12 @@ public class ConsultantInvoiceService {
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
-        Invoice invoice = new Invoice();
-        invoice.setConsultationBooking(booking);
+        Invoice invoice = booking.getInvoice();
+        if (invoice == null) {
+            invoice = new Invoice();
+            invoice.setConsultationBooking(booking);
+        }
+
         invoice.setTotalAmount(expectedUsd);
         invoice.setCurrency("USD");
         invoice.setPaymentMethod("PAYPAL");
@@ -73,8 +77,12 @@ public class ConsultantInvoiceService {
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
-        Invoice invoice = new Invoice();
-        invoice.setConsultationBooking(booking);
+        Invoice invoice = booking.getInvoice();
+        if (invoice == null) {
+            invoice = new Invoice();
+            invoice.setConsultationBooking(booking);
+        }
+
         invoice.setTotalAmount(expectedAmount);
         invoice.setCurrency("VND");
         invoice.setPaymentMethod("VNPAY");
