@@ -47,8 +47,8 @@ public class ConsultantPaymentController {
 //    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
 //    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
 
-   // private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
-  //  private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
+//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
 
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
@@ -62,14 +62,15 @@ public class ConsultantPaymentController {
                     return new IllegalArgumentException("Booking không tồn tại");
                 });
 
-        // Check if the slot is already being processed
-            if (booking.getStatus() == BookingStatus.PROCESSING) { // Compare enums directly
+        // Allow retry if status is PENDING
+        if (booking.getStatus() == BookingStatus.PROCESSING) {
             return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
         }
 
-        // Mark the slot as processing
-        booking.setStatus(BookingStatus.PROCESSING);
-        bookingRepository.save(booking);
+        if (booking.getStatus() == BookingStatus.PENDING) {
+            booking.setStatus(BookingStatus.PROCESSING);
+            bookingRepository.save(booking);
+        }
 
         BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
         logger.info("Calculated amount for booking ID {}: {}", bookingId, amount);
@@ -90,8 +91,8 @@ public class ConsultantPaymentController {
                     "paypal",
                     "sale",
                     "Tư vấn sức khỏe",
-                    CANCEL_URL,
-                    SUCCESS_URL
+                    CANCEL_URL + "?bookingId=" + bookingId,
+                    SUCCESS_URL + "?bookingId=" + bookingId
             );
             paymentUrl = payment.getLinks().stream()
                     .filter(link -> link.getRel().equals("approval_url"))
@@ -136,8 +137,21 @@ public class ConsultantPaymentController {
     }
 
     @GetMapping("/cancel")
-    public ResponseEntity<String> cancel() {
-        return ResponseEntity.ok("Đã hủy thanh toán");
+    public ResponseEntity<String> cancel(@RequestParam(required = false) Integer bookingId) {
+        if (bookingId == null) {
+            return ResponseEntity.badRequest().body("Thiếu tham số 'bookingId'. Vui lòng cung cấp ID của booking cần hủy.");
+        }
+
+        ConsultationBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+
+        // Update booking status to PENDING if currently PROCESSING
+        if (booking.getStatus() == BookingStatus.PROCESSING) {
+            booking.setStatus(BookingStatus.PENDING);
+            bookingRepository.save(booking);
+        }
+
+        return ResponseEntity.ok("Thanh toán đã hủy và trạng thái booking đã được cập nhật thành PENDING.");
     }
 
     @GetMapping("/vn-pay-return")
