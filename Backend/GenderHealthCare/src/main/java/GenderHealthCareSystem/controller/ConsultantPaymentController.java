@@ -63,9 +63,9 @@ public class ConsultantPaymentController {
                 });
 
         // Allow retry if status is PENDING
-        if (booking.getStatus() == BookingStatus.PROCESSING) {
-            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
-        }
+//        if (booking.getStatus() == BookingStatus.PROCESSING) {
+//            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
+//        }
 
         if (booking.getStatus() == BookingStatus.PENDING) {
             booking.setStatus(BookingStatus.PROCESSING);
