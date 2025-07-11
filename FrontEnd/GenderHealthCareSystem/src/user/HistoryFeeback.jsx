@@ -210,7 +210,6 @@ const HistoryFeedback = () => {
       title: "Đánh giá",
       dataIndex: "rating",
       key: "rating",
-      width: "15%",
       render: (rating) => (
         <Rate
           disabled
@@ -226,6 +225,11 @@ const HistoryFeedback = () => {
       key: "comment",
       ellipsis: true,
       width: "35%",
+      render: (text) => (
+        <Typography.Text ellipsis={{ tooltip: text }} style={{ maxWidth: 150 }}>
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: "Thời gian",
@@ -293,6 +297,11 @@ const HistoryFeedback = () => {
       key: "comment",
       ellipsis: true,
       width: "35%",
+      render: (text) => (
+        <Typography.Text ellipsis={{ tooltip: text }} style={{ maxWidth: 150 }}>
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: "Thời gian",

@@ -164,6 +164,14 @@ const ManageFeedbackService = () => {
       key: "comment",
       ellipsis: true,
       width: "40%",
+      render: (text) => (
+        <Typography.Text
+          ellipsis={{ tooltip: text }}
+          style={{ maxWidth: 200 }}
+        >
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: "Hành động",
@@ -289,6 +297,7 @@ const ManageFeedbackService = () => {
             rowKey="feedbackId"
             pagination={pagination}
             scroll={{ x: "max-content" }}
+            onChange={(pagination)}
           />
         ) : (
           <Empty description="Không tìm thấy đánh giá nào phù hợp với điều kiện lọc" />

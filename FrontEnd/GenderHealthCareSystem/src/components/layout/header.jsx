@@ -8,7 +8,7 @@ import {
   CloseOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { Children, useState } from "react";
 import LogoText from "../../assets/logo-text.svg";
 import LogoSign from "../../assets/logo-sign.svg";
 import { useAuth } from "../provider/AuthProvider";
@@ -38,7 +38,7 @@ const Header = () => {
           navigate("/menstrual/tracker");
           break;
         case "pill-tracker":
-          navigate("/pill-tracker");
+          navigate("/pill/tracker");
           break;
       }
       setMenuVisible(false);
@@ -67,9 +67,30 @@ const Header = () => {
         onClick: () => navigate("/user/profile"),
       },
       {
+        key: "history-testing",
+        label: "Lịch sử",
+        children: [
+          {
+            key: "history-testing",
+            label: "Lịch sử xét nghiệm",
+            onClick: () => navigate("/user/history-testing"),
+          },
+          {
+            key: "history-consultation",
+            label: "Lịch sử tư vấn",
+            onClick: () => navigate("/user/history-consultation"),
+          },
+          {
+            key: "history-feedback",
+            label: "Lịch sử phản hồi",
+            onClick: () => navigate("/user/history-feedback"),
+          },
+        ]
+      },
+      {
         key: "settings",
         label: "Cài đặt tài khoản",
-        onClick: () => navigate("/profile?openSettings=true"),
+        onClick: () => navigate("/user/account-settings"),
       },
       {
         key: "logout",
@@ -153,7 +174,7 @@ const Header = () => {
             <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
               <a onClick={() => navigate("/blog")}>Blog</a>
             </li>
-            {user?.role !== "Customer" && (
+            {user && user?.role !== "Customer" && (
               <li className="hover:text-[#0099CF] cursor-pointer transition-colors border-b-2 border-transparent hover:border-[#0099CF] py-2">
                 <a onClick={() => navigate(`/${user.role.toLowerCase()}/dashboard`)}>Dashboard</a>
               </li>

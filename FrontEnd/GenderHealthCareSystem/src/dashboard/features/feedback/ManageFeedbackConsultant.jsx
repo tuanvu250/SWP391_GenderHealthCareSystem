@@ -36,7 +36,12 @@ import {
 import FeedbackModal from "../../components/modal/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
 import { useAuth } from "../../../components/provider/AuthProvider";
-import { getAllFeedbackConsultantAPI, getAverageRatingByConsultantAPI, getAverageRatingConsultantAPI, getMyFeedbackConsultantAPI } from "../../../components/api/FeedbackConsultant.api";
+import {
+  getAllFeedbackConsultantAPI,
+  getAverageRatingByConsultantAPI,
+  getAverageRatingConsultantAPI,
+  getMyFeedbackConsultantAPI,
+} from "../../../components/api/FeedbackConsultant.api";
 import { getAverageRatingAPI } from "../../../components/api/FeedbackTesting.api";
 import { getConsultantProfile } from "../../../components/api/UserProfile.api";
 import { getAllConsultants } from "../../../components/api/Consultant.api";
@@ -204,7 +209,7 @@ const ManageFeedbackConsultant = () => {
       key: "userFullName",
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <Avatar  className="bg-blue-500" src={record?.customerImageUrl} />
+          <Avatar className="bg-blue-500" src={record?.customerImageUrl} />
           <div>
             <Typography.Text strong>{record.customerName}</Typography.Text>
           </div>
@@ -244,10 +249,15 @@ const ManageFeedbackConsultant = () => {
       dataIndex: "comment",
       key: "comment",
       ellipsis: true,
+      render: (text) => (
+        <Typography.Text ellipsis={{ tooltip: text }} style={{ maxWidth: 150 }}>
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: "Thời gian đánh giá",
-      dataIndex: "createdAt",     
+      dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => formatDateTime(text),
     },
@@ -358,10 +368,7 @@ const ManageFeedbackConsultant = () => {
             >
               <Option value="">Tất cả tư vấn viên</Option>
               {consultantList.map((consultant) => (
-                <Option
-                  key={consultant.userId}
-                  value={consultant.userId}
-                >
+                <Option key={consultant.userId} value={consultant.userId}>
                   {consultant.fullName}
                 </Option>
               ))}

@@ -36,7 +36,6 @@ export default function ConfirmBookingConsultant() {
     try {
       const startTime = bookingData.timeSlot.split(" - ")[0].trim();
       const bookingDate = dayjs(dayjs(`${bookingData.date} ${startTime}`).toDate()).format("YYYY-MM-DDTHH:mm:ss");
-      //const endTime = dayjs(bookingDate).add(1, "hour").format("HH:mm");
       let consultantId = bookingData.consultantId;
       let hourlyRate = 120000; // fallback mặc định
 

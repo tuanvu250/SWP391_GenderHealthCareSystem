@@ -31,7 +31,7 @@ export default function PillTracker() {
       }
 
       // Có lịch thì auto chuyển
-      navigate('/pill-schedule');
+      navigate('/pill/schedule');
     } catch (err) {
       console.error('❌ Lỗi kiểm tra lịch:', err);
     }
@@ -64,7 +64,7 @@ export default function PillTracker() {
       localStorage.setItem('pillStartDate', pillStartDate);
       localStorage.setItem('pillType', pillType);
 
-      navigate('/pill-schedule', { state: { schedule: scheduleArray } });
+      navigate('/pill/schedule', { state: { schedule: scheduleArray } });
     } catch (err) {
       console.error('❌ Lỗi tạo lịch:', err);
       setPopupMessage('Không thể khởi tạo lịch.');
@@ -75,7 +75,7 @@ export default function PillTracker() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6">
+    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-6 mt-12">
       <h2 className="text-2xl font-bold text-center text-[#0099CF]">Theo dõi lịch uống thuốc</h2>
 
       <label className="block text-gray-700 font-medium">

@@ -536,7 +536,6 @@ const ManageMyBlog = () => {
           onChange={handleTableChange}
           size="middle"
           scroll={{ x: "max-content" }}
-          className="break-words"
         />
       </Card>
 

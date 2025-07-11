@@ -258,7 +258,7 @@ export default function PillScheduleCalendar() {
                 onClick={() => {
                   localStorage.removeItem('pillStartDate');
                   localStorage.removeItem('pillType');
-                  navigate('/pill-tracker');
+                  navigate('/pill/tracker');
                 }}
                 className="ml-4 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
               >
@@ -272,7 +272,7 @@ export default function PillScheduleCalendar() {
               onClick={() => {
                 localStorage.removeItem('pillStartDate');
                 localStorage.removeItem('pillType');
-                navigate('/pill-tracker');
+                navigate('/pill/tracker');
               }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >

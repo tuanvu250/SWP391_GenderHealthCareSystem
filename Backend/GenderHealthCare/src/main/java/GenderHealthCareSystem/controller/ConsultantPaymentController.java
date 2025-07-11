@@ -41,14 +41,14 @@ public class ConsultantPaymentController {
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-//         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-//         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
+         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
 
 //    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
 //    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
 
-    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
-    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
+//    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
+//    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";
 
     @GetMapping("/pay-url")
     public ResponseEntity<String> generatePaymentUrl(@RequestParam Integer bookingId,
@@ -63,9 +63,9 @@ public class ConsultantPaymentController {
                 });
 
         // Allow retry if status is PENDING
-        if (booking.getStatus() == BookingStatus.PROCESSING) {
-            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
-        }
+//        if (booking.getStatus() == BookingStatus.PROCESSING) {
+//            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
+//        }
 
         if (booking.getStatus() == BookingStatus.PENDING) {
             booking.setStatus(BookingStatus.PROCESSING);

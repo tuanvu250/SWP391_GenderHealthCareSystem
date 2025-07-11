@@ -41,7 +41,6 @@ import AskingSection from "../services/asking/AskingSection";
 import BookingResult from "../services/BookingResult";
 import ConfirmConsultationBooking from "../services/consultant/ConfirmBookingConsultant";
 
-
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import Overview from "../dashboard/features/overview/Overview";
 import ManageMyBlog from "../dashboard/features/blog/ManageMyBlog";
@@ -58,6 +57,7 @@ import ConsultantDetail from "../site-info/Expert-info/ConsultantDetail";
 import ManageFeedbackConsultant from "../dashboard/features/feedback/ManageFeedbackConsultant";
 import ManageBookingConsultant from "../dashboard/features/booking/ManageBookingConsultant";
 import AccountSetting from "../user/AccountSetting";
+import PillLayout from "../healthtracker/PillLayout";
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -78,7 +78,6 @@ function RouteMap() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/pill-tracker" element={<PillTracker />} />
 
         {/* user */}
         <Route
@@ -97,7 +96,7 @@ function RouteMap() {
             path="history-consultation"
             element={<HistoryConsultantBooking />}
           />
-          <Route path="account-settings" element={<AccountSetting/>} />
+          <Route path="account-settings" element={<AccountSetting />} />
         </Route>
 
         {/* Menstrual */}
@@ -113,6 +112,20 @@ function RouteMap() {
           <Route path="tracker" element={<MenstrualTracker />} />
           <Route path="ovulation" element={<OvulationCalendar />} />
         </Route>
+        {/* Pill Tracker */}
+        <Route
+          path="/pill"
+          element={
+            <ProtectedRoute>
+              <PillLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<PillTracker />} />
+          <Route path="tracker" element={<PillTracker />} />
+          <Route path="schedule" element={<PillScheduleCalendar />} />
+        </Route>
+
 
         <Route path="/sti-testing" element={<STITesting />} />
         <Route path="/retail-service" element={<RetailService />} />
@@ -134,18 +147,9 @@ function RouteMap() {
           path="confirm-consultant"
           element={<ConfirmConsultationBooking />}
         />
-      
 
         {/* Trang thông tin */}
         <Route path="/about" element={<AboutPage />} />
-        <Route
-          path="/pill-schedule"
-          element={
-            <ProtectedRoute>
-              <PillScheduleCalendar />
-            </ProtectedRoute>
-          }
-        />
 
         <Route path="/booking-result" element={<BookingResult />} />
         <Route path="/servicelist" element={<ServiceList />} />

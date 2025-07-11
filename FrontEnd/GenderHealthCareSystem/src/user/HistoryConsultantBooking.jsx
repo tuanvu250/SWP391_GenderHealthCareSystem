@@ -1,183 +1,192 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
-  Table,
   Tag,
+  Button,
+  Space,
   Typography,
   Empty,
   Spin,
-  Button,
   message,
-  Modal,
-  DatePicker,
-  Select,
-  Divider,
+  Pagination,
+  Popconfirm,
+  Dropdown,
+  Menu,
 } from "antd";
 import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  VideoCameraOutlined,
-  UserOutlined,
+  CreditCardOutlined,
+  DollarOutlined,
+  CalendarOutlined,
+  FieldTimeOutlined,
   ExclamationCircleOutlined,
-  EditOutlined,
-  StarOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  VideoCameraOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { useAuth } from "../components/provider/AuthProvider";
+
+import { convertVndToUsd, formatPrice } from "../components/utils/format";
+
 import FeedbackModal from "./FeedbackModal";
+import {
+  cancelBooking,
+  getBookingHistory,
+} from "../components/api/ConsultantBooking.api";
 import { postFeedbackConsultantAPI } from "../components/api/FeedbackConsultant.api";
-import { cancelBooking, getBookingHistory, rescheduleBooking } from "../components/api/ConsultantBooking.api";
+import { getConsultantPaymentRedirectURL } from "../components/api/Payment.api";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-
-const timeSlots = [
-  "08:00 - 09:00",
-  "09:00 - 10:00",
-  "10:00 - 11:00",
-  "13:30 - 14:30",
-  "15:00 - 16:00",
-  "16:30 - 17:30",
-];
 
 const HistoryConsultantBooking = () => {
-  const [bookings, setBookings] = useState([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [rescheduleModal, setRescheduleModal] = useState({
-    open: false,
-    bookingId: null,
-  });
-
-  // Cập nhật state cho modal đánh giá
-  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [submittingFeedback, setSubmittingFeedback] = useState(false);
-
-  const [newDate, setNewDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const navigate = useNavigate();
+  const [openFeedback, setOpenFeedback] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 8,
+    pageSize: 4,
     total: 0,
   });
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
-  const fetchBookings = async () => {
+  // Fetch booking history
+  const fetchBookingHistory = async () => {
     try {
+      setLoading(true);
       const response = await getBookingHistory({
         page: pagination.current - 1,
         size: pagination.pageSize,
+        status: "",
+        sort: "",
       });
-      setLoading(true);
       setPagination({
         ...pagination,
-        total: response.data?.data?.totalElements || 0,
+        total: response.data.data.totalElements,
       });
-      setBookings(response.data?.data?.content || []);
+      const data = response.data.data.content.map((item) => ({
+        ...item,
+        id: item.bookingId,
+        price: item.amount,
+        bookingDate: dayjs(item.createAt).format("DD/MM/YYYY"),
+        appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
+        appointmentTime: `${dayjs(item.bookingDate).format("HH:mm")} - ${dayjs(
+          item.bookingDate
+        )
+          .add(1, "hour")
+          .format("HH:mm")}`,
+        notes: item.note,
+      }));
+      setBookings(data);
     } catch (error) {
-      console.error("Lỗi khi lấy lịch sử booking:", error);
-      message.error("Không thể tải lịch sử đặt lịch.");
+      console.error("Error fetching booking history:", error);
+      message.error("Không thể tải lịch sử đặt lịch tư vấn");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    fetchBookingHistory();
+  }, [pagination.current]);
 
-  const handleCancelBooking = (bookingId) => {
-    Modal.confirm({
-      title: "Xác nhận hủy lịch?",
-      icon: <ExclamationCircleOutlined />,
-      content: "Bạn chắc chắn muốn hủy lịch tư vấn này?",
-      okText: "Hủy lịch",
-      okType: "danger",
-      cancelText: "Không",
-      async onOk() {
-        try {
-          await cancelBooking(bookingId);
-          message.success("Đã hủy lịch thành công!");
-          fetchBookings();
-        } catch (err) {
-          console.error(err);
-          message.error(err.response?.data?.message || "Không thể hủy lịch.");
-        }
-      },
+  const handlePageChange = (page, pageSize) => {
+    setPagination({
+      ...pagination,
+      current: page,
+      pageSize: pageSize,
     });
   };
 
-  const handleOpenReschedule = (bookingId) => {
-    setRescheduleModal({ open: true, bookingId });
-    setNewDate(null);
-    setSelectedSlot(null);
-  };
-
-  const handleRescheduleSubmit = async () => {
-    if (!newDate || !selectedSlot) {
-      message.warning("Vui lòng chọn ngày và khung giờ.");
-      return;
-    }
-
-    const [startTime] = selectedSlot.split(" - ");
-    const dateTimeStr = dayjs(
-      newDate.format("YYYY-MM-DD") + "T" + startTime
-    ).format("YYYY-MM-DDTHH:mm:ss");
-
+  // Xử lý thanh toán
+  const handlePayment = async (bookingId, totalPrice, paymentMethod) => {
     try {
-      await rescheduleBooking({
-        bookingId: rescheduleModal.bookingId,
-        newDate: dateTimeStr,
-      });
-      message.success("Đổi lịch thành công!");
-      setRescheduleModal({ open: false, bookingId: null });
-      setNewDate(null);
-      setSelectedSlot(null);
-      fetchBookings();
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể đổi lịch.");
-    }
-  };
+      console.log(
+        "Processing payment for booking:",
+        paymentMethod,
+        bookingId,
+        totalPrice
+      );
+      const response = await getConsultantPaymentRedirectURL(
+        bookingId,
+        paymentMethod.toUpperCase()
+      );
 
-  // Cập nhật hàm mở modal đánh giá sử dụng FeedbackModal
-  const handleOpenRatingModal = (booking) => {
-    setSelectedBooking({
-      ...booking,
-      id: booking.bookingId, // Đảm bảo có trường id cho FeedbackModal
-      consultantName: booking.consultantName,
-      consultationTime: dayjs(booking.bookingDate).format("DD/MM/YYYY HH:mm"),
-      consultationType: "Trực tuyến", // Hoặc lấy từ booking nếu có
-    });
-    setFeedbackVisible(true);
-  };
+      localStorage.setItem("bookingID", bookingId);
+      localStorage.setItem("orderInfo", "Đặt lịch tư vấn");
+      localStorage.setItem("bookingType", "consultant");
 
-  // Cập nhật hàm xử lý gửi đánh giá
-  const handleSubmitFeedback = async (feedback) => {
-    try {
-      setSubmittingFeedback(true);
-      await postFeedbackConsultantAPI({
-        bookingId: selectedBooking.bookingId,
-        rating: feedback.rating,
-        content: feedback.content,
-        consultantId: selectedBooking.consultantId,
-      });
-      message.success("Đánh giá đã được gửi!");
-      setFeedbackVisible(false);
-      setSelectedBooking(null);
-      setSubmittingFeedback(false);
-      fetchBookings();
-    } catch (err) {
-      setSubmittingFeedback(false);
-      console.error(err);
+      message.success("Đang chuyển hướng đến trang thanh toán ...");
+
+      setTimeout(() => {
+        window.location.href = response.data;
+      }, 3000);
+    } catch (error) {
+      console.error("Error processing payment:", error);
       message.error(
-        err.response?.data?.message ||
-          "Không thể gửi đánh giá. Vui lòng thử lại."
+        error.response?.data?.message || "Có lỗi xảy ra khi xử lý thanh toán"
       );
     }
   };
 
+  const handleCancel = async (bookingId) => {
+    try {
+      await cancelBooking(bookingId);
+      setTimeout(() => {
+        fetchBookingHistory();
+        message.success("Đã hủy lịch tư vấn thành công!");
+      }, 200);
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi hủy lịch tư vấn"
+      );
+    }
+  };
+
+  const handleFeedback = (record) => {
+    setSelectedBooking(record);
+    setOpenFeedback(true);
+  };
+
+  // Xử lý tham gia cuộc gọi
+  const handleJoinMeeting = (meetLink) => {
+    if (meetLink) {
+      window.open(meetLink, "_blank");
+    } else {
+      message.error("Không có link tham gia cuộc gọi");
+    }
+  };
+
+  // Thêm hàm xử lý gửi đánh giá
+  const handleSubmitFeedback = async (feedback) => {
+    try {
+      setSubmittingFeedback(true);
+      await postFeedbackConsultantAPI(
+        feedback.id,
+        feedback.rating,
+        feedback.content
+      );
+
+      setOpenFeedback(false);
+      setSubmittingFeedback(false);
+      message.success("Cảm ơn bạn đã gửi đánh giá!");
+      fetchBookingHistory();
+    } catch (error) {
+      setSubmittingFeedback(false);
+      console.error("Error submitting feedback:", error);
+      message.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá"
+      );
+    }
+  };
+
+  // Render trạng thái đặt lịch
   const renderStatus = (status) => {
     switch (status) {
       case "PENDING":
@@ -186,146 +195,267 @@ const HistoryConsultantBooking = () => {
             Đang xử lý
           </Tag>
         );
-      case "CONFIRMED":
+      case "COMPLETED":
         return (
-          <Tag icon={<CheckCircleOutlined />} color="green">
-            Đã xác nhận
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Hoàn thành
           </Tag>
         );
       case "CANCELLED":
         return (
-          <Tag icon={<CloseCircleOutlined />} color="red">
+          <Tag icon={<CloseCircleOutlined />} color="error">
             Đã hủy
           </Tag>
         );
-      case "COMPLETED":
+      case "CONFIRMED":
         return (
-          <Tag icon={<CheckCircleOutlined />} color="cyan">
-            Hoàn thành
+          <Tag icon={<CheckCircleOutlined />} color="purple">
+            Đã xác nhận
+          </Tag>
+        );
+      case "DENIED":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="red">
+            Đã từ chối
+          </Tag>
+        );
+      case "NO_SHOW":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="orange">
+            Không đến
           </Tag>
         );
       default:
-        return status ? <Tag>{status}</Tag> : "—";
+        return <Tag color="default">{status}</Tag>;
     }
   };
 
-  const renderPaymentStatus = (status) => {
-    switch (status) {
+  // Render trạng thái thanh toán
+  const renderPaymentStatus = (paymentStatus) => {
+    switch (paymentStatus) {
       case "PAID":
-        return <Tag color="green">Đã thanh toán</Tag>;
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Đã thanh toán
+          </Tag>
+        );
       case "UNPAID":
-        return <Tag color="orange">Chưa thanh toán</Tag>;
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="warning">
+            Chưa thanh toán
+          </Tag>
+        );
       default:
-        return status ? <Tag>{status}</Tag> : "—";
+        return <Tag color="default">Chưa thanh toán</Tag>;
     }
   };
 
-  const columns = [
-    {
-      title: "#",
-      key: "index",
-      render: (_, __, index) => index + 1,
-      width: 60,
-    },
-    {
-      title: "Ngày đặt",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text) => dayjs(text).format("HH:mm DD/MM/YYYY"),
-    },
-    {
-      title: "Chuyên gia",
-      dataIndex: "consultantName",
-      key: "consultantName",
-      render: (text, record) =>
-        text || <span className="text-gray-500">ID {record.consultantId}</span>,
-    },
-    {
-      title: "Ghi chú",
-      dataIndex: "note",
-      key: "note",
-      render: (text) => text || "—",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: renderStatus,
-    },
-    {
-      title: "Thanh toán",
-      dataIndex: "paymentStatus",
-      key: "paymentStatus",
-      render: renderPaymentStatus,
-    },
-    {
-      title: "Link tư vấn",
-      dataIndex: "meetLink",
-      key: "meetLink",
-      render: (text) =>
-        text ? (
-          <Button
-            type="link"
-            href={text}
-            target="_blank"
-            icon={<VideoCameraOutlined />}
-          >
-            Tham gia
-          </Button>
-        ) : (
-          <span className="text-gray-400">Chưa có</span>
-        ),
-    },
-    {
-      title: "Hành động",
-      key: "actions",
-      render: (_, record) => {
-        const canAct =
-          record.paymentStatus === "PAID" && record.status !== "CANCELLED";
+  // Render phương thức thanh toán
+  const renderPaymentMethod = (method) => {
+    switch (method) {
+      case "VNPAY":
         return (
-          <div className="flex gap-2">
-            {record.status === "COMPLETED" && canAct && (
-              <Button
-                size="small"
-                icon={<StarOutlined />}
-                onClick={() => handleOpenRatingModal(record)}
-              >
-                Đánh giá
-              </Button>
-            )}
-            {canAct && record.status !== "COMPLETED" && (
-              <>
-                <Button
-                  danger
-                  size="small"
-                  onClick={() => handleCancelBooking(record.bookingId)}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => handleOpenReschedule(record.bookingId)}
-                >
-                  Đổi lịch
-                </Button>
-              </>
-            )}
-          </div>
+          <span>
+            <CreditCardOutlined className="mr-1" /> VNPAY
+          </span>
         );
-      },
-    },
-  ];
+      case "PAYPAL":
+        return (
+          <span>
+            <CreditCardOutlined className="mr-1" /> PayPal
+          </span>
+        );
+      case "CASH":
+        return (
+          <span>
+            <DollarOutlined className="mr-1" /> Tiền mặt
+          </span>
+        );
+      default:
+        return method;
+    }
+  };
 
-  return (
-    <Card className="shadow-sm">
+  // Component để render mỗi booking dạng card
+  const BookingCard = ({ booking }) => {
+    // Kiểm tra xem có meetLink và cuộc hẹn đã được xác nhận
+    const canJoinMeeting = booking.meetLink && booking.status === "CONFIRMED";
+
+    // Tạo menu cho dropdown thanh toán
+    const paymentMenu = (
+      <Menu
+        onClick={({ key }) => {
+          handlePayment(booking.id, booking.price, key);
+        }}
+        items={[
+          {
+            key: "VNPAY",
+            label: (
+              <div className="flex items-center">
+                <CreditCardOutlined className="mr-2" /> VNPAY
+              </div>
+            ),
+          },
+          {
+            key: "PAYPAL",
+            label: (
+              <div className="flex items-center">
+                <CreditCardOutlined className="mr-2" /> PayPal
+              </div>
+            ),
+          },
+        ]}
+      />
+    );
+
+    return (
       <div className="mb-4">
-        <Title level={4} className="flex items-center mb-2">
-          <UserOutlined className="mr-2 text-blue-500" />
+        <Card hoverable className="w-full my-4 shadow-sm" bordered={false}>
+          <div className="flex flex-col md:flex-row w-full">
+            {/* Cột bên trái - Thông tin dịch vụ và thời gian */}
+            <div className="flex-1 md:pr-4">
+              {/* Header - Tên tư vấn viên và ID */}
+              <div className="mb-3">
+                <div className="flex items-center">
+                  <UserOutlined className="mr-2 text-blue-500" />
+                  <Title level={5} className="m-0">
+                    {booking.consultantName}
+                  </Title>
+                </div>
+                <div className="flex items-center mt-1">
+                  <PhoneOutlined className="mr-2 text-gray-500" />
+                  <Text type="secondary">
+                    {booking.consultantPhone || "Không có số điện thoại"}
+                  </Text>
+                </div>
+                <Text type="secondary" className="mt-1 block">
+                  Mã đặt lịch: #{booking.id}
+                </Text>
+              </div>
+
+              {/* Thông tin thời gian */}
+              <div className="mb-2 flex gap-2 items-center">
+                <CalendarOutlined className="text-gray-500" />
+                <Text className="text-gray-500">Ngày hẹn:</Text>
+                <Text strong>{booking.appointmentDate}</Text>
+              </div>
+
+              <div className="mb-3 flex gap-2 items-center">
+                <FieldTimeOutlined className="text-gray-500" />
+                <Text className="text-gray-500">Giờ hẹn:</Text>
+                <Text strong>{booking.appointmentTime}</Text>
+              </div>
+
+              {booking.notes && (
+                <div className="mb-3 mt-2 bg-gray-50 p-2 rounded text-sm">
+                  <Text className="text-gray-500">Ghi chú: </Text>
+                  <Text>{booking.notes}</Text>
+                </div>
+              )}
+            </div>
+
+            {/* Cột giữa - Thông tin thanh toán */}
+            <div className="md:w-1/4 mb-3 md:mb-0 md:px-4">
+              {/* Thông tin giá và thanh toán */}
+              <div className="mb-2">
+                <Text className="text-gray-500 block">Giá:</Text>
+                <Text className="font-medium text-blue-500 text-lg">
+                  {formatPrice(booking.price)}
+                </Text>
+              </div>
+
+              <div>
+                <Text className="text-gray-500 block">Thanh toán:</Text>
+                <div className="mt-1">
+                  <div className="mb-1">
+                    {renderPaymentMethod(booking.paymentMethod)}
+                  </div>
+                  <div>{renderPaymentStatus(booking.paymentStatus)}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cột bên phải - Trạng thái và nút hành động */}
+            <div className="md:w-1/4 md:pl-4 flex flex-col justify-between">
+              <div className="mb-4 flex justify-end">
+                {renderStatus(booking.status)}
+              </div>
+
+              {/* Nút hành động */}
+              <div className="flex flex-wrap justify-end gap-2">
+                {booking.status !== "CANCELLED" &&
+                  booking.status !== "COMPLETED" && (
+                    <Popconfirm
+                      title="Xác nhận hủy lịch tư vấn"
+                      description="Bạn có chắc chắn muốn hủy lịch tư vấn này không?"
+                      okText="Có, hủy lịch"
+                      cancelText="Không"
+                      onConfirm={() => handleCancel(booking.id)}
+                      okButtonProps={{ danger: true }}
+                      icon={
+                        <ExclamationCircleOutlined style={{ color: "red" }} />
+                      }
+                    >
+                      <Button danger size="middle">
+                        Hủy lịch
+                      </Button>
+                    </Popconfirm>
+                  )}
+
+                {/* Thay nút thanh toán bằng dropdown */}
+                {booking.paymentStatus === "UNPAID" &&
+                  booking.status !== "CANCELLED" && (
+                    <Dropdown overlay={paymentMenu} trigger={["click"]}>
+                      <Button
+                        type="primary"
+                        size="middle"
+                        className="flex items-center"
+                      >
+                        Thanh toán <DownOutlined className="ml-1" />
+                      </Button>
+                    </Dropdown>
+                  )}
+
+                {/* Nút tham gia cuộc gọi khi có meetLink và trạng thái phù hợp */}
+                {canJoinMeeting && (
+                  <Button
+                    type="primary"
+                    size="middle"
+                    icon={<VideoCameraOutlined />}
+                    onClick={() => handleJoinMeeting(booking.meetLink)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Tham gia
+                  </Button>
+                )}
+
+                {booking.status === "COMPLETED" && (
+                  <Button
+                    type="default"
+                    size="middle"
+                    onClick={() => handleFeedback(booking)}
+                  >
+                    Đánh giá
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
+  // Render giao diện chính
+  return (
+    <Card className="shadow-sm" bordered={false}>
+      <div className="mb-4">
+        <Title level={4} className="flex items-center mb-3">
+          <UserOutlined className="mr-2 text-[#0099CF]" />
           Lịch sử đặt lịch tư vấn
         </Title>
         <Text type="secondary">
-          Xem, hủy, đổi lịch hoặc đánh giá chuyên gia.
+          Xem lịch sử đặt lịch tư vấn và đánh giá tư vấn viên tại đây.
         </Text>
       </div>
 
@@ -335,149 +465,34 @@ const HistoryConsultantBooking = () => {
           <div className="mt-4">Đang tải dữ liệu...</div>
         </div>
       ) : bookings.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={bookings}
-          rowKey="bookingId"
-          pagination={pagination}
-          onChange={(pagination) => {
-            setPagination({
-              ...pagination,
-              current: pagination.current,
-            });
-            fetchBookings();
-          }}
-          scroll={{ x: "max-content" }}
-          className="mt-4"
-        />
+        <>
+          <div className="mt-4">
+            {bookings.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} />
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </div>
+        </>
       ) : (
         <Empty
-          description="Bạn chưa có lịch tư vấn nào"
+          description="Bạn chưa có lịch sử đặt lịch tư vấn"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}
 
-      {/* Modal đổi lịch cải tiến */}
-      <Modal
-        open={rescheduleModal.open}
-        title={
-          <div className="text-lg flex items-center">
-            <EditOutlined className="mr-2 text-blue-500" />
-            <span>Đổi lịch tư vấn</span>
-          </div>
-        }
-        onCancel={() => setRescheduleModal({ open: false, bookingId: null })}
-        onOk={handleRescheduleSubmit}
-        okText="Xác nhận đổi lịch"
-        cancelText="Hủy"
-        width={500}
-        okButtonProps={{ 
-          disabled: !newDate || !selectedSlot,
-          className: !newDate || !selectedSlot ? "" : "bg-blue-500"
-        }}
-      >
-        <div className="space-y-5">
-          {/* Thông tin lịch hiện tại */}
-          {rescheduleModal.bookingId && (
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
-              <div className="text-gray-500 mb-2 font-medium">Lịch hiện tại:</div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <span className="text-gray-500">Mã đặt lịch:</span>
-                  <div className="font-medium">{rescheduleModal.bookingId}</div>
-                </div>
-                <div>
-                  <span className="text-gray-500">Chuyên gia:</span>
-                  <div className="font-medium">
-                    {bookings.find(b => b.bookingId === rescheduleModal.bookingId)?.consultantName || "Không xác định"}
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-gray-500">Thời gian hiện tại:</span>
-                  <div className="font-medium">
-                    {bookings.find(b => b.bookingId === rescheduleModal.bookingId)
-                      ? dayjs(bookings.find(b => b.bookingId === rescheduleModal.bookingId)?.bookingDate)
-                          .format("HH:mm - DD/MM/YYYY")
-                      : "Không xác định"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <Divider orientation="center">Chọn thời gian mới</Divider>
-          
-          {/* Chọn ngày */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label htmlFor="newDate" className="font-medium">Ngày tư vấn mới:</label>
-              <Tag color="orange" className="ml-auto">Bắt buộc</Tag>
-            </div>
-            <DatePicker
-              id="newDate"
-              className="w-full"
-              value={newDate}
-              onChange={(date) => setNewDate(date)}
-              disabledDate={(current) => current && current < dayjs().startOf("day")}
-              format="DD/MM/YYYY"
-              placeholder="Chọn ngày tư vấn mới"
-              size="large"
-            />
-            {!newDate && (
-              <div className="text-red-500 text-xs mt-1">
-                Vui lòng chọn ngày tư vấn
-              </div>
-            )}
-          </div>
-
-          {/* Chọn khung giờ */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label htmlFor="timeSlot" className="font-medium">Khung giờ mới:</label>
-              <Tag color="orange" className="ml-auto">Bắt buộc</Tag>
-            </div>
-            <Select
-              id="timeSlot"
-              placeholder="Chọn khung giờ tư vấn mới"
-              className="w-full"
-              value={selectedSlot}
-              onChange={(value) => setSelectedSlot(value)}
-              size="large"
-            >
-              {timeSlots.map((slot) => (
-                <Option key={slot} value={slot}>
-                  <span className="font-medium">{slot}</span>
-                </Option>
-              ))}
-            </Select>
-            {!selectedSlot && (
-              <div className="text-red-500 text-xs mt-1">
-                Vui lòng chọn khung giờ tư vấn
-              </div>
-            )}
-          </div>
-
-          {/* Hiển thị thời gian đã chọn */}
-          {newDate && selectedSlot && (
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
-              <div className="text-blue-700 mb-2 font-medium">Thời gian tư vấn mới:</div>
-              <div className="text-lg font-semibold flex items-center">
-                <ClockCircleOutlined className="mr-2 text-blue-500" />
-                {dayjs(newDate).format("DD/MM/YYYY")} {selectedSlot}
-              </div>
-            </div>
-          )}
-
-          <div className="text-gray-500 text-sm pt-2">
-             Sau khi đổi lịch, bạn sẽ nhận được email xác nhận về lịch tư vấn mới.
-          </div>
-        </div>
-      </Modal>
-
-      {/* Thay thế Modal đánh giá cũ bằng FeedbackModal */}
+      {/* Component FeedbackModal */}
       <FeedbackModal
-        visible={feedbackVisible}
-        onCancel={() => setFeedbackVisible(false)}
+        visible={openFeedback}
+        onCancel={() => setOpenFeedback(false)}
         onSubmit={handleSubmitFeedback}
         data={selectedBooking}
         type="consultant"

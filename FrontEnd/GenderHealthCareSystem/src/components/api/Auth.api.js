@@ -51,3 +51,11 @@ export const resetPasswordAPI = async (values) => {
   };
   return apiClient.post("/auth/reset-password", userData);
 };
+
+export const changePasswordAPI = async (values) => {
+  const userData = {
+    oldPassword: values.oldPassword,
+    newPassword: values.newPassword,
+  };
+  return apiClient.post("/users/change-password", userData);
+} 

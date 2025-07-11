@@ -14,6 +14,11 @@ import {
   Rate,
   Input,
   Form,
+  Row,
+  Col,
+  Pagination,
+  Divider,
+  Popconfirm,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -26,6 +31,9 @@ import {
   InfoCircleOutlined,
   MedicineBoxOutlined,
   StarFilled,
+  CalendarOutlined,
+  FieldTimeOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
@@ -50,16 +58,14 @@ const HistoryTesting = () => {
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [viewResult, setViewResult] = useState(false);
-  const [viewDetail, setViewDetail] = useState(false);
   const [openFeedback, setOpenFeedback] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 5,
+    pageSize: 4,
     total: 0,
   });
-  // Thêm state mới cho feedback
+  // State cho feedback
   const [feedbackForm] = Form.useForm();
-  const [feedbackRating, setFeedbackRating] = useState(5);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   // Fetch booking history
@@ -99,10 +105,11 @@ const HistoryTesting = () => {
     fetchBookingHistory();
   }, [pagination.current]);
 
-  const handleTableChange = (pagination) => {
+  const handlePageChange = (page, pageSize) => {
     setPagination({
       ...pagination,
-      current: pagination.current,
+      current: page,
+      pageSize: pageSize,
     });
   };
 
@@ -189,12 +196,6 @@ const HistoryTesting = () => {
     setSelectedBooking(record);
     setViewResult(true);
   };
-
-  const handleViewDetail = (record) => {
-    setSelectedBooking(record);
-    setViewDetail(true);
-  };
-
   // Render trạng thái đặt lịch
   const renderStatus = (status) => {
     switch (status) {
@@ -265,39 +266,25 @@ const HistoryTesting = () => {
     }
   };
 
-  // Render trạng thái xét nghiệm
-  const renderTestingStatus = (testingStatus) => {
-    switch (testingStatus) {
-      case "not_started":
-        return <Tag color="default">Chưa xét nghiệm</Tag>;
-      case "in_progress":
-        return <Tag color="processing">Đang xử lý</Tag>;
-      case "completed":
-        return <Tag color="success">Đã có kết quả</Tag>;
-      default:
-        return <Tag color="default">{testingStatus}</Tag>;
-    }
-  };
-
   // Render phương thức thanh toán
   const renderPaymentMethod = (method) => {
     switch (method) {
       case "VNPAY":
         return (
           <span>
-            <CreditCardOutlined /> VNPAY
+            <CreditCardOutlined className="mr-1" /> VNPAY
           </span>
         );
       case "PAYPAL":
         return (
           <span>
-            <CreditCardOutlined /> PayPal
+            <CreditCardOutlined className="mr-1" /> PayPal
           </span>
         );
       case "CASH":
         return (
           <span>
-            <DollarOutlined /> Tiền mặt
+            <DollarOutlined className="mr-1" /> Tiền mặt
           </span>
         );
       default:
@@ -305,254 +292,7 @@ const HistoryTesting = () => {
     }
   };
 
-  // Cấu hình các cột cho bảng
-  const columns = [
-    {
-      title: "Dịch vụ",
-      dataIndex: "serviceName",
-      key: "serviceName",
-      render: (text) => (
-        <span className="font-medium flex items-center">{text}</span>
-      ),
-    },
-    {
-      title: "Giá",
-      dataIndex: "price",
-      key: "price",
-      render: (price) => (
-        <span className="font-medium">{formatPrice(price)}</span>
-      ),
-    },
-    {
-      title: "Ngày giờ hẹn",
-      key: "appointment",
-      render: (_, record) => (
-        <span>
-          {record.appointmentDate}
-          <br />
-          <span className="text-gray-500">{record.appointmentTime}</span>
-        </span>
-      ),
-      sorter: (a, b) =>
-        new Date(a.appointmentDate) - new Date(b.appointmentDate),
-    },
-    {
-      title: "Trạng thái",
-      key: "status",
-      render: (_, record) => (
-        <Space direction="vertical" size="small">
-          {renderStatus(record.status)}
-          {renderPaymentStatus(record.paymentStatus)}
-        </Space>
-      ),
-    },
-    {
-      title: "Thanh toán",
-      key: "payment",
-      render: (_, record) => (
-        <div>
-          <div>{renderPaymentMethod(record.paymentMethod.toUpperCase())}</div>
-          <div className="mt-1">
-            {record.paymentMethod !== "cash" &&
-              record.paymentStatus === "UNPAID" && 
-               record.status !== "CANCELLED" && (
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => {
-                    setSelectedBooking(record);
-                    handlePayment(
-                      record.id,
-                      record.price,
-                      record.paymentMethod
-                    );
-                  }}
-                >
-                  Thanh toán
-                </Button>
-              )}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      width: 200,
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Xem chi tiết">
-            <Button
-              icon={<InfoCircleOutlined />}
-              type="text"
-              onClick={() => handleViewDetail(record)}
-            />
-          </Tooltip>
-
-          {record.status !== "CANCELLED" && record.status !== "COMPLETED" && (
-            <Tooltip title="Hủy đặt lịch">
-              <Button
-                size="small"
-                type="text"
-                color="red"
-                variant="filled"
-                onClick={() => handleCancel(record.id)}
-              >
-                Hủy
-              </Button>
-            </Tooltip>
-          )}
-          {record.status === "COMPLETED" && (
-            <div className="flex flex-col gap-1.5">
-              <Tooltip title="Đánh giá dịch vụ">
-                <Button
-                  size="small"
-                  type="text"
-                  onClick={() => handleFeedback(record)}
-                  color="cyan"
-                  variant="filled"
-                >
-                  Đánh giá
-                </Button>
-              </Tooltip>
-              <Tooltip title="Xem kết quả xét nghiệm">
-                <Button
-                  size="small"
-                  type="text"
-                  onClick={() => handleViewResult(record)}
-                  color="pink"
-                  variant="filled"
-                >
-                  Xem kết quả
-                </Button>
-              </Tooltip>
-            </div>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
-  // Modal xem chi tiết
-  const renderDetailModal = () => (
-    <Modal
-      title={<span className="text-lg">Chi tiết đặt lịch</span>}
-      open={viewDetail}
-      footer={[
-        <Button key="back" onClick={() => setViewDetail(false)}>
-          Đóng
-        </Button>,
-      ]}
-      onCancel={() => setViewDetail(false)}
-      width={600}
-    >
-      {selectedBooking && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center pb-2 border-b">
-            <div>
-              <Text type="secondary">Mã đặt lịch</Text>
-              <div className="text-lg font-medium">{selectedBooking.id}</div>
-            </div>
-            <div>{renderStatus(selectedBooking.status)}</div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Text type="secondary">Dịch vụ</Text>
-              <div className="font-medium">{selectedBooking.serviceName}</div>
-            </div>
-            <div>
-              <Text type="secondary">Giá</Text>
-              <div className="font-medium">
-                {formatPrice(selectedBooking.price)}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Text type="secondary">Ngày đặt lịch</Text>
-              <div>{selectedBooking.bookingDate}</div>
-            </div>
-            <div>
-              <Text type="secondary">Thời gian đặt</Text>
-              <div>{dayjs(selectedBooking.createdAt).format("HH:mm")}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Text type="secondary">Ngày hẹn</Text>
-              <div>{selectedBooking.appointmentDate}</div>
-            </div>
-            <div>
-              <Text type="secondary">Giờ hẹn</Text>
-              <div>{selectedBooking.appointmentTime}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Text type="secondary">Phương thức thanh toán</Text>
-              <div>{renderPaymentMethod(selectedBooking.paymentMethod)}</div>
-            </div>
-            <div>
-              <Text type="secondary">Trạng thái thanh toán</Text>
-              <div>{renderPaymentStatus(selectedBooking.paymentStatus)}</div>
-            </div>
-          </div>
-
-          <div>
-            <Text type="secondary">Trạng thái xét nghiệm</Text>
-            <div>{renderTestingStatus(selectedBooking.testingStatus)}</div>
-          </div>
-
-          {selectedBooking.notes && (
-            <div>
-              <Text type="secondary">Ghi chú</Text>
-              <div className="p-2 bg-gray-50 rounded">
-                {selectedBooking.notes}
-              </div>
-            </div>
-          )}
-
-          <div className="pt-4 border-t flex justify-between">
-            {selectedBooking.paymentMethod === "credit card" &&
-              selectedBooking.paymentStatus === "pending" && (
-                <Button
-                  type="primary"
-                  icon={<CreditCardOutlined />}
-                  onClick={() => handlePayment(selectedBooking.id)}
-                >
-                  Thanh toán ngay
-                </Button>
-              )}
-
-            {selectedBooking.paymentStatus === "paid" && (
-              <Button
-                icon={<FileDoneOutlined />}
-                onClick={() => setViewReceipt(true)}
-              >
-                Xem hóa đơn
-              </Button>
-            )}
-
-            {selectedBooking.testingStatus === "completed" && (
-              <Button
-                type="primary"
-                icon={<FileSearchOutlined />}
-                onClick={() => setViewResult(true)}
-              >
-                Xem kết quả xét nghiệm
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-    </Modal>
-  );
-
-  // Modal xem kết quả xét nghiệm
+  // Modal xem kết quả xét nghiệm - giữ nguyên
   const renderTestResultModal = () => (
     <Modal
       title={<span className="text-lg">Kết quả xét nghiệm</span>}
@@ -710,116 +450,129 @@ const HistoryTesting = () => {
     </Modal>
   );
 
-  // Modal đánh giá dịch vụ - cập nhật lại hoàn toàn
-  const renderFeedbackModal = () => (
-    <Modal
-      title={<span className="text-lg">Đánh giá dịch vụ</span>}
-      open={openFeedback}
-      footer={[
-        <Button key="cancel" onClick={() => setOpenFeedback(false)}>
-          Hủy
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={submittingFeedback}
-          onClick={handleSubmitFeedback}
-        >
-          Gửi đánh giá
-        </Button>,
-      ]}
-      onCancel={() => setOpenFeedback(false)}
-      width={500}
-      destroyOnHidden
-    >
-      {selectedBooking && (
-        <div className="space-y-6">
-          <div className="text-center pb-4 border-b">
-            <Title level={4} className="mb-1">
-              Đánh giá dịch vụ
-            </Title>
-            <Text type="secondary">
-              Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Hãy đánh giá trải
-              nghiệm của bạn!
-            </Text>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between">
-              <Text strong>Dịch vụ:</Text>
-              <div className="font-medium">{selectedBooking.serviceName}</div>
+  // Component để render mỗi booking dạng card
+  const BookingCard = ({ booking }) => (
+    <div className="mb-4">
+      <Card hoverable className="w-full my-4 shadow-sm">
+        <div className="flex flex-col md:flex-row w-full">
+          {/* Cột bên trái - Thông tin dịch vụ và thời gian */}
+          <div className="flex-1 md:pr-4">
+            {/* Header - Tên dịch vụ và ID */}
+            <div className="mb-3">
+              <Title level={5} className="m-0">
+                {booking.serviceName}
+              </Title>
+              <Text type="secondary">Mã đặt lịch: #{booking.id}</Text>
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <Text strong>Ngày sử dụng:</Text>
-              <div>{selectedBooking.appointmentDate}</div>
+
+            {/* Thông tin thời gian */}
+            <div className="mb-2 flex gap-2 items-center">
+              <CalendarOutlined className="text-gray-500" />
+              <Text className="text-gray-500">Ngày hẹn:</Text>
+              <Text strong>{booking.appointmentDate}</Text>
+            </div>
+
+            <div className="mb-3 flex gap-2 items-center">
+              <FieldTimeOutlined className="text-gray-500" />
+              <Text className="text-gray-500">Giờ hẹn:</Text>
+              <Text strong>{booking.appointmentTime}</Text>
             </div>
           </div>
 
-          <Form form={feedbackForm} layout="vertical">
-            <div className="space-y-4">
-              <div className="text-center">
-                <Text strong>Mức độ hài lòng của bạn:</Text>
-                <div className="mt-2">
-                  <Rate
-                    value={feedbackRating}
-                    onChange={setFeedbackRating}
-                    character={<StarFilled />}
-                    className="text-2xl text-yellow-400"
-                    allowClear={false}
-                  />
-                  <div className="mt-2">
-                    {feedbackRating === 5 && (
-                      <Text type="success">Rất hài lòng</Text>
-                    )}
-                    {feedbackRating === 4 && (
-                      <Text type="success">Hài lòng</Text>
-                    )}
-                    {feedbackRating === 3 && <Text>Bình thường</Text>}
-                    {feedbackRating === 2 && (
-                      <Text type="warning">Không hài lòng</Text>
-                    )}
-                    {feedbackRating === 1 && (
-                      <Text type="danger">Rất không hài lòng</Text>
-                    )}
-                  </div>
+          {/* Cột giữa - Thông tin thanh toán */}
+          <div className="md:w-1/4 mb-3 md:mb-0 md:px-4">
+            {/* Thông tin giá và thanh toán */}
+            <div className="mb-2">
+              <Text className="text-gray-500 block">Giá:</Text>
+              <Text className="font-medium text-blue-500 text-lg">
+                {formatPrice(booking.price)}
+              </Text>
+            </div>
+
+            <div>
+              <Text className="text-gray-500 block">Thanh toán:</Text>
+              <div className="mt-1">
+                <div className="mb-1">
+                  {renderPaymentMethod(booking.paymentMethod.toUpperCase())}
                 </div>
-              </div>
-
-              <Form.Item
-                name="content"
-                label="Nhận xét của bạn:"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập nhận xét của bạn",
-                  },
-                ]}
-              >
-                <Input.TextArea
-                  placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ của chúng tôi..."
-                  rows={4}
-                  showCount
-                  maxLength={500}
-                />
-              </Form.Item>
-
-              <div className="border-t pt-4 text-gray-500 text-sm">
-                <p className="mb-1">
-                  <InfoCircleOutlined className="mr-1" />
-                  Đánh giá của bạn giúp chúng tôi cải thiện dịch vụ tốt hơn.
-                </p>
+                <div>{renderPaymentStatus(booking.paymentStatus)}</div>
               </div>
             </div>
-          </Form>
+          </div>
+
+          {/* Cột bên phải - Trạng thái và nút hành động */}
+          <div className="md:w-1/4 md:pl-4 flex flex-col justify-between">
+            <div className="mb-4 flex justify-end">
+              {renderStatus(booking.status)}
+            </div>
+
+            {/* Nút hành động */}
+            <div className="flex flex-wrap justify-end gap-2">
+              {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && (
+                <Popconfirm
+                  title="Xác nhận hủy lịch khám"
+                  description="Bạn có chắc chắn muốn hủy lịch đã đặt này không?"
+                  okText="Có, hủy lịch"
+                  cancelText="Không"
+                  onConfirm={() => handleCancel(booking.id)}
+                  okButtonProps={{ danger: true }}
+                  icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                >
+                  <Button
+                    danger
+                    size="middle"
+                  >
+                    Hủy lịch
+                  </Button>
+                </Popconfirm>
+              )}
+
+              {booking.paymentMethod !== "cash" &&
+                booking.paymentStatus === "UNPAID" &&
+                booking.status !== "CANCELLED" && (
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={() => {
+                      handlePayment(
+                        booking.id,
+                        booking.price,
+                        booking.paymentMethod
+                      );
+                    }}
+                  >
+                    Thanh toán
+                  </Button>
+                )}
+
+              {booking.status === "COMPLETED" && (
+                <>
+                  <Button
+                    type="default"
+                    size="middle"
+                    onClick={() => handleFeedback(booking)}
+                  >
+                    Đánh giá
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={() => handleViewResult(booking)}
+                  >
+                    Xem kết quả
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </Modal>
+      </Card>
+    </div>
   );
 
   // Render giao diện chính
-
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm" bordered={false}>
       <div className="mb-4">
         <Title level={4} className="flex items-center mb-3">
           <MedicineBoxOutlined className="mr-2 text-[#0099CF]" />
@@ -829,32 +582,40 @@ const HistoryTesting = () => {
           Xem lịch sử đặt khám và kết quả xét nghiệm của bạn tại đây.
         </Text>
       </div>
+
       {loading ? (
         <div className="text-center py-10">
           <Spin size="large" />
           <div className="mt-4">Đang tải dữ liệu...</div>
         </div>
       ) : bookings.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={bookings}
-          rowKey="id"
-          pagination={pagination}
-          onChange={handleTableChange}
-          className="mt-4"
-          scroll={{ x: 1200 }}
-        />
+        <>
+          <div className="mt-4">
+            {bookings.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} />
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </div>
+        </>
       ) : (
         <Empty
           description="Bạn chưa có lịch sử đặt khám"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}
-      {/* Các modal */}
-      {renderDetailModal()}
+
       {renderTestResultModal()}
-      
-      {/* Thay thế renderFeedbackModal() bằng component mới */}
+
+      {/* Component FeedbackModal */}
       <FeedbackModal
         visible={openFeedback}
         onCancel={() => setOpenFeedback(false)}

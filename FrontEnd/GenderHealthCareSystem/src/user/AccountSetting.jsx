@@ -24,6 +24,8 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "../components/provider/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { changePasswordAPI } from "../components/api/Auth.api";
+import { pathStatusUserAPI } from "../components/api/Users.api";
 
 const { Title, Text } = Typography;
 
@@ -34,15 +36,16 @@ const AccountSetting = () => {
   const [passwordForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('password');
+  const navigate = useNavigate();
 
   // Xử lý đổi mật khẩu
   const handlePasswordChange = async (values) => {
     try {
       setLoading(true);
-    //   await updatePasswordAPI({
-    //     oldPassword: values.oldPassword,
-    //     newPassword: values.newPassword,
-    //   });
+      await changePasswordAPI({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      });
       
       message.success("Đổi mật khẩu thành công!");
       passwordForm.resetFields();
@@ -55,13 +58,10 @@ const AccountSetting = () => {
   };
 
   // Xử lý xóa tài khoản
-  const handleDeleteAccount = async (values) => {
+  const handleDeleteAccount = async () => {
     try {
       setLoading(true);
-    //   await deleteAccountAPI({
-    //     password: values.password,
-    //     reason: values.reason,
-    //   });
+      await pathStatusUserAPI(user.accountId, "DELETED");
       
       message.success("Tài khoản đã được xóa thành công!");
       setIsModalVisible(false);
@@ -77,10 +77,6 @@ const AccountSetting = () => {
     }
   };
 
-  // Mở modal xác nhận xóa tài khoản
-  const showDeleteConfirm = () => {
-    setIsModalVisible(true);
-  };
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -139,7 +135,6 @@ const AccountSetting = () => {
                     label="Mật khẩu mới"
                     rules={[
                       { required: true, message: "Vui lòng nhập mật khẩu mới!" },
-                      { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự!" },
                     ]}
                   >
                     <Input.Password
@@ -183,16 +178,6 @@ const AccountSetting = () => {
                     </Button>
                   </Form.Item>
                 </Form>
-
-                <div className="mt-6">
-                  <div className="text-sm text-gray-600">
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Mật khẩu phải có ít nhất 8 ký tự</li>
-                      <li>Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt</li>
-                      <li>Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại</li>
-                    </ul>
-                  </div>
-                </div>
               </>
             )}
 
@@ -221,14 +206,23 @@ const AccountSetting = () => {
                 <div className="mt-4">
                   <Text strong>Bạn vẫn muốn tiếp tục xóa tài khoản?</Text>
                   <div className="mt-2">
-                    <Button 
-                      danger 
-                      type="primary" 
-                      icon={<DeleteOutlined />} 
-                      onClick={showDeleteConfirm}
+                    <Popconfirm
+                      title="Xác nhận xóa tài khoản"
+                      description="Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
+                      okText="Có, xóa tài khoản"
+                      cancelText="Không, giữ lại"
+                      onConfirm={handleDeleteAccount}
+                      okButtonProps={{ danger: true }}
+                      icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
                     >
-                      Xóa tài khoản của tôi
-                    </Button>
+                      <Button 
+                        danger 
+                        type="primary" 
+                        icon={<DeleteOutlined />}
+                      >
+                        Xóa tài khoản của tôi
+                      </Button>
+                    </Popconfirm>
                   </div>
                 </div>
               </>
@@ -236,67 +230,6 @@ const AccountSetting = () => {
           </Card>
         </div>
       </div>
-
-      {/* Modal xác nhận xóa tài khoản */}
-      <Modal
-        title={
-          <div className="flex items-center text-red-500">
-            <ExclamationCircleOutlined className="mr-2" />
-            <span>Xác nhận xóa tài khoản</span>
-          </div>
-        }
-        open={isModalVisible}
-        footer={null}
-        onCancel={() => setIsModalVisible(false)}
-      >
-        <Form
-          form={deleteForm}
-          layout="vertical"
-          onFinish={handleDeleteAccount}
-        >
-          <Text className="text-red-500 font-medium block mb-4">
-            Hành động này sẽ xóa vĩnh viễn tài khoản và tất cả dữ liệu của bạn.
-          </Text>
-          
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu để xác nhận!" }]}
-          >
-            <Input.Password
-              placeholder="Nhập mật khẩu để xác nhận"
-              iconRender={visible => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="reason"
-            label="Lý do xóa tài khoản (không bắt buộc)"
-          >
-            <Input.TextArea 
-              placeholder="Vui lòng cho chúng tôi biết lý do bạn muốn xóa tài khoản"
-              rows={3}
-            />
-          </Form.Item>
-          
-          <div className="flex justify-end gap-2">
-            <Button
-              onClick={() => setIsModalVisible(false)}
-            >
-              Hủy
-            </Button>
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa tài khoản này không?"
-              okText="Có, xóa tài khoản"
-              cancelText="Không"
-              onConfirm={() => deleteForm.submit()}
-            >
-              <Button type="primary" danger loading={loading}>
-                Xóa tài khoản vĩnh viễn
-              </Button>
-            </Popconfirm>
-          </div>
-        </Form>
-      </Modal>
     </div>
   );
 };

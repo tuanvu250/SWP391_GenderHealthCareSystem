@@ -36,7 +36,9 @@ const BookingResult = () => {
   const isPaypal = !!paymentId && !!payerId;
 
   // ✅ THÊM VÀO ĐÂY — không còn lỗi nữa
-  const bookingType = localStorage.getItem("bookingType") || "sti";
+  const [bookingType, setBookingType] = useState(
+    localStorage.getItem("bookingType") || "consultant"
+  );
 
   const isPaymentSuccessful = () => {
     if (isVNpay) return vnpayResponseCode === "00";
@@ -53,9 +55,7 @@ const BookingResult = () => {
         hasCreatedInvoice.current = true;
 
         try {
-          // ✅ DEBUG
-          console.log(">>> bookingType:", bookingType, "| isVNpay:", isVNpay, "| isPaypal:", isPaypal);
-
+          
           if (bookingType === "consultant") {
             if (isVNpay) {
               const queryParamsObj = Object.fromEntries(queryParams.entries());
@@ -79,7 +79,7 @@ const BookingResult = () => {
           localStorage.removeItem("bookingID");
           localStorage.removeItem("amount");
           localStorage.removeItem("orderInfo");
-          localStorage.removeItem("bookingType");
+          //localStorage.removeItem("bookingType");
         } catch (error) {
           console.error("❌ Error creating invoice:", error);
           message.error(
@@ -95,15 +95,17 @@ const BookingResult = () => {
 
   const handlePaymentAgain = async () => {
     try {
+      setBookingType(localStorage.getItem("bookingType") || "sti");
       const bookingID = localStorage.getItem("bookingID");
       const amount = localStorage.getItem("amount");
       const orderInfo = localStorage.getItem("orderInfo");
 
-      if (!bookingID || !amount || !orderInfo) {
-        message.error("Thiếu thông tin. Vui lòng đặt lịch lại.");
-        navigate(bookingType === "consultant" ? "/consultation" : "/sti-testing");
-        return;
-      }
+      // if (!bookingID || !amount || !orderInfo) {
+      //   message.error("Thiếu thông tin. Vui lòng đặt lịch lại.");
+      //   navigate(bookingType === "consultant" ? "/consultation" : "/sti-testing");
+      //   return;
+      // }
+      console.log(">>> handlePaymentAgain bookingID:", bookingID);
 
       localStorage.setItem("bookingType", bookingType);
       localStorage.removeItem("bookingID");
@@ -114,7 +116,7 @@ const BookingResult = () => {
       if (bookingType === "consultant") {
         response = await getConsultantPaymentRedirectURL(
           bookingID,
-          isVNpay ? "VNPay" : "PayPal"
+          isVNpay ? "VNPAY" : "PAYPAL"
         );
       } else {
         response = isVNpay
@@ -128,7 +130,7 @@ const BookingResult = () => {
       }, 1500);
     } catch (error) {
       console.error("Error retrying payment:", error);
-      message.error("Lỗi khi xử lý lại thanh toán.");
+      message.error(error.response?.data?.message || "Không thể thử lại thanh toán.");
     }
   };
 
