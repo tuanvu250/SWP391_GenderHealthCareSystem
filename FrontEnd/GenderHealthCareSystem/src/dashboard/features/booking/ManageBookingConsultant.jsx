@@ -12,84 +12,89 @@ import {
   Input,
   Select,
   Space,
-  Row,
-  Col,
   DatePicker,
   Tooltip,
+  Form,
+  Modal,
 } from "antd";
 import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   CalendarOutlined,
-  VideoCameraOutlined,
+  LinkOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import {
-  getConsultantSchedule,
-  updateBookingStatus,
-} from "../../../components/api/ConsultantBooking.api";
+import { getAllBookings, updateBookingMeetLink, updateBookingStatus } from "../../../components/api/ConsultantBooking.api";
+import { useAuth } from "../../../components/provider/AuthProvider";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Search } = Input;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+const { TextArea } = Input;
 
-export default function ConsultantBookingSchedule() {
+export default function ManageBookingConsultant() {
+  const { user } = useAuth(); // Lấy thông tin người dùng từ context
+  const isStaff = user?.role === "Staff"; // Kiểm tra xem người dùng có phải là staff không
+  
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState(""); // Trạng thái lọc
+  const [status, setStatus] = useState(""); 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [loadingModal, setLoadingModal] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
 
-  const fetchMySchedule = async () => {
+  // State cho modal cập nhật link meet
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
+  const [meetLinkForm] = Form.useForm();
+
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      const res = await getConsultantSchedule({
-        customerName: searchText,
-        status,
+      const res = await getAllBookings({
+        consultantName: searchText,
+        status: status,
         startDate: startDate ? dayjs(startDate).format('YYYY-MM-DDT00:00') : '',
         endDate: endDate ? dayjs(endDate).format('YYYY-MM-DDT00:00') : '',
-        page: pagination.current - 1, // API thường dùng 0-based index
+        page: pagination.current - 1,
         size: pagination.pageSize,
       });
       setPagination({
         ...pagination,
-        total: res?.data?.data.totalElements || 0,
+        total: res?.data?.totalElements || 0,
       });
-      const data = res.data.data.content.map((item, index) => ({
+      const data = res.data.content.map((item) => ({
         ...item,
         key: item.bookingId,
         bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
         bookingTimeEnd: dayjs(item.bookingDate).add(1, 'hour').format("HH:mm"),
       }));
-      console.log("Lịch tư vấn:", data);
       setBookings(data);
     } catch (err) {
-      console.error("Lỗi tải lịch tư vấn của bạn:", err);
-      message.error(err?.response?.data?.message || "Không thể tải lịch tư vấn.");
+      console.error("Lỗi tải danh sách lịch tư vấn:", err);
+      message.error(err?.response?.data?.message || "Không thể tải danh sách lịch tư vấn.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMySchedule();
+    fetchBookings();
   }, [pagination.current, pagination.pageSize, searchText, status, startDate, endDate]);
 
-  const handleTableChange = (pagination) => {
-    setPagination({
-      ...pagination,
-    });
+  const handleTableChange = (newPagination) => {
+    setPagination(newPagination);
   };
 
-  // Cập nhật hàm xử lý tìm kiếm
   const handleSearch = (value) => {
     setSearchText(value);
     setPagination({
@@ -98,7 +103,6 @@ export default function ConsultantBookingSchedule() {
     });
   };
 
-  // Xử lý khi chọn khoảng ngày
   const handleDateRangeChange = (dates) => {
     if (dates) {
       setStartDate(dates[0]);
@@ -113,7 +117,6 @@ export default function ConsultantBookingSchedule() {
     });
   };
 
-  // Xử lý khi chọn trạng thái
   const handleStatusFilterChange = (value) => {
     setStatus(value);
     setPagination({
@@ -126,11 +129,40 @@ export default function ConsultantBookingSchedule() {
     try {
       await updateBookingStatus(bookingId, status);
       message.success(`Cập nhật trạng thái thành công: ${status}`);
-      fetchMySchedule();
+      fetchBookings();
     } catch (err) {
-      console.error("Lỗi cập nhật trạng thái:", err?.response?.data || err);
+      console.error("Lỗi cập nhật trạng thái:", err);
       message.error("Không thể cập nhật trạng thái.");
     }
+  };
+
+  const showMeetLinkModal = (booking) => {
+    setCurrentBooking(booking);
+    meetLinkForm.setFieldsValue({
+      meetLink: booking.meetLink || '',
+      note: booking.note || '',
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleMeetLinkUpdate = async (values) => {
+    if (!currentBooking) return;
+    setLoadingModal(true);
+    try {
+      await updateBookingMeetLink(currentBooking.bookingId, values.meetLink);
+      message.success("Cập nhật link cuộc họp thành công!");
+      setIsModalVisible(false);
+      fetchBookings();
+      setLoadingModal(false);
+    } catch (err) {
+      console.error("Lỗi cập nhật link cuộc họp:", err);
+      message.error(err?.response?.data?.message || "Không thể cập nhật link cuộc họp.");
+    }
+  };
+
+  const cancelMeetLinkUpdate = () => {
+    setIsModalVisible(false);
+    setCurrentBooking(null);
   };
 
   const renderStatus = (status) => {
@@ -170,7 +202,6 @@ export default function ConsultantBookingSchedule() {
     }
   };
 
-  // Thêm function renderPaymentStatus vào sau renderStatus
   const renderPaymentStatus = (paymentStatus) => {
     switch (paymentStatus) {
       case "PAID":
@@ -196,17 +227,23 @@ export default function ConsultantBookingSchedule() {
     }
   };
 
-  // Cập nhật mảng columns để thêm cột paymentStatus
-  const columns = [
+  // Tạo columns cơ bản không có cột hành động
+  let columns = [
     {
       title: "#",
       dataIndex: "bookingId",
       key: "bookingId",
+      width: 80,
     },
     {
       title: "Khách hàng",
       dataIndex: "customerName",
       key: "customerName",
+    },
+    {
+      title: "Consultant",
+      dataIndex: "consultantName",
+      key: "consultantName",
     },
     {
       title: "Ngày hẹn",
@@ -221,12 +258,6 @@ export default function ConsultantBookingSchedule() {
         `${record.bookingTimeStart || "?"} - ${record.bookingTimeEnd || "?"}`,
     },
     {
-      title: "Ghi chú",
-      dataIndex: "note",
-      key: "note",
-      render: (text) => text || "—",
-    },
-    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -239,81 +270,77 @@ export default function ConsultantBookingSchedule() {
       render: renderPaymentStatus,
     },
     {
+      title: "Link Meet",
+      dataIndex: "meetLink",
+      key: "meetLink",
+      render: (meetLink) => (
+        <div className="max-w-[200px] truncate">
+          {meetLink ? (
+            <Tooltip title={meetLink}>
+              <Text className="text-blue-500">
+                <LinkOutlined className="mr-1" />
+                {meetLink.substring(0, 25)}...
+              </Text>
+            </Tooltip>
+          ) : (
+            <Text type="secondary">Chưa có</Text>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  // Nếu người dùng là Staff, thêm cột hành động
+  if (isStaff) {
+    columns.push({
       title: "Hành động",
       key: "action",
       render: (_, record) => {
         return (
           <div className="flex gap-2 flex-wrap">
-            {/* Thay thế nút xem chi tiết bằng nút tham gia cuộc họp nếu là SCHEDULED */}
-            {record.status === "SCHEDULED" && record.meetLink && (
-              <Tooltip title="Tham gia cuộc họp">
-                <Button
-                  type="primary"
-                  icon={<VideoCameraOutlined />}
-                  size="small"
-                  onClick={() => openMeetLink(record.meetLink)}
-                >
-                  Tham gia
-                </Button>
-              </Tooltip>
+            {/* Hiển thị nút Cập nhật link cho tất cả trạng thái trừ CANCELLED và COMPLETED */}
+            {record.status !== "CANCELLED" && record.status !== "COMPLETED" && (
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                size="small"
+                onClick={() => showMeetLinkModal(record)}
+              >
+                Cập nhật link
+              </Button>
             )}
             
-            {record.status === "SCHEDULED" && (
-              <>
-                <Popconfirm
-                  title="Xác nhận hoàn thành lịch hẹn này?"
-                  onConfirm={() =>
-                    handleUpdateStatus(record.bookingId, "COMPLETED")
-                  }
-                  okText="Hoàn thành"
-                  cancelText="Hủy"
-                >
-                  <Button type="primary" size="small" className="bg-green-600">
-                    Hoàn thành
-                  </Button>
-                </Popconfirm>
-                <Popconfirm
-                  title="Xác nhận hủy lịch hẹn này?"
-                  onConfirm={() =>
-                    handleUpdateStatus(record.bookingId, "CANCELLED")
-                  }
-                  okText="Đồng ý"
-                  cancelText="Không"
-                >
-                  <Button danger size="small">
-                    Hủy
-                  </Button>
-                </Popconfirm>
-              </>
+            {record.status === "CONFIRMED" && (
+              <Popconfirm
+                title="Xác nhận đã lên lịch cho buổi tư vấn này?"
+                onConfirm={() => handleUpdateStatus(record.bookingId, "SCHEDULED")}
+                okText="Xác nhận"
+                cancelText="Hủy"
+              >
+                <Button type="primary" size="small" className="bg-purple-600">
+                  Lên lịch
+                </Button>
+              </Popconfirm>
             )}
           </div>
         );
       },
-    },
-  ];
-
-  // Hàm mở link cuộc họp trong tab mới
-  const openMeetLink = (meetLink) => {
-    if (meetLink) {
-      window.open(meetLink, '_blank');
-    } else {
-      message.warning('Không có link cuộc họp cho lịch hẹn này');
-    }
-  };
+    });
+  }
 
   return (
     <div className="p-6">
       <Card className="shadow-md">
         <Title level={4} className="flex items-center gap-2 mb-4">
           <CalendarOutlined className="text-blue-500" />
-          Lịch tư vấn của bạn
+          Quản lý lịch tư vấn
         </Title>
 
-        {/* Thanh tìm kiếm theo thiết kế mới */}
+        {/* Thanh tìm kiếm */}
         <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4">
             <Search
-              placeholder="Tìm kiếm theo tên khách hàng"
+              placeholder="Tìm kiếm theo tên consultant"
               allowClear
               onSearch={handleSearch}
               style={{ width: 300 }}
@@ -336,9 +363,9 @@ export default function ConsultantBookingSchedule() {
             >
               <Option value="PROCESSING">Chờ xác nhận</Option>
               <Option value="CONFIRMED">Đã xác nhận</Option>
+              <Option value="SCHEDULED">Đã lên lịch</Option>
               <Option value="COMPLETED">Hoàn thành</Option>
               <Option value="CANCELLED">Đã hủy</Option>
-              <Option value="SCHEDULED">Đã lên lịch</Option>
               <Option value="">Tất cả</Option>
             </Select>
           </div>
@@ -367,6 +394,53 @@ export default function ConsultantBookingSchedule() {
           />
         )}
       </Card>
-    </div>  
+
+      {/* Modal cập nhật link cuộc họp - chỉ hiển thị khi người dùng là staff */}
+      {isStaff && (
+        <Modal
+          loading={loadingModal}
+          title={
+            <div className="flex items-center gap-2">
+              <LinkOutlined className="text-blue-500" />
+              <span>Cập nhật link cuộc họp</span>
+            </div>
+          }
+          open={isModalVisible}
+          onCancel={cancelMeetLinkUpdate}
+          footer={null}
+        >
+          <Form
+            form={meetLinkForm}
+            layout="vertical"
+            onFinish={handleMeetLinkUpdate}
+            className="mt-4"
+          >
+            <Form.Item
+              name="meetLink"
+              label="Link cuộc họp"
+              rules={[
+                { required: true, message: 'Vui lòng nhập link cuộc họp!' },
+              ]}
+            >
+              <Input 
+                prefix={<LinkOutlined className="text-gray-400" />} 
+                placeholder="Nhập link cuộc họp (vd: https://meet.google.com/xxx-xxxx-xxx)" 
+              />
+            </Form.Item>
+            
+            <Form.Item className="mb-0 flex justify-end">
+              <Space>
+                <Button onClick={cancelMeetLinkUpdate}>
+                  Hủy
+                </Button>
+                <Button type="primary" htmlType="submit">
+                  Cập nhật
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+      )}
+    </div>
   );
 }

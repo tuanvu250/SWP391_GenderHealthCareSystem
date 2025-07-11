@@ -1,125 +1,145 @@
 import React, { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import {
   Typography,
   Card,
   Avatar,
-  Tabs,
+  Menu,
   Button,
-  Row,
-  Col,
-  Tag,
-  Space,
-  List,
-  Form,
-  Input,
-  Upload,
-  DatePicker,
-  Select,
-  Badge,
-  Modal,
-  Rate,
-  message,
-  Popconfirm,
-  Slider,
   Divider,
+  Badge,
+  Space,
 } from "antd";
-import ImgCrop from "antd-img-crop";
 import {
   UserOutlined,
-  EditOutlined,
   CalendarOutlined,
-  PhoneOutlined,
-  MailOutlined,
-  HomeOutlined,
-  ClockCircleOutlined,
   SettingOutlined,
   LikeOutlined,
-  LockOutlined,
-  WarningOutlined,
-  CameraOutlined,
-  LoadingOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../components/provider/AuthProvider";
 
-const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
-const { TextArea } = Input;
+const { Title } = Typography;
 
 const UserProfile = () => {
-  // Giữ nguyên các state hiện tại
-  const [activeTab, setActiveTab] = useState("1");
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const [selectedKey, setSelectedKey] = useState("1");
 
   useEffect(() => {
-    const activeTab = getActiveTabFromPath();
-    setActiveTab(activeTab);
+    const activeKey = getActiveKeyFromPath();
+    setSelectedKey(activeKey);
   }, [location.pathname]);
 
-  const getActiveTabFromPath = () => {
+  const getActiveKeyFromPath = () => {
     const path = location.pathname;
     if (path.includes("/user/history-testing")) return "2";
     if (path.includes("/user/history-feedback")) return "4";
     if (path.includes("/user/history-consultation")) return "3";
     if (path.includes("/user/account-settings")) return "5";
-    return "1"; // Default tab - profile
+    return "1"; // Default - profile
   };
 
-  // Cập nhật tabItems với logic chỉnh sửa mới
-  const tabItems = [
+  const handleMenuClick = (key) => {
+    switch (key) {
+      case "1":
+        navigate("/user/profile");
+        break;
+      case "2":
+        navigate("/user/history-testing");
+        break;
+      case "3":
+        navigate("/user/history-consultation");
+        break;
+      case "4":
+        navigate("/user/history-feedback");
+        break;
+      case "5":
+        navigate("/user/account-settings");
+        break;
+      default:
+        navigate("/user/profile");
+    }
+  };
+
+  const menuItems = [
     {
       key: "1",
-      label: (
-        <span onClick={() => navigate("/user/profile")}>Thông tin cá nhân</span>
-      ),
+      icon: <UserOutlined />,
+      label: "Thông tin cá nhân",
     },
     {
       key: "2",
-      label: (
-        <span onClick={() => navigate("/user/history-testing")}>
-          Lịch sử xét nghiệm
-        </span>
-      ),
+      icon: <ClockCircleOutlined />,
+      label: "Lịch sử xét nghiệm",
     },
     {
       key: "3",
-      label: (
-        <span onClick={() => navigate("/user/history-consultation")}>
-          Lịch sử đặt lịch tư vấn
-        </span>
-      ),
+      icon: <CalendarOutlined />,
+      label: "Lịch sử đặt lịch tư vấn",
     },
     {
       key: "4",
-      label: (
-        <span onClick={() => navigate("/user/history-feedback")}>
-          Lịch sử đánh giá xét nghiệm
-        </span>
-      ),
+      icon: <LikeOutlined />,
+      label: "Lịch sử đánh giá",
     },
     {
       key: "5",
-      label: (
-        <span onClick={() => navigate("/user/account-settings")}>
-          Cài đặt tài khoản
-        </span>
-      ),
+      icon: <SettingOutlined />,
+      label: "Cài đặt tài khoản",
     },
   ];
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* Tabs */}
-        <Card>
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            items={tabItems}
-          />
-        </Card>
-        <Outlet />
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left Sidebar */}
+          <div className="w-full md:w-1/4">
+            <Card className="mb-4">
+              <div className="flex flex-col items-center text-center mb-4">
+                <Avatar
+                  size={80}
+                  icon={<UserOutlined />}
+                  src={user?.userImageUrl}
+                  className="mb-2"
+                />
+                <Title level={4} className="m-0">
+                  {user?.fullName || "Người dùng"}
+                </Title>
+                <div className="text-gray-500">
+                  {user?.email || "email@example.com"}
+                </div>
+
+                <Button
+                  type="link"
+                  className="mt-2"
+                  onClick={() => navigate("/user/profile")}
+                >
+                  Chỉnh sửa hồ sơ
+                </Button>
+              </div>
+            </Card>
+
+            <Card>
+              <Menu
+                mode="vertical"
+                selectedKeys={[selectedKey]}
+                items={menuItems}
+                onClick={({ key }) => handleMenuClick(key)}
+                className="border-none"
+              />
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="w-full md:w-3/4">
+            <Card className="w-full">
+              <Outlet />
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

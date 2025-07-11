@@ -18,4 +18,5 @@ public class ConsultantBookingResponse {
     private String meetLink;
     private String status;
     private Integer consultantId; // Added consultantId field
+    private String customerName; // Added customerName field
 }

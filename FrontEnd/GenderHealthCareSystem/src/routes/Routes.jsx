@@ -4,7 +4,6 @@ import ProtectedRoute from "./ProtectedRoute";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Home from "../home/Home";
-
 import Login from "../auth/Login";
 import Register from "../auth/Register";
 import ForgotPassword from "../auth/ForgotPassword";
@@ -41,7 +40,7 @@ import Consultation from "../services/consultant/Consultation";
 import AskingSection from "../services/asking/AskingSection";
 import BookingResult from "../services/BookingResult";
 import ConfirmConsultationBooking from "../services/consultant/ConfirmBookingConsultant";
-import MyQuestionsPage from "../services/asking/MyQuestionPage";
+
 
 import DashboardLayout from "../dashboard/components/layout/DashboardLayout";
 import Overview from "../dashboard/features/overview/Overview";
@@ -57,6 +56,8 @@ import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerP
 
 import ConsultantDetail from "../site-info/Expert-info/ConsultantDetail";
 import ManageFeedbackConsultant from "../dashboard/features/feedback/ManageFeedbackConsultant";
+import ManageBookingConsultant from "../dashboard/features/booking/ManageBookingConsultant";
+import AccountSetting from "../user/AccountSetting";
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -96,7 +97,9 @@ function RouteMap() {
             path="history-consultation"
             element={<HistoryConsultantBooking />}
           />
+          <Route path="account-settings" element={<AccountSetting/>} />
         </Route>
+
         {/* Menstrual */}
         <Route
           path="/menstrual"
@@ -131,7 +134,7 @@ function RouteMap() {
           path="confirm-consultant"
           element={<ConfirmConsultationBooking />}
         />
-        <Route path="/my-questions" element={<MyQuestionsPage />} />
+      
 
         {/* Trang thông tin */}
         <Route path="/about" element={<AboutPage />} />
@@ -201,6 +204,10 @@ function RouteMap() {
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
         <Route path="manage-service" element={<ManageService />} />
         <Route
+          path="manage-booking-consultant"
+          element={<ManageBookingConsultant />}
+        />
+        <Route
           path="manage-feedback-service"
           element={<ManageFeedbackService />}
         />
@@ -227,6 +234,10 @@ function RouteMap() {
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
+        <Route
+          path="manage-booking-consultant"
+          element={<ManageBookingConsultant />}
+        />
       </Route>
 
       {/* Dashboard cho Admin */}

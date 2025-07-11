@@ -23,52 +23,48 @@ export default function PillScheduleCalendar() {
       const res = await getAllPillSchedules();
       const data = res?.data ?? [];
 
-      const startDateStr = localStorage.getItem("pillStartDate");
-      const pillType = parseInt(localStorage.getItem("pillType") || "28", 10);
+      const startDateStr = localStorage.getItem('pillStartDate');
+      const pillType = parseInt(localStorage.getItem('pillType') || '28', 10);
       const startDate = startDateStr ? dayjs(startDateStr) : null;
-      const today = dayjs();
 
-      const map = {};
-
-      // ✅ Chỉ map các ngày >= startDate
-      data.forEach(item => {
-        const dateObj = dayjs(item.pillDate);
-        if (!startDate || dateObj.isBefore(startDate)) return;
-        const dateStr = dateObj.format("YYYY-MM-DD");
-        map[dateStr] = item;
-      });
-
-      if (!startDate || !startDate.isValid() || today.isBefore(startDate)) {
-        setUpdatedSchedule(map);
-        setTakenCount(0);
-        setNotTakenCount(0);
+      if (!startDate || !startDate.isValid()) {
+        message.error('Không tìm thấy ngày bắt đầu.');
+        setLoading(false);
         return;
       }
+
+      const map = {};
+      data.forEach(item => {
+        const dateStr = dayjs(item.pillDate).format('YYYY-MM-DD');
+        map[dateStr] = item;
+      });
 
       const validDates = [];
       let currentDate = startDate;
       let counted = 0;
 
-      while (currentDate.isSameOrBefore(today) && counted < pillType) {
-        const dateStr = currentDate.format("YYYY-MM-DD");
-        const item = map[dateStr];
-
-        if (!item || item.isPlacebo) {
-          currentDate = currentDate.add(1, "day");
-          continue;
-        }
+      // ✅ Tính đủ pillType ngày liên tiếp, không skip ngày
+      while (counted < pillType) {
+        const dateStr = currentDate.format('YYYY-MM-DD');
+        const item = map[dateStr] || {
+          pillDate: dateStr,
+          hasTaken: null,
+          isPlacebo: false,
+          scheduleId: null,
+        };
 
         validDates.push({ ...item, dateStr });
+
         counted++;
-        currentDate = currentDate.add(1, "day");
+        currentDate = currentDate.add(1, 'day');
       }
 
-      const autoMarkPromises = [];
-      const todayStr = today.format("YYYY-MM-DD");
+      const todayStr = dayjs().format('YYYY-MM-DD');
 
+      const autoMarkPromises = [];
       validDates.forEach(item => {
         const isPast = dayjs(item.dateStr).isBefore(todayStr);
-        if (isPast && item.hasTaken == null) {
+        if (isPast && item.hasTaken == null && item.scheduleId) {
           autoMarkPromises.push(markPillTaken(item.scheduleId, true));
           item.hasTaken = true;
         }
@@ -77,12 +73,10 @@ export default function PillScheduleCalendar() {
       if (autoMarkPromises.length > 0) {
         await Promise.all(autoMarkPromises);
 
-        // 👇 Reload lại lịch mới nhất sau khi auto-mark
+        // Reload sau auto-mark
         const updated = await getAllPillSchedules();
         updated?.data?.forEach(item => {
-          const dateObj = dayjs(item.pillDate);
-          if (!startDate || dateObj.isBefore(startDate)) return;
-          const dateStr = dateObj.format("YYYY-MM-DD");
+          const dateStr = dayjs(item.pillDate).format('YYYY-MM-DD');
           map[dateStr] = item;
         });
       }
@@ -90,12 +84,17 @@ export default function PillScheduleCalendar() {
       const taken = validDates.filter(i => i.hasTaken === true).length;
       const notTaken = pillType - taken;
 
-      setUpdatedSchedule(map);
+      const finalMap = {};
+      validDates.forEach(item => {
+        finalMap[item.dateStr] = map[item.dateStr] || item;
+      });
+
+      setUpdatedSchedule(finalMap);
       setTakenCount(taken);
       setNotTakenCount(notTaken);
     } catch (err) {
-      message.error("Không thể tải lịch uống thuốc.");
       console.error(err);
+      message.error('Không thể tải lịch uống thuốc.');
     } finally {
       setLoading(false);
     }
@@ -117,61 +116,58 @@ export default function PillScheduleCalendar() {
   };
 
   const handleToggleCheck = async (dateStr) => {
-    const token = sessionStorage.getItem("token");
+    const token = sessionStorage.getItem('token');
     if (!token) {
-      message.error("Bạn chưa đăng nhập.");
+      message.error('Bạn chưa đăng nhập.');
       return;
     }
 
     const clickedDate = dayjs(dateStr);
     if (clickedDate.isAfter(dayjs(), 'day')) {
-      message.warning("Bạn đang đánh dấu cho ngày mai hoặc tương lai!");
+      message.warning('Bạn đang đánh dấu cho ngày tương lai!');
     }
 
-    let item = updatedSchedule[dateStr];
+    const item = updatedSchedule[dateStr];
 
     try {
-      if (!item) {
+      if (!item || !item.scheduleId) {
         await axios.post(
-          "/api/pills",
+          '/api/pills',
           {
-            pillType: "28",
+            pillType: '28',
             startDate: dateStr,
-            timeOfDay: "08:00:00",
+            timeOfDay: '08:00:00',
             isActive: true,
-            notificationFrequency: "DAILY"
+            notificationFrequency: 'DAILY'
           },
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
+              'Content-Type': 'application/json'
             }
           }
         );
-        message.success("Đã tạo thuốc và lịch mới.");
+        message.success('Đã tạo thuốc mới.');
       } else {
         const newValue = !item.hasTaken;
-        if (item.scheduleId) {
-          await markPillTaken(item.scheduleId, newValue);
-          message.success("Đã cập nhật trạng thái.");
-        }
+        await markPillTaken(item.scheduleId, newValue);
+        message.success('Đã cập nhật trạng thái.');
       }
 
       await fetchSchedule();
     } catch (err) {
-      console.error("Lỗi cập nhật:", err?.response?.data || err.message);
-      message.error("Không thể cập nhật lịch.");
+      console.error('Lỗi cập nhật:', err?.response?.data || err.message);
+      message.error('Không thể cập nhật.');
     }
   };
 
-
   const daysInMonth = getMonthDates();
-  const startDay = daysInMonth[0].day(); // thứ của ngày đầu tháng
+  const startDay = daysInMonth[0].day();
   const totalSlots = 42;
   const calendarDays = [];
 
   for (let i = 0; i < startDay; i++) {
-    calendarDays.push(null); // các ô trống đầu tháng
+    calendarDays.push(null);
   }
 
   daysInMonth.forEach(date => {
@@ -179,7 +175,7 @@ export default function PillScheduleCalendar() {
   });
 
   while (calendarDays.length < totalSlots) {
-    calendarDays.push(null); // các ô trống cuối tháng
+    calendarDays.push(null);
   }
 
   const calendarRows = [];
@@ -196,13 +192,11 @@ export default function PillScheduleCalendar() {
           const item = updatedSchedule[dateStr];
           const hasTaken = item?.hasTaken ?? false;
           const isToday = dayjs().format('YYYY-MM-DD') === dateStr;
-          const isPlacebo = item?.isPlacebo ?? false;
-          const showButton = item && !isPlacebo;
           const isFuture = date.isAfter(dayjs());
 
           return (
             <td key={dateStr} className="p-2 text-center">
-              {showButton ? (
+              {item ? (
                 <button
                   onClick={() => handleToggleCheck(dateStr)}
                   className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition
@@ -226,16 +220,16 @@ export default function PillScheduleCalendar() {
     );
   }
 
-  const startDateStr = localStorage.getItem("pillStartDate");
+  const startDateStr = localStorage.getItem('pillStartDate');
 
   return (
     <div className="max-w-4xl mx-auto mt-6 p-6 bg-white shadow-md rounded">
       <h2 className="text-2xl font-bold text-center mb-2">
-        Lịch uống thuốc theo tháng
+        Lịch uống thuốc
       </h2>
       {startDateStr && (
         <p className="text-center text-gray-600 text-sm mb-4">
-          📅  Ngày bắt đầu: <strong>{dayjs(startDateStr).format("DD/MM/YYYY")}</strong>
+          📅 Ngày bắt đầu: <strong>{dayjs(startDateStr).format('DD/MM/YYYY')}</strong>
         </p>
       )}
 
@@ -257,16 +251,33 @@ export default function PillScheduleCalendar() {
             <p>❌ Chưa uống: <strong>{notTakenCount}</strong> viên</p>
           </div>
 
+          {takenCount >= parseInt(localStorage.getItem('pillType') || '28', 10) && (
+            <div className="text-center p-4 bg-green-100 border border-green-300 rounded mt-4">
+              🎉 Bạn đã hoàn thành đợt uống thuốc này. Hãy bắt đầu đợt mới nếu cần!
+              <button
+                onClick={() => {
+                  localStorage.removeItem('pillStartDate');
+                  localStorage.removeItem('pillType');
+                  navigate('/pill-tracker');
+                }}
+                className="ml-4 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >
+                Nhập lịch mới
+              </button>
+            </div>
+          )}
+
           <div className="mt-6 flex justify-center gap-4">
             <button
               onClick={() => {
-                navigate("/pill-tracker");
+                localStorage.removeItem('pillStartDate');
+                localStorage.removeItem('pillType');
+                navigate('/pill-tracker');
               }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
-              ← Nhập lại lịch
+              ← Nhập lại lịch mới
             </button>
-
           </div>
         </>
       )}
