@@ -1,12 +1,20 @@
 // src/services/STIBooking/ConfirmBooking.jsx
 import React from "react";
 import { Card, Alert, Row, Col, Tag, Divider } from "antd";
-import { DollarCircleOutlined, BankOutlined } from "@ant-design/icons";
+import { DollarCircleOutlined, BankOutlined, PercentageOutlined } from "@ant-design/icons";
 
 const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPrice }) => {
   // Lấy phương thức thanh toán đã chọn
   const paymentMethod = form.getFieldValue("paymentMethod");
   const onlinePaymentMethod = form.getFieldValue("onlinePaymentMethod");
+
+  // Kiểm tra nếu có giảm giá
+  const hasDiscount = selectedPackage && selectedPackage.discount > 0;
+  
+  // Tính toán giá đã giảm nếu có discount
+  const originalPrice = selectedPackage?.price || 0;
+  const discountAmount = hasDiscount ? (originalPrice * selectedPackage.discount / 100) : 0;
+  const discountedPrice = originalPrice - discountAmount;
 
   return (
     <div className="space-y-6">
@@ -74,7 +82,14 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
 
       {/* Chi tiết gói xét nghiệm */}
       {selectedPackage && (
-        <Card title="Chi tiết gói xét nghiệm">
+        <Card 
+          title="Chi tiết gói xét nghiệm"
+          extra={hasDiscount && (
+            <Tag color="red" className="flex items-center">
+              <PercentageOutlined className="mr-1" /> Giảm {selectedPackage.discount}%
+            </Tag>
+          )}
+        >
           <div className="mb-4">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -86,12 +101,20 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-xl font-bold text-[#0099CF]">
-                  {formatPrice(selectedPackage.price)}
-                </div>
-                {/* <div className="text-gray-500 line-through text-sm">
-                  {formatPrice(selectedPackage.originalPrice)}
-                </div> */}
+                {hasDiscount ? (
+                  <>
+                    <div className="text-xl font-bold text-[#0099CF]">
+                      {formatPrice(discountedPrice)}
+                    </div>
+                    <div className="text-gray-500 line-through text-sm">
+                      {formatPrice(originalPrice)}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xl font-bold text-[#0099CF]">
+                    {formatPrice(originalPrice)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -105,12 +128,39 @@ const ConfirmBooking = ({ form, userInfo, selectedPackage, totalPrice, formatPri
           </div>
 
           <Divider />
+          
+          {/* Hiển thị thông tin giảm giá */}
+          {hasDiscount && (
+            <div className="mb-4">
+              <Row className="text-sm mb-1">
+                <Col span={12}>Giá gốc:</Col>
+                <Col span={12} className="text-right">{formatPrice(originalPrice)}</Col>
+              </Row>
+              <Row className="text-sm mb-1">
+                <Col span={12}>
+                  <span className="flex items-center">
+                    <PercentageOutlined className="mr-1 text-red-500" />
+                    Giảm giá ({selectedPackage.discount}%):
+                  </span>
+                </Col>
+                <Col span={12} className="text-right text-red-500">-{formatPrice(discountAmount)}</Col>
+              </Row>
+              <Divider className="my-2" />
+            </div>
+          )}
+          
           <div className="flex justify-between items-center text-lg font-bold">
-            <span>Tổng cộng:</span>
+            <span>Tổng thanh toán:</span>
             <span className="text-[#0099CF] text-xl">
               {formatPrice(totalPrice)}
             </span>
           </div>
+          
+          {hasDiscount && (
+            <div className="mt-2 text-right text-sm text-green-600">
+              (Tiết kiệm {formatPrice(discountAmount)})
+            </div>
+          )}
         </Card>
       )}
 

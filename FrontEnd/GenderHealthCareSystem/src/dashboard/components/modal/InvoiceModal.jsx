@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Modal, Button, Typography, message } from "antd";
-import { FilePdfOutlined } from "@ant-design/icons";
+import { FilePdfOutlined, PercentageOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -11,8 +11,16 @@ const { Title, Text } = Typography;
 /**
  * Modal hiển thị hóa đơn đơn giản và cho phép xuất PDF
  */
-const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
+const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {}, booking = {} }) => {
   const invoiceRef = useRef(null);
+
+  // Kiểm tra có giảm giá không
+  const hasDiscount = booking.discount > 0;
+  
+  // Tính toán giá gốc và giá đã giảm
+  const originalPrice = booking.servicePrice || 0;
+  const discountAmount = hasDiscount ? (originalPrice * booking.discount / 100) : 0;
+  const finalAmount = invoice.totalAmount;
 
   // Hàm xuất PDF với xử lý màu oklch
   const handleExportPDF = () => {
@@ -26,6 +34,9 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
       }
       .text-gray-500 {
         color: rgb(107, 114, 128) !important;
+      }
+      .text-red-500 {
+        color: rgb(239, 68, 68) !important;
       }
     `;
     document.head.appendChild(tempStyles);
@@ -63,10 +74,13 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
   const getPaymentMethodText = (method) => {
     switch (method) {
       case "cash":
+      case "CASH":
         return "Tiền mặt";
       case "vnpay":
+      case "VNPAY":
         return "VNPAY";
       case "paypal":
+      case "PAYPAL":
         return "PayPal";
       case "credit":
         return "Thẻ tín dụng";
@@ -139,17 +153,32 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
             <div>{invoice.serviceName}</div>
             <div className="font-medium">
               {invoice.currency === "USD"
-                ? formatPrice(convertUsdToVnd(invoice.totalAmount))
-                : formatPrice(invoice.totalAmount)}
+                ? formatPrice(convertUsdToVnd(originalPrice))
+                : formatPrice(originalPrice)}
             </div>
           </div>
+
+          {/* Hiển thị phần giảm giá nếu có */}
+          {hasDiscount && (
+            <div className="flex justify-between text-red-500 pb-2">
+              <div className="flex items-center">
+                <PercentageOutlined className="mr-1" /> 
+                Giảm giá ({booking.discount}%):
+              </div>
+              <div>
+                -{invoice.currency === "USD"
+                  ? formatPrice(convertUsdToVnd(discountAmount))
+                  : formatPrice(discountAmount)}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-between font-bold text-lg pt-2">
             <div>Tổng tiền:</div>
             <div className="font-medium">
               {invoice.currency === "USD"
-                ? formatPrice(convertUsdToVnd(invoice.totalAmount))
-                : formatPrice(invoice.totalAmount)}
+                ? formatPrice(convertUsdToVnd(finalAmount))
+                : formatPrice(finalAmount)}
             </div>
           </div>
         </div>
@@ -158,9 +187,7 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {} }) => {
           <div className="flex justify-between">
             <div className="text-gray-500">Phương thức thanh toán:</div>
             <div>
-              {invoice.paymentMethod === "CASH"
-                ? "Tiền mặt"
-                : invoice.paymentMethod}
+              {getPaymentMethodText(invoice.paymentMethod)}
             </div>
           </div>
           <div className="flex justify-between">

@@ -73,12 +73,11 @@ const STITesting = () => {
         if (response && response.data) {
           // Assuming response.data is an array of packages
           const packages = response.data.data.map((pkg) => ({
+            ...pkg,
             id: pkg.serviceId,
             name: pkg.serviceName,
-            price: pkg.price,
+            discount: pkg.discount || 0,
             tests: pkg.tests.split(", "),
-            duration: pkg.duration,
-            description: pkg.description,
           }));
           setTestingPackages(packages);
         } else {
@@ -332,9 +331,28 @@ const STITesting = () => {
                 <div className="p-4 flex-grow flex flex-col">
                   <div className="text-center mb-6">
                     <div className="mb-4">
-                      <span className="text-3xl font-bold text-[#0099CF]">
-                        {formatPrice(pkg.price)}
-                      </span>
+                      {pkg.discount > 0 ? (
+                        <div>
+                          {/* Giá đã giảm */}
+                          <span className="text-3xl font-bold text-[#0099CF]">
+                            {formatPrice(pkg.price * (1 - pkg.discount / 100))}
+                          </span>
+                          
+                          {/* Giá gốc với gạch ngang */}
+                          <div className="mt-1">
+                            <span className="text-gray-500 text-lg line-through mr-2">
+                              {formatPrice(pkg.price)}
+                            </span>
+                            <span className="bg-[#0099CF] text-white text-xs px-2 py-1 rounded-full">
+                              Giảm {pkg.discount}%
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-3xl font-bold text-[#0099CF]">
+                          {formatPrice(pkg.price)}
+                        </span>
+                      )}
                     </div>
                     <div className="inline-flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 py-2 px-4 rounded-full">
                       <ClockCircleOutlined />
@@ -382,11 +400,11 @@ const STITesting = () => {
 
                   {/* Action button */}
                   <Button
-                    type={"default"}
+                    type="primary"
                     block
                     size="large"
-                    className={`rounded-full h-12 text-base font-medium mt-auto
-                        border-[#0099CF] text-[#0099CF] hover:text-[#008BBB] hover:border-[#008BBB]`}
+                    className={`rounded-full h-12 text-base font-medium mt-auto`}
+                    style={{ backgroundColor: '#0099CF', borderColor: '#0099CF' }}
                     onClick={() => handleUserService(pkg)}
                   >
                     Đặt gói này ngay

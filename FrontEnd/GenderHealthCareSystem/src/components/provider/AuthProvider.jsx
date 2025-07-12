@@ -37,7 +37,10 @@ export const AuthProvider = ({ children }) => {
       // Nếu có token, coi như đã đăng nhập
       setIsAuthenticated(true);
     } else if (rememberMe) {
-      console.log("Using token from localStorage: ", localStorage.getItem(TOKEN_KEY));
+      console.log(
+        "Using token from localStorage: ",
+        localStorage.getItem(TOKEN_KEY)
+      );
       setToken(localStorage.getItem("token"));
       sessionStorage.setItem(TOKEN_KEY, localStorage.getItem("token"));
       setIsAuthenticated(true);
@@ -89,32 +92,26 @@ export const AuthProvider = ({ children }) => {
         refreshUserProfile();
 
         setIsAuthenticated(true);
+        const rememberMe = localStorage.getItem("remember") === "true";
+        if (rememberMe) {
+          localStorage.setItem(TOKEN_KEY, sessionStorage.getItem(TOKEN_KEY));
+        }
+
         return {
           success: true,
           message: "Đăng nhập thành công!",
           role: response.data.role,
         };
-      } else {
-        setIsAuthenticated(false);
-        return {
-          success: false,
-          message: "Đăng nhập không thành công, vui lòng thử lại!",
-        };
       }
     } catch (error) {
       setIsAuthenticated(false);
-      let message = "Đăng nhập không thành công, vui lòng thử lại!";
-      if (error.response.status === 401) {
-        message = "Tên đăng nhập hoặc mật khẩu không đúng!";
-      } else if (error.response.status === 500) {
-        message = "Lỗi máy chủ, vui lòng thử lại sau!";
-      }
-      return { success: false, message: message };
-    } finally {
-      const rememberMe = localStorage.getItem("remember") === "true";
-      if (rememberMe) {
-        localStorage.setItem(TOKEN_KEY, sessionStorage.getItem(TOKEN_KEY));
-      }
+      localStorage.removeItem("remember");
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Đăng nhập không thành công, vui lòng thử lại!",
+      };
     }
   };
 

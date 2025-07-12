@@ -30,7 +30,8 @@ import { pathStatusUserAPI } from "../components/api/Users.api";
 const { Title, Text } = Typography;
 
 const AccountSetting = () => {
-  const { user, logout } = useAuth();
+  const { user, logoutAction} = useAuth();
+  //const useAuth = useAuth();
   const [loading, setLoading] = useState(false);
   const [deleteForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -67,7 +68,7 @@ const AccountSetting = () => {
       setIsModalVisible(false);
       
       // Đăng xuất sau khi xóa tài khoản
-      logout();
+      logoutAction();
       navigate("/login");
     } catch (error) {
       console.error("Lỗi khi xóa tài khoản:", error);

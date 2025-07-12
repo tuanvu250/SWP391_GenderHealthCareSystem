@@ -34,6 +34,7 @@ import {
   CalendarOutlined,
   FieldTimeOutlined,
   ExclamationCircleOutlined,
+  PercentageOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
@@ -451,124 +452,150 @@ const HistoryTesting = () => {
   );
 
   // Component để render mỗi booking dạng card
-  const BookingCard = ({ booking }) => (
-    <div className="mb-4">
-      <Card hoverable className="w-full my-4 shadow-sm">
-        <div className="flex flex-col md:flex-row w-full">
-          {/* Cột bên trái - Thông tin dịch vụ và thời gian */}
-          <div className="flex-1 md:pr-4">
-            {/* Header - Tên dịch vụ và ID */}
-            <div className="mb-3">
-              <Title level={5} className="m-0">
-                {booking.serviceName}
-              </Title>
-              <Text type="secondary">Mã đặt lịch: #{booking.id}</Text>
-            </div>
+  const BookingCard = ({ booking }) => {
+    // Tính toán giảm giá nếu có
+    const hasDiscount =  booking.discount > 0;
+    const originalPrice = booking.price || 0;
+    const discountAmount = hasDiscount ? (originalPrice * booking.discount / 100) : 0;
+    const discountedPrice = originalPrice - discountAmount;
 
-            {/* Thông tin thời gian */}
-            <div className="mb-2 flex gap-2 items-center">
-              <CalendarOutlined className="text-gray-500" />
-              <Text className="text-gray-500">Ngày hẹn:</Text>
-              <Text strong>{booking.appointmentDate}</Text>
-            </div>
+    return (
+      <div className="mb-4">
+        <Card hoverable className="w-full my-4 shadow-sm">
+          <div className="flex flex-col md:flex-row w-full">
+            <div className="flex-1 md:pr-4">
+              {/* Header - Tên dịch vụ và ID */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between">
+                  <Title level={5} className="m-0">
+                    {booking.serviceName}
+                  </Title>
 
-            <div className="mb-3 flex gap-2 items-center">
-              <FieldTimeOutlined className="text-gray-500" />
-              <Text className="text-gray-500">Giờ hẹn:</Text>
-              <Text strong>{booking.appointmentTime}</Text>
-            </div>
-          </div>
-
-          {/* Cột giữa - Thông tin thanh toán */}
-          <div className="md:w-1/4 mb-3 md:mb-0 md:px-4">
-            {/* Thông tin giá và thanh toán */}
-            <div className="mb-2">
-              <Text className="text-gray-500 block">Giá:</Text>
-              <Text className="font-medium text-blue-500 text-lg">
-                {formatPrice(booking.price)}
-              </Text>
-            </div>
-
-            <div>
-              <Text className="text-gray-500 block">Thanh toán:</Text>
-              <div className="mt-1">
-                <div className="mb-1">
-                  {renderPaymentMethod(booking.paymentMethod.toUpperCase())}
+                  {/* Thêm tag giảm giá nếu có */}
+                  {hasDiscount && (
+                    <Tag color="red" className="flex items-center">
+                      <PercentageOutlined className="mr-1" /> Giảm {booking.discount}%
+                    </Tag>
+                  )}
                 </div>
-                <div>{renderPaymentStatus(booking.paymentStatus)}</div>
+                <Text type="secondary">Mã đặt lịch: #{booking.id}</Text>
+              </div>
+
+              {/* Thông tin thời gian - giữ nguyên */}
+              <div className="mb-2 flex gap-2 items-center">
+                <CalendarOutlined className="text-gray-500" />
+                <Text className="text-gray-500">Ngày hẹn:</Text>
+                <Text strong>{booking.appointmentDate}</Text>
+              </div>
+
+              <div className="mb-3 flex gap-2 items-center">
+                <FieldTimeOutlined className="text-gray-500" />
+                <Text className="text-gray-500">Giờ hẹn:</Text>
+                <Text strong>{booking.appointmentTime}</Text>
+              </div>
+            </div>
+
+            {/* Cột giữa - Thông tin thanh toán */}
+            <div className="md:w-1/4 mb-3 md:mb-0 md:px-4">
+              {/* Thông tin giá và thanh toán - Cập nhật để hiển thị discount */}
+              <div className="mb-2">
+                <Text className="text-gray-500 block">Giá:</Text>
+                {hasDiscount ? (
+                  <>
+                    <div className="flex items-center">
+                      <Text className="font-medium text-blue-500 text-lg">
+                        {formatPrice(discountedPrice)}
+                      </Text>
+                    </div>
+                  </>
+                ) : (
+                  <Text className="font-medium text-blue-500 text-lg">
+                    {formatPrice(originalPrice)}
+                  </Text>
+                )}
+              </div>
+
+              <div>
+                <Text className="text-gray-500 block">Thanh toán:</Text>
+                <div className="mt-1">
+                  <div className="mb-1">
+                    {renderPaymentMethod(booking.paymentMethod.toUpperCase())}
+                  </div>
+                  <div>{renderPaymentStatus(booking.paymentStatus)}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cột bên phải - Trạng thái và nút hành động */}
+            <div className="md:w-1/4 md:pl-4 flex flex-col justify-between">
+              <div className="mb-4 flex justify-end">
+                {renderStatus(booking.status)}
+              </div>
+
+              {/* Nút hành động */}
+              <div className="flex flex-wrap justify-end gap-2">
+                {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && (
+                  <Popconfirm
+                    title="Xác nhận hủy lịch khám"
+                    description="Bạn có chắc chắn muốn hủy lịch đã đặt này không?"
+                    okText="Có, hủy lịch"
+                    cancelText="Không"
+                    onConfirm={() => handleCancel(booking.id)}
+                    okButtonProps={{ danger: true }}
+                    icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                  >
+                    <Button
+                      danger
+                      size="middle"
+                    >
+                      Hủy lịch
+                    </Button>
+                  </Popconfirm>
+                )}
+
+                {booking.paymentMethod !== "cash" &&
+                  booking.paymentStatus === "UNPAID" &&
+                  booking.status !== "CANCELLED" && (
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={() => {
+                        handlePayment(
+                          booking.id,
+                          booking.price,
+                          booking.paymentMethod
+                        );
+                      }}
+                    >
+                      Thanh toán
+                    </Button>
+                  )}
+
+                {booking.status === "COMPLETED" && (
+                  <>
+                    <Button
+                      type="default"
+                      size="middle"
+                      onClick={() => handleFeedback(booking)}
+                    >
+                      Đánh giá
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={() => handleViewResult(booking)}
+                    >
+                      Xem kết quả
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
-
-          {/* Cột bên phải - Trạng thái và nút hành động */}
-          <div className="md:w-1/4 md:pl-4 flex flex-col justify-between">
-            <div className="mb-4 flex justify-end">
-              {renderStatus(booking.status)}
-            </div>
-
-            {/* Nút hành động */}
-            <div className="flex flex-wrap justify-end gap-2">
-              {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && (
-                <Popconfirm
-                  title="Xác nhận hủy lịch khám"
-                  description="Bạn có chắc chắn muốn hủy lịch đã đặt này không?"
-                  okText="Có, hủy lịch"
-                  cancelText="Không"
-                  onConfirm={() => handleCancel(booking.id)}
-                  okButtonProps={{ danger: true }}
-                  icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                >
-                  <Button
-                    danger
-                    size="middle"
-                  >
-                    Hủy lịch
-                  </Button>
-                </Popconfirm>
-              )}
-
-              {booking.paymentMethod !== "cash" &&
-                booking.paymentStatus === "UNPAID" &&
-                booking.status !== "CANCELLED" && (
-                  <Button
-                    type="primary"
-                    size="middle"
-                    onClick={() => {
-                      handlePayment(
-                        booking.id,
-                        booking.price,
-                        booking.paymentMethod
-                      );
-                    }}
-                  >
-                    Thanh toán
-                  </Button>
-                )}
-
-              {booking.status === "COMPLETED" && (
-                <>
-                  <Button
-                    type="default"
-                    size="middle"
-                    onClick={() => handleFeedback(booking)}
-                  >
-                    Đánh giá
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="middle"
-                    onClick={() => handleViewResult(booking)}
-                  >
-                    Xem kết quả
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
+        </Card>
+      </div>
+    );
+  };
 
   // Render giao diện chính
   return (

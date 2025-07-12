@@ -22,13 +22,13 @@ import {
   HomeOutlined,
   MedicineBoxOutlined,
   IdcardOutlined,
+  PercentageOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
 const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
-
   if (!booking) return null;
 
   // Hàm format giá
@@ -73,6 +73,11 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
     const config = methodConfig[method] || { label: method || "Chưa xác định" };
     return config.label;
   };
+
+  // Kiểm tra có giảm giá không
+  const hasDiscount =  booking.discount > 0;
+  const originalPrice = booking?.servicePrice || 0;
+  const discountedPrice = hasDiscount ? originalPrice * (1 - booking.discount / 100) : originalPrice;
 
   return (
     <Modal
@@ -156,9 +161,23 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
                 </Space>
               }
             >
-              <Text type="danger" strong>
-                {formatPrice(booking.servicePrice)}
-              </Text>
+              {hasDiscount ? (
+                <div className="flex items-center gap-2">
+                  {/* Giá đã giảm */}
+                  <Text type="danger" strong>
+                    {formatPrice(discountedPrice)}
+                  </Text>
+
+                  {/* Tag giảm giá */}
+                  <Tag color="red" className="ml-2">
+                    <PercentageOutlined /> {booking.discount}%  
+                  </Tag>
+                </div>
+              ) : (
+                <Text type="danger" strong>
+                  {formatPrice(originalPrice)}
+                </Text>
+              )}
             </Descriptions.Item>
             <Descriptions.Item
               label={

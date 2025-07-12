@@ -24,6 +24,7 @@ import {
   FileDoneOutlined,
   DownOutlined,
   EditOutlined,
+  PercentageOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
@@ -112,6 +113,11 @@ const ManageBookingStis = () => {
       color: "yellow",
       icon: <ClockCircleOutlined />,
     },
+    FAILED_PAYMENT: {
+      text: "Thanh toán thất bại",
+      color: "grey",
+      icon: <ClockCircleOutlined />,
+    },
   };
 
   // Cấu hình trạng thái thanh toán
@@ -167,6 +173,7 @@ const ManageBookingStis = () => {
         response.data.data.content.map((booking) => ({
           ...booking,
           id: booking.bookingId,
+          discount: booking.discount || 0,
           bookingTime: `${booking.bookingTimeStart} - ${booking.bookingTimeEnd}`,
         }))
       );
@@ -219,9 +226,15 @@ const ManageBookingStis = () => {
 
   const handleConfirmPayment = async (record) => {
     try {
+      // Tính giá đã giảm
+      const hasDiscount = record.discount > 0;
+      const discountedPrice = hasDiscount
+        ? record.servicePrice * (1 - record.discount / 100)
+        : record.servicePrice;
+
       const data = {
         bookingId: record.bookingId,
-        totalAmount: record.servicePrice,
+        totalAmount: discountedPrice, // Sử dụng giá đã giảm
       };
       await markPaymentCashedAPI(data);
       loadData();
@@ -406,9 +419,22 @@ const ManageBookingStis = () => {
       dataIndex: "servicePrice",
       key: "servicePrice",
       width: 100,
-      render: (price) => (
-        <span className="font-medium">{formatPrice(price)}</span>
-      ),
+      render: (price, record) => {
+        // Kiểm tra có giảm giá không
+        const hasDiscount = record.discount && record.discount > 0;
+        const discountedPrice = hasDiscount
+          ? price * (1 - record.discount / 100)
+          : price;
+
+        return (
+          <div>
+            {/* Giá đã giảm */}
+            <span className="font-medium">
+              {formatPrice(discountedPrice)}
+            </span>
+          </div>
+        );
+      },
     },
     {
       title: "Trạng thái thanh toán",
@@ -612,6 +638,7 @@ const ManageBookingStis = () => {
           onCancel={() => setInvoiceVisible(false)}
           invoice={invoiceData}
           customer={customer}
+          booking={selectedBooking}
         />
       </Card>
     </div>

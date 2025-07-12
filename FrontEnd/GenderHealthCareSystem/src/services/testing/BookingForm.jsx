@@ -92,8 +92,6 @@ const BookingForm = ({
 
       if (!serviceId) return;
 
-      console.log(">>> Checking time availability...");
-
       // Check tất cả thời gian song song
       const timeCheckPromises = workingHours.map(async (hour) => {
         const bookingDateTime = `${date.format("YYYY-MM-DD")}T${hour.value}:00.0000000`;
@@ -105,7 +103,6 @@ const BookingForm = ({
             isDisabled: response.data?.data === true,
           };
         } catch (error) {
-          console.error(`>>> Error checking ${hour.value}:`, error);
           return { time: hour.value, isDisabled: true };
         }
       });
@@ -120,9 +117,7 @@ const BookingForm = ({
       });
 
       setDisabledHours(newDisabledHours);
-      console.log(">>> Disabled hours:", Array.from(newDisabledHours));
     } catch (error) {
-      console.error(">>> Error in checkTime:", error);
       message.error("Lỗi khi kiểm tra thời gian");
     } finally {
       setIsCheckingTimes(false);
@@ -183,6 +178,12 @@ const BookingForm = ({
       formPackageId !== undefined &&
       (formPackageId === pkg.serviceId ||
         formPackageId === pkg.serviceId.toString());
+    
+    // Tính toán giá giảm nếu có discount
+    const hasDiscount = pkg.discount > 0;
+    const discountedPrice = hasDiscount ? 
+      Math.round(pkg.price * (1 - pkg.discount / 100)) : 
+      pkg.price;
 
     return (
       <div
@@ -191,6 +192,13 @@ const BookingForm = ({
         }`}
         onClick={() => handlePackageSelect(pkg)}
       >
+        {/* Thêm badge hiển thị discount nếu có */}
+        {hasDiscount && (
+          <div className="absolute top-0 right-0 bg-[#0099CF] text-white text-xs px-2 py-1 rounded-tr-md rounded-bl-md font-semibold">
+            -{pkg.discount}%
+          </div>
+        )}
+
         <div className="flex items-center gap-2 mb-2">
           <MedicineBoxOutlined className="text-[#0099CF]" />
           <div className="font-bold text-base">{pkg.serviceName}</div>
@@ -229,12 +237,15 @@ const BookingForm = ({
 
         <div className="flex justify-between items-end mt-auto pt-2 border-t border-gray-100">
           <div>
+            {/* Hiển thị giá sau khi giảm */}
             <div className="text-base font-bold text-[#0099CF]">
-              {formatPrice(pkg.price)}
+              {formatPrice(discountedPrice)}
             </div>
-            {pkg.originalPrice && (
+            
+            {/* Hiển thị giá gốc nếu có giảm giá */}
+            {hasDiscount && (
               <div className="line-through text-xs text-gray-500">
-                {formatPrice(pkg.originalPrice)}
+                {formatPrice(pkg.price)}
               </div>
             )}
           </div>
@@ -313,8 +324,6 @@ const BookingForm = ({
           rules={[{ required: true, message: "Vui lòng chọn gói xét nghiệm!" }]}
         >
           <div>
-            {/* Đổi thứ tự hiển thị - hiển thị combo trước */}
-            {/* Combo Packages Grid */}
             {activePackageType === "combo" && comboPackages.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -354,8 +363,6 @@ const BookingForm = ({
                     </div>
                   ))}
                 </div>
-
-                {/* Pagination for single packages */}
                 {singlePackages.length > pageSize && (
                   <div className="flex justify-center mt-6">
                     <Pagination
@@ -378,7 +385,6 @@ const BookingForm = ({
           </div>
         </Form.Item>
 
-        {/* Hidden field to store full package details */}
         <Form.Item name="packageDetails" hidden>
           <Input />
         </Form.Item>

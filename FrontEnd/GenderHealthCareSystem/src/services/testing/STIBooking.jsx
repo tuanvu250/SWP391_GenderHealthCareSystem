@@ -126,9 +126,9 @@ const STIBooking = () => {
       package: pkg.serviceId,
       packageName: pkg.serviceName,
       packagePrice: pkg.price,
-      packageDetails: JSON.stringify(pkg), // Lưu thông tin chi tiết của gói
+      packageDetails: JSON.stringify(pkg),
     });
-    setTotalPrice(parseInt(pkg.price));
+    setTotalPrice(pkg.price * (1 - pkg.discount / 100));
   };
 
   // Chuyển sang bước tiếp theo
@@ -172,10 +172,7 @@ const STIBooking = () => {
       };
       const response = await bookStisAPI(bookingData);
 
-      console.log("Booking response:", response.data);
-
       if (allValues.paymentMethod === "cash") {
-        // Nếu thanh toán tiền mặt, đặt lịch thành công ngay lập tức
         setIsConfirmModalOpen(false);
         setCashPayment(true);
       } else {

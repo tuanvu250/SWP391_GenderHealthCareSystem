@@ -37,7 +37,7 @@ const BookingResult = () => {
 
   // ✅ THÊM VÀO ĐÂY — không còn lỗi nữa
   const [bookingType, setBookingType] = useState(
-    localStorage.getItem("bookingType") || "consultant"
+    localStorage.getItem("bookingType") || "sti"
   );
 
   const isPaymentSuccessful = () => {
@@ -67,8 +67,10 @@ const BookingResult = () => {
             }
           } else {
             // STI hoặc loại khác
-            if (isVNpay || isPaypal) {
+            if (isVNpay) {
               await createInvoiceAPI(fullQueryString);
+            } else if (isPaypal) {
+              await paypalSuccessAPI(paymentId, payerId);
             } else {
               message.error("Không xác định phương thức thanh toán.");
               return;
@@ -78,9 +80,9 @@ const BookingResult = () => {
           localStorage.removeItem("bookingID");
           localStorage.removeItem("amount");
           localStorage.removeItem("orderInfo");
-          //localStorage.removeItem("bookingType");
+          localStorage.removeItem("bookingType");
         } catch (error) {
-          console.error("❌ Error creating invoice:", error);
+          console.error("Error creating invoice:", error);
           message.error(
             error.response?.data?.message ||
               "Có lỗi xảy ra khi xác nhận thanh toán."
@@ -129,7 +131,9 @@ const BookingResult = () => {
       }, 1500);
     } catch (error) {
       console.error("Error retrying payment:", error);
-      message.error(error.response?.data?.message || "Không thể thử lại thanh toán.");
+      message.error(
+        error.response?.data?.message || "Không thể thử lại thanh toán."
+      );
     }
   };
 
@@ -142,7 +146,8 @@ const BookingResult = () => {
           title="Đặt lịch thành công!"
           extra={[
             <Paragraph className="mb-5" key="email-info">
-              Cảm ơn bạn đã đặt lịch. Thông tin đã được gửi tới {userEmail || "email của bạn"}.
+              Cảm ơn bạn đã đặt lịch. Thông tin đã được gửi tới{" "}
+              {userEmail || "email của bạn"}.
             </Paragraph>,
             <Paragraph className="mb-8" key="payment-info">
               Thanh toán đã hoàn tất. Hẹn gặp bạn vào thời gian đã đặt!
@@ -166,7 +171,9 @@ const BookingResult = () => {
               size="large"
               onClick={() =>
                 navigate(
-                  bookingType === "consultant" ? "/consultation" : "/sti-testing"
+                  bookingType === "consultant"
+                    ? "/consultation"
+                    : "/sti-testing"
                 )
               }
               className="ml-4"
