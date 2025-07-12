@@ -77,6 +77,7 @@ public class ConsultantProfileService {
         profile.setHourlyRate(req.getHourlyRate());
         profile.setLocation(req.getLocation());
         profile.setIsAvailable(req.getIsAvailable());
+        profile.setEmploymentStatus(req.getEmploymentStatus());
 
         profile.getDetails().clear();
         List<ProfileDetail> newDetails = req.getDetails().stream()
@@ -116,6 +117,7 @@ public class ConsultantProfileService {
         response.setHourlyRate(profile.getHourlyRate());
         response.setLocation(profile.getLocation());
         response.setIsAvailable(profile.getIsAvailable());
+        response.setEmploymentStatus(profile.getEmploymentStatus());
         response.setDetails(profile.getDetails().stream().map(detail -> {
             ProfileDetailRequest detailRequest = new ProfileDetailRequest();
             detailRequest.setDetailType(detail.getDetailType());
