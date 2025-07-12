@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -130,5 +131,17 @@ public class UserService {
 
         Users updatedUser = userRepository.save(user);
         return mapToResponse(updatedUser);
+    }
+
+    public Map<String, Long> getUserCountsByRole() {
+        List<Users> users = userRepository.findAll();
+
+        Map<String, Long> roleCounts = users.stream()
+                .filter(user -> user.getRole() != null) // Ensure role is not null
+                .collect(Collectors.groupingBy(user -> user.getRole().getRoleName(), Collectors.counting()));
+
+        roleCounts.put("Total", (long) users.size());
+
+        return roleCounts;
     }
 }
