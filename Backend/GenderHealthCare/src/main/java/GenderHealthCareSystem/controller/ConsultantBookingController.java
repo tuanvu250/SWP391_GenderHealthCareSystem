@@ -163,7 +163,7 @@ public class ConsultantBookingController {
     }
 
     @PutMapping("/{bookingId}/status")
-    @PreAuthorize("hasAnyRole('Consultant', 'Staff')")
+    @PreAuthorize("hasAnyRole('Staff', 'Consultant')")
     public ResponseEntity<ApiResponse<String>> updateBookingStatus(
             @PathVariable Integer bookingId,
             @RequestParam String status,

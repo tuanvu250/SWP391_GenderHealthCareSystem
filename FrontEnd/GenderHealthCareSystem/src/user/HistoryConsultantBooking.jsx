@@ -170,7 +170,8 @@ const HistoryConsultantBooking = () => {
       await postFeedbackConsultantAPI(
         feedback.id,
         feedback.rating,
-        feedback.content
+        feedback.content,
+        feedback.consultantId,
       );
 
       setOpenFeedback(false);
@@ -493,11 +494,10 @@ const HistoryConsultantBooking = () => {
       <FeedbackModal
         visible={openFeedback}
         onCancel={() => setOpenFeedback(false)}
-        onSubmit={handleSubmitFeedback}
         data={selectedBooking}
         type="consultant"
-        loading={submittingFeedback}
         mode="create"
+        onSuccess={fetchBookingHistory}
       />
     </Card>
   );

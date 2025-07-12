@@ -7,6 +7,7 @@ export const postFeedbackConsultantAPI = async (values) => {
     rating: values.rating,
     comment: values.content,
   };
+  console.log("Data to post feedback:", data);
   return apiClient.post("/consultant-feedback", data);
 };
 

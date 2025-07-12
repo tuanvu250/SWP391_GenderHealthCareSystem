@@ -8,6 +8,7 @@ import {
   Typography,
   Tag,
   Divider,
+  message,
 } from "antd";
 import {
   InfoCircleOutlined,
@@ -16,6 +17,10 @@ import {
   MedicineBoxOutlined,
   EditOutlined,
 } from "@ant-design/icons";
+import { postFeedbackConsultantAPI } from "../components/api/FeedbackConsultant.api";
+import { postFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
+import { editFeedbackConsultantAPI } from "../components/api/FeedbackConsultant.api";
+import { editFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
 
 const { Title, Text } = Typography;
 
@@ -24,25 +29,24 @@ const { Title, Text } = Typography;
  * @param {Object} props - Props của component
  * @param {boolean} props.visible - Trạng thái hiển thị của modal
  * @param {Function} props.onCancel - Hàm xử lý khi đóng modal
- * @param {Function} props.onSubmit - Hàm xử lý khi gửi đánh giá
  * @param {Object} props.data - Dữ liệu để hiển thị (booking hoặc consultation)
  * @param {string} props.type - Loại đánh giá: "service" hoặc "consultant"
- * @param {boolean} props.loading - Trạng thái loading khi đang gửi đánh giá
  * @param {string} props.mode - Chế độ: "create" hoặc "edit"
  * @param {Object} props.existingReview - Dữ liệu đánh giá hiện có (cho chế độ edit)
+ * @param {Function} props.onSuccess - Hàm callback khi xử lý thành công
  */
 const FeedbackModal = ({ 
   visible, 
   onCancel, 
-  onSubmit, 
   data, 
   type = "service", 
-  loading = false,
   mode = "create",
-  existingReview = null
+  existingReview = null,
+  onSuccess
 }) => {
   const [form] = Form.useForm();
   const [rating, setRating] = useState(5);
+  const [loading, setLoading] = useState(false);
   const isEdit = mode === "edit";
 
   // Reset form khi modal mở hoặc cập nhật từ existingReview nếu ở chế độ edit
@@ -50,7 +54,7 @@ const FeedbackModal = ({
     if (visible) {
       if (isEdit && existingReview) {
         form.setFieldsValue({
-          content: existingReview.comment
+          content: existingReview.comment || existingReview.content
         });
         setRating(existingReview.rating);
       } else {
@@ -60,21 +64,69 @@ const FeedbackModal = ({
     }
   }, [visible, form, existingReview, isEdit]);
 
-  // Xử lý submit form
+  // Xử lý submit form trực tiếp
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      onSubmit({
+      setLoading(true);
+      
+      // Chuẩn bị dữ liệu
+      const feedbackData = {
         rating,
         content: values.content,
-        id: data?.id || data?.bookingId || data?.consultationId,
-        // Thêm reviewId nếu đang ở chế độ edit
-        reviewId: isEdit && existingReview ? existingReview.reviewId : undefined,
+        id: data?.id || data?.bookingId,
+        reviewId: isEdit && existingReview ? (existingReview.reviewId || existingReview.feedbackId) : undefined,
         consultantId: data?.consultantId,
         bookingId: data?.bookingId,
-      });
+      };
+      
+      console.log("Dữ liệu đánh giá:", feedbackData);
+      
+      // Gọi API dựa trên loại đánh giá và chế độ (create/edit)
+      if (isEdit) {
+        if (type === "service") {
+          await editFeedbackTestingAPI(
+            feedbackData.reviewId,
+            feedbackData.rating,
+            feedbackData.content
+          );
+        } else {
+          await editFeedbackConsultantAPI(
+            feedbackData.rating,
+            feedbackData.content,
+            feedbackData.consultantId,
+            feedbackData.bookingId
+          );
+        }
+        message.success("Đã cập nhật đánh giá thành công!");
+      } else {
+        if (type === "service") {
+          await postFeedbackTestingAPI(
+            feedbackData.id,
+            feedbackData.rating,
+            feedbackData.content
+          );
+        } else {
+          await postFeedbackConsultantAPI(
+            feedbackData
+          );
+        }
+        message.success("Đã gửi đánh giá thành công!");
+      }
+      
+      // Đóng modal và gọi callback
+      form.resetFields();
+      onCancel();
+      
+      // Gọi callback onSuccess nếu có
+      if (onSuccess && typeof onSuccess === 'function') {
+        onSuccess();
+      }
     } catch (error) {
-      console.error("Validation failed:", error);
+      console.error("Lỗi khi gửi đánh giá:", error);
+      message.error(error?.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá");
+    } finally {
+      setLoading(false);
     }
   };
 

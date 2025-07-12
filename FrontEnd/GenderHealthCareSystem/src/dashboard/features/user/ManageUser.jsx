@@ -31,6 +31,7 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "../../../components/provider/AuthProvider";
 import {
+  createUserAPI,
   editUserAPI,
   getAllUsersAPI,
   pathStatusUserAPI,
@@ -178,7 +179,15 @@ const ManageUser = () => {
         }
         message.success("Cập nhật thông tin người dùng thành công!");
       } else {
-        //await createUserAPI(values);
+        console.log("Creating user with values:", values);
+        await createUserAPI({
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          role: values.role,
+          password: values.password,
+          username: values.username,
+        });
         message.success("Thêm người dùng mới thành công!");
       }
 

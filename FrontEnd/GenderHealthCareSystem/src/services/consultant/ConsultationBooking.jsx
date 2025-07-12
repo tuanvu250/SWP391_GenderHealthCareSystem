@@ -32,6 +32,7 @@ export default function ConsultationBooking() {
           ...e,
           id: e.id ?? e.consultantId ?? e.userId ?? index + 1,
         }));
+        console.log("Fetched consultants:", mappedExperts);
         setExperts(mappedExperts);
         localStorage.setItem("consultants", JSON.stringify(mappedExperts));
       } catch (err) {

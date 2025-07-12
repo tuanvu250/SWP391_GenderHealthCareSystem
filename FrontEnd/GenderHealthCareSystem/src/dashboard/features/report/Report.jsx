@@ -250,6 +250,7 @@ const ReportComponent = () => {
         
         // Tạo dữ liệu mẫu
         const mockData = generateMockData(startDate, endDate, reportType);
+        console.log(JSON.stringify(mockData));
         setStatsData(mockData);
         setLoading(false);
       }, 1000);

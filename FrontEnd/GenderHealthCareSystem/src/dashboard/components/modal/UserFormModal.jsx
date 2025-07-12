@@ -300,8 +300,6 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Cho phép Admin thay đổi role */}
-        {isAdmin && (
           <Form.Item
             name="role"
             label="Vai trò"
@@ -322,7 +320,6 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
               {isAdmin && isEdit && <Option value="Admin">Quản trị</Option>}
             </Select>
           </Form.Item>
-        )}
 
         {/* Hiển thị trạng thái chỉ khi chỉnh sửa */}
         {isEdit && (

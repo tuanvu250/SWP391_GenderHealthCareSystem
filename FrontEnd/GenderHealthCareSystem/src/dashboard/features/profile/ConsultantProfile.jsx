@@ -117,7 +117,7 @@ export default function ConsultantProfile() {
         const finalData = {
           ...res,
           userImageUrl:
-            res.userImageUrl || user?.userImageUrl || "/placeholder.svg",
+          res.userImageUrl || user?.userImageUrl || "/placeholder.svg",
           location: res.location || "Thành phố Hồ Chí Minh",
         };
         setProfileData(finalData);
@@ -161,7 +161,6 @@ export default function ConsultantProfile() {
         location: values.location || "Thành phố Hồ Chí Minh",
         details: profileData.details || [],
       };
-
       if (hasProfile) {
         await updateConsultantProfile(payload);
         message.success("Cập nhật hồ sơ thành công!");

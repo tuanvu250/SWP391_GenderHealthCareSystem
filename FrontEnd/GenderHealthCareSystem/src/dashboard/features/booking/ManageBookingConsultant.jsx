@@ -128,7 +128,7 @@ export default function ManageBookingConsultant() {
       fetchBookings();
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
-      message.error("Không thể cập nhật trạng thái.");
+      message.error(err?.response?.data?.message || "Không thể cập nhật trạng thái.");
     }
   };
 
