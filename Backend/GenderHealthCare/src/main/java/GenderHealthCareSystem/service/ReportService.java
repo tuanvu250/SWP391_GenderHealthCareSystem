@@ -1,5 +1,6 @@
 package GenderHealthCareSystem.service;
 
+import GenderHealthCareSystem.dto.DashboardResponse;
 import GenderHealthCareSystem.dto.RevenueReport;
 import GenderHealthCareSystem.dto.UserAndBookingReport;
 import GenderHealthCareSystem.model.Invoice;
@@ -12,10 +13,13 @@ import GenderHealthCareSystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +64,7 @@ public class ReportService {
         }
         return reportList;
     }
+
     /**
      * Generates monthly revenue reports for a specified number of months
      * @param numberOfMonths number of past months to include in the report
@@ -81,6 +86,135 @@ public class ReportService {
         }
 
         return reports;
+    }
+
+    /**
+     * Generates a dashboard response with data for the specified number of days
+     * @param days number of days to include in the report (default 31)
+     * @return Dashboard data with statistics
+     */
+    public DashboardResponse getDashboardData(int days) {
+        DashboardResponse dashboard = new DashboardResponse();
+
+        List<String> dates = new ArrayList<>();
+        List<Integer> consultingAppointments = new ArrayList<>();
+        List<Integer> testingAppointments = new ArrayList<>();
+        List<Long> totalRevenues = new ArrayList<>();
+        List<Long> consultingRevenues = new ArrayList<>();
+        List<Long> testingRevenues = new ArrayList<>();
+        List<DashboardResponse.Detail> details = new ArrayList<>();
+
+        LocalDate currentDate = LocalDate.now();
+
+        // Initialize counters for total statistics
+        int totalConsultingAppointments = 0;
+        int totalTestingAppointments = 0;
+        long totalConsultingRevenue = 0;
+        long totalTestingRevenue = 0;
+
+        // Generate data for each day (in reverse order - oldest to newest)
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate reportDate = currentDate.minusDays(i);
+            dates.add(reportDate.toString());
+
+            // Get start and end times for the day
+            LocalDateTime startOfDay = reportDate.atStartOfDay();
+            LocalDateTime endOfDay = reportDate.atTime(23, 59, 59);
+
+            // Count appointments
+            int consultingCount = consultationBookingRepository.countByBookingDateBetween(startOfDay, endOfDay);
+            int testingCount = stisBookingRepository.countByBookingDateBetween(startOfDay, endOfDay);
+
+            consultingAppointments.add(consultingCount);
+            testingAppointments.add(testingCount);
+
+            // Add to totals
+            totalConsultingAppointments += consultingCount;
+            totalTestingAppointments += testingCount;
+
+            // Calculate revenue
+            List<Invoice> consultationInvoices = invoiceRepository.findByPaidAtBetween(startOfDay, endOfDay);
+            List<StisInvoice> stisInvoices = stisInvoiceRepository.findByPaidAtBetween(startOfDay, endOfDay);
+
+            // Calculate revenue with currency conversion
+            double consultingRevenue = calculateConsultationRevenue(consultationInvoices);
+            double testingRevenue = calculateStisRevenue(stisInvoices);
+
+            // Convert to long values
+            long consultingRevenueLong = Math.round(consultingRevenue);
+            long testingRevenueLong = Math.round(testingRevenue);
+            long dailyTotalRevenue = consultingRevenueLong + testingRevenueLong;
+
+            consultingRevenues.add(consultingRevenueLong);
+            testingRevenues.add(testingRevenueLong);
+            totalRevenues.add(dailyTotalRevenue);
+
+            // Add to total revenue
+            totalConsultingRevenue += consultingRevenueLong;
+            totalTestingRevenue += testingRevenueLong;
+
+            // Create daily detail object
+            DashboardResponse.Detail dailyDetail = new DashboardResponse.Detail();
+            dailyDetail.setDate(reportDate.toString());
+            dailyDetail.setConsultingAppointments(consultingCount);
+            dailyDetail.setTestingAppointments(testingCount);
+            dailyDetail.setConsultingRevenue(consultingRevenueLong);
+            dailyDetail.setTestingRevenue(testingRevenueLong);
+            dailyDetail.setTotalRevenue(dailyTotalRevenue);
+
+            details.add(dailyDetail);
+        }
+
+        // Create lists for total appointments
+        List<Integer> totalAppointmentsList = new ArrayList<>();
+        for (int i = 0; i < days; i++) {
+            totalAppointmentsList.add(consultingAppointments.get(i) + testingAppointments.get(i));
+        }
+
+        // Create the distribution
+        DashboardResponse.Distribution distribution = new DashboardResponse.Distribution();
+        distribution.setConsulting(totalConsultingAppointments);
+        distribution.setTesting(totalTestingAppointments);
+
+        // Create total statistics
+        DashboardResponse.Totals totals = new DashboardResponse.Totals();
+        totals.setTotalAppointments(totalConsultingAppointments + totalTestingAppointments);
+        totals.setTotalConsultingAppointments(totalConsultingAppointments);
+        totals.setTotalTestingAppointments(totalTestingAppointments);
+        totals.setTotalConsultingRevenue(totalConsultingRevenue);
+        totals.setTotalTestingRevenue(totalTestingRevenue);
+        totals.setTotalRevenue(totalConsultingRevenue + totalTestingRevenue);
+
+        // Create overview data
+        DashboardResponse.Overview overview = new DashboardResponse.Overview();
+        overview.setDates(dates);
+        overview.setConsultingAppointments(consultingAppointments);
+        overview.setTestingAppointments(testingAppointments);
+        overview.setRevenue(totalRevenues);
+
+        // Create revenue data
+        DashboardResponse.Revenue revenue = new DashboardResponse.Revenue();
+        revenue.setDates(dates);
+        revenue.setConsulting(consultingRevenues);
+        revenue.setTesting(testingRevenues);
+        revenue.setTotal(totalRevenues);
+
+        // Create appointment data
+        DashboardResponse.Appointments appointments = new DashboardResponse.Appointments();
+        appointments.setDates(dates);
+        appointments.setConsulting(consultingAppointments);
+        appointments.setTesting(testingAppointments);
+        appointments.setTotal(totalAppointmentsList);
+
+        // Set all data to the dashboard
+        dashboard.setOverview(overview);
+        dashboard.setRevenue(revenue);
+        dashboard.setAppointments(appointments);
+        dashboard.setDistribution(distribution);
+        dashboard.setTotals(totals);
+        dashboard.setDetails(details);
+
+        return dashboard;
     }
 
     /**

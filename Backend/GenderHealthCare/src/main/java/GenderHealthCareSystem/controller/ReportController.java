@@ -1,6 +1,7 @@
 package GenderHealthCareSystem.controller;
 
 import GenderHealthCareSystem.dto.ApiResponse;
+import GenderHealthCareSystem.dto.DashboardResponse;
 import GenderHealthCareSystem.dto.RevenueReport;
 import GenderHealthCareSystem.dto.UserAndBookingReport;
 import GenderHealthCareSystem.repository.UserRepository;
@@ -35,6 +36,22 @@ public class ReportController {
                 HttpStatus.OK,
                 "Monthly Revenue Report with VND conversion",
                 revenueReports,
+                null));
+    }
+
+    /**
+     * Get dashboard data with comprehensive statistics
+     * @param days number of days to include in the report (default 31)
+     * @return Dashboard data with detailed statistics
+     */
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard(
+            @RequestParam(value = "days", defaultValue = "31") int days) {
+        DashboardResponse dashboard = reportService.getDashboardData(days);
+        return ResponseEntity.ok(new ApiResponse<>(
+                HttpStatus.OK,
+                "Dashboard Data",
+                dashboard,
                 null));
     }
 }
