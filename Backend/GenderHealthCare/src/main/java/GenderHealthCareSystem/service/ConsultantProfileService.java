@@ -77,6 +77,7 @@ public class ConsultantProfileService {
         profile.setHourlyRate(req.getHourlyRate());
         profile.setLocation(req.getLocation());
         profile.setIsAvailable(req.getIsAvailable());
+        profile.setEmploymentStatus(req.getEmploymentStatus());
 
         profile.getDetails().clear();
         List<ProfileDetail> newDetails = req.getDetails().stream()
