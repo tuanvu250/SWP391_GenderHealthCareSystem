@@ -198,14 +198,14 @@ const STIBooking = () => {
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(
               totalPrice,
-              "Đặt lịch xét nghiệm STI",
+              `${bookingID} Đặt lịch xét nghiệm STI`,
               bookingID
             )
           : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingID);
 
       localStorage.setItem("bookingID", bookingID);
       localStorage.setItem("amount", totalPrice);
-      localStorage.setItem("orderInfo", "Đặt lịch xét nghiệm STI");
+      localStorage.setItem("orderInfo", `${bookingID} Đặt lịch xét nghiệm STI`);
 
       setIsConfirmModalOpen(false);
 
@@ -215,7 +215,7 @@ const STIBooking = () => {
       // Giả lập thanh toán thành công sau 3 giây
       setTimeout(() => {
         window.location.href = response.data;
-      }, 3000);
+      }, 1500);
     } catch (error) {
       console.error(error.response.data.message);
       message.error(

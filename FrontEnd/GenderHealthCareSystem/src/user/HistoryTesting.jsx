@@ -121,14 +121,14 @@ const HistoryTesting = () => {
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(
               totalPrice,
-              "Đặt lịch xét nghiệm STI",
+              `${bookingId} Đặt lịch xét nghiệm STI`,
               bookingId
             )
           : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingId);
 
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", totalPrice);
-      localStorage.setItem("orderInfo", "Đặt lịch xét nghiệm STI");
+      localStorage.setItem("orderInfo", `${bookingId} Đặt lịch xét nghiệm STI`);
 
       // Mô phỏng thanh toán thành công
       message.success("Đang chuyển hướng đến trang thanh toán ...");
@@ -136,7 +136,7 @@ const HistoryTesting = () => {
       // Giả lập thanh toán thành công sau 3 giây
       setTimeout(() => {
         window.location.href = response.data;
-      }, 3000);
+      }, 1500);
     } catch (error) {
       console.error("Error processing payment:", error);
       message.error("Có lỗi xảy ra khi xử lý thanh toán, vui lòng thử lại.");
@@ -495,9 +495,7 @@ const HistoryTesting = () => {
               </div>
             </div>
 
-            {/* Cột giữa - Thông tin thanh toán */}
             <div className="md:w-1/4 mb-3 md:mb-0 md:px-4">
-              {/* Thông tin giá và thanh toán - Cập nhật để hiển thị discount */}
               <div className="mb-2">
                 <Text className="text-gray-500 block">Giá:</Text>
                 {hasDiscount ? (
