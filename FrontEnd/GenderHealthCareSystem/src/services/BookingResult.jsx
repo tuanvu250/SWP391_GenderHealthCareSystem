@@ -55,7 +55,6 @@ const BookingResult = () => {
         hasCreatedInvoice.current = true;
 
         try {
-          
           if (bookingType === "consultant") {
             if (isVNpay) {
               const queryParamsObj = Object.fromEntries(queryParams.entries());

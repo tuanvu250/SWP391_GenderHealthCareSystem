@@ -120,7 +120,7 @@ export const getDashboardStats = async (role) => {
       const usersAndAppointments = await getUsersAndAppointmentsStats();
       return {
         todayTestings: 12,
-        todayConsultations: 8,
+        todayConsultations: 8,  
         appointmentTypeData: usersAndAppointments.map((item) => ({
           date: item.date,
           testAppointments: item.testAppointments,

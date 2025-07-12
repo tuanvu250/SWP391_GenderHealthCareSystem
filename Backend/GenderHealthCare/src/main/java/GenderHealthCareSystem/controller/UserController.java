@@ -107,4 +107,15 @@ public class UserController {
             );
         }
     }
+
+    @GetMapping("/counts-by-role")
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getUserCountsByRole() {
+        try {
+            Map<String, Long> roleCounts = userService.getUserCountsByRole();
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "User counts retrieved successfully", roleCounts, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve user counts", null, e.getMessage()));
+        }
+    }
 }

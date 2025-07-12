@@ -195,11 +195,11 @@ public class ConsultantBookingService {
         try {
             newStatus = BookingStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED hoặc CANCELLED");
+            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED, CANCELLED hoặc SCHEDULED");
         }
 
-        if (newStatus != BookingStatus.COMPLETED && newStatus != BookingStatus.CANCELLED) {
-            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED hoặc CANCELLED");
+        if (newStatus != BookingStatus.COMPLETED && newStatus != BookingStatus.CANCELLED && newStatus != BookingStatus.SCHEDULED) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ. Chỉ chấp nhận COMPLETED, CANCELLED hoặc SCHEDULED");
         }
 
         booking.setStatus(newStatus);

@@ -1,5 +1,5 @@
 // src/services/STIBooking/BookingForm.jsx
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Row,
   Col,
@@ -21,8 +21,6 @@ import {
   DollarCircleOutlined,
   BankOutlined,
   MedicineBoxOutlined,
-  AppstoreOutlined,
-  ApartmentOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../components/provider/AuthProvider";
 import vnpayLogo from "../../assets/vnpay.png";
