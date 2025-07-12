@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class PaymentController {
                                                 @RequestParam String bookingID,
                                                 HttpServletRequest request) throws Exception {
         System.out.println(request.getRemoteAddr());
-        String paymentUrl = vnPayService.createPaymentUrl(amount, orderInfo, bookingID, request.getRemoteAddr());
+        String paymentUrl = vnPayService.createPaymentUrl(amount, bookingID, "Stis"+bookingID+ LocalDateTime.now().toString(), request.getRemoteAddr());
         return ResponseEntity.ok(paymentUrl);
     }
 

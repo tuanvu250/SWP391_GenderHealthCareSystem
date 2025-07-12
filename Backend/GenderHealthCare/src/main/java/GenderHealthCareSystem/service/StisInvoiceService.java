@@ -57,7 +57,7 @@ public class StisInvoiceService {
     }
 
     public StisInvoice createInvoiceFromVNPay(Map<String, String> params) {
-        int bookingId = Integer.parseInt(params.get("vnp_TxnRef"));
+        int bookingId = Integer.parseInt(params.get("vnp_OrderInfo"));
         StisBooking booking = stisBookingService.getBookingByIdNotForResponse(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
