@@ -2,24 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Card, Tag, Button } from "antd";
 import { ArrowRightOutlined } from "@ant-design/icons";
-import { formatDateTime } from "../components/utils/format";
+import { formatDateTime, getTagColor } from "../components/utils/format";
 import { blogHomeAPI } from "../components/api/Blog.api";
 
 const HomeBlog = () => {
   const [blogPosts, setBlogPosts] = useState([]);
   const navigate = useNavigate();
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "sức khỏe": "green",
-      "giới tính": "blue",
-      "tư vấn": "purple",
-      STIs: "red",
-      "kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag.toLowerCase()] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   useEffect(() => {
     // Fetch latest blog posts from API

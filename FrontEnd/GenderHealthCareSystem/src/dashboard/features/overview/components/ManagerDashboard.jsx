@@ -35,7 +35,10 @@ import {
   viewAllBlogsAPI,
 } from "../../../../components/api/Blog.api";
 import ViewBlogModal from "../../../components/modal/ViewBlogModal";
-import { formatDateTime } from "../../../../components/utils/format";
+import {
+  formatDateTime,
+  getTagColor,
+} from "../../../../components/utils/format";
 
 const { Text } = Typography;
 
@@ -50,18 +53,6 @@ const ManagerDashboard = ({ stats }) => {
   const [blogList, setBlogList] = useState([]);
   const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   const fetchBlogList = async () => {
     setLoading(true);
@@ -276,12 +267,19 @@ const ManagerDashboard = ({ stats }) => {
           >
             Xem
           </Button>
-          <Button size="small" type="primary" className="bg-green-600"
-            onClick={() => handleApprove(record.postId)}>
+          <Button
+            size="small"
+            type="primary"
+            className="bg-green-600"
+            onClick={() => handleApprove(record.postId)}
+          >
             Duyệt
           </Button>
-          <Button size="small" danger
-            onClick={() => handleReject(record.postId)}>
+          <Button
+            size="small"
+            danger
+            onClick={() => handleReject(record.postId)}
+          >
             Từ chối
           </Button>
         </Space>
@@ -291,21 +289,29 @@ const ManagerDashboard = ({ stats }) => {
 
   // Tính tổng số liệu từ stats.usersAndAppointments
   const calculateTotals = () => {
-    if (!stats.usersAndAppointments || !Array.isArray(stats.usersAndAppointments)) {
+    if (
+      !stats.usersAndAppointments ||
+      !Array.isArray(stats.usersAndAppointments)
+    ) {
       return {
         totalUsers: 0,
         totalTestAppointments: 0,
-        totalConsultAppointments: 0
+        totalConsultAppointments: 0,
       };
     }
-    
-    return stats.usersAndAppointments.reduce((acc, day) => {
-      return {
-        totalUsers: acc.totalUsers + (day.users || 0),
-        totalTestAppointments: acc.totalTestAppointments + (day.testAppointments || 0),
-        totalConsultAppointments: acc.totalConsultAppointments + (day.consultAppointments || 0)
-      };
-    }, { totalUsers: 0, totalTestAppointments: 0, totalConsultAppointments: 0 });
+
+    return stats.usersAndAppointments.reduce(
+      (acc, day) => {
+        return {
+          totalUsers: acc.totalUsers + (day.users || 0),
+          totalTestAppointments:
+            acc.totalTestAppointments + (day.testAppointments || 0),
+          totalConsultAppointments:
+            acc.totalConsultAppointments + (day.consultAppointments || 0),
+        };
+      },
+      { totalUsers: 0, totalTestAppointments: 0, totalConsultAppointments: 0 }
+    );
   };
 
   const weeklyTotals = calculateTotals();
@@ -407,7 +413,9 @@ const ManagerDashboard = ({ stats }) => {
               prefix={<UserOutlined />}
             />
             <div className="mt-2">
-              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalUsers / 7)} người/ngày</Text>
+              <Text type="secondary">
+                Trung bình {Math.round(weeklyTotals.totalUsers / 7)} người/ngày
+              </Text>
             </div>
           </Card>
         </Col>
@@ -420,7 +428,10 @@ const ManagerDashboard = ({ stats }) => {
               prefix={<CheckCircleOutlined />}
             />
             <div className="mt-2">
-              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalTestAppointments / 7)} lịch/ngày</Text>
+              <Text type="secondary">
+                Trung bình {Math.round(weeklyTotals.totalTestAppointments / 7)}{" "}
+                lịch/ngày
+              </Text>
             </div>
           </Card>
         </Col>
@@ -433,7 +444,11 @@ const ManagerDashboard = ({ stats }) => {
               prefix={<TeamOutlined />}
             />
             <div className="mt-2">
-              <Text type="secondary">Trung bình {Math.round(weeklyTotals.totalConsultAppointments / 7)} lịch/ngày</Text>
+              <Text type="secondary">
+                Trung bình{" "}
+                {Math.round(weeklyTotals.totalConsultAppointments / 7)}{" "}
+                lịch/ngày
+              </Text>
             </div>
           </Card>
         </Col>
@@ -452,15 +467,20 @@ const ManagerDashboard = ({ stats }) => {
           </Card>
         </Col>
         <Col xs={24} md={12}>
-          <Card 
-            title="Doanh thu 6 tháng gần nhất" 
+          <Card
+            title="Doanh thu 6 tháng gần nhất"
             className="h-full"
             extra={
               <div>
                 <Text strong>Tổng: </Text>
                 <Text>
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                    .format(revenueChart?.datasets[0].data.reduce((a, b) => a + b, 0) || 0)}
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(
+                    revenueChart?.datasets[0].data.reduce((a, b) => a + b, 0) ||
+                      0
+                  )}
                 </Text>
               </div>
             }
@@ -549,7 +569,12 @@ const ManagerDashboard = ({ stats }) => {
               >
                 Tới trang duyệt bài viết
               </Button>
-              <Button icon={<TeamOutlined />}>Quản lý nhân viên</Button>
+              <Button
+                icon={<TeamOutlined />}
+                onClick={() => navigate("/manager/dashboard/manage-users")}
+              >
+                Quản lý nhân sự
+              </Button>
               <Button icon={<BarChartOutlined />}>Báo cáo doanh thu</Button>
             </Space>
           </Card>

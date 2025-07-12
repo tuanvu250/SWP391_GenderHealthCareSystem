@@ -104,7 +104,7 @@ export default function ConsultantProfile() {
           experienceYears: 0,
           hourlyRate: 0,
           introduction: "",
-          isAvailable: true,
+          employmentStatus: true,
         };
 
         setProfileData({
@@ -137,7 +137,7 @@ export default function ConsultantProfile() {
         experienceYears: 0,
         hourlyRate: 0,
         introduction: "",
-        isAvailable: true,
+        employmentStatus: true, 
       };
 
       setProfileData({
@@ -212,8 +212,6 @@ export default function ConsultantProfile() {
         ...profileData,
         details: updatedDetails,
       };
-
-      updatedProfileData.employmentStatus = true;
 
       delete updatedProfileData.userImageUrl;
 
@@ -498,7 +496,7 @@ export default function ConsultantProfile() {
           />
         </Form.Item>
         <Form.Item
-          name="isAvailable"
+          name="employmentStatus"
           label="Trạng thái"
           valuePropName="checked"
         >
@@ -557,7 +555,7 @@ export default function ConsultantProfile() {
             <div style={{ position: "relative", display: "inline-block" }}>
               <Badge
                 dot
-                status={profileData.isAvailable ? "success" : "default"}
+                status={profileData.employmentStatus ? "success" : "default"}
                 offset={[-8, 8]}
               >
                 <Avatar
@@ -621,15 +619,15 @@ export default function ConsultantProfile() {
               </Tag>
               <Tag
                 icon={
-                  profileData.isAvailable ? (
+                  profileData.employmentStatus ? (
                     <CheckCircleOutlined />
                   ) : (
                     <StopOutlined />
                   )
                 }
-                color={profileData.isAvailable ? "success" : "default"}
+                color={profileData.employmentStatus ? "success" : "default"}
               >
-                {profileData.isAvailable ? "Đang nhận tư vấn" : "Tạm ngưng"}
+                {profileData.employmentStatus ? "Đang nhận tư vấn" : "Tạm ngưng"}
               </Tag>
             </Space>
           </Col>
@@ -804,7 +802,7 @@ export default function ConsultantProfile() {
                   {profileData.hourlyRate?.toLocaleString()} VNĐ/giờ
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
-                  {profileData.isAvailable ? "Đang nhận tư vấn" : "Tạm ngưng"}
+                  {profileData.employmentStatus ? "Đang nhận tư vấn" : "Tạm ngưng"}
                 </Descriptions.Item>
               </Descriptions>
             </Card>

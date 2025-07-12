@@ -14,8 +14,6 @@ import {
   Space,
   DatePicker,
   Tooltip,
-  Form,
-  Modal,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -26,14 +24,14 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getAllBookings, updateBookingMeetLink, updateBookingStatus } from "../../../components/api/ConsultantBooking.api";
+import { getAllBookings, updateBookingStatus } from "../../../components/api/ConsultantBooking.api";
 import { useAuth } from "../../../components/provider/AuthProvider";
+import UpdateMeetLinkModal from "../../components/modal/UpdateMeetLinkModal";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-const { TextArea } = Input;
 
 export default function ManageBookingConsultant() {
   const { user } = useAuth(); // Lấy thông tin người dùng từ context
@@ -45,7 +43,6 @@ export default function ManageBookingConsultant() {
   const [status, setStatus] = useState(""); 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [loadingModal, setLoadingModal] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -55,7 +52,6 @@ export default function ManageBookingConsultant() {
   // State cho modal cập nhật link meet
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentBooking, setCurrentBooking] = useState(null);
-  const [meetLinkForm] = Form.useForm();
 
   const fetchBookings = async () => {
     try {
@@ -138,31 +134,18 @@ export default function ManageBookingConsultant() {
 
   const showMeetLinkModal = (booking) => {
     setCurrentBooking(booking);
-    meetLinkForm.setFieldsValue({
-      meetLink: booking.meetLink || '',
-      note: booking.note || '',
-    });
     setIsModalVisible(true);
   };
 
-  const handleMeetLinkUpdate = async (values) => {
-    if (!currentBooking) return;
-    setLoadingModal(true);
-    try {
-      await updateBookingMeetLink(currentBooking.bookingId, values.meetLink);
-      message.success("Cập nhật link cuộc họp thành công!");
-      setIsModalVisible(false);
-      fetchBookings();
-      setLoadingModal(false);
-    } catch (err) {
-      console.error("Lỗi cập nhật link cuộc họp:", err);
-      message.error(err?.response?.data?.message || "Không thể cập nhật link cuộc họp.");
-    }
-  };
-
-  const cancelMeetLinkUpdate = () => {
+  const handleModalCancel = () => {
     setIsModalVisible(false);
     setCurrentBooking(null);
+  };
+
+  const handleModalSuccess = () => {
+    setIsModalVisible(false);
+    setCurrentBooking(null);
+    fetchBookings(); // Tải lại dữ liệu để cập nhật danh sách
   };
 
   const renderStatus = (status) => {
@@ -395,52 +378,13 @@ export default function ManageBookingConsultant() {
         )}
       </Card>
 
-      {/* Modal cập nhật link cuộc họp - chỉ hiển thị khi người dùng là staff */}
-      {isStaff && (
-        <Modal
-          loading={loadingModal}
-          title={
-            <div className="flex items-center gap-2">
-              <LinkOutlined className="text-blue-500" />
-              <span>Cập nhật link cuộc họp</span>
-            </div>
-          }
-          open={isModalVisible}
-          onCancel={cancelMeetLinkUpdate}
-          footer={null}
-        >
-          <Form
-            form={meetLinkForm}
-            layout="vertical"
-            onFinish={handleMeetLinkUpdate}
-            className="mt-4"
-          >
-            <Form.Item
-              name="meetLink"
-              label="Link cuộc họp"
-              rules={[
-                { required: true, message: 'Vui lòng nhập link cuộc họp!' },
-              ]}
-            >
-              <Input 
-                prefix={<LinkOutlined className="text-gray-400" />} 
-                placeholder="Nhập link cuộc họp (vd: https://meet.google.com/xxx-xxxx-xxx)" 
-              />
-            </Form.Item>
-            
-            <Form.Item className="mb-0 flex justify-end">
-              <Space>
-                <Button onClick={cancelMeetLinkUpdate}>
-                  Hủy
-                </Button>
-                <Button type="primary" htmlType="submit">
-                  Cập nhật
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Modal>
-      )}
+      {/* Sử dụng component Modal riêng biệt */}
+      <UpdateMeetLinkModal
+        visible={isModalVisible}
+        booking={currentBooking}
+        onCancel={handleModalCancel}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 }

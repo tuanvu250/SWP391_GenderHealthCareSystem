@@ -19,7 +19,7 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { formatDateTime } from "../components/utils/format";
+import { formatDateTime, getTagColor } from "../components/utils/format";
 import { blogSearchAPI } from "../components/api/Blog.api";
 
 const { Title, Text, Paragraph } = Typography;
@@ -43,18 +43,6 @@ const Blog = () => {
     { value: "STIs", label: "STIs", color: "red" },
     { value: "Kinh nguyệt", label: "Kinh nguyệt", color: "pink" },
   ]);
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   const fetchBlogPosts = async () => {
     try {

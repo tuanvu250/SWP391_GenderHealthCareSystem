@@ -29,6 +29,105 @@ export const getDashboardStats = async (role) => {
           revenueStats.length > 0 ? revenueStats[1].values : 0,
       };
     }
+
+    case "Consultant": {
+      const ratingStats = await getRatingStats();
+      const usersAndAppointments = await getUsersAndAppointmentsStats();
+      return {
+        unansweredQuestions: 5,
+        newReviews: 2,
+        monthlyEarnings: 15000000,
+        monthlyEarningsChange: 12,
+        weeklyAppointments: 8,
+
+        // Thêm dữ liệu đánh giá cho consultant
+        averageRating: ratingStats.consultingAvg,
+        ratings: {
+          five: ratingStats.consulting.five,
+          four: ratingStats.consulting.four,
+          three: ratingStats.consulting.three,
+          two: ratingStats.consulting.two,
+          one: ratingStats.consulting.one,
+        },
+
+        Appointments: {
+          labels: usersAndAppointments.map((item) => item.date),
+          data: usersAndAppointments.map((item) => item.consultAppointments),
+        },
+
+        // Dữ liệu hiện tại
+        monthlyEarningsData: [
+          { month: "T1", earnings: 12000000 },
+          { month: "T2", earnings: 15000000 },
+          { month: "T3", earnings: 10000000 },
+          { month: "T4", earnings: 18000000 },
+          { month: "T5", earnings: 15000000 },
+          { month: "T6", earnings: 20000000 },
+        ],
+        recentQuestions: [
+          {
+            question:
+              "Làm thế nào để ngăn ngừa các bệnh lây truyền qua đường tình dục?",
+            userName: "user123",
+            time: "2 giờ trước",
+            category: "STIs",
+            avatarUrl: "https://via.placeholder.com/32",
+          },
+          {
+            question:
+              "Tôi nên làm xét nghiệm STIs như thế nào và bao lâu một lần?",
+            userName: "healthyUser",
+            time: "5 giờ trước",
+            category: "Sức khỏe",
+            avatarUrl: "https://via.placeholder.com/32",
+          },
+          {
+            question:
+              "Tôi đang lo lắng về một số triệu chứng, liệu có thể là STIs không?",
+            userName: "concernedUser",
+            time: "1 ngày trước",
+            category: "Triệu chứng",
+            avatarUrl: "https://via.placeholder.com/32",
+          },
+        ],
+        upcomingAppointments: [
+          {
+            id: 1,
+            time: "09:00 - 24/07/2024",
+            customer: "Nguyễn Văn A",
+            type: "Tư vấn STIs",
+            status: "confirmed",
+          },
+          {
+            id: 2,
+            time: "10:30 - 24/07/2024",
+            customer: "Trần Thị B",
+            type: "Tư vấn giới tính",
+            status: "pending",
+          },
+          {
+            id: 3,
+            time: "14:00 - 25/07/2024",
+            customer: "Lê Văn C",
+            type: "Tư vấn sức khỏe",
+            status: "confirmed",
+          },
+        ],
+      };
+    }
+
+    case "Staff": {
+      const usersAndAppointments = await getUsersAndAppointmentsStats();
+      return {
+        todayTestings: 12,
+        todayConsultations: 8,
+        appointmentTypeData: usersAndAppointments.map((item) => ({
+          date: item.date,
+          testAppointments: item.testAppointments,
+          consultAppointments: item.consultAppointments,
+        })),
+      };
+    }
   }
 };
 

@@ -12,7 +12,7 @@ import {
   message
 } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
-import { formatDateTime } from "../../../components/utils/format";
+import { formatDateTime, getTagColor } from "../../../components/utils/format";
 import { useState, useEffect } from "react";
 import { deleteCommentBlogAPI, getCommentsBlogAPI } from "../../../components/api/Blog.api";
 
@@ -21,18 +21,6 @@ const { Title, Text, Paragraph } = Typography;
 const ViewBlogModal = ({ visible, onClose, blog }) => {
   // Hàm lấy màu cho tag
   const [comments, setComments] = useState([]);
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
 
   // Xử lý dữ liệu blog để hiển thị
   const processedBlog = blog
@@ -59,7 +47,7 @@ const ViewBlogModal = ({ visible, onClose, blog }) => {
       const data = response.data.data.content;
       setComments(data || []);
     } catch (error) {
-      //console.error("Error fetching comments:", error.message);
+      //message.error("Không thể tải bình luận");
     }
   };
 
@@ -69,7 +57,6 @@ const ViewBlogModal = ({ visible, onClose, blog }) => {
 
   const handleDeleteComment = async (commentId) => {
       try {
-        console.log(">>> ID: ", commentId)
         await deleteCommentBlogAPI(commentId);
         // Cập nhật lại danh sách comments
         message.success("Đã xóa bình luận");

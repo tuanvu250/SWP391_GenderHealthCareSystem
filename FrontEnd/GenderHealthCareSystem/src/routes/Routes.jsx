@@ -58,6 +58,7 @@ import ManageFeedbackConsultant from "../dashboard/features/feedback/ManageFeedb
 import ManageBookingConsultant from "../dashboard/features/booking/ManageBookingConsultant";
 import AccountSetting from "../user/AccountSetting";
 import PillLayout from "../healthtracker/PillLayout";
+import ReportComponent from "../dashboard/features/report/report";
 
 // Layout có Header/Footer
 const Layout = () => (
@@ -183,6 +184,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-blog" element={<ManageMyBlog />} />
         <Route
           path="consultant-schedule"
@@ -204,6 +206,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-blog" element={<ManageMyBlog />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
         <Route path="manage-service" element={<ManageService />} />
@@ -224,6 +227,7 @@ function RouteMap() {
           path="manage-feedback-consultant"
           element={<ManageFeedbackConsultant />}
         />
+        <Route path="report" element={<ReportComponent />} />
       </Route>
 
       {/* Dashboard cho Staff */}
@@ -237,11 +241,13 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
         <Route
           path="manage-booking-consultant"
           element={<ManageBookingConsultant />}
         />
+        <Route path="report" element={<ReportComponent />} />
       </Route>
 
       {/* Dashboard cho Admin */}
@@ -255,6 +261,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-users" element={<ManageUser />} />
       </Route>
     </Routes>

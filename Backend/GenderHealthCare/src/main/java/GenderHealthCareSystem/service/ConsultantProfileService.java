@@ -195,6 +195,12 @@ public class ConsultantProfileService {
                 .collect(Collectors.toList());
     }
 
+    public List<ConsultantProfileResponse> getActiveConsultants() {
+        return profileRepo.findActiveConsultants().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     private ConsultantProfileResponse toResponse(ConsultantProfile profile) {
         ConsultantProfileResponse res = new ConsultantProfileResponse();
         res.setFullName(profile.getConsultant().getFullName());
@@ -208,6 +214,7 @@ public class ConsultantProfileService {
         res.setLocation(profile.getLocation());
         res.setIsAvailable(profile.getIsAvailable());
         res.setConsultantId(profile.getConsultant().getUserId()); // Added consultantId field
+        res.setEmploymentStatus(profile.getEmploymentStatus());
         res.setDetails(profile.getDetails().stream().map(d -> {
             ProfileDetailResponse dr = new ProfileDetailResponse();
             dr.setDetailType(d.getDetailType());

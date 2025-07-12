@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Card,
   Row,
@@ -22,14 +22,24 @@ import {
   QuestionCircleOutlined,
   FileTextOutlined,
   StarFilled,
+  LineChartOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import ChartComponent from "../../../components/chart/ChartComponent";
-import { pieChartOptions, ratingBarChartOptions } from "../utils/chartConfig";
+import {
+  appointmentsChartOptions,
+  ratingBarChartOptions,
+} from "../utils/chartConfig";
 import { viewMyBlogsAPI } from "../../../../components/api/Blog.api";
 import { useNavigate } from "react-router-dom";
 import ViewBlogModal from "../../../components/modal/ViewBlogModal";
-import { formatDateTime } from "../../../../components/utils/format";
+import {
+  formatDateTime,
+  getTagColor,
+} from "../../../../components/utils/format";
 import BlogModal from "../../../components/modal/BlogModal";
+import { getConsultantSchedule, updateBookingStatus } from "../../../../components/api/ConsultantBooking.api";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -45,18 +55,7 @@ const ConsultantDashboard = ({ stats }) => {
   const [viewBlogModalVisible, setViewBlogModalVisible] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "Sức khỏe": "green",
-      "Giới tính": "blue",
-      "Tư vấn": "purple",
-      STIs: "red",
-      "Kinh nguyệt": "pink",
-    };
-
-    return tagColors[tag] || "cyan"; // Trả về màu mặc định nếu không tìm thấy
-  };
+  const [newestAppointments, setNewestAppointments] = useState([]);
 
   const fetchBlogList = async () => {
     setLoading(true);
@@ -101,11 +100,31 @@ const ConsultantDashboard = ({ stats }) => {
     }
   };
 
+  const fetchAppointments = async () => {
+    try {
+      const response = await getConsultantSchedule({
+        size: 100,
+        status: "SCHEDULED",
+        startDate: dayjs(new Date()).format("YYYY-MM-DDT00:00"),
+        endDate: dayjs(new Date()).add(2, "day").format("YYYY-MM-DDT00:00"),
+      });
+      const data = response.data.content.map((item) => ({
+        ...item,
+        bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
+        bookingTimeEnd: dayjs(item.bookingDate).add(1, "hour").format("HH:mm"),
+      }));
+      setNewestAppointments(data || []);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+  };
+
   useEffect(() => {
     fetchBlogList();
+    fetchAppointments();
   }, [pagination.current, pagination.pageSize]);
 
-    // Xử lý khi modal thành công (thêm hoặc cập nhật)
+  // Xử lý khi modal thành công (thêm hoặc cập nhật)
   const handleModalSuccess = () => {
     setModalVisible(false);
     fetchBlogList();
@@ -114,7 +133,7 @@ const ConsultantDashboard = ({ stats }) => {
   const handleEditBlog = (blog) => {
     setModalVisible(true);
     setSelectedBlog(blog);
-  }
+  };
 
   const handleViewBlog = (blog) => {
     if (blog) {
@@ -125,33 +144,26 @@ const ConsultantDashboard = ({ stats }) => {
     }
   };
 
-  // Biểu đồ thống kê loại hình tư vấn (giữ nguyên)
-  const consultationTypesChart = stats.consultationTypes
-    ? {
-        labels: stats.consultationTypes.map((d) => d.type),
-        datasets: [
-          {
-            label: "Số lượng",
-            data: stats.consultationTypes.map((d) => d.count),
-            backgroundColor: [
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(54, 162, 235, 0.6)",
-              "rgba(255, 206, 86, 0.6)",
-              "rgba(75, 192, 192, 0.6)",
-              "rgba(153, 102, 255, 0.6)",
-            ],
-            borderColor: [
-              "rgba(255, 99, 132, 1)",
-              "rgba(54, 162, 235, 1)",
-              "rgba(255, 206, 86, 1)",
-              "rgba(75, 192, 192, 1)",
-              "rgba(153, 102, 255, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
-      }
-    : null;
+  const last7DaysAppointments = stats.Appointments;
+
+  // Chuẩn bị dữ liệu cho biểu đồ đường
+  const appointmentsChartData = {
+    labels: last7DaysAppointments.labels,
+    datasets: [
+      {
+        label: "Lịch hẹn",
+        data: last7DaysAppointments.data,
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: "rgba(54, 162, 235, 1)",
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
 
   // Tính tổng số đánh giá
   const calculateTotalRatings = () => {
@@ -163,6 +175,25 @@ const ConsultantDashboard = ({ stats }) => {
       (stats.ratings.two || 0) +
       (stats.ratings.one || 0)
     );
+  };
+
+  const openMeetLink = (meetLink) => {
+    if (meetLink) {
+      window.open(meetLink, "_blank");
+    } else {
+      message.warning("Không có link cuộc họp cho lịch hẹn này");
+    }
+  };
+
+  const handleUpdateStatus = async (bookingId, status) => {
+    try {
+      await updateBookingStatus(bookingId, status);
+      message.success(`Cập nhật trạng thái thành công: ${status}`);
+      fetchAppointments();
+    } catch (err) {
+      console.error("Lỗi cập nhật trạng thái:", err?.response?.data || err);
+      message.error("Không thể cập nhật trạng thái.");
+    }
   };
 
   return (
@@ -204,7 +235,8 @@ const ConsultantDashboard = ({ stats }) => {
             />
             {stats.unansweredQuestions > 0 && (
               <div className="mt-2">
-                <Button size="small" type="primary">
+                <Button size="small" type="primary"
+                  onClick={() => navigate("/consultant/dashboard/consultant-answer")}>
                   Trả lời ngay
                 </Button>
               </div>
@@ -221,7 +253,8 @@ const ConsultantDashboard = ({ stats }) => {
             />
             {stats.newReviews > 0 && (
               <div className="mt-2">
-                <Button size="small" type="default">
+                <Button size="small" type="default"
+                  onClick={() => navigate("/consultant/dashboard/manage-feedback")}>
                   Xem đánh giá
                 </Button>
               </div>
@@ -232,7 +265,7 @@ const ConsultantDashboard = ({ stats }) => {
           <Card>
             <Statistic
               title="Lịch hẹn tuần này"
-              value={stats.weeklyAppointments || 0}
+              value={newestAppointments.length}
               valueStyle={{ color: "#3f8600" }}
               prefix={<CalendarOutlined />}
             />
@@ -241,7 +274,7 @@ const ConsultantDashboard = ({ stats }) => {
       </Row>
 
       <Row gutter={[16, 16]} className="mt-4">
-        <Col xs={24} md={16}>
+        <Col xs={24} md={12}>
           <Card
             title="Đánh giá từ người dùng"
             extra={
@@ -281,7 +314,7 @@ const ConsultantDashboard = ({ stats }) => {
                   }}
                   options={ratingBarChartOptions}
                   type="bar"
-                  height="180px"
+                  height="200px"
                 />
               </Col>
             </Row>
@@ -291,7 +324,7 @@ const ConsultantDashboard = ({ stats }) => {
                 title="Đánh giá trung bình"
                 value={stats.averageRating || 0}
                 precision={1}
-                valueStyle={{ color: "#faad14", fontSize: "28px" }}
+                valueStyle={{ color: "#faad14", fontSize: "24px" }}
                 suffix=" / 5"
               />
               <Text type="secondary">
@@ -300,18 +333,29 @@ const ConsultantDashboard = ({ stats }) => {
             </div>
           </Card>
         </Col>
-        <Col xs={24} md={8}>
-          <Card title="Loại hình tư vấn" className="h-full">
-            {consultationTypesChart ? (
+        <Col xs={24} md={12}>
+          {/* Biểu đồ lịch hẹn 7 ngày gần nhất */}
+          <Card
+            title="Lịch hẹn 7 ngày gần nhất"
+            className="h-full"
+            extra={<LineChartOutlined style={{ color: "#1677ff" }} />}
+          >
+            <div style={{ height: "200px", width: "100%" }}>
               <ChartComponent
-                data={consultationTypesChart}
-                options={pieChartOptions}
-                type="pie"
-                height="300px"
+                data={appointmentsChartData}
+                options={appointmentsChartOptions}
+                type="line"
+                height="200px"
               />
-            ) : (
-              <div className="text-center p-6">Không có dữ liệu biểu đồ</div>
-            )}
+            </div>
+            <div className="text-center mt-4">
+              <Statistic
+                title="Tổng lịch hẹn"
+                value={last7DaysAppointments.data.reduce((a, b) => a + b, 0)}
+                valueStyle={{ color: "#1677ff", fontSize: "24px" }}
+              />
+              <Text type="secondary">Trong 7 ngày gần đây</Text>
+            </div>
           </Card>
         </Col>
       </Row>
@@ -372,8 +416,12 @@ const ConsultantDashboard = ({ stats }) => {
                     >
                       Xem
                     </Button>,
-                    <Button key="edit" size="small" type="primary"
-                      onClick={() => handleEditBlog(item)}>
+                    <Button
+                      key="edit"
+                      size="small"
+                      type="primary"
+                      onClick={() => handleEditBlog(item)}
+                    >
                       Chỉnh sửa
                     </Button>,
                   ]}
@@ -434,62 +482,75 @@ const ConsultantDashboard = ({ stats }) => {
         <Col xs={24}>
           <Card title="Lịch hẹn sắp tới" className="h-full">
             <Table
-              dataSource={stats.upcomingAppointments || []}
-              rowKey="id"
+              dataSource={newestAppointments}
+              rowKey="bookingId"
               columns={[
                 {
+                  title: "Ngày hẹn",
+                  dataIndex: "bookingDate",
+                  key: "bookingDate",
+                  render: (date) => dayjs(date).format("DD/MM/YYYY"),
+                },
+                {
                   title: "Thời gian",
-                  dataIndex: "time",
-                  key: "time",
-                  render: (text) => <Text strong>{text}</Text>,
+                  dataIndex: "bookingTimeStart",
+                  key: "bookingTimeStart",
+                  render: (time, record) => (
+                    <span>
+                      {record.bookingTimeStart} - {record.bookingTimeEnd}
+                    </span>
+                  ),
                 },
                 {
                   title: "Khách hàng",
-                  dataIndex: "customer",
-                  key: "customer",
-                },
-                {
-                  title: "Loại tư vấn",
-                  dataIndex: "type",
-                  key: "type",
-                  render: (text) => <Tag color="blue">{text}</Tag>,
-                },
-                {
-                  title: "Trạng thái",
-                  dataIndex: "status",
-                  key: "status",
-                  render: (status) => {
-                    let color = "default";
-                    if (status === "confirmed") color = "green";
-                    if (status === "pending") color = "orange";
-                    return (
-                      <Tag color={color}>
-                        {status === "confirmed"
-                          ? "Đã xác nhận"
-                          : status === "pending"
-                          ? "Chờ xác nhận"
-                          : status}
-                      </Tag>
-                    );
-                  },
+                  dataIndex: "customerName",
+                  key: "customerName",
                 },
                 {
                   title: "Hành động",
                   key: "action",
                   render: (_, record) => (
                     <Space>
-                      <Button size="small" type="primary">
-                        Chi tiết
-                      </Button>
-                      {record.status === "pending" && (
+                      <Tooltip title="Tham gia cuộc họp">
                         <Button
-                          size="small"
                           type="primary"
-                          className="bg-green-600"
+                          icon={<VideoCameraOutlined />}
+                          size="small"
+                          onClick={() => openMeetLink(record.meetLink)}
                         >
-                          Xác nhận
+                          Tham gia
                         </Button>
-                      )}
+                      </Tooltip>
+                      <>
+                        <Popconfirm
+                          title="Xác nhận hoàn thành lịch hẹn này?"
+                          onConfirm={() =>
+                            handleUpdateStatus(record.bookingId, "COMPLETED")
+                          }
+                          okText="Hoàn thành"
+                          cancelText="Hủy"
+                        >
+                          <Button
+                            type="primary"
+                            size="small"
+                            className="bg-green-600"
+                          >
+                            Hoàn thành
+                          </Button>
+                        </Popconfirm>
+                        <Popconfirm
+                          title="Xác nhận hủy lịch hẹn này?"
+                          onConfirm={() =>
+                            handleUpdateStatus(record.bookingId, "CANCELLED")
+                          }
+                          okText="Đồng ý"
+                          cancelText="Không"
+                        >
+                          <Button danger size="small">
+                            Hủy
+                          </Button>
+                        </Popconfirm>
+                      </>
                     </Space>
                   ),
                 },
@@ -500,6 +561,21 @@ const ConsultantDashboard = ({ stats }) => {
           </Card>
         </Col>
       </Row>
+
+      {/* Modal - giữ nguyên */}
+      <ViewBlogModal
+        visible={viewBlogModalVisible}
+        open={viewBlogModalVisible}
+        onClose={() => setViewBlogModalVisible(false)}
+        blog={selectedBlog}
+      />
+      <BlogModal
+        visible={modalVisible}
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onSuccess={handleModalSuccess}
+        blog={selectedBlog}
+      />
     </>
   );
 };

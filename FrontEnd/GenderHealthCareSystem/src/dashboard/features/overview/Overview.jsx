@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Button, Spin, Typography } from 'antd';
 import { useAuth } from '../../../components/provider/AuthProvider';
-import CommonStats from './components/CommonStats';
 import ConsultantDashboard from './components/ConsultantDashboard';
 import StaffDashboard from './components/StaffDashboard';
 import ManagerDashboard from './components/ManagerDashboard';
@@ -30,7 +29,7 @@ const Overview = () => {
         // setStats(response.data);
         
         // Mock data cho từng role
-        const mockData = role !== "Manager" ? getMockDataForRole(role) : await getDashboardStats(role);
+        const mockData = role === "Admin" ? getMockDataForRole(role) : await getDashboardStats(role);
         console.log(">>> Mock data for role:", role, mockData);
         setStats(mockData);
       } catch (error) {
