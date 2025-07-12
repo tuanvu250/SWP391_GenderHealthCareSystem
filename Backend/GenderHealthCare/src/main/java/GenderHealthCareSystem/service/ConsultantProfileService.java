@@ -117,6 +117,7 @@ public class ConsultantProfileService {
         response.setHourlyRate(profile.getHourlyRate());
         response.setLocation(profile.getLocation());
         response.setIsAvailable(profile.getIsAvailable());
+        response.setEmploymentStatus(profile.getEmploymentStatus());
         response.setDetails(profile.getDetails().stream().map(detail -> {
             ProfileDetailRequest detailRequest = new ProfileDetailRequest();
             detailRequest.setDetailType(detail.getDetailType());
