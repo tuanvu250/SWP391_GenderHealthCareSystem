@@ -13,7 +13,7 @@ const Services = () => {
       description:
         "Theo dõi chu kì kinh nguyệt của bạn, nhận nhắc nhở thời gian rụng trứng, khả năng mang thai, và thời gian uống thuốc tránh thai.",
       button: "Theo dõi",
-      route: "/menstrual-tracker",
+      route: "/menstrual/ovulation",
     },
     {
       icon: FaCalendarCheck,
@@ -22,7 +22,7 @@ const Services = () => {
       description:
         "Theo dõi lịch uống thuốc tránh thai, nhận nhắc nhở hằng ngày/hằng tuần.",
       button: "Theo dõi ",
-      route: "/pill-tracker",
+      route: "/pill/tracker",
     },
     {
       icon: FaUserClock,

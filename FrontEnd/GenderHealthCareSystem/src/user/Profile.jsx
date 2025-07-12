@@ -151,7 +151,7 @@ const Profile = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden">
+    <div className={`bg-white rounded-lg overflow-hidden ${user?.role !== "Customer" ? 'm-8 p-8 shadow-sm' : ''}`}>
       {/* Header với background và thông tin cơ bản */}
       <div className="relative p-8">
         <div className="flex flex-col md:flex-row items-center">

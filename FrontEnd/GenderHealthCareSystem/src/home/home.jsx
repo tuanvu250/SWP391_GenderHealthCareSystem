@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -56,6 +56,7 @@ const Home = () => {
                 <Button
                   size="large"
                   className="h-12 px-8 rounded-full border-[#0099CF] text-[#0099CF] hover:text-[#0088bb] hover:border-[#0088bb] shadow-sm"
+                  onClick={() => navigate("/services/consultation")}
                 >
                   Tư vấn
                 </Button>
@@ -161,7 +162,7 @@ const Home = () => {
                 <Button
                   type="primary"
                   className="rounded-full px-6 flex items-center gap-2 hover:translate-x-1 transition-transform"
-                  onClick={() => navigate("/menstrual-cycle")}
+                  onClick={() => navigate("/menstrual/ovulation")}
                 >
                   <span>Theo dõi</span> <ArrowRightOutlined />
                 </Button>
@@ -186,6 +187,7 @@ const Home = () => {
                 <Button
                   type="primary"
                   className="rounded-full px-6 flex items-center gap-2 hover:translate-x-1 transition-transform"
+                  onClick={() => navigate("/services/consultation")}
                 >
                   <span>Tư vấn</span> <ArrowRightOutlined />
                 </Button>
@@ -210,6 +212,7 @@ const Home = () => {
                 <Button
                   type="primary"
                   className="rounded-full px-6 flex items-center gap-2 hover:translate-x-1 transition-transform"
+                  onClick={() => navigate("/sti-testing")}
                 >
                   <span>Đặt lịch</span> <ArrowRightOutlined />
                 </Button>

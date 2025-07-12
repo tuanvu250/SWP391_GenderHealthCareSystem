@@ -43,6 +43,7 @@ import { convertVndToUsd, formatPrice } from "../components/utils/format";
 import {
   cancelBookingAPI,
   historyBookingAPI,
+  viewResultStisAPI,
 } from "../components/api/BookingTesting.api";
 import {
   paymentPayPalAPI,
@@ -50,6 +51,7 @@ import {
 } from "../components/api/Payment.api";
 import { postFeedbackTestingAPI } from "../components/api/FeedbackTesting.api";
 import FeedbackModal from "./FeedbackModal";
+import ViewResultStisModal from "../dashboard/components/modal/ViewResultStisModal";
 
 const { Title, Text } = Typography;
 
@@ -58,7 +60,9 @@ const HistoryTesting = () => {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [viewResult, setViewResult] = useState(false);
+  const [isViewResultModal, setIsViewResultModal] = useState(false);
+  const [resultData, setResultData] = useState(null);
+  const [attachmentUrl, setAttachmentUrl] = useState(null);
   const [openFeedback, setOpenFeedback] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -66,7 +70,6 @@ const HistoryTesting = () => {
     total: 0,
   });
   // State cho feedback
-  const [feedbackForm] = Form.useForm();
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   // Fetch booking history
@@ -112,6 +115,20 @@ const HistoryTesting = () => {
       current: page,
       pageSize: pageSize,
     });
+  };
+
+  const handleViewResult = async (booking) => {
+    try {
+      const response = await viewResultStisAPI(booking.bookingId);
+      setSelectedBooking(booking);
+      setResultData(response.data.data || []);
+      setAttachmentUrl(response.data.data[0]?.pdfResultUrl || "");
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Không thể tải kết quả xét nghiệm"
+      );
+    }
+    setIsViewResultModal(true);
   };
 
   // Xử lý thanh toán
@@ -160,11 +177,6 @@ const HistoryTesting = () => {
   const handleFeedback = (record) => {
     setSelectedBooking(record);
     setOpenFeedback(true);
-    // Reset form khi mở modal
-    if (feedbackForm) {
-      feedbackForm.resetFields();
-      setFeedbackRating(5);
-    }
   };
 
   // Thêm hàm xử lý gửi đánh giá
@@ -192,11 +204,6 @@ const HistoryTesting = () => {
     }
   };
 
-  // Xử lý xem kết quả xét nghiệm
-  const handleViewResult = (record) => {
-    setSelectedBooking(record);
-    setViewResult(true);
-  };
   // Render trạng thái đặt lịch
   const renderStatus = (status) => {
     switch (status) {
@@ -293,170 +300,14 @@ const HistoryTesting = () => {
     }
   };
 
-  // Modal xem kết quả xét nghiệm - giữ nguyên
-  const renderTestResultModal = () => (
-    <Modal
-      title={<span className="text-lg">Kết quả xét nghiệm</span>}
-      open={viewResult}
-      footer={[
-        <Button key="download" type="primary" icon={<FileDoneOutlined />}>
-          Tải kết quả
-        </Button>,
-        <Button key="back" onClick={() => setViewResult(false)}>
-          Đóng
-        </Button>,
-      ]}
-      onCancel={() => setViewResult(false)}
-      width={700}
-    >
-      {selectedBooking && (
-        <div className="space-y-4">
-          <div className="text-center pb-4 border-b">
-            <Title level={4} className="mb-1">
-              GENDER HEALTHCARE CENTER
-            </Title>
-            <div className="text-gray-500 text-sm">
-              PHIẾU KẾT QUẢ XÉT NGHIỆM
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div>
-              <Text type="secondary">Họ và tên:</Text>
-              <div className="font-medium">
-                {user?.fullName || "Khách hàng"}
-              </div>
-            </div>
-            <div>
-              <Text type="secondary">Mã xét nghiệm:</Text>
-              <div className="font-medium">{selectedBooking.id}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div>
-              <Text type="secondary">Ngày xét nghiệm:</Text>
-              <div>
-                {dayjs(selectedBooking.appointmentDate).format("DD/MM/YYYY")}
-              </div>
-            </div>
-            <div>
-              <Text type="secondary">Ngày trả kết quả:</Text>
-              <div>
-                {dayjs(selectedBooking.appointmentDate)
-                  .add(2, "day")
-                  .format("DD/MM/YYYY")}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <Title level={5}>Kết quả chi tiết</Title>
-            <Table
-              size="small"
-              pagination={false}
-              dataSource={[
-                {
-                  test: "HIV 1/2 Ab/Ag",
-                  result: "Âm tính",
-                  unit: "",
-                  reference: "Âm tính",
-                  note: "",
-                },
-                {
-                  test: "Giang mai (Syphilis RPR)",
-                  result: "Âm tính",
-                  unit: "",
-                  reference: "Âm tính",
-                  note: "",
-                },
-                {
-                  test: "Chlamydia trachomatis",
-                  result: "Âm tính",
-                  unit: "",
-                  reference: "Âm tính",
-                  note: "",
-                },
-                {
-                  test: "Neisseria gonorrhoeae",
-                  result: "Âm tính",
-                  unit: "",
-                  reference: "Âm tính",
-                  note: "",
-                },
-                {
-                  test: "Vi khuẩn Trichomonas",
-                  result: "Âm tính",
-                  unit: "",
-                  reference: "Âm tính",
-                  note: "",
-                },
-              ]}
-              columns={[
-                {
-                  title: "Xét nghiệm",
-                  dataIndex: "test",
-                  key: "test",
-                  width: "30%",
-                },
-                {
-                  title: "Kết quả",
-                  dataIndex: "result",
-                  key: "result",
-                  width: "20%",
-                  render: (text) => <span className="font-medium">{text}</span>,
-                },
-                {
-                  title: "Đơn vị",
-                  dataIndex: "unit",
-                  key: "unit",
-                  width: "10%",
-                },
-                {
-                  title: "Giá trị tham chiếu",
-                  dataIndex: "reference",
-                  key: "reference",
-                  width: "20%",
-                },
-                {
-                  title: "Ghi chú",
-                  dataIndex: "note",
-                  key: "note",
-                  width: "20%",
-                },
-              ]}
-            />
-          </div>
-
-          <div className="pt-4 border-t">
-            <div className="font-medium">Kết luận:</div>
-            <div className="p-2 bg-gray-50 rounded mt-2">
-              <p className="font-medium">
-                Không phát hiện bệnh lây truyền qua đường tình dục.
-              </p>
-              <p>Khuyến nghị tái khám định kỳ 6 tháng/lần.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 pt-4">
-            <div></div>
-            <div className="text-center">
-              <div>Bác sĩ kết luận</div>
-              <div className="h-16"></div>
-              <div className="font-medium">BS. Nguyễn Văn A</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </Modal>
-  );
-
   // Component để render mỗi booking dạng card
   const BookingCard = ({ booking }) => {
     // Tính toán giảm giá nếu có
-    const hasDiscount =  booking.discount > 0;
+    const hasDiscount = booking.discount > 0;
     const originalPrice = booking.price || 0;
-    const discountAmount = hasDiscount ? (originalPrice * booking.discount / 100) : 0;
+    const discountAmount = hasDiscount
+      ? (originalPrice * booking.discount) / 100
+      : 0;
     const discountedPrice = originalPrice - discountAmount;
 
     return (
@@ -474,7 +325,8 @@ const HistoryTesting = () => {
                   {/* Thêm tag giảm giá nếu có */}
                   {hasDiscount && (
                     <Tag color="red" className="flex items-center">
-                      <PercentageOutlined className="mr-1" /> Giảm {booking.discount}%
+                      <PercentageOutlined className="mr-1" /> Giảm{" "}
+                      {booking.discount}%
                     </Tag>
                   )}
                 </div>
@@ -532,24 +384,24 @@ const HistoryTesting = () => {
 
               {/* Nút hành động */}
               <div className="flex flex-wrap justify-end gap-2">
-                {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && (
-                  <Popconfirm
-                    title="Xác nhận hủy lịch khám"
-                    description="Bạn có chắc chắn muốn hủy lịch đã đặt này không?"
-                    okText="Có, hủy lịch"
-                    cancelText="Không"
-                    onConfirm={() => handleCancel(booking.id)}
-                    okButtonProps={{ danger: true }}
-                    icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                  >
-                    <Button
-                      danger
-                      size="middle"
+                {booking.status !== "CANCELLED" &&
+                  booking.status !== "COMPLETED" && (
+                    <Popconfirm
+                      title="Xác nhận hủy lịch khám"
+                      description="Bạn có chắc chắn muốn hủy lịch đã đặt này không?"
+                      okText="Có, hủy lịch"
+                      cancelText="Không"
+                      onConfirm={() => handleCancel(booking.id)}
+                      okButtonProps={{ danger: true }}
+                      icon={
+                        <ExclamationCircleOutlined style={{ color: "red" }} />
+                      }
                     >
-                      Hủy lịch
-                    </Button>
-                  </Popconfirm>
-                )}
+                      <Button danger size="middle">
+                        Hủy lịch
+                      </Button>
+                    </Popconfirm>
+                  )}
 
                 {booking.paymentMethod !== "cash" &&
                   booking.paymentStatus === "UNPAID" &&
@@ -638,7 +490,14 @@ const HistoryTesting = () => {
         />
       )}
 
-      {renderTestResultModal()}
+      <ViewResultStisModal
+        open={isViewResultModal}
+        onCancel={() => setIsViewResultModal(false)}
+        booking={selectedBooking}
+        customer={user}
+        resultData={resultData}
+        attachmentUrl={attachmentUrl}
+      />
 
       {/* Component FeedbackModal */}
       <FeedbackModal

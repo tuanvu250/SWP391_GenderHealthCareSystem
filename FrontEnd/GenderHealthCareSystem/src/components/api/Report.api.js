@@ -7,3 +7,7 @@ export const getUserAndBookingStatsAPI = async () => {
 export const getRevenueStatsAPI = async () => {
     return apiClient.get("/report/monthly-revenue");
 }
+
+export const getReportDashboardAPI = async (days) => {
+    return apiClient.get(`/report/dashboard?days=${days}`);
+}

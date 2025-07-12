@@ -4,7 +4,7 @@ import {
   Form,
   Input,
   Button,
-  DatePicker,
+  Tag,
   Space,
   Select,
   Divider,
@@ -14,13 +14,14 @@ import {
   Card,
   Row,
   Col,
+  Alert,
 } from "antd";
 import {
   SaveOutlined,
   UploadOutlined,
-  FileTextOutlined,
   PlusOutlined,
   MinusCircleOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
@@ -47,8 +48,11 @@ const ResultStisModal = ({
   const [fileList, setFileList] = useState([]);
   const [testDetails, setTestDetails] = useState("");
   const [stisList, setStisList] = useState([]);
+  
+  // Xác định nếu là gói xét nghiệm đơn lẻ
+  const isSingleTest = serviceData?.type === "single";
 
-  // Cập nhật stisList mỗi khi serviceData thay đổi
+  // Cập nhật stisList và form khi serviceData thay đổi
   useEffect(() => {
     if (serviceData?.tests) {
       const newStisList = serviceData.tests.split(", ").map((sti) => ({
@@ -56,11 +60,44 @@ const ResultStisModal = ({
         label: sti.trim(),
       }));
       setStisList(newStisList);
+      
+      // Nếu là xét nghiệm đơn lẻ và chỉ có một bệnh, tự động chọn bệnh đó
+      if (isSingleTest && newStisList.length === 1) {
+        form.setFieldsValue({
+          detectedStis: [
+            {
+              disease: newStisList[0].value,
+            }
+          ]
+        });
+      }
     } else {
       setStisList([]);
     }
-  }, [serviceData]);
+  }, [serviceData, form, isSingleTest]);
 
+  // Lấy danh sách các bệnh đã chọn để lọc ra khỏi options
+  const getSelectedDiseases = () => {
+    const values = form.getFieldsValue();
+    return values.detectedStis
+      ?.filter(item => item && item.disease)
+      .map(item => item.disease) || [];
+  };
+
+  // Lọc danh sách bệnh đã chọn cho một field cụ thể
+  const getAvailableDiseases = (currentFieldName) => {
+    const selectedDiseases = getSelectedDiseases();
+    const currentValue = form.getFieldValue(['detectedStis', currentFieldName, 'disease']);
+    
+    // Trả về toàn bộ danh sách nếu là xét nghiệm đơn lẻ
+    if (isSingleTest) return stisList;
+    
+    // Nếu không, lọc ra những bệnh chưa được chọn và bệnh đang được chọn ở field hiện tại
+    return stisList.filter(
+      disease => !selectedDiseases.includes(disease.value) || disease.value === currentValue
+    );
+  };
+  
   // Xử lý khi tải file lên
   const handleFileChange = ({ fileList: newFileList }) => {
     setFileList(newFileList.slice(-1));
@@ -83,10 +120,12 @@ const ResultStisModal = ({
 
       await enterResultStisAPI(booking.bookingId, detectedStis);
 
-      await uploadStisAttachmentsAPI(
-        booking.bookingId,
-        fileList[0].originFileObj
-      );
+      if (fileList.length > 0) {
+        await uploadStisAttachmentsAPI(
+          booking.bookingId,
+          fileList[0].originFileObj
+        );
+      }
 
       await markCompletedBookingStisAPI(booking.bookingId);
 
@@ -138,7 +177,7 @@ const ResultStisModal = ({
               <Text strong>{booking?.serviceName}</Text>
             </Col>
           </Row>
-          <Row gutter={16}>
+          <Row gutter={16} className="mb-4">
             <Col span={12}>
               <Text type="secondary">Khách hàng:</Text>{" "}
               <Text strong>{booking?.customerName}</Text>
@@ -156,6 +195,18 @@ const ResultStisModal = ({
           </Row>
         </Card>
 
+        {/* Thêm cảnh báo cho xét nghiệm đơn lẻ */}
+        {isSingleTest && (
+          <Alert
+            message="Xét nghiệm đơn lẻ"
+            description="Đây là xét nghiệm đơn lẻ, chỉ được nhập kết quả cho một loại bệnh."
+            type="info"
+            showIcon
+            icon={<InfoCircleOutlined />}
+            className="mb-4"
+          />
+        )}
+
         <Divider>Kết quả xét nghiệm</Divider>
 
         <Form.List name="detectedStis">
@@ -164,7 +215,7 @@ const ResultStisModal = ({
               {fields.map(({ key, name, ...restField }) => (
                 <Card key={key} className="mb-3" size="small">
                   <Row gutter={16} align="middle">
-                    <Col span={22}>
+                    <Col span={isSingleTest ? 24 : 22}>
                       <Row gutter={16}>
                         <Col span={12}>
                           <Form.Item
@@ -178,13 +229,15 @@ const ResultStisModal = ({
                               },
                             ]}
                           >
-                            <Select placeholder="Chọn bệnh lý">
-                              {stisList.map((sti) => (
-                                <Option key={sti.value} value={sti.value}>
-                                  {sti.label}
-                                </Option>
-                              ))}
-                            </Select>
+                            <Select 
+                              placeholder="Chọn bệnh lý" 
+                              disabled={isSingleTest && stisList.length === 1}
+                              options={getAvailableDiseases(name)}
+                              onChange={() => {
+                                // Force re-render để cập nhật danh sách lựa chọn cho các field khác
+                                form.setFields([{ name: 'detectedStis', errors: [] }]);
+                              }}
+                            />
                           </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -217,30 +270,43 @@ const ResultStisModal = ({
                         <Input placeholder="Nhập ghi chú (nếu có)" />
                       </Form.Item>
                     </Col>
-                    <Col span={2} className="flex justify-center">
-                      {fields.length > 1 && (
-                        <Button
-                          type="text"
-                          danger
-                          icon={<MinusCircleOutlined />}
-                          onClick={() => remove(name)}
-                          className="mt-8"
-                        />
-                      )}
-                    </Col>
+                    {/* Chỉ hiển thị nút xóa khi không phải là xét nghiệm đơn lẻ */}
+                    {!isSingleTest && (
+                      <Col span={2} className="flex justify-center">
+                        {fields.length > 1 && (
+                          <Button
+                            type="text"
+                            danger
+                            icon={<MinusCircleOutlined />}
+                            onClick={() => {
+                              remove(name);
+                              // Force re-render để cập nhật danh sách lựa chọn
+                              setTimeout(() => {
+                                form.setFields([{ name: 'detectedStis', errors: [] }]);
+                              }, 0);
+                            }}
+                            className="mt-8"
+                          />
+                        )}
+                      </Col>
+                    )}
                   </Row>
                 </Card>
               ))}
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => add()}
-                  block
-                  icon={<PlusOutlined />}
-                >
-                  Thêm kết quả xét nghiệm
-                </Button>
-              </Form.Item>
+              
+              {/* Chỉ hiển thị nút thêm khi không phải là xét nghiệm đơn lẻ và còn bệnh để chọn */}
+              {!isSingleTest && stisList.length > getSelectedDiseases().length && (
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    Thêm kết quả xét nghiệm
+                  </Button>
+                </Form.Item>
+              )}
             </>
           )}
         </Form.List>

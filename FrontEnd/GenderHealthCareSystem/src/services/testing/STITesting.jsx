@@ -574,33 +574,7 @@ const STITesting = () => {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-16 px-16 bg-gradient-to-r from-[#0099CF] to-blue-600">
-        <div className="mx-auto text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Sẵn sàng bảo vệ sức khỏe của bạn?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Đặt lịch xét nghiệm STI ngay hôm nay để có sự yên tâm về sức khỏe
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button
-              size="large"
-              className="h-12 px-8 rounded-full bg-white text-[#0099CF] border-0 hover:bg-gray-100"
-              onClick={() => setIsBookingModalOpen(true)}
-            >
-              Đặt lịch ngay
-            </Button>
-            <Button
-              size="large"
-              className="h-12 px-8 rounded-full border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#0099CF]"
-              onClick={() => navigate("/consultation")}
-            >
-              Tư vấn miễn phí
-            </Button>
-          </div>
-        </div>
-      </div>
+
     </>
   );
 };

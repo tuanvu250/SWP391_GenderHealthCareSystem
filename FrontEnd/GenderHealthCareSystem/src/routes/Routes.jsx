@@ -184,6 +184,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-blog" element={<ManageMyBlog />} />
         <Route
@@ -206,6 +207,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-blog" element={<ManageMyBlog />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
@@ -241,6 +243,7 @@ function RouteMap() {
       >
         <Route index element={<Overview />} />
         <Route path="overview" element={<Overview />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-booking-stis" element={<ManageBookingStis />} />
         <Route
@@ -260,6 +263,7 @@ function RouteMap() {
         }
       >
         <Route index element={<Overview />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="overview" element={<Overview />} />
         <Route path="account-settings" element={<AccountSetting />} />
         <Route path="manage-users" element={<ManageUser />} />

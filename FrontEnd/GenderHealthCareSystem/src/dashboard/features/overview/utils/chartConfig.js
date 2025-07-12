@@ -361,3 +361,101 @@ export const appointmentsChartOptions = {
     },
   },
 };
+
+export const chartOptionsReport = {
+  bar: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        titleFont: {
+          size: 13
+        },
+        bodyFont: {
+          size: 12
+        },
+        padding: 10
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      }
+    }
+  },
+  line: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            size: 12
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      }
+    }
+  },
+  pie: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        titleFont: {
+          size: 13
+        },
+        bodyFont: {
+          size: 12
+        }
+      }
+    }
+  }
+};

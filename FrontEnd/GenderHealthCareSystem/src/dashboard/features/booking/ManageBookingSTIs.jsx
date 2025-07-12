@@ -262,7 +262,6 @@ const ManageBookingStis = () => {
   const handleGetDataResult = async (booking) => {
     try {
       const response = await getUserByIdAPI(booking.customerId);
-      console.log("Customer data:", response.data.data);
       setCustomer(response.data.data);
       const res = await getServiceTestingByIdAPI(booking.serviceId);
       setServiceData(res.data.data);

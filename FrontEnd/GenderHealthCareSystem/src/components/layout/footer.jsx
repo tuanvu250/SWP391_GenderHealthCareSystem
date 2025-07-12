@@ -4,16 +4,14 @@ import {
   PhoneOutlined,
   MailOutlined,
   EnvironmentOutlined,
-  FacebookOutlined,
-  InstagramOutlined,
-  TwitterOutlined,
-  YoutubeOutlined,
   ArrowRightOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer>
       {/* Main Footer - Reduced padding and updated colors */}
@@ -105,25 +103,30 @@ const Footer = () => {
             <Col xs={24} sm={12} md={6} lg={5}>
               <span className="font-bold text-xl text-white pb-4">Dịch vụ</span>
               <ul className="space-y-2 my-3">
-                <li className="flex items-center text-white hover:text-white/80 transition-colors">
+                <li className="flex items-center text-white hover:text-white/80 transition-colors"
+                  onClick={() => navigate("/services/consultation")} >
                   <CheckCircleFilled className="text-white mr-2" />
                   Tư vấn trực tuyến
                 </li>
-                <li className="flex items-center text-white hover:text-white/80 transition-colors">
+                <li className="flex items-center text-white hover:text-white/80 transition-colors"
+                  onClick={() => navigate("/services/asking")} >
                   <CheckCircleFilled className="text-white mr-2" />
                   Đặt câu hỏi trực tuyến
                 </li>
-                <li className="flex items-center text-white hover:text-white/80 transition-colors">
+                <li className="flex items-center text-white hover:text-white/80 transition-colors"
+                  onClick={() => navigate("/sti-testing")} >
                   <CheckCircleFilled className="text-white mr-2" />
                   Xét nghiệm STIs
                 </li>
-                <li className="flex items-center text-white hover:text-white/80 transition-colors">
+                <li className="flex items-center text-white hover:text-white/80 transition-colors"
+                  onClick={() => navigate("/menstrual/ovulation")} >
                   <CheckCircleFilled className="text-white mr-2" />
                   Theo dõi chu kỳ kinh nguyệt
                 </li>
-                <li className="flex items-center text-white hover:text-white/80 transition-colors">
+                <li className="flex items-center text-white hover:text-white/80 transition-colors"
+                  onClick={() => navigate("/pill/tracker")} >
                   <CheckCircleFilled className="text-white mr-2" />
-                  Đặt lịch khám
+                  Theo dõi thuốc tránh thai
                 </li>
               </ul>
             </Col>

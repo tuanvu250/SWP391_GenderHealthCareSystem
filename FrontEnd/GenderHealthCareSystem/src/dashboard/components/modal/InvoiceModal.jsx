@@ -15,11 +15,11 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {}, booking 
   const invoiceRef = useRef(null);
 
   // Kiểm tra có giảm giá không
-  const hasDiscount = booking.discount > 0;
+  const hasDiscount = booking?.discount > 0;
   
   // Tính toán giá gốc và giá đã giảm
-  const originalPrice = booking.servicePrice || 0;
-  const discountAmount = hasDiscount ? (originalPrice * booking.discount / 100) : 0;
+  const originalPrice = booking?.servicePrice || 0;
+  const discountAmount = hasDiscount ? (originalPrice * booking?.discount / 100) : 0;
   const finalAmount = invoice.totalAmount;
 
   // Hàm xuất PDF với xử lý màu oklch
