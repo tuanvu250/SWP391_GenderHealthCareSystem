@@ -183,11 +183,11 @@ public class ConsultantBookingService {
     }
 
     @Transactional
-    public void updateBookingStatus(Integer bookingId, Integer consultantId, String status) {
+    public void updateBookingStatus(Integer bookingId, Integer userId, String status, String role) {
         ConsultationBooking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
-        if (!booking.getConsultant().getUserId().equals(consultantId)) {
+        if (!"STAFF".equalsIgnoreCase(role) && !booking.getConsultant().getUserId().equals(userId)) {
             throw new IllegalArgumentException("Bạn không có quyền cập nhật trạng thái cho booking này");
         }
 

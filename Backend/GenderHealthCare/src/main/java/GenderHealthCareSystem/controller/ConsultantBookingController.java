@@ -163,14 +163,15 @@ public class ConsultantBookingController {
     }
 
     @PutMapping("/{bookingId}/status")
-    @PreAuthorize("hasAnyRole('Consultant', 'Staff')")
+    @PreAuthorize("hasAnyRole('Consultant','Staff')")
     public ResponseEntity<ApiResponse<String>> updateBookingStatus(
             @PathVariable Integer bookingId,
             @RequestParam String status,
             @AuthenticationPrincipal Jwt jwt) {
         try {
-            int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
-            bookingService.updateBookingStatus(bookingId, consultantId, status);
+            int userId = Integer.parseInt(jwt.getClaimAsString("userID"));
+            String role = jwt.getClaimAsString("role");
+            bookingService.updateBookingStatus(bookingId, userId, status, role);
             return ResponseEntity.ok(ApiResponse.success("Booking status updated successfully."));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
@@ -206,5 +207,3 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(bookings);
     }
 }
-
-
