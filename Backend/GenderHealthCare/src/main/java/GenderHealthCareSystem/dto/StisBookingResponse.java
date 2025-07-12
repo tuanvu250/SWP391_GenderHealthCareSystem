@@ -20,6 +20,7 @@ public class StisBookingResponse {
     private Integer serviceId;
     private String serviceName;
     private BigDecimal servicePrice;
+    private Integer discount;
     private LocalDate bookingDate;
     private LocalTime bookingTimeStart;
     private LocalTime bookingTimeEnd;

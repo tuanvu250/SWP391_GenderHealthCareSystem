@@ -224,7 +224,7 @@ public class StisBookingService {
         response.setCreatedAt(booking.getCreatedAt());
         response.setUpdatedAt(booking.getUpdatedAt());
         response.setResultedAt(booking.getResultedAt());
-
+        response.setDiscount(booking.getStisService().getDiscount());
         return response;
     }
 
