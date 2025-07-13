@@ -12,4 +12,6 @@ public interface StisServiceRepository
         extends JpaRepository<StisService, Integer>, JpaSpecificationExecutor<StisService> {
 
     List<StisService> findByType(String type);
+
+    List<StisService> findByTypeAndStatus(String type, String status);
 }
