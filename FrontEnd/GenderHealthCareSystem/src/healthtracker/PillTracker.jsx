@@ -6,31 +6,27 @@ import { getAllPillSchedules, pillAPI } from '../components/api/Pill.api';
 export default function PillTracker() {
   const [pillStartDate, setPillStartDate] = useState('');
   const [pillType, setPillType] = useState('28');
-  const [notificationDaily, setNotificationDaily] = useState(true);
+  const [notificationOption, setNotificationOption] = useState('DAILY'); // 🔁 new
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const navigate = useNavigate();
 
   const checkExistingSchedule = async () => {
-    // ⚡ Chỉ chạy nếu localStorage còn
     const startInStorage = localStorage.getItem('pillStartDate');
-    if (!startInStorage) return; // ✅ Không còn, skip
+    if (!startInStorage) return;
 
     try {
       const res = await getAllPillSchedules();
       const data = res?.data ?? [];
 
       const valid = data.filter(item => !item.isPlacebo);
-
       if (valid.length === 0) {
-        // Không còn lịch
         localStorage.removeItem('pillStartDate');
         localStorage.removeItem('pillType');
         return;
       }
 
-      // Có lịch thì auto chuyển
       navigate('/pill/schedule');
     } catch (err) {
       console.error('❌ Lỗi kiểm tra lịch:', err);
@@ -55,7 +51,7 @@ export default function PillTracker() {
         pillType,
         timeOfDay: '08:00:00',
         isActive: true,
-        notificationFrequency: notificationDaily ? 'DAILY' : 'NONE',
+        notificationFrequency: notificationOption,
       };
 
       const res = await pillAPI(pillData);
@@ -100,13 +96,16 @@ export default function PillTracker() {
         </select>
       </label>
 
-      <label className="flex items-center gap-2 text-gray-700 font-medium">
-        <input
-          type="checkbox"
-          checked={notificationDaily}
-          onChange={(e) => setNotificationDaily(e.target.checked)}
-        />
-        Nhận thông báo uống thuốc hằng ngày
+      <label className="block text-gray-700 font-medium">
+        Tần suất thông báo:
+        <select
+          value={notificationOption}
+          onChange={(e) => setNotificationOption(e.target.value)}
+          className="block w-full mt-1 border border-gray-300 rounded p-2"
+        >
+          <option value="DAILY">Hằng ngày</option>
+          <option value="WEEKLY">Mỗi 7 ngày</option>
+        </select>
       </label>
 
       <button
