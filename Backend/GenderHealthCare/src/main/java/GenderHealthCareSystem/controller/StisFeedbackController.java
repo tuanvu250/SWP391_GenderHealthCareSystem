@@ -198,7 +198,7 @@ public class StisFeedbackController {
             @RequestParam(required = false) Integer rating) {
 
         try {
-            Page<StisFeedbackResponse> feedbackPage = feedbackService.getAllActiveFeedback(page, size, sort, serviceId,
+            Page<StisFeedbackResponse> feedbackPage = feedbackService.getAllActiveFeedback(page, size, serviceId,
                     rating);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách tất cả đánh giá", mapToPageResponse(feedbackPage),

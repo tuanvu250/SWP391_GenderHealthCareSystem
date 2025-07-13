@@ -262,12 +262,9 @@ public class StisFeedbackService {
      * @param rating    Optional rating to filter by (can be null)
      * @return Page of StisFeedbackResponse DTOs
      */
-    public Page<StisFeedbackResponse> getAllActiveFeedback(int page, int size, String sort, Integer serviceId,
-            Integer rating) {
         // Create pageable object with sort direction
-        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
-
+    public Page<StisFeedbackResponse> getAllActiveFeedback(int page, int size, Integer serviceId, Integer rating) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "rating"));
         Page<StisFeedback> feedbackPage;
 
         if (serviceId != null && rating != null) {
