@@ -18,7 +18,6 @@ export const getMyQuestionsAPI = async (customerId) => {
   return res.json();
 };
 
-
 export const getUnansweredQuestionsAPI = async () => {
   return apiClient.get("/questions/pending");
 };
@@ -31,14 +30,8 @@ export const getAllQuestionsAPI = async () => {
   return apiClient.get("/questions");
 };
 
-export const getCommentsAPI = async (questionId) => {
-  try {
-    const res = await apiClient.get(`/questions/${questionId}/comments`);
-    return res.data?.data || [];
-  } catch (error) {
-    console.error("Lỗi khi lấy bình luận:", error);
-    throw error;
-  }
+export const getCommentsAPI = (questionId) => {
+  return apiClient.get(`/questions/${questionId}/comments`);
 };
 export const postCommentAPI = (questionId, content) => {
   return apiClient.post(`/questions/${questionId}/comments`, {

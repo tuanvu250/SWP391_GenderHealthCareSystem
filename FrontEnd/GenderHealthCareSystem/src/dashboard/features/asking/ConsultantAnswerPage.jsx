@@ -39,7 +39,9 @@ export default function ConsultantAnswerPage() {
       const res = await getAnsweredQuestionsAPI(0, 100);
       const list = Array.isArray(res) ? res : Array.isArray(res?.data?.data?.content) ? res.data.data.content : [];
       setAnswered(list);
+      console.log("Câu hỏi đã trả lời:", list);
       list.forEach((q) => fetchComments(q.questionId));
+      console.log("Bình luận:", comments);
     } catch (err) {
       console.error("Lỗi khi tải câu hỏi đã trả lời:", err);
       message.error("Không thể tải danh sách câu hỏi đã trả lời.");

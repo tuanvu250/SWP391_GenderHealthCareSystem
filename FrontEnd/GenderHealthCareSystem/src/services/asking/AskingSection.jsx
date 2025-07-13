@@ -216,7 +216,7 @@ function CommentBox({ questionId }) {
   const fetchComments = async () => {
     try {
       const res = await getCommentsAPI(questionId);
-      setComments(res || []);
+      setComments(res.data.data || []);
     } catch (err) {
       console.error("Lỗi khi tải bình luận:", err);
     }

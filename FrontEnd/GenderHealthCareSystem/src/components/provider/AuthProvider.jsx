@@ -37,10 +37,6 @@ export const AuthProvider = ({ children }) => {
       // Nếu có token, coi như đã đăng nhập
       setIsAuthenticated(true);
     } else if (rememberMe) {
-      console.log(
-        "Using token from localStorage: ",
-        localStorage.getItem(TOKEN_KEY)
-      );
       setToken(localStorage.getItem("token"));
       sessionStorage.setItem(TOKEN_KEY, localStorage.getItem("token"));
       setIsAuthenticated(true);
