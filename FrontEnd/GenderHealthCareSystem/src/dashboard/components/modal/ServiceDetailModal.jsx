@@ -35,6 +35,7 @@ const ServiceDetailModal = ({ open, onCancel, service, formatPrice }) => {
       footer={null}
       width={700}
       title={<Title level={4}>Chi tiết dịch vụ</Title>}
+      destroyOnClose={true}
     >
       <Card className="mb-4">
         <Title level={4}>{service.serviceName}</Title>

@@ -463,15 +463,6 @@ const ManageBookingStis = () => {
           />
         );
       },
-      filters: [
-        { text: "Chờ xác nhận", value: "PENDING" },
-        { text: "Đã xác nhận", value: "CONFIRMED" },
-        { text: "Hoàn thành", value: "COMPLETED" },
-        { text: "Đã hủy", value: "CANCELLED" },
-        { text: "Không đến", value: "NO_SHOW" },
-        { text: "Chờ kết quả", value: "PENDING_TEST_RESULT" },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
     {
       title: "Ngày giờ hẹn",
@@ -485,8 +476,6 @@ const ManageBookingStis = () => {
           {record.bookingTime}
         </span>
       ),
-      sorter: (a, b) =>
-        dayjs(a.bookingDate).unix() - dayjs(b.bookingDate).unix(),
     },
     {
       title: "Thao tác",
@@ -498,7 +487,6 @@ const ManageBookingStis = () => {
           <Button
             type="primary"
             size="small"
-            icon={<EyeOutlined />}
             onClick={() => handleViewBooking(record)}
           >
             Chi tiết
@@ -509,7 +497,6 @@ const ManageBookingStis = () => {
             <Button
               type="default"
               size="small"
-              icon={<FileDoneOutlined />}
               onClick={() => handleViewInvoice(record)}
             >
               Hóa đơn

@@ -109,6 +109,7 @@ const ManageService = () => {
       discount: record.discount || 0,
       type: record.type,
       status: record.status === "ACTIVE",
+      maxBookingsPerSlot: record.maxBookingsPerSlot
     });
     setModalVisible(true);
   };
@@ -250,34 +251,34 @@ const ManageService = () => {
     {
       title: "Thao tác",
       key: "action",
-      width: 150,
+      width: 220, // Tăng độ rộng để phù hợp với text
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa dịch vụ này?"
-              onConfirm={() => handleDelete(record.serviceId)}
-              okText="Xóa"
-              cancelText="Hủy"
-              icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
-            >
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </Tooltip>
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => handleView(record)}
+          >
+            Xem
+          </Button>
+          <Button
+            size="small"
+            type="default"
+            onClick={() => handleEdit(record)}
+          >
+            Sửa
+          </Button>
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa dịch vụ này?"
+            onConfirm={() => handleDelete(record.serviceId)}
+            okText="Xóa"
+            cancelText="Hủy"
+            icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
+          >
+            <Button size="small" danger>
+              Xóa
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },

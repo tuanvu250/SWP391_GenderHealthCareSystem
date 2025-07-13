@@ -8,9 +8,10 @@ import {
   Switch,
   Button,
   Divider,
-  Typography
+  Typography,
+  Tooltip
 } from "antd";
-import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined, MinusCircleOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -71,7 +72,7 @@ const ServiceFormModal = ({ open, onCancel, onOk, form, editingId}) => {
       width={800}
       okText={editingId ? "Cập nhật" : "Thêm mới"}
       cancelText="Hủy"
-      maskClosable={false}
+      destroyOnClose={true}
     >
       <Form
         form={form}
@@ -83,6 +84,7 @@ const ServiceFormModal = ({ open, onCancel, onOk, form, editingId}) => {
           status: true,
           category: "single",
           includedTests: [""], // Khởi tạo với 1 mục
+          maxBookingsPerSlot: 3, // Giá trị mặc định là 3 booking/slot
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,6 +143,28 @@ const ServiceFormModal = ({ open, onCancel, onOk, form, editingId}) => {
               style={{ width: "100%" }}
               min={5}
               max={240}
+            />
+          </Form.Item>
+
+          {/* Thêm trường maxBookingsPerSlot */}
+          <Form.Item 
+            name="maxBookingsPerSlot"
+            label={
+              <span>
+                Giới hạn đặt lịch / khung giờ{" "}
+                <Tooltip title="Số lượng tối đa khách hàng có thể đặt lịch trong một khung giờ cho dịch vụ này">
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </span>
+            }
+            rules={[{ required: true, message: "Vui lòng nhập giới hạn" }]}
+          >
+            <InputNumber
+              placeholder="Số lượng tối đa"
+              style={{ width: "100%" }}
+              min={1}
+              max={50}
+              step={1}
             />
           </Form.Item>
 
