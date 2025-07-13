@@ -89,8 +89,12 @@ export default function AskingSection() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 bg-white min-h-screen">
+      <div className="bg-gradient-to-r from-[#0099CF] to-[#2F3C7E] text-white rounded-xl px-6 py-10 mb-12 text-center shadow-md">
+        <h1 className="text-3xl font-bold mb-2">Câu hỏi & Tư vấn từ chuyên gia</h1>
+        <p className="text-lg">Gửi câu hỏi & thảo luận khám phá những chủ đề được nhiều người quan tâm</p>
+      </div>
+
       <div className="grid lg:grid-cols-[400px_1fr] gap-8 items-start">
-        {/* FORM */}
         <div className="bg-white rounded-2xl shadow-md border border-gray-200">
           <div className="p-6 border-b text-center">
             <h2 className="text-2xl font-bold text-[#0099CF]">Gửi câu hỏi mới</h2>
@@ -142,7 +146,6 @@ export default function AskingSection() {
           </div>
         </div>
 
-        {/* DANH SÁCH CÂU HỎI */}
         <div className="space-y-6">
           <h3 className="text-2xl font-bold text-gray-800">Câu hỏi thường gặp</h3>
           <p className="text-sm text-gray-600">Tham khảo các câu hỏi đã được chuyên gia của chúng tôi trả lời.</p>

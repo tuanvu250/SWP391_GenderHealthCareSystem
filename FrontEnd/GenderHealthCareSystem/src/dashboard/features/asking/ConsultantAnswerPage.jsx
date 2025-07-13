@@ -18,16 +18,31 @@ export default function ConsultantAnswerPage() {
   const [newComments, setNewComments] = useState({});
   const [selectedTopic, setSelectedTopic] = useState("all");
 
+  const tagOptions = [
+    { label: "Sức Khỏe", value: "suckhoe", color: "bg-green-100 text-green-800" },
+    { label: "Giới tính", value: "gioitinh", color: "bg-pink-100 text-pink-800" },
+    { label: "Tư vấn", value: "tuvan", color: "bg-blue-100 text-blue-800" },
+    { label: "STIs", value: "stis", color: "bg-red-100 text-red-800" },
+    { label: "Kinh nguyệt", value: "kinhnguyet", color: "bg-purple-100 text-purple-800" },
+  ];
+
   useEffect(() => {
     fetchPending();
     fetchAnswered();
   }, []);
 
+  const mapTag = (q) => {
+    const prefix = q.title?.split(" - ")[0]?.trim().toLowerCase();
+    const matched = tagOptions.find((t) => t.label.toLowerCase() === prefix);
+    return { ...q, tag: matched?.value || "tuvan" };
+  };
+
   const fetchPending = async () => {
     try {
       const res = await getUnansweredQuestionsAPI();
       const list = Array.isArray(res?.data?.data?.content) ? res.data.data.content : [];
-      setPending(list);
+      const mapped = list.map(mapTag);
+      setPending(mapped);
     } catch (err) {
       console.error("Lỗi khi tải câu hỏi chưa trả lời:", err);
       message.error("Không thể tải danh sách câu hỏi chưa trả lời.");
@@ -38,10 +53,9 @@ export default function ConsultantAnswerPage() {
     try {
       const res = await getAnsweredQuestionsAPI(0, 100);
       const list = Array.isArray(res) ? res : Array.isArray(res?.data?.data?.content) ? res.data.data.content : [];
-      setAnswered(list);
-      console.log("Câu hỏi đã trả lời:", list);
-      list.forEach((q) => fetchComments(q.questionId));
-      console.log("Bình luận:", comments);
+      const mapped = list.map(mapTag);
+      setAnswered(mapped);
+      mapped.forEach((q) => fetchComments(q.questionId));
     } catch (err) {
       console.error("Lỗi khi tải câu hỏi đã trả lời:", err);
       message.error("Không thể tải danh sách câu hỏi đã trả lời.");
@@ -76,24 +90,19 @@ export default function ConsultantAnswerPage() {
   const handleCommentSubmit = async (id) => {
     const content = newComments[id];
     if (!content || content.trim() === "") return;
-
     try {
       await postCommentAPI(id, content);
-
       const newComment = {
         content: content.trim(),
         userFullName: user?.fullName || "Bạn",
         userImageUrl: user?.imageUrl || null,
         createdAt: new Date().toISOString(),
       };
-
       setComments((prev) => ({
         ...prev,
         [id]: [...(prev[id] || []), newComment],
       }));
-
       setNewComments((prev) => ({ ...prev, [id]: "" }));
-
       message.success("Đã thêm bình luận.");
     } catch (err) {
       console.error("Lỗi khi gửi bình luận:", err);
@@ -101,32 +110,21 @@ export default function ConsultantAnswerPage() {
     }
   };
 
-  // ✅ Hàm bỏ dấu tiếng Việt
-  const removeVietnameseTones = (str) => {
-    return str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/đ/g, "d").replace(/Đ/g, "D");
-  };
-
-  // ✅ Chuẩn hoá chủ đề
-  const normalizeTopic = (title = "") => {
-    const raw = title.split(" - ")[0] || "";
-    return removeVietnameseTones(raw.trim().toLowerCase());
-  };
-
   const filterBySelectedTopic = (list) => {
     if (selectedTopic === "all") return list;
-    return list.filter((q) => normalizeTopic(q.title) === selectedTopic);
+    return list.filter((q) => q.tag === selectedTopic);
   };
 
   const rawTopics = [
-    ...pending.map((q) => normalizeTopic(q.title)),
-    ...answered.map((q) => normalizeTopic(q.title)),
+    ...pending.map((q) => q.tag),
+    ...answered.map((q) => q.tag),
   ];
   const allTopics = Array.from(new Set(rawTopics)).filter((t) => t);
 
-  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const getTagColor = (tagValue) =>
+    tagOptions.find((t) => t.value === tagValue)?.color || "bg-gray-100 text-gray-800";
+  const getTagLabel = (tagValue) =>
+    tagOptions.find((t) => t.value === tagValue)?.label || tagValue;
 
   const renderComments = (q) => (
     <div className="mt-6">
@@ -162,9 +160,9 @@ export default function ConsultantAnswerPage() {
     </div>
   );
 
-  const renderEmptyState = (message) => (
+  const renderEmptyState = (messageText) => (
     <div className="text-center py-16 px-6 bg-white rounded-lg border border-dashed border-slate-300">
-      <h3 className="text-lg font-medium text-slate-600">{message}</h3>
+      <h3 className="text-lg font-medium text-slate-600">{messageText}</h3>
     </div>
   );
 
@@ -198,7 +196,7 @@ export default function ConsultantAnswerPage() {
           >
             <option value="all">Tất cả chủ đề</option>
             {allTopics.map((topic) => (
-              <option key={topic} value={topic}>{capitalize(topic)}</option>
+              <option key={topic} value={topic}>{getTagLabel(topic)}</option>
             ))}
           </select>
         </div>
@@ -210,11 +208,16 @@ export default function ConsultantAnswerPage() {
             <div className="space-y-6">
               {filterBySelectedTopic(pending).map((q) => (
                 <div key={q.questionId} className="bg-white p-5 rounded-xl shadow border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
-                    {q.customerImageUrl && (
-                      <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
-                    )}
-                    <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
+                  <div className="flex justify-between items-center mb-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      {q.customerImageUrl && (
+                        <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
+                      )}
+                      <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full ${getTagColor(q.tag)}`}>
+                      {getTagLabel(q.tag)}
+                    </span>
                   </div>
                   <h3 className="text-lg font-semibold text-[#0099CF] mb-2">{q.title}</h3>
                   <p className="text-gray-700 mb-4">{q.content}</p>
@@ -246,20 +249,23 @@ export default function ConsultantAnswerPage() {
             <div className="space-y-6">
               {filterBySelectedTopic(answered).map((q) => (
                 <div key={q.questionId} className="bg-white p-5 rounded-xl shadow border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
-                    {q.customerImageUrl && (
-                      <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
-                    )}
-                    <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
+                  <div className="flex justify-between items-center mb-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      {q.customerImageUrl && (
+                        <img src={q.customerImageUrl} className="w-6 h-6 rounded-full" alt="avatar" />
+                      )}
+                      <span className="font-medium text-gray-800">{q.customerFullName || "Ẩn danh"}</span>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full ${getTagColor(q.tag)}`}>
+                      {getTagLabel(q.tag)}
+                    </span>
                   </div>
                   <h3 className="text-lg font-semibold text-[#0099CF] mb-2">{q.title}</h3>
                   <p className="text-gray-700 mb-4">{q.content}</p>
-
                   <div className="bg-blue-50 border-l-4 border-[#0099CF] p-4 rounded">
                     <p className="text-sm font-medium text-[#007ca8] mb-1">Câu trả lời:</p>
                     <p className="text-gray-800 text-sm leading-relaxed">{q.answer}</p>
                   </div>
-
                   {renderComments(q)}
                 </div>
               ))}
