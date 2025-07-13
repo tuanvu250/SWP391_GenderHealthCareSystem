@@ -98,10 +98,10 @@ public class StisServiceService {
     }
 
     public List<StisService> getByTypeCombo() {
-        return repository.findByType("combo");
+        return repository.findByTypeAndStatus("combo", "active");
     }
 
     public List<StisService> getByTypeSingle() {
-        return repository.findByType("single");
+        return repository.findByTypeAndStatus("single", "active");
     }
 }
