@@ -249,6 +249,12 @@ const HistoryTesting = () => {
             Chờ kết quả
           </Tag>
         );
+      case "FAILED_PAYMENT":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="red">
+            Thanh toán thất bại
+          </Tag>
+        );
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -453,7 +459,7 @@ const HistoryTesting = () => {
       <div className="mb-4">
         <Title level={4} className="flex items-center mb-3">
           <MedicineBoxOutlined className="mr-2 text-[#0099CF]" />
-          Lịch sử khám bệnh
+          Lịch sử xét nghiệm STIs
         </Title>
         <Text type="secondary">
           Xem lịch sử đặt khám và kết quả xét nghiệm của bạn tại đây.

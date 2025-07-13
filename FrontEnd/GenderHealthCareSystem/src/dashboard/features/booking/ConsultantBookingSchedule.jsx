@@ -292,13 +292,21 @@ export default function ConsultantBookingSchedule() {
     },
   ];
 
-  // Hàm mở link cuộc họp trong tab mới
+  // Hàm mở link cuộc họp trong tab mới - đã sửa
   const openMeetLink = (meetLink) => {
-    if (meetLink) {
-      window.open(meetLink, '_blank');
-    } else {
+    if (!meetLink) {
       message.warning('Không có link cuộc họp cho lịch hẹn này');
+      return;
     }
+
+    // Kiểm tra xem link có chứa protocol hay không
+    if (!meetLink.startsWith('http://') && !meetLink.startsWith('https://')) {
+      // Nếu không có, thêm https:// vào đầu
+      meetLink = 'https://' + meetLink;
+    }
+    
+    // Mở link trong tab mới
+    window.open(meetLink, '_blank');
   };
 
   return (
