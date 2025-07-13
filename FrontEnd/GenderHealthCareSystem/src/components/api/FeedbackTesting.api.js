@@ -63,3 +63,14 @@ export const getAverageRatingAPI = async () => {
 export const getStatisticsFeedbackTestingAPI = async () => {
   return apiClient.get(`/stis-feedback/rating-statistics`);
 }
+
+export const getPublicFeedbackTestingAPI = async ({
+  page = 0,
+  size = 10,
+}) => {
+  const query = new URLSearchParams({
+    page,
+    size,
+  }).toString();
+  return apiClient.get(`/stis-feedback/public-feedback/${query}`);
+}

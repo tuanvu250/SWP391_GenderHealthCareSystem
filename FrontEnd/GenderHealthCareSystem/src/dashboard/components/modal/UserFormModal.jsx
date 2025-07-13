@@ -312,6 +312,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
                   setActiveTab("consultant");
                 }
               }}
+              disabled={isEdit && !isAdmin} // Vô hiệu hóa trường role khi Manager chỉnh sửa người dùng
             >
               <Option value="Staff">Nhân viên</Option>
               <Option value="Consultant">Tư vấn viên</Option>
@@ -326,11 +327,27 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
           <Form.Item 
             name="status" 
             label="Trạng thái"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
           >
-            <Select placeholder="Chọn trạng thái">
-              {renderStatusOptions()}
-            </Select>
+            <div className="py-1">
+              {/* Hiển thị trạng thái dựa theo giá trị hiện tại */}
+              {(() => {
+                const status = form.getFieldValue('status');
+                const statusConfig = {
+                  "ACTIVE": { color: "green", icon: <CheckCircleOutlined />, label: "Hoạt động" },
+                  "SUSPENDED": { color: "orange", icon: <StopOutlined />, label: "Tạm khóa" },
+                  "BANNED": { color: "red", icon: <LockOutlined />, label: "Vô hiệu vĩnh viễn" },
+                  "DELETED": { color: "default", icon: <DeleteOutlined />, label: "Đã xóa" },
+                };
+                
+                const config = statusConfig[status] || statusConfig["ACTIVE"];
+                
+                return (
+                  <Tag color={config.color} icon={config.icon} className="py-1 px-3">
+                    {config.label}
+                  </Tag>
+                );
+              })()}
+            </div>
           </Form.Item>
         )}
       </div>
