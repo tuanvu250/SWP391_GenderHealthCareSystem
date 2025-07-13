@@ -192,13 +192,6 @@ const BookingForm = ({
         }`}
         onClick={() => handlePackageSelect(pkg)}
       >
-        {/* Thêm badge hiển thị discount nếu có */}
-        {hasDiscount && (
-          <div className="absolute top-0 right-0 bg-[#0099CF] text-white text-xs px-2 py-1 rounded-tr-md rounded-bl-md font-semibold">
-            -{pkg.discount}%
-          </div>
-        )}
-
         <div className="flex items-center gap-2 mb-2">
           <MedicineBoxOutlined className="text-[#0099CF]" />
           <div className="font-bold text-base">{pkg.serviceName}</div>
