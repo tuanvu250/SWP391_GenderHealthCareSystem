@@ -29,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Simple Service for handling Consultant feedback operations without Specification
+ * Simple Service for handling Consultant feedback operations without
+ * Specification
  */
 @Service
 @RequiredArgsConstructor
@@ -61,7 +62,8 @@ public class ConsultantFeedbackService {
         Users customer = userRepo.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer không tồn tại"));
 
-        if (feedbackRepo.existsByCustomer_UserIdAndConsultantProfile_Consultant_UserId(customerId, request.getConsultantId())) {
+        if (feedbackRepo.existsByCustomer_UserIdAndConsultantProfile_Consultant_UserId(customerId,
+                request.getConsultantId())) {
             throw new IllegalArgumentException("Bạn đã đánh giá consultant này rồi");
         }
 
@@ -99,50 +101,42 @@ public class ConsultantFeedbackService {
         return userIdLong.intValue();
     }
 
-
     public Page<ConsultantFeedbackResponse> getConsultantFeedback(
             Integer consultantId, int page, int size, String sortBy, String direction, Integer rating, String search) {
 
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
-            Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByConsultantIdWithSearchAndRating(
-            consultantId, rating, search, pageable);
+                consultantId, rating, search, pageable);
 
         return feedbackPage.map(this::mapToResponse);
     }
 
-    public Page<ConsultantFeedbackResponse> getMyFeedback(int page, int size, String sortBy, String direction, Integer rating, String search) {
+    public Page<ConsultantFeedbackResponse> getMyFeedback(int page, int size, String sortBy, String direction,
+            Integer rating, String search) {
         Integer consultantId = extractUserIdFromToken();
         return getConsultantFeedback(consultantId, page, size, sortBy, direction, rating, search);
     }
 
-    public Page<ConsultantFeedbackResponse> getMyPostedFeedback(int page, int size, String sortBy, String direction, String search) {
+    public Page<ConsultantFeedbackResponse> getMyPostedFeedback(int page, int size, String sortBy, String direction,
+            String search) {
         Integer customerId = extractUserIdFromToken();
 
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
-            Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<ConsultantFeedback> feedbackPage = feedbackRepo.findByCustomerIdWithSearch(customerId, search, pageable);
         return feedbackPage.map(this::mapToResponse);
     }
 
-
     public Page<ConsultantFeedbackResponse> getAllFeedback(
-            int page, int size, String sortBy, String direction, Integer consultantId, Integer rating, String search) {
-
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ?
-                Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-
+            int page, int size, Integer consultantId, Integer rating, String search) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "rating"));
         Page<ConsultantFeedback> feedbacks = feedbackRepo.findAllWithFilters(
-            consultantId, rating, search, pageable);
-
+                consultantId, rating, search, pageable);
         return feedbacks.map(this::mapToResponse);
     }
-
 
     @Transactional
     public ConsultantFeedbackResponse updateFeedback(Integer feedbackId, ConsultantFeedbackRequest request) {
@@ -157,7 +151,6 @@ public class ConsultantFeedbackService {
         return mapToResponse(updated);
     }
 
-
     @Transactional
     public void deleteFeedback(Integer feedbackId) {
         if (!feedbackRepo.existsById(feedbackId)) {
@@ -167,23 +160,19 @@ public class ConsultantFeedbackService {
         feedbackRepo.deleteByFeedbackId(feedbackId);
     }
 
-
     public Double getAverageRating(Integer consultantId) {
         Double avg = feedbackRepo.getAverageRatingByConsultantId(consultantId);
         return avg != null ? avg : 0.0;
     }
-
 
     public Long getFeedbackCount(Integer consultantId) {
         Long count = feedbackRepo.getCountByConsultantId(consultantId);
         return count != null ? count : 0L;
     }
 
-
     public boolean feedbackExists(Integer bookingId) {
         return feedbackRepo.existsByConsultationBooking_BookingId(bookingId);
     }
-
 
     public ConsultantFeedbackResponse getFeedbackByBookingId(Integer bookingId) {
         ConsultantFeedback feedback = feedbackRepo.findByConsultationBooking_BookingId(bookingId);
@@ -192,9 +181,6 @@ public class ConsultantFeedbackService {
         }
         return mapToResponse(feedback);
     }
-
-
-
 
     public Double getTotalAverageRating() {
         Double avg = feedbackRepo.getTotalAverageRating();
@@ -241,13 +227,9 @@ public class ConsultantFeedbackService {
         }
 
         return new RatingStatisticsResponse(
-            totalRatings != null ? totalRatings : 0L,
-            averageRating != null ? averageRating : 0.0,
-            ratingCounts
-        );
+                totalRatings != null ? totalRatings : 0L,
+                averageRating != null ? averageRating : 0.0,
+                ratingCounts);
     }
-
-
-
 
 }

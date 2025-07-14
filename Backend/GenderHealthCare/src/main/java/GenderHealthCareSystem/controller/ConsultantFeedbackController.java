@@ -25,9 +25,9 @@ public class ConsultantFeedbackController {
 
     private final ConsultantFeedbackService feedbackService;
 
-
     @PostMapping
-    public ResponseEntity<ApiResponse<ConsultantFeedbackCreateResponse>> createFeedback(@RequestBody @Valid ConsultantFeedbackRequest req) {
+    public ResponseEntity<ApiResponse<ConsultantFeedbackCreateResponse>> createFeedback(
+            @RequestBody @Valid ConsultantFeedbackRequest req) {
         try {
             ConsultantFeedbackResponse feedback = feedbackService.createFeedback(req);
             ConsultantFeedbackCreateResponse response = new ConsultantFeedbackCreateResponse(
@@ -35,8 +35,7 @@ public class ConsultantFeedbackController {
                     feedback.getBookingId(),
                     feedback.getRating(),
                     feedback.getComment(),
-                    feedback.getCreatedAt()
-            );
+                    feedback.getCreatedAt());
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Đánh giá tư vấn đã được ghi nhận", response, null));
         } catch (IllegalArgumentException ex) {
@@ -55,9 +54,9 @@ public class ConsultantFeedbackController {
         }
     }
 
-
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<ConsultantFeedbackResponse>> getFeedbackByBooking(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<ConsultantFeedbackResponse>> getFeedbackByBooking(
+            @PathVariable Integer bookingId) {
         try {
             ConsultantFeedbackResponse feedback = feedbackService.getFeedbackByBookingId(bookingId);
             if (feedback != null) {
@@ -65,7 +64,8 @@ public class ConsultantFeedbackController {
                         new ApiResponse<>(HttpStatus.OK, "Lấy đánh giá thành công", feedback, null));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá cho booking này", null, "NOT_FOUND"));
+                        .body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá cho booking này", null,
+                                "NOT_FOUND"));
             }
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -80,14 +80,12 @@ public class ConsultantFeedbackController {
     public ResponseEntity<ApiResponse<PageResponse<ConsultantFeedbackResponse>>> getAllFeedback(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) Integer consultantId,
             @RequestParam(required = false) Integer rating,
             @RequestParam(required = false) String search) {
         try {
             Page<ConsultantFeedbackResponse> feedbackPage = feedbackService.getAllFeedback(
-                    page, size, sortBy, direction, consultantId, rating, search);
+                    page, size, consultantId, rating, search);
             return ResponseEntity.ok(
                     new ApiResponse<>(HttpStatus.OK, "Danh sách tất cả đánh giá tư vấn",
                             mapToPageResponse(feedbackPage), null));
@@ -167,7 +165,8 @@ public class ConsultantFeedbackController {
      * @return ResponseEntity with the average rating
      */
     @GetMapping("/average/{consultantId}")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getConsultantAverageRating(@PathVariable Integer consultantId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getConsultantAverageRating(
+            @PathVariable Integer consultantId) {
         try {
             double avgRating = feedbackService.getAverageRating(consultantId);
             long feedbackCount = feedbackService.getFeedbackCount(consultantId);
@@ -205,11 +204,12 @@ public class ConsultantFeedbackController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null, "SERVER_ERROR"));
         }
     }
+
     /**
      * Updates an existing feedback
      *
      * @param feedbackId The ID of the feedback to update
-     * @param request The updated feedback data
+     * @param request    The updated feedback data
      * @return ResponseEntity with updated feedback
      */
     @PutMapping("/{feedbackId}")
