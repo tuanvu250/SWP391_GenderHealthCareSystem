@@ -6,6 +6,7 @@ import GenderHealthCareSystem.dto.StisBookingRequest;
 import GenderHealthCareSystem.dto.StisBookingResponse;
 import GenderHealthCareSystem.model.StisBooking;
 import GenderHealthCareSystem.enums.StisBookingStatus;
+import GenderHealthCareSystem.service.EmailService;
 import GenderHealthCareSystem.service.StisBookingService;
 import GenderHealthCareSystem.util.PageResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -27,7 +29,10 @@ public class StisBookingController {
 
     @Autowired
     private StisBookingService stisBookingService;
+    @Autowired
+    private EmailService emailService;
     private PageResponseUtil pageResponseUtil;
+
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<StisBookingResponse>>> SearchBooking(@RequestParam(required = false) String name,
@@ -101,9 +106,12 @@ public class StisBookingController {
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createBooking(@RequestBody StisBookingRequest booking, @AuthenticationPrincipal Jwt jwt) {
         booking.setCustomerId(Integer.parseInt(jwt.getClaimAsString("userID")));
+        String email = jwt.getClaimAsString("email");
         StisBookingResponse createdBooking = stisBookingService.createBooking(booking);
+        emailService.sendBookingConfirmationEmail(email, createdBooking.getServiceName(), LocalDateTime.now().toString());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(HttpStatus.CREATED, "Booking created", createdBooking, null));
+
     }
 
     @PutMapping("/{id}")
@@ -133,6 +141,8 @@ public class StisBookingController {
     @PutMapping("/{id}/mark-completed")
     public ResponseEntity<ApiResponse<Void>> markBookingAsCompleted(@PathVariable Integer id) {
         stisBookingService.markBookingAsCompleted(id);
+        StisBooking booking = stisBookingService.getBookingByID(id);
+        emailService.sendTestResultsReadyEmail(booking.getCustomer().getAccount().getEmail(), booking.getStisService().getServiceName(), id.toString());
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, "Booking marked as done", null, null));
     }
 

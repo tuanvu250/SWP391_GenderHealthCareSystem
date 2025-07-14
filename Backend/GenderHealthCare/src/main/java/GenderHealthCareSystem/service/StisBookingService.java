@@ -35,6 +35,10 @@ public class StisBookingService {
     // return
     // stisBookingRepository.findAll().stream().map(this::mapToResponse).toList();
     // }
+    public StisBooking getBookingByID(Integer id) {
+        return stisBookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+    }
 
     public Page<StisBookingResponse> findStisBooking(String name, Integer serviceID, StisBookingStatus status,
             LocalDateTime startDateTime, LocalDateTime endDateTime, int page, int size, String sort) {
