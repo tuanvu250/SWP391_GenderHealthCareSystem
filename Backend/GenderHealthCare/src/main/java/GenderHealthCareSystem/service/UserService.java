@@ -47,7 +47,12 @@ public class UserService {
         // Find the role
         Role role = roleRepository.findByRoleName(createRequest.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found: " + createRequest.getRole()));
-
+        if (accountRepository.findByEmail(createRequest.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists: " + createRequest.getEmail());
+        }
+        if (accountRepository.findByUserName(createRequest.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists: " + createRequest.getUsername());
+        }
         // Create new user
         Users user = new Users();
         user.setFullName(createRequest.getFullName());
