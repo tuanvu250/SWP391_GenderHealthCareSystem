@@ -42,6 +42,7 @@ public class ConsultantProfileService {
                 .hourlyRate(req.getHourlyRate())
                 .location(req.getLocation())
                 .isAvailable(req.getIsAvailable())
+                .employmentStatus(req.getEmploymentStatus())
                 .rating(0.0)
                 .reviewCount(0)
                 .build();
