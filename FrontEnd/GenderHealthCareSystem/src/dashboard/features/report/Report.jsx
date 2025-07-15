@@ -30,8 +30,8 @@ import ChartComponent from "../../components/chart/ChartComponent";
 import { useAuth } from "../../../components/provider/AuthProvider";
 import { chartOptionsReport } from "../overview/utils/chartConfig";
 import { getReportDashboardAPI } from "../../../components/api/Report.api";
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -51,19 +51,18 @@ const ReportComponent = () => {
   const isManager = user?.role === "Manager";
   const isStaff = user?.role === "Staff";
   const chartOptions = chartOptionsReport;
-  
+
   // Thay đổi state dateRange thành days
-  const [days, setDays] = useState(30); 
+  const [days, setDays] = useState(30);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
-  const [reportType, setReportType] = useState("all");
   const [statsData, setStatsData] = useState(null);
   const [downloadLoading, setDownloadLoading] = useState(false);
 
   // Tính toán khoảng thời gian dựa trên số ngày đã chọn
   const getDateRange = () => {
     const endDate = dayjs();
-    const startDate = endDate.subtract(days, 'days');
+    const startDate = endDate.subtract(days, "days");
     return [startDate, endDate];
   };
 
@@ -73,10 +72,11 @@ const ReportComponent = () => {
     try {
       const response = await getReportDashboardAPI(days);
       setStatsData(response.data.data);
-      message.success(`Đã cập nhật báo cáo ${days} ngày gần nhất`);
     } catch (error) {
       console.error("Error fetching report data:", error);
-      message.error(error?.response?.data?.message || "Lỗi khi tải dữ liệu báo cáo");
+      message.error(
+        error?.response?.data?.message || "Lỗi khi tải dữ liệu báo cáo"
+      );
     } finally {
       setLoading(false);
     }
@@ -91,110 +91,98 @@ const ReportComponent = () => {
         await fetchReportData();
       }
 
-      const dateRange = `${getDateRange()[0].format('DD/MM/YYYY')} - ${getDateRange()[1].format('DD/MM/YYYY')}`;
-      
+      const dateRange = `${getDateRange()[0].format(
+        "DD/MM/YYYY"
+      )} - ${getDateRange()[1].format("DD/MM/YYYY")}`;
+
       // Tạo workbook mới
       const wb = XLSX.utils.book_new();
-      
+
       // SHEET 1: TỔNG QUAN
       const overviewData = [
-        ['BÁO CÁO THỐNG KÊ GENDERHEALTHCARE'],
+        ["BÁO CÁO THỐNG KÊ GENDERHEALTHCARE"],
         [`Khoảng thời gian: ${dateRange}`],
-        [`Ngày xuất báo cáo: ${dayjs().format('DD/MM/YYYY HH:mm')}`],
+        [`Ngày xuất báo cáo: ${dayjs().format("DD/MM/YYYY HH:mm")}`],
         [],
-        ['THỐNG KÊ TỔNG QUAN'],
-        ['Chỉ số', 'Giá trị'],
-        ['Tổng lịch hẹn', statsData.totals.totalAppointments || 0],
-        ['Lịch tư vấn', statsData.totals.consultingAppointments || 0],
-        ['Lịch xét nghiệm', statsData.totals.testingAppointments || 0],
-        ['Tổng doanh thu', `${(statsData.totals.totalRevenue || 0).toLocaleString()} VNĐ`],
+        ["THỐNG KÊ TỔNG QUAN"],
+        ["Chỉ số", "Giá trị"],
+        ["Tổng lịch hẹn", statsData.totals.totalAppointments || 0],
+        ["Lịch tư vấn", statsData.totals.consultingAppointments || 0],
+        ["Lịch xét nghiệm", statsData.totals.testingAppointments || 0],
+        [
+          "Tổng doanh thu",
+          `${(statsData.totals.totalRevenue || 0).toLocaleString()} VNĐ`,
+        ],
       ];
-      
+
       const overviewSheet = XLSX.utils.aoa_to_sheet(overviewData);
-      XLSX.utils.book_append_sheet(wb, overviewSheet, 'Tổng quan');
-      
+      XLSX.utils.book_append_sheet(wb, overviewSheet, "Tổng quan");
+
       // SHEET 2: PHÂN TÍCH CHI TIẾT - giống như table trong hình
       // Headers giống như trong bảng
       const tableHeaders = [
-        'Ngày', 
-        'Lịch hẹn tư vấn', 
-        'Lịch hẹn xét nghiệm', 
-        'Doanh thu tư vấn', 
-        'Doanh thu xét nghiệm', 
-        'Tổng doanh thu'
+        "Ngày",
+        "Lịch hẹn tư vấn",
+        "Lịch hẹn xét nghiệm",
+        "Doanh thu tư vấn",
+        "Doanh thu xét nghiệm",
+        "Tổng doanh thu",
       ];
-      
+
       // Data từ statsData.details với định dạng giống như bảng
-      const tableData = statsData.details.map(item => [
-        dayjs(item.date).format('DD/MM/YYYY'),
+      const tableData = statsData.details.map((item) => [
+        dayjs(item.date).format("DD/MM/YYYY"),
         item.consultingAppointments || 0,
         item.testingAppointments || 0,
         `${(item.consultingRevenue || 0).toLocaleString()} VNĐ`,
         `${(item.testingRevenue || 0).toLocaleString()} VNĐ`,
-        `${(item.totalRevenue || 0).toLocaleString()} VNĐ`
+        `${(item.totalRevenue || 0).toLocaleString()} VNĐ`,
       ]);
-      
+
       // Thêm dòng tổng cộng
       const totalRow = [
-        'TỔNG CỘNG',
+        "TỔNG CỘNG",
         statsData.totals.consultingAppointments || 0,
         statsData.totals.testingAppointments || 0,
         `${(statsData.totals.consultingRevenue || 0).toLocaleString()} VNĐ`,
         `${(statsData.totals.testingRevenue || 0).toLocaleString()} VNĐ`,
-        `${(statsData.totals.totalRevenue || 0).toLocaleString()} VNĐ`
+        `${(statsData.totals.totalRevenue || 0).toLocaleString()} VNĐ`,
       ];
-      
+
       // Tạo worksheet với header và data
-      const detailsSheet = XLSX.utils.aoa_to_sheet([tableHeaders, ...tableData, totalRow]);
-      
+      const detailsSheet = XLSX.utils.aoa_to_sheet([
+        tableHeaders,
+        ...tableData,
+        totalRow,
+      ]);
+
       // Thiết lập chiều rộng cột phù hợp
       const colWidths = [
-        { wch: 15 },  // Ngày
-        { wch: 15 },  // Lịch hẹn tư vấn
-        { wch: 18 },  // Lịch hẹn xét nghiệm
-        { wch: 20 },  // Doanh thu tư vấn
-        { wch: 20 },  // Doanh thu xét nghiệm
-        { wch: 20 },  // Tổng doanh thu
+        { wch: 15 }, // Ngày
+        { wch: 15 }, // Lịch hẹn tư vấn
+        { wch: 18 }, // Lịch hẹn xét nghiệm
+        { wch: 20 }, // Doanh thu tư vấn
+        { wch: 20 }, // Doanh thu xét nghiệm
+        { wch: 20 }, // Tổng doanh thu
       ];
-      detailsSheet['!cols'] = colWidths;
-      
-      XLSX.utils.book_append_sheet(wb, detailsSheet, 'Phân tích chi tiết');
-      
-      // SHEET 3: DỮ LIỆU BIỂU ĐỒ
-      const chartData = [
-        ['DOANH THU VÀ LỊCH HẸN THEO NGÀY'],
-        [],
-        ['Ngày', 'Lịch tư vấn', 'Lịch xét nghiệm', 'Doanh thu tư vấn (VNĐ)', 'Doanh thu xét nghiệm (VNĐ)', 'Tổng doanh thu (VNĐ)'],
-      ];
-      
-      statsData.details.forEach(item => {
-        chartData.push([
-          dayjs(item.date).format('DD/MM/YYYY'),
-          item.consultingAppointments || 0,
-          item.testingAppointments || 0,
-          item.consultingRevenue || 0,
-          item.testingRevenue || 0,
-          item.totalRevenue || 0
-        ]);
-      });
-      
-      const chartSheet = XLSX.utils.aoa_to_sheet(chartData);
-      XLSX.utils.book_append_sheet(wb, chartSheet, 'Dữ liệu biểu đồ');
-      
+      detailsSheet["!cols"] = colWidths;
+
+      XLSX.utils.book_append_sheet(wb, detailsSheet, "Phân tích chi tiết");
+
       // Tạo file Excel và tải xuống
-      const excelBuffer = XLSX.write(wb, { 
-        bookType: 'xlsx', 
-        type: 'array',
+      const excelBuffer = XLSX.write(wb, {
+        bookType: "xlsx",
+        type: "array",
       });
-      
-      const data = new Blob([excelBuffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+
+      const data = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      
+
       // Đặt tên file với khoảng thời gian báo cáo
-      const fileName = `BaoCao_${days}Ngay_${dayjs().format('DDMMYYYY')}.xlsx`;
+      const fileName = `BaoCao_${days}Ngay_${dayjs().format("DDMMYYYY")}.xlsx`;
       saveAs(data, fileName);
-      
+
       message.success(`Đã tải báo cáo ${days} ngày gần nhất`);
     } catch (error) {
       console.error("Lỗi khi tạo báo cáo Excel:", error);
@@ -207,11 +195,13 @@ const ReportComponent = () => {
   // Load dữ liệu khi component mount và khi thay đổi tab
   useEffect(() => {
     fetchReportData();
-  }, [activeTab, days]); // Không đưa days và reportType vào để tránh tự động fetch khi thay đổi
+  }, [activeTab, days]);
 
   // Cấu trúc dữ liệu cho biểu đồ tổng quan
   const overviewChartData = {
-    labels: statsData?.overview?.dates || [],
+    labels:
+      statsData?.overview?.dates?.map((date) => dayjs(date).format("DD/MM")) ||
+      [],
     datasets: [
       {
         label: "Lịch hẹn tư vấn",
@@ -240,7 +230,9 @@ const ReportComponent = () => {
 
   // Cấu trúc dữ liệu cho biểu đồ doanh thu
   const revenueChartData = {
-    labels: statsData?.revenue?.dates || [],
+    labels:
+      statsData?.revenue?.dates.map((date) => dayjs(date).format("DD/MM")) ||
+      [],
     datasets: [
       {
         type: "line",
@@ -271,7 +263,10 @@ const ReportComponent = () => {
 
   // Cấu trúc dữ liệu cho biểu đồ lịch hẹn
   const appointmentsChartData = {
-    labels: statsData?.appointments?.dates || [],
+    labels:
+      statsData?.appointments?.dates.map((date) =>
+        dayjs(date).format("DD/MM")
+      ) || [],
     datasets: [
       {
         type: "line",
@@ -383,7 +378,7 @@ const ReportComponent = () => {
           Báo cáo thống kê
         </Title>
 
-        <Row gutter={[16, 16]} className="mb-4">
+        <Row gutter={[16, 16]} className="mb-4" align="middle">
           <Col xs={24} md={12}>
             <Space direction="vertical" size="middle" className="w-full">
               <Text strong>Chọn khoảng thời gian:</Text>
@@ -393,61 +388,45 @@ const ReportComponent = () => {
                 className="w-full"
                 placeholder="Chọn khoảng thời gian"
               >
-                {dayOptions.map(option => (
+                {dayOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
                   </Option>
                 ))}
               </Select>
-              
+
               {/* Hiển thị khoảng thời gian đã tính toán */}
               {statsData && (
                 <Text type="secondary">
-                  Từ {getDateRange()[0].format('DD/MM/YYYY')} đến {getDateRange()[1].format('DD/MM/YYYY')}
+                  Từ {getDateRange()[0].format("DD/MM/YYYY")} đến{" "}
+                  {getDateRange()[1].format("DD/MM/YYYY")}
                 </Text>
               )}
             </Space>
           </Col>
           <Col xs={24} md={12}>
-            <Space direction="vertical" size="middle" className="w-full">
-              <Text strong>Loại báo cáo:</Text>
-              <Select
-                value={reportType}
-                onChange={setReportType}
-                className="w-full"
-                placeholder="Chọn loại báo cáo"
-              >
-                <Option value="all">Tất cả</Option>
-                <Option value="consulting">Tư vấn</Option>
-                <Option value="testing">Xét nghiệm</Option>
-                <Option value="revenue">Doanh thu</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-
-        <Row justify="end" gutter={[16, 16]}>
-          <Col>
-            <Space>
-              <Button
-                type="primary"
-                icon={<ReloadOutlined />}
-                onClick={fetchReportData}
-                loading={loading}
-              >
-                Cập nhật
-              </Button>
-              {(isManager || isStaff) && (
+            <div className="h-full flex items-center justify-center md:justify-end">
+              <Space size="middle">
                 <Button
                   type="primary"
-                  icon={<DownloadOutlined />}
-                  onClick={handleDownloadExcel}
-                  loading={downloadLoading}
+                  icon={<ReloadOutlined />}
+                  onClick={fetchReportData}
+                  loading={loading}
                 >
-                  Tải Excel
+                  Cập nhật
                 </Button>
-              )}
-            </Space>
+                {(isManager || isStaff) && (
+                  <Button
+                    type="primary"
+                    icon={<DownloadOutlined />}
+                    onClick={handleDownloadExcel}
+                    loading={downloadLoading}
+                  >
+                    Tải Excel
+                  </Button>
+                )}
+              </Space>
+            </div>
           </Col>
         </Row>
       </Card>
@@ -481,9 +460,7 @@ const ReportComponent = () => {
             )}
             {renderStatsCard(
               "Tổng doanh thu",
-              `${((statsData.totals.totalRevenue || 0) / 1000000).toFixed(
-                1
-              )}M`,
+              `${((statsData.totals.totalRevenue || 0) / 1000000).toFixed(1)}M`,
               <DollarOutlined />,
               "#f5222d"
             )}

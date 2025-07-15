@@ -54,8 +54,8 @@ export default function ConsultantBookingSchedule() {
       const res = await getConsultantSchedule({
         customerName: searchText,
         status,
-        startDate: startDate ? dayjs(startDate).format('YYYY-MM-DDT00:00') : '',
-        endDate: endDate ? dayjs(endDate).format('YYYY-MM-DDT00:00') : '',
+        startDate: startDate ? dayjs(startDate).format("YYYY-MM-DDT00:00") : "",
+        endDate: endDate ? dayjs(endDate).format("YYYY-MM-DDT00:00") : "",
         page: pagination.current - 1, // API thường dùng 0-based index
         size: pagination.pageSize,
       });
@@ -67,13 +67,15 @@ export default function ConsultantBookingSchedule() {
         ...item,
         key: item.bookingId,
         bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
-        bookingTimeEnd: dayjs(item.bookingDate).add(1, 'hour').format("HH:mm"),
+        bookingTimeEnd: dayjs(item.bookingDate).add(1, "hour").format("HH:mm"),
       }));
       console.log("Lịch tư vấn:", data);
       setBookings(data);
     } catch (err) {
       console.error("Lỗi tải lịch tư vấn của bạn:", err);
-      message.error(err?.response?.data?.message || "Không thể tải lịch tư vấn.");
+      message.error(
+        err?.response?.data?.message || "Không thể tải lịch tư vấn."
+      );
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,14 @@ export default function ConsultantBookingSchedule() {
 
   useEffect(() => {
     fetchMySchedule();
-  }, [pagination.current, pagination.pageSize, searchText, status, startDate, endDate]);
+  }, [
+    pagination.current,
+    pagination.pageSize,
+    searchText,
+    status,
+    startDate,
+    endDate,
+  ]);
 
   const handleTableChange = (pagination) => {
     setPagination({
@@ -125,7 +134,7 @@ export default function ConsultantBookingSchedule() {
   const handleUpdateStatus = async (bookingId, status) => {
     try {
       await updateBookingStatus(bookingId, status);
-      message.success(`Cập nhật trạng thái thành công: ${status}`);
+      message.success(`Cập nhật trạng thái thành công`);
       fetchMySchedule();
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err?.response?.data || err);
@@ -160,11 +169,7 @@ export default function ConsultantBookingSchedule() {
           </Tag>
         );
       case "SCHEDULED":
-        return (
-          <Tag color="purple">
-            Đã lên lịch
-          </Tag>
-        );
+        return <Tag color="purple">Đã lên lịch</Tag>;
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -174,23 +179,11 @@ export default function ConsultantBookingSchedule() {
   const renderPaymentStatus = (paymentStatus) => {
     switch (paymentStatus) {
       case "PAID":
-        return (
-          <Tag color="green">
-            Đã thanh toán
-          </Tag>
-        );
+        return <Tag color="green">Đã thanh toán</Tag>;
       case "UNPAID":
-        return (
-          <Tag color="orange">
-            Chờ thanh toán
-          </Tag>
-        );
-      case "REFUNDED":
-        return (
-          <Tag color="blue">
-            Đã hoàn tiền
-          </Tag>
-        );
+        return <Tag color="orange">Chờ thanh toán</Tag>;
+      case "REFUND_PENDING":
+        return <Tag color="blue">Đang xử lí hoàn tiền</Tag>;
       default:
         return <Tag color="default">{paymentStatus || "Không xác định"}</Tag>;
     }
@@ -257,7 +250,7 @@ export default function ConsultantBookingSchedule() {
                 </Button>
               </Tooltip>
             )}
-            
+
             {record.status === "SCHEDULED" && (
               <>
                 <Popconfirm
@@ -272,19 +265,21 @@ export default function ConsultantBookingSchedule() {
                     Hoàn thành
                   </Button>
                 </Popconfirm>
-                <Popconfirm
-                  title="Xác nhận hủy lịch hẹn này?"
-                  onConfirm={() =>
-                    handleUpdateStatus(record.bookingId, "CANCELLED")
-                  }
-                  okText="Đồng ý"
-                  cancelText="Không"
-                >
-                  <Button danger size="small">
-                    Hủy
-                  </Button>
-                </Popconfirm>
               </>
+            )}
+            {record.status !== "COMPLETED" && (
+              <Popconfirm
+                title="Xác nhận hủy lịch hẹn này?"
+                onConfirm={() =>
+                  handleUpdateStatus(record.bookingId, "CANCELLED")
+                }
+                okText="Đồng ý"
+                cancelText="Không"
+              >
+                <Button danger size="small">
+                  Hủy
+                </Button>
+              </Popconfirm>
             )}
           </div>
         );
@@ -295,18 +290,18 @@ export default function ConsultantBookingSchedule() {
   // Hàm mở link cuộc họp trong tab mới - đã sửa
   const openMeetLink = (meetLink) => {
     if (!meetLink) {
-      message.warning('Không có link cuộc họp cho lịch hẹn này');
+      message.warning("Không có link cuộc họp cho lịch hẹn này");
       return;
     }
 
     // Kiểm tra xem link có chứa protocol hay không
-    if (!meetLink.startsWith('http://') && !meetLink.startsWith('https://')) {
+    if (!meetLink.startsWith("http://") && !meetLink.startsWith("https://")) {
       // Nếu không có, thêm https:// vào đầu
-      meetLink = 'https://' + meetLink;
+      meetLink = "https://" + meetLink;
     }
-    
+
     // Mở link trong tab mới
-    window.open(meetLink, '_blank');
+    window.open(meetLink, "_blank");
   };
 
   return (
@@ -375,6 +370,6 @@ export default function ConsultantBookingSchedule() {
           />
         )}
       </Card>
-    </div>  
+    </div>
   );
 }

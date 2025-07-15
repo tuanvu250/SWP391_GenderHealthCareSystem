@@ -10,6 +10,10 @@ export const getAllConsultants = async () => {
   }
 };
 
+export const getAllConsultantsForManager = async () => {
+  return apiClient.get("/consultant/profile/all");
+};
+
 export const createConsultantProfileAPI = async (data) => {
   return apiClient.post("/consultant/profile", data);
 }

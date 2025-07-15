@@ -313,10 +313,6 @@ const ManageUser = () => {
       key: "action",
       width: 200,
       render: (_, record) => {
-        // Không hiển thị các action với tài khoản đã xóa
-        if (record.status === "DELETED") {
-          return <Tag color="default">Không có thao tác</Tag>;
-        }
 
         // Menu cho dropdown action
         const actionMenu = (

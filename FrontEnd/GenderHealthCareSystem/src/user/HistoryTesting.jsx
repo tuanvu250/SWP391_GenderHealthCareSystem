@@ -58,6 +58,7 @@ const { Title, Text } = Typography;
 const HistoryTesting = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [loadingPayment, setLoadingPayment] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isViewResultModal, setIsViewResultModal] = useState(false);
@@ -107,7 +108,7 @@ const HistoryTesting = () => {
 
   useEffect(() => {
     fetchBookingHistory();
-  }, [pagination.current]);
+  }, [pagination.current, pagination.pageSize]);
 
   const handlePageChange = (page, pageSize) => {
     setPagination({
@@ -133,6 +134,7 @@ const HistoryTesting = () => {
 
   // Xử lý thanh toán
   const handlePayment = async (bookingId, totalPrice, paymentMethod) => {
+    setLoadingPayment(true);
     try {
       const response =
         paymentMethod === "vnpay"
@@ -157,6 +159,8 @@ const HistoryTesting = () => {
     } catch (error) {
       console.error("Error processing payment:", error);
       message.error("Có lỗi xảy ra khi xử lý thanh toán, vui lòng thử lại.");
+    } finally {
+      setLoadingPayment(false);
     }
   };
 
@@ -415,10 +419,11 @@ const HistoryTesting = () => {
                     <Button
                       type="primary"
                       size="middle"
+                      loading={loadingPayment}
                       onClick={() => {
                         handlePayment(
                           booking.id,
-                          booking.price,
+                          discountedPrice,
                           booking.paymentMethod
                         );
                       }}

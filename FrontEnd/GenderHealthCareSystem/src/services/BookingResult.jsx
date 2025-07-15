@@ -22,6 +22,7 @@ const BookingResult = () => {
   const { user } = useAuth();
   const [check, setCheck] = useState(false);
   const hasCreatedInvoice = useRef(false);
+  const [loading, setLoading] = useState(false);
 
   const userEmail = user?.email || "";
   const location = useLocation();
@@ -95,23 +96,14 @@ const BookingResult = () => {
   }, [fullQueryString]);
 
   const handlePaymentAgain = async () => {
+    setLoading(true);
     try {
       setBookingType(localStorage.getItem("bookingType") || "sti");
       const bookingID = localStorage.getItem("bookingID");
       const amount = localStorage.getItem("amount");
       const orderInfo = localStorage.getItem("orderInfo");
 
-      // if (!bookingID || !amount || !orderInfo) {
-      //   message.error("Thiếu thông tin. Vui lòng đặt lịch lại.");
-      //   navigate(bookingType === "consultant" ? "/consultation" : "/sti-testing");
-      //   return;
-      // }
-      console.log(">>> handlePaymentAgain bookingID:", bookingID);
-
       localStorage.setItem("bookingType", bookingType);
-      localStorage.removeItem("bookingID");
-      localStorage.removeItem("amount");
-      localStorage.removeItem("orderInfo");
 
       let response;
       if (bookingType === "consultant") {
@@ -134,6 +126,8 @@ const BookingResult = () => {
       message.error(
         error.response?.data?.message || "Không thể thử lại thanh toán."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -197,13 +191,20 @@ const BookingResult = () => {
               key="retry"
               size="large"
               onClick={handlePaymentAgain}
+              loading={loading}
             >
               Thử lại thanh toán
             </Button>,
             <Button
               key="home"
               size="large"
-              onClick={() => navigate("/")}
+              onClick={() => {
+                localStorage.removeItem("bookingID");
+                localStorage.removeItem("amount");
+                localStorage.removeItem("orderInfo");
+                localStorage.removeItem("bookingType");
+                navigate("/");
+              }}
               className="ml-4"
             >
               Về trang chủ

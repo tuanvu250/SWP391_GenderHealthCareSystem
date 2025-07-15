@@ -38,8 +38,13 @@ import {
   getTagColor,
 } from "../../../../components/utils/format";
 import BlogModal from "../../../components/modal/BlogModal";
-import { getConsultantSchedule, updateBookingStatus } from "../../../../components/api/ConsultantBooking.api";
+import {
+  getConsultantSchedule,
+  updateBookingStatus,
+} from "../../../../components/api/ConsultantBooking.api";
 import dayjs from "dayjs";
+import { getMyFeedbackConsultantAPI } from "../../../../components/api/FeedbackConsultant.api";
+import { getUnansweredQuestionsAPI } from "../../../../components/api/Question.api";
 
 const { Title, Text } = Typography;
 
@@ -56,6 +61,8 @@ const ConsultantDashboard = ({ stats }) => {
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [newestAppointments, setNewestAppointments] = useState([]);
+  const [newestFeedbacks, setNewestFeedbacks] = useState(0);
+  const [question, setQuestion] = useState(0);
 
   const fetchBlogList = async () => {
     setLoading(true);
@@ -119,9 +126,39 @@ const ConsultantDashboard = ({ stats }) => {
     }
   };
 
+  const fetchFeedbacks = async () => {
+    try {
+      const response = await getMyFeedbackConsultantAPI({
+        page: 0,
+        size: 100,
+      });
+      
+      const today = dayjs().format('YYYY-MM-DD');
+      
+      const todayFeedbacks = response.data.data.content.filter(feedback => 
+        dayjs(feedback.createdAt).format('YYYY-MM-DD') === today
+      );
+      
+      setNewestFeedbacks(todayFeedbacks.length || 0);
+    } catch (error) {
+      console.error("Error fetching feedbacks:", error);
+    }
+  };
+
+  const fetchPendingQuestion = async () => {
+      try {
+        const res = await getUnansweredQuestionsAPI();
+        const list = Array.isArray(res?.data?.data?.content) ? res.data.data.content : [];
+        setQuestion(list.length || 0);
+      } catch (err) {
+        console.error("Lỗi khi tải câu hỏi chưa trả lời:", err);
+      }
+    };
+
   useEffect(() => {
     fetchBlogList();
     fetchAppointments();
+    fetchFeedbacks();
   }, [pagination.current, pagination.pageSize]);
 
   // Xử lý khi modal thành công (thêm hoặc cập nhật)
@@ -202,41 +239,20 @@ const ConsultantDashboard = ({ stats }) => {
         <Col xs={24} md={6}>
           <Card>
             <Statistic
-              title="Thu nhập tháng này"
-              value={stats.monthlyEarnings || 0}
-              precision={0}
-              valueStyle={{ color: "#3f8600" }}
-              prefix={<DollarOutlined />}
-              suffix="VNĐ"
-            />
-            <div className="mt-1">
-              {stats.monthlyEarningsChange > 0 ? (
-                <Text type="success">
-                  <ArrowUpOutlined /> {stats.monthlyEarningsChange}% so với
-                  tháng trước
-                </Text>
-              ) : (
-                <Text type="danger">
-                  <ArrowUpOutlined style={{ transform: "rotate(180deg)" }} />{" "}
-                  {Math.abs(stats.monthlyEarningsChange || 0)}% so với tháng
-                  trước
-                </Text>
-              )}
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} md={6}>
-          <Card>
-            <Statistic
               title="Câu hỏi chưa trả lời"
-              value={stats.unansweredQuestions || 0}
+              value={question}
               valueStyle={{ color: "#1677ff" }}
               prefix={<QuestionCircleOutlined />}
             />
             {stats.unansweredQuestions > 0 && (
               <div className="mt-2">
-                <Button size="small" type="primary"
-                  onClick={() => navigate("/consultant/dashboard/consultant-answer")}>
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() =>
+                    navigate("/consultant/dashboard/consultant-answer")
+                  }
+                >
                   Trả lời ngay
                 </Button>
               </div>
@@ -247,14 +263,19 @@ const ConsultantDashboard = ({ stats }) => {
           <Card>
             <Statistic
               title="Đánh giá mới"
-              value={stats.newReviews || 0}
-              valueStyle={{ color: stats.newReviews > 0 ? "#faad14" : "" }}
+              value={newestFeedbacks || 0}
+              valueStyle={{ color: newestFeedbacks > 0 ? "#faad14" : "" }}
               prefix={<StarOutlined />}
             />
-            {stats.newReviews > 0 && (
+            {newestFeedbacks > 0 && (
               <div className="mt-2">
-                <Button size="small" type="default"
-                  onClick={() => navigate("/consultant/dashboard/manage-feedback")}>
+                <Button
+                  size="small"
+                  type="default"
+                  onClick={() =>
+                    navigate("/consultant/dashboard/manage-feedback")
+                  }
+                >
                   Xem đánh giá
                 </Button>
               </div>
@@ -361,45 +382,7 @@ const ConsultantDashboard = ({ stats }) => {
       </Row>
 
       <Row gutter={[16, 16]} className="mt-4">
-        <Col xs={24} md={12}>
-          <Card title="Câu hỏi mới nhất" className="h-full">
-            <List
-              dataSource={stats.recentQuestions || []}
-              renderItem={(item) => (
-                <List.Item
-                  actions={[
-                    <Button key="answer" size="small" type="primary">
-                      Trả lời
-                    </Button>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        src={item.avatarUrl || "https://via.placeholder.com/32"}
-                      />
-                    }
-                    title={<a href="#">{item.question}</a>}
-                    description={
-                      <>
-                        <Text type="secondary">
-                          {item.userName} · {item.time}
-                        </Text>
-                        <div className="mt-1">
-                          <Tag color="blue">{item.category}</Tag>
-                        </div>
-                      </>
-                    }
-                  />
-                </List.Item>
-              )}
-              pagination={{
-                pageSize: 3,
-              }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={12}>
+        <Col xs={24} md={24}>
           <Card title="Bài viết của tôi" className="h-full">
             <List
               dataSource={blogList}

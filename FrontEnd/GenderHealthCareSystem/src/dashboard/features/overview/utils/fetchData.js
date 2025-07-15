@@ -4,21 +4,25 @@ import { getStatisticsFeedbackTestingAPI } from "../../../../components/api/Feed
 import dayjs from "dayjs"; // Sử dụng dayjs để xử lý ngày tháng
 import {
   getRevenueStatsAPI,
+  getStatsUserRoleAPI,
   getUserAndBookingStatsAPI,
 } from "../../../../components/api/Report.api";
+import { getAllConsultants } from "../../../../components/api/Consultant.api";
 
 export const getDashboardStats = async (role) => {
   switch (role) {
     case "Manager": {
       const revenueStats = await getRevenueStats();
+      const statsByRole = await getStatsByRole();
+      const serviceRatings = await getRatingStats();
       return {
-        activeConsultants: 15,
-        totalConsultants: 20,
-        pendingPosts: 7,
-        averageRating: 4.5,
+        activeConsultants: await getActiveConsultants(),
+        totalConsultants: statsByRole.Consultant || 0,
+        pendingPosts: 0,
+        averageRating: serviceRatings.testingAvg,
 
         // Thêm dữ liệu đánh giá dịch vụ
-        serviceRatings: await getRatingStats(),
+        serviceRatings: serviceRatings,
 
         usersAndAppointments: await getUsersAndAppointmentsStats(),
 
@@ -120,11 +124,32 @@ export const getDashboardStats = async (role) => {
       const usersAndAppointments = await getUsersAndAppointmentsStats();
       return {
         todayTestings: 12,
-        todayConsultations: 8,  
+        todayConsultations: 8,
         appointmentTypeData: usersAndAppointments.map((item) => ({
           date: item.date,
           testAppointments: item.testAppointments,
           consultAppointments: item.consultAppointments,
+        })),
+      };
+    }
+
+    case "Admin": {
+      const user = await getUserAndBookingStatsAPI();
+      const statsByRole = await getStatsByRole();
+      return {
+        totalUsers: statsByRole.Total || 0,
+
+        userRoles: {
+          "Khách hàng": statsByRole.Customer,
+          "Tư vấn viên": statsByRole.Consultant,
+          "Nhân viên": statsByRole.Staff,
+          "Quản lí": statsByRole.Manager,
+          Admin: statsByRole.Admin,
+        },
+
+        userGrowth: user.data.data.map((item) => ({
+          period: dayjs(item.date).format("DD/MM"),
+          newUsers: item.users,
         })),
       };
     }
@@ -208,3 +233,28 @@ export const getRevenueStats = async () => {
     return [];
   }
 };
+
+export const getStatsByRole = async () => {
+  try {
+    const res = await getStatsUserRoleAPI();
+    console.log(">>> Stats by role:", res.data.data);
+    return res.data.data;
+  } catch (error) {
+    console.error("Error fetching stats by role:", error);
+    message.error(
+      error.response?.data?.message || "Không thể lấy thống kê theo vai trò."
+    );
+    return [];
+  }
+};
+
+export const getActiveConsultants = async () => {
+  try {
+    const res = await getAllConsultants();
+    return res.length;
+  } catch (error) {
+    console.error("Error fetching active consultants:", error);
+    message.error("Không thể lấy số lượng tư vấn viên hoạt động.");
+    return 0;
+  }
+}

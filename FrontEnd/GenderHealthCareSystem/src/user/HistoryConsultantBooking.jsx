@@ -156,35 +156,19 @@ const HistoryConsultantBooking = () => {
 
   // Xử lý tham gia cuộc gọi
   const handleJoinMeeting = (meetLink) => {
-    if (meetLink) {
-      window.open(meetLink, "_blank");
-    } else {
-      message.error("Không có link tham gia cuộc gọi");
+    if (!meetLink) {
+      message.warning("Không có link cuộc họp cho lịch hẹn này");
+      return;
     }
-  };
 
-  // Thêm hàm xử lý gửi đánh giá
-  const handleSubmitFeedback = async (feedback) => {
-    try {
-      setSubmittingFeedback(true);
-      await postFeedbackConsultantAPI(
-        feedback.id,
-        feedback.rating,
-        feedback.content,
-        feedback.consultantId,
-      );
-
-      setOpenFeedback(false);
-      setSubmittingFeedback(false);
-      message.success("Cảm ơn bạn đã gửi đánh giá!");
-      fetchBookingHistory();
-    } catch (error) {
-      setSubmittingFeedback(false);
-      console.error("Error submitting feedback:", error);
-      message.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá"
-      );
+    // Kiểm tra xem link có chứa protocol hay không
+    if (!meetLink.startsWith("http://") && !meetLink.startsWith("https://")) {
+      // Nếu không có, thêm https:// vào đầu
+      meetLink = "https://" + meetLink;
     }
+
+    // Mở link trong tab mới
+    window.open(meetLink, "_blank");
   };
 
   // Render trạng thái đặt lịch
@@ -194,6 +178,12 @@ const HistoryConsultantBooking = () => {
         return (
           <Tag icon={<ClockCircleOutlined />} color="blue">
             Đang xử lý
+          </Tag>
+        );
+      case "PROCESSING":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="orange">
+            Chờ thanh toán
           </Tag>
         );
       case "COMPLETED":
@@ -220,10 +210,10 @@ const HistoryConsultantBooking = () => {
             Đã từ chối
           </Tag>
         );
-      case "NO_SHOW":
+      case "SCHEDULED":
         return (
-          <Tag icon={<CloseCircleOutlined />} color="orange">
-            Không đến
+          <Tag icon={<CalendarOutlined />} color="geekblue">
+            Đã lên lịch
           </Tag>
         );
       default:
@@ -244,6 +234,12 @@ const HistoryConsultantBooking = () => {
         return (
           <Tag icon={<ClockCircleOutlined />} color="warning">
             Chưa thanh toán
+          </Tag>
+        );
+      case "REFUND_PENDING":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="orange">
+            Đang xử lý hoàn tiền
           </Tag>
         );
       default:
@@ -280,7 +276,7 @@ const HistoryConsultantBooking = () => {
   // Component để render mỗi booking dạng card
   const BookingCard = ({ booking }) => {
     // Kiểm tra xem có meetLink và cuộc hẹn đã được xác nhận
-    const canJoinMeeting = booking.meetLink && booking.status === "CONFIRMED";
+    const canJoinMeeting = booking.meetLink && booking.status === "SCHEDULED";
 
     // Tạo menu cho dropdown thanh toán
     const paymentMenu = (

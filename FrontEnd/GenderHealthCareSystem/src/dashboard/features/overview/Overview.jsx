@@ -5,7 +5,6 @@ import ConsultantDashboard from './components/ConsultantDashboard';
 import StaffDashboard from './components/StaffDashboard';
 import ManagerDashboard from './components/ManagerDashboard';
 import AdminDashboard from './components/AdminDashboard';
-import { getMockDataForRole } from './utils/mockData';
 import { getDashboardStats } from './utils/fetchData';
 
 const { Title } = Typography;
@@ -24,12 +23,7 @@ const Overview = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // Thay thế bằng API call thực tế
-        // const response = await getDashboardData(role);
-        // setStats(response.data);
-        
-        // Mock data cho từng role
-        const mockData = role === "Admin" ? getMockDataForRole(role) : await getDashboardStats(role);
+        const mockData = await getDashboardStats(role);
         console.log(">>> Mock data for role:", role, mockData);
         setStats(mockData);
       } catch (error) {

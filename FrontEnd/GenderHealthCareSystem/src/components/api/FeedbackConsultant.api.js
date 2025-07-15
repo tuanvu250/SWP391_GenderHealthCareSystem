@@ -78,3 +78,14 @@ export const getAverageRatingByConsultantAPI = async (consultantId) => {
 export const getStatisticsFeedbackConsultantAPI = async () => {
   return apiClient.get("/consultant-feedback/rating-statistics");
 };
+
+export const getPublicFeedbackConsultantAPI = async ({
+  page = 0,
+  size = 10,
+}) => {
+  const queryParams = new URLSearchParams({
+    page,
+    size,
+  }).toString();
+  return apiClient.get(`/consultant-feedback/public-feedback?${queryParams}`);
+}

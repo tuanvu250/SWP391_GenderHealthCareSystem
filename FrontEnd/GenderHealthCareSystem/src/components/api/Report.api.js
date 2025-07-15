@@ -11,3 +11,7 @@ export const getRevenueStatsAPI = async () => {
 export const getReportDashboardAPI = async (days) => {
     return apiClient.get(`/report/dashboard?days=${days}`);
 }
+
+export const getStatsUserRoleAPI = async () => {
+    return apiClient.get("/users/counts-by-role");
+}

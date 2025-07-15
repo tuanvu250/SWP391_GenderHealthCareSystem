@@ -44,7 +44,7 @@ import {
 } from "../../../components/api/FeedbackConsultant.api";
 import { getAverageRatingAPI } from "../../../components/api/FeedbackTesting.api";
 import { getConsultantProfile } from "../../../components/api/UserProfile.api";
-import { getAllConsultants } from "../../../components/api/Consultant.api";
+import { getAllConsultants, getAllConsultantsForManager } from "../../../components/api/Consultant.api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -81,9 +81,8 @@ const ManageFeedbackConsultant = () => {
     if (!isManager) return;
 
     try {
-      //const response = await getAllConsultants();
-      //console.log("Consultant list response:", response);
-      //setConsultantList(response || []);
+      const response = await getAllConsultantsForManager();
+      setConsultantList(response.data || []);
     } catch (error) {
       console.error("Error fetching consultant list:", error);
     }
@@ -326,25 +325,13 @@ const ManageFeedbackConsultant = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={24} lg={8}>
-          <Card bordered={false} className="h-full">
-            <Statistic
-              title={
-                isConsultant ? "Thứ hạng của tôi" : "Tư vấn viên hoạt động"
-              }
-              value={isConsultant ? "Đang tính toán..." : consultantList.length}
-              prefix={isConsultant ? <StarOutlined /> : <TeamOutlined />}
-              valueStyle={{ color: "#52c41a" }}
-            />
-          </Card>
-        </Col>
       </Row>
 
       {/* Filters */}
       <Card className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input.Search
-            placeholder="Tìm kiếm theo nội dung hoặc tên người đánh giá"
+            placeholder="Tìm kiếm theo tên người đánh giá"
             allowClear
             enterButton={<SearchOutlined />}
             onSearch={setSearchText}
@@ -368,7 +355,7 @@ const ManageFeedbackConsultant = () => {
             >
               <Option value="">Tất cả tư vấn viên</Option>
               {consultantList.map((consultant) => (
-                <Option key={consultant.userId} value={consultant.userId}>
+                <Option key={consultant.consultantId} value={consultant.consultantId}>
                   {consultant.fullName}
                 </Option>
               ))}
