@@ -10,6 +10,7 @@ export const postServiceTestingAPI = async (values) => {
     discount: values.discount,
     type: values.type,
     status: values.status,
+    maxBookingsPerSlot: values.maxBookingsPerSlot,
   };
   return apiClient.post("/stis-services", data);
 };
@@ -39,6 +40,7 @@ export const editServiceTestingAPI = async (id, values) => {
     discount: values.discount,
     type: values.type,
     status: values.status,
+    maxBookingsPerSlot: values.maxBookingsPerSlot,
   };
   return apiClient.put(`/stis-services/${id}`, data);
 }

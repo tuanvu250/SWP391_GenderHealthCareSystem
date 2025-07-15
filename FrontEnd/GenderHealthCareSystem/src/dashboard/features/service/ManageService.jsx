@@ -108,15 +108,15 @@ const ManageService = () => {
       tests: record.tests ? record.tests.split(", ") : [],
       discount: record.discount || 0,
       type: record.type,
-      status: record.status === "ACTIVE",
-      maxBookingsPerSlot: record.maxBookingsPerSlot
+      status: record.status ? "ACTIVE" : "INACTIVE",
+      maxBookingsPerSlot: record.maxBookingsPerSlot,
     });
     setModalVisible(true);
   };
 
   // Xử lý thay đổi phân trang
   const handleTabeChange = (pagination) => {
-    setPagination(pagination)
+    setPagination(pagination);
   };
   // Nếu có sắp xếp, có thể xử lý ở đâ
 
@@ -149,18 +149,12 @@ const ManageService = () => {
       const values = await form.validateFields();
 
       if (editingId) {
-        await editServiceTestingAPI(editingId, {
-          ...values,
-          status: values.status ? "ACTIVE" : "INACTIVE",  
-        });
+        await editServiceTestingAPI(editingId, values);
         message.success("Cập nhật dịch vụ thành công");
       } else {
         // Thêm mới
-        const newService = {
-          ...values,
-          status: values.isActive ? "ACTIVE" : "INACTIVE",
-        };
-        await postServiceTestingAPI(newService);
+        values.status = values.status ? "ACTIVE" : "INACTIVE";
+        await postServiceTestingAPI(values);
         loadData();
         message.success("Thêm dịch vụ thành công");
       }
