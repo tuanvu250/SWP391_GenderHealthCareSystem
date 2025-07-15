@@ -94,12 +94,6 @@ public class ConsultantProfileController {
     }
 
 
-    @PostMapping("/search")
-    @PreAuthorize("hasRole('Customer')")
-    public ResponseEntity<List<ConsultantProfileResponse>> search(@RequestBody ConsultantSearchRequest req) {
-        List<ConsultantProfileResponse> results = service.searchConsultants(req);
-        return ResponseEntity.ok(results);
-    }
 
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('Manager', 'Customer')")

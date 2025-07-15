@@ -86,7 +86,7 @@ public class ConsultantBookingService {
                 booking.getBookingId(),
                 booking.getConsultant().getFullName(),
                 booking.getBookingDate(),
-                BigDecimal.ZERO, // Default amount
+                BigDecimal.ZERO.doubleValue(), // Default amount
                 booking.getPaymentStatus(),
                 null, // Default payment method
                 booking.getMeetLink(),
@@ -168,9 +168,9 @@ public class ConsultantBookingService {
                 cb.getBookingId(),
                 cb.getConsultant().getFullName(),
                 cb.getBookingDate(),
-                cb.getInvoice() != null
-                        ? BigDecimal.valueOf(cb.getInvoice().getTotalAmount())
-                        : BigDecimal.ZERO,
+                cb.getConsultant().getConsultantProfile() != null
+                        ? cb.getConsultant().getConsultantProfile().getHourlyRate() // Fetch hourlyRate from ConsultantProfile
+                        : 0.0,
                 cb.getPaymentStatus(),
                 cb.getInvoice() != null
                         ? cb.getInvoice().getPaymentMethod()
@@ -216,8 +216,8 @@ public class ConsultantBookingService {
                 b.getConsultant() != null ? b.getConsultant().getFullName() : null,
                 b.getBookingDate(),
                 b.getInvoice() != null && b.getInvoice().getTotalAmount() != null
-                        ? BigDecimal.valueOf(b.getInvoice().getTotalAmount())
-                        : BigDecimal.ZERO,
+                        ? b.getInvoice().getTotalAmount() // Use Double directly
+                        : 0.0,
                 b.getPaymentStatus(),
                 b.getInvoice() != null
                         ? b.getInvoice().getPaymentMethod()
