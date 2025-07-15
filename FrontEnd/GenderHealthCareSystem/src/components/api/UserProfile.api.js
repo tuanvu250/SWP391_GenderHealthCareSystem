@@ -32,6 +32,6 @@ export const getConsultantProfile = async () => {
 
 // PUT /api/consultant/profile
 export const updateConsultantProfile = async (data) => {
-  console.log("Updating consultant profile with data:", data);
+  //console.log("Updating consultant profile with data:", data);
   return apiClient.put("/consultant/profile", data);
 };
