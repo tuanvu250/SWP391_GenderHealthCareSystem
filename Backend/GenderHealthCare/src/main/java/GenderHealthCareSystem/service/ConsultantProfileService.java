@@ -170,33 +170,6 @@ public class ConsultantProfileService {
     }
 
 
-    public List<ConsultantProfileResponse> searchConsultants(ConsultantSearchRequest req) {
-        return profileRepo.findAll().stream()
-                .filter(p -> req.getIsAvailable() == null || req.getIsAvailable().equals(p.getIsAvailable()))
-                .filter(p -> req.getLocation() == null || p.getLocation().toLowerCase().contains(req.getLocation().toLowerCase()))
-                .filter(p -> req.getMinHourlyRate() == null || p.getHourlyRate() >= req.getMinHourlyRate())
-                .filter(p -> req.getMaxHourlyRate() == null || p.getHourlyRate() <= req.getMaxHourlyRate())
-                .filter(p -> req.getMinExperience() == null || p.getExperienceYears() >= req.getMinExperience())
-                .filter(p -> req.getMaxExperience() == null || p.getExperienceYears() <= req.getMaxExperience())
-                .filter(p -> req.getLanguage() == null || p.getLanguages().toLowerCase().contains(req.getLanguage().toLowerCase()))
-                .filter(p -> {
-                    if (req.getKeyword() == null) return true;
-                    String kw = req.getKeyword().toLowerCase();
-                    return p.getConsultant().getFullName().toLowerCase().contains(kw)
-                            || p.getJobTitle().toLowerCase().contains(kw)
-                            || p.getSpecialization().toLowerCase().contains(kw)
-                            || p.getIntroduction().toLowerCase().contains(kw);
-                })
-                .filter(p -> {
-                    if (req.getDetailType() == null && req.getOrganization() == null) return true;
-                    return p.getDetails().stream().anyMatch(d ->
-                            (req.getDetailType() == null || d.getDetailType().equalsIgnoreCase(req.getDetailType()))
-                                    && (req.getOrganization() == null || d.getOrganization().toLowerCase().contains(req.getOrganization().toLowerCase()))
-                    );
-                })
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
 
     public List<ConsultantProfileResponse> getActiveConsultants() {
         return profileRepo.findActiveConsultants().stream()

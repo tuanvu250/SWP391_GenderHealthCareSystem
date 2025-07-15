@@ -6,14 +6,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-
 import org.springframework.stereotype.Service;
 
 import com.paypal.api.payments.Payment;
 
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.model.Invoice;
-import GenderHealthCareSystem.model.Account;
 import GenderHealthCareSystem.repository.ConsultantInvoiceRepository;
 import GenderHealthCareSystem.repository.ConsultantProfileRepository;
 import GenderHealthCareSystem.repository.ConsultationBookingRepository;
@@ -35,12 +33,11 @@ public class ConsultantInvoiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
-        Double expectedVnd = calculateFee(booking).doubleValue();
-        Double expectedUsd = Math.round((expectedVnd / 24000.0) * 100.0) / 100.0; // Round to 2 decimal places
+        Double hourlyRate = booking.getConsultant().getConsultantProfile().getHourlyRate(); // Lấy trực tiếp hourlyRate
 
-        System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Expected USD = " + expectedUsd);
+        System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Hourly Rate USD = " + hourlyRate);
 
-        if (Math.abs(paidAmount - expectedUsd) > 0.01) {
+        if (Math.abs(paidAmount - hourlyRate) > 0.01) {
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
@@ -50,7 +47,7 @@ public class ConsultantInvoiceService {
             invoice.setConsultationBooking(booking);
         }
 
-        invoice.setTotalAmount(expectedUsd);
+        invoice.setTotalAmount(hourlyRate); // Sử dụng hourlyRate thay vì totalAmount
         invoice.setCurrency("USD");
         invoice.setPaymentMethod("PAYPAL");
         invoice.setTransactionId(payment.getId());
@@ -68,12 +65,12 @@ public class ConsultantInvoiceService {
         ConsultationBooking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
-        Double paidAmount = Double.valueOf(params.get("vnp_Amount")) / 100;
-        Double expectedAmount = calculateFee(booking).doubleValue();
+        Double paidAmount = Double.parseDouble(params.get("vnp_Amount")) / 100;
+        Double hourlyRate = booking.getConsultant().getConsultantProfile().getHourlyRate(); // Lấy trực tiếp hourlyRate
 
-        System.out.println(">>> [VNPAY] Paid VND = " + paidAmount + ", Expected VND = " + expectedAmount);
+        System.out.println(">>> [VNPAY] Paid VND = " + paidAmount + ", Hourly Rate VND = " + hourlyRate);
 
-        if (!paidAmount.equals(expectedAmount)) {
+        if (!paidAmount.equals(hourlyRate)) {
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
@@ -83,7 +80,7 @@ public class ConsultantInvoiceService {
             invoice.setConsultationBooking(booking);
         }
 
-        invoice.setTotalAmount(expectedAmount);
+        invoice.setTotalAmount(hourlyRate); // Sử dụng hourlyRate thay vì totalAmount
         invoice.setCurrency("VND");
         invoice.setPaymentMethod("VNPAY");
         invoice.setTransactionId(params.get("vnp_TransactionNo"));
@@ -103,10 +100,6 @@ public class ConsultantInvoiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Consultant profile not found"));
 
         return BigDecimal.valueOf(profile.getHourlyRate());
-    }
-
-    public BigDecimal calculateBookingFee(ConsultationBooking booking) {
-        return calculateFee(booking);
     }
 
     public void updateMeetingLink(Integer bookingId, String meetingLink) {

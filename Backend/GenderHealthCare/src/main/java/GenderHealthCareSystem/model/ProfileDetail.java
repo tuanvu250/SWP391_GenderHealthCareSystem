@@ -21,7 +21,7 @@ public class ProfileDetail {
     private ConsultantProfile profile;
 
     @Column(name = "DetailType", nullable = false, length = 10)
-    private String detailType; // WORK, EDU, CERT
+    private String detailType; // WORK, EDU, CERT/
 
     @Column(name = "Title", length = 100, columnDefinition = "NVARCHAR(100)")
     private String title;

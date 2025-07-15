@@ -60,6 +60,6 @@ public class Users { // Renamed from User to UserAccount to avoid conflicts
     @OneToOne(mappedBy = "users", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Account account;
 
-    // @OneToOne(mappedBy = "consultant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // private ConsultantProfile consultantProfile;
+    @OneToOne(mappedBy = "consultant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ConsultantProfile consultantProfile;
 }

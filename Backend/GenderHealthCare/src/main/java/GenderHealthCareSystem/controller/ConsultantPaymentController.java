@@ -4,7 +4,6 @@ import GenderHealthCareSystem.dto.ApiResponse;
 import GenderHealthCareSystem.service.ConsultantInvoiceService;
 import GenderHealthCareSystem.service.PayPalService;
 import GenderHealthCareSystem.service.VnPayService;
-import GenderHealthCareSystem.service.ConsultantBookingService;
 import GenderHealthCareSystem.model.ConsultationBooking;
 import GenderHealthCareSystem.repository.ConsultationBookingRepository;
 import com.paypal.api.payments.Links;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,27 +60,22 @@ public class ConsultantPaymentController {
                     return new IllegalArgumentException("Booking không tồn tại");
                 });
 
-        // Allow retry if status is PENDING
-//        if (booking.getStatus() == BookingStatus.PROCESSING) {
-//            return ResponseEntity.badRequest().body("Slot is currently being processed by another user");
-//        }
-
         if (booking.getStatus() == BookingStatus.PENDING) {
             booking.setStatus(BookingStatus.PROCESSING);
             bookingRepository.save(booking);
         }
 
-        BigDecimal amount = consultantInvoiceService.calculateBookingFee(booking);
-        logger.info("Calculated amount for booking ID {}: {}", bookingId, amount);
+        Double hourlyRate = booking.getConsultant().getConsultantProfile().getHourlyRate(); // Fixed access to hourlyRate
+        logger.info("Hourly rate for booking ID {}: {}", bookingId, hourlyRate);
 
         String paymentUrl;
 
         if ("VNPAY".equalsIgnoreCase(method)) {
-            long vnpayAmount = amount.longValue();
+            long vnpayAmount = hourlyRate.longValue();
             logger.info("VNPAY amount for booking ID {}: {}", bookingId, vnpayAmount);
             paymentUrl = vnPayService.createPaymentUrl(vnpayAmount, "Consultation", bookingId.toString(), request.getRemoteAddr());
         } else if ("PAYPAL".equalsIgnoreCase(method)) {
-            double usdAmount = convertVNDtoUSD(amount.doubleValue());
+            double usdAmount = hourlyRate; // Directly use hourlyRate
             logger.info("PayPal amount (USD) for booking ID {}: {}", bookingId, usdAmount);
             Payment payment = payPalService.createPayment(
                     bookingId.toString(),
@@ -102,8 +95,6 @@ public class ConsultantPaymentController {
                         logger.error("No approval URL returned by PayPal for booking ID {}", bookingId);
                         return new IllegalArgumentException("No approval URL from PayPal");
                     });
-            // Cập nhật expectedAmount thành USD để khớp với PayPal
-            amount = BigDecimal.valueOf(usdAmount);
         } else {
             logger.error("Invalid payment method: {}", method);
             return ResponseEntity.badRequest().body("Phương thức thanh toán không hợp lệ");
@@ -114,15 +105,6 @@ public class ConsultantPaymentController {
 
         logger.info("Generated payment URL for booking ID {}: {}", bookingId, paymentUrl);
         return ResponseEntity.ok(paymentUrl);
-    }
-
-    /**
-     * Convert VND to USD (example rate: 1 USD = 24000 VND)
-     */
-    private double convertVNDtoUSD(double vndAmount) {
-        final double USD_TO_VND_RATE = 24000.0;
-        double usdAmount = vndAmount / USD_TO_VND_RATE;
-        return Math.round(usdAmount * 100.0) / 100.0; // Round to 2 decimal places
     }
 
     @GetMapping("/success")
