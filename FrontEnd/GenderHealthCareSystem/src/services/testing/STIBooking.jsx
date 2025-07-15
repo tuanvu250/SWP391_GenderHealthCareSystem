@@ -102,10 +102,10 @@ const STIBooking = () => {
     { value: "08:00", label: "08:00 - 09:00" , disabled: false },
     { value: "09:00", label: "09:00 - 10:00" , disabled: false },
     { value: "10:00", label: "10:00 - 11:00" , disabled: false },
-    { value: "13:00", label: "13:00 - 14:00" , disabled: false },
-    { value: "14:00", label: "14:00 - 15:00" , disabled: false },
-    { value: "15:00", label: "15:00 - 16:00" , disabled: false },
-    { value: "16:00", label: "16:00 - 17:00" , disabled: false },
+    { value: "13:30", label: "13:30 - 14:30" , disabled: false },
+    { value: "14:30", label: "14:30 - 15:30" , disabled: false },
+    { value: "15:30", label: "15:30 - 16:30" , disabled: false },
+    { value: "16:30", label: "16:30 - 17:30" , disabled: false },
   ];
 
   // Disable các ngày trong quá khứ và cuối tuần

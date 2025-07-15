@@ -23,14 +23,14 @@ const serviceCategories = [
 
 // Danh sách bệnh có sẵn
 const availableTests = [
-  { value: "hiv", label: "HIV" },
-  { value: "syphilis", label: "Giang mai" },
-  { value: "hepatitisB", label: "Viêm gan B" },
-  { value: "hepatitisC", label: "Viêm gan C" },
-  { value: "gonorrhea", label: "Lậu" },
-  { value: "chlamydia", label: "Chlamydia" },
-  { value: "hpv", label: "HPV" },
-  { value: "herpes", label: "Herpes" },
+  { value: "HIV", label: "HIV" },
+  { value: "Giang mai", label: "Giang mai" },
+  { value: "Viêm gan B", label: "Viêm gan B" },
+  { value: "Viêm gan C", label: "Viêm gan C" },
+  { value: "Lậu Gonorrhea", label: "Lậu Gonorrhea" },
+  { value: "Chlamydia", label: "Chlamydia" },
+  { value: "HPV", label: "HPV" },
+  { value: "Herpes", label: "Herpes" },
 ];
 
 const ServiceFormModal = ({ open, onCancel, onOk, form, editingId}) => {
