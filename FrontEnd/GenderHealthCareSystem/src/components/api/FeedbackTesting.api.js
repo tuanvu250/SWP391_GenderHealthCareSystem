@@ -66,11 +66,11 @@ export const getStatisticsFeedbackTestingAPI = async () => {
 
 export const getPublicFeedbackTestingAPI = async ({
   page = 0,
-  size = 10,
+  size = 5,
 }) => {
   const query = new URLSearchParams({
     page,
     size,
   }).toString();
-  return apiClient.get(`/stis-feedback/public-feedback/${query}`);
+  return apiClient.get(`/stis-feedback/public-feedback?${query}`);
 }
