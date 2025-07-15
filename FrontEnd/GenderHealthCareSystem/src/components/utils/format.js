@@ -1,3 +1,4 @@
+import axios from "axios";
 import dayjs from "dayjs";
 
 export function formatDateTime(isoString) {
@@ -40,4 +41,24 @@ export function getTagColor(tag) {
     return tagColors[tag] || "cyan";
   };
   return Tag(tag);
+}
+
+export async function getUSDToVNDExchangeRate() {
+  const cachedData = localStorage.getItem('exchange_rate_data');
+  
+  if (cachedData) {
+    return cachedData
+  }
+  
+  // Nếu không có dữ liệu cache hoặc dữ liệu đã cũ, gọi API
+  try {
+    console.log('Fetching new exchange rate');
+    const response = await axios.get("https://v6.exchangerate-api.com/v6/f4bf27f3ae7743b87405279d/latest/USD");
+    const rate = response.data.conversion_rates.VND;
+    localStorage.setItem('exchange_rate_data', rate);
+    return rate;
+  } catch (error) {
+    console.error("Error fetching exchange rate:", error);
+    return 24000;
+  }
 }
