@@ -115,7 +115,7 @@ const ResultStisModal = ({
         values.detectedStis?.map((item) => ({
           testCode: item.disease,
           resultText: item.result,
-          notes: item.notes,
+          note: item.notes,
         })) || [];
 
       await enterResultStisAPI(booking.bookingId, detectedStis);
