@@ -218,6 +218,7 @@ const Sidebar = ({
           {
             key: "feedback-management",
             icon: <StarOutlined />,
+            label: "Quản lý đánh giá",
             children: [
               {
                 key: "manage-feedback-service",
@@ -247,6 +248,7 @@ const Sidebar = ({
           {
             key: "booking-management",
             icon: <CalendarOutlined />,
+            label: "Quản lý đặt lịch",
             children: [
               {
                 key: "manage-booking-stis",

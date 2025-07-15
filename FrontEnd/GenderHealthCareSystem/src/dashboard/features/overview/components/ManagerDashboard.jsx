@@ -88,6 +88,7 @@ const ManagerDashboard = ({ stats }) => {
             ...pagination,
             total: response.data.data.totalElements,
           });
+          stats.pendingPosts = response.data.data.totalElements;  
           setLoading(false);
         }, 500);
       }
@@ -558,7 +559,8 @@ const ManagerDashboard = ({ stats }) => {
         <Col xs={24}>
           <Card title="Hành động nhanh" className="text-center">
             <Space wrap>
-              <Button icon={<FileTextOutlined />} type="primary">
+              <Button icon={<FileTextOutlined />} type="primary"
+              onClick={() => navigate("/manager/dashboard/report")}>
                 Xem báo cáo chi tiết
               </Button>
               <Button
@@ -575,7 +577,6 @@ const ManagerDashboard = ({ stats }) => {
               >
                 Quản lý nhân sự
               </Button>
-              <Button icon={<BarChartOutlined />}>Báo cáo doanh thu</Button>
             </Space>
           </Card>
         </Col>

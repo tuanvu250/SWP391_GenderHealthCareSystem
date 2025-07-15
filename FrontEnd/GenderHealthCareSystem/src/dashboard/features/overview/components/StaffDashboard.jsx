@@ -255,16 +255,6 @@ const StaffDashboard = ({ stats }) => {
         <Col xs={24} md={4}>
           <Card>
             <Statistic
-              title="Khách đến xét nghiệm hôm nay"
-              value={stats.todayTestings || 0}
-              valueStyle={{ color: "#1677ff" }}
-              prefix={<MedicineBoxOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} md={4}>
-          <Card>
-            <Statistic
               title="Kết quả cần cập nhật"
               value={testingAppointments.length || 0}
               valueStyle={{
