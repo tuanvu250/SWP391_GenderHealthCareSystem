@@ -24,7 +24,10 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getAllBookings, updateBookingStatus } from "../../../components/api/ConsultantBooking.api";
+import {
+  getAllBookings,
+  updateBookingStatus,
+} from "../../../components/api/ConsultantBooking.api";
 import { useAuth } from "../../../components/provider/AuthProvider";
 import UpdateMeetLinkModal from "../../components/modal/UpdateMeetLinkModal";
 
@@ -36,11 +39,11 @@ const { Option } = Select;
 export default function ManageBookingConsultant() {
   const { user } = useAuth(); // Lấy thông tin người dùng từ context
   const isStaff = user?.role === "Staff"; // Kiểm tra xem người dùng có phải là staff không
-  
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [status, setStatus] = useState(""); 
+  const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [pagination, setPagination] = useState({
@@ -59,8 +62,8 @@ export default function ManageBookingConsultant() {
       const res = await getAllBookings({
         consultantName: searchText,
         status: status,
-        startDate: startDate ? dayjs(startDate).format('YYYY-MM-DDT00:00') : '',
-        endDate: endDate ? dayjs(endDate).format('YYYY-MM-DDT00:00') : '',
+        startDate: startDate ? dayjs(startDate).format("YYYY-MM-DDT00:00") : "",
+        endDate: endDate ? dayjs(endDate).format("YYYY-MM-DDT00:00") : "",
         page: pagination.current - 1,
         size: pagination.pageSize,
       });
@@ -72,12 +75,14 @@ export default function ManageBookingConsultant() {
         ...item,
         key: item.bookingId,
         bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
-        bookingTimeEnd: dayjs(item.bookingDate).add(1, 'hour').format("HH:mm"),
+        bookingTimeEnd: dayjs(item.bookingDate).add(1, "hour").format("HH:mm"),
       }));
       setBookings(data);
     } catch (err) {
       console.error("Lỗi tải danh sách lịch tư vấn:", err);
-      message.error(err?.response?.data?.message || "Không thể tải danh sách lịch tư vấn.");
+      message.error(
+        err?.response?.data?.message || "Không thể tải danh sách lịch tư vấn."
+      );
     } finally {
       setLoading(false);
     }
@@ -85,7 +90,14 @@ export default function ManageBookingConsultant() {
 
   useEffect(() => {
     fetchBookings();
-  }, [pagination.current, pagination.pageSize, searchText, status, startDate, endDate]);
+  }, [
+    pagination.current,
+    pagination.pageSize,
+    searchText,
+    status,
+    startDate,
+    endDate,
+  ]);
 
   const handleTableChange = (newPagination) => {
     setPagination(newPagination);
@@ -128,7 +140,9 @@ export default function ManageBookingConsultant() {
       fetchBookings();
     } catch (err) {
       console.error("Lỗi cập nhật trạng thái:", err);
-      message.error(err?.response?.data?.message || "Không thể cập nhật trạng thái.");
+      message.error(
+        err?.response?.data?.message || "Không thể cập nhật trạng thái."
+      );
     }
   };
 
@@ -175,11 +189,7 @@ export default function ManageBookingConsultant() {
           </Tag>
         );
       case "SCHEDULED":
-        return (
-          <Tag color="purple">
-            Đã lên lịch
-          </Tag>
-        );
+        return <Tag color="purple">Đã lên lịch</Tag>;
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -188,23 +198,13 @@ export default function ManageBookingConsultant() {
   const renderPaymentStatus = (paymentStatus) => {
     switch (paymentStatus) {
       case "PAID":
-        return (
-          <Tag color="green">
-            Đã thanh toán
-          </Tag>
-        );
+        return <Tag color="green">Đã thanh toán</Tag>;
       case "UNPAID":
-        return (
-          <Tag color="orange">
-            Chờ thanh toán
-          </Tag>
-        );
+        return <Tag color="orange">Chưa thanh toán</Tag>;
       case "REFUNDED":
-        return (
-          <Tag color="blue">
-            Đã hoàn tiền
-          </Tag>
-        );
+        return <Tag color="blue">Đã hoàn tiền</Tag>;
+      case "REFUND_PENDING":
+        return <Tag color="orange">Đang xử lí hoàn tiền</Tag>;
       default:
         return <Tag color="default">{paymentStatus || "Không xác định"}</Tag>;
     }
@@ -292,11 +292,13 @@ export default function ManageBookingConsultant() {
                 Cập nhật link
               </Button>
             )}
-            
+
             {record.status === "CONFIRMED" && (
               <Popconfirm
                 title="Xác nhận đã lên lịch cho buổi tư vấn này?"
-                onConfirm={() => handleUpdateStatus(record.bookingId, "SCHEDULED")}
+                onConfirm={() =>
+                  handleUpdateStatus(record.bookingId, "SCHEDULED")
+                }
                 okText="Xác nhận"
                 cancelText="Hủy"
               >
@@ -323,7 +325,7 @@ export default function ManageBookingConsultant() {
         <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4">
             <Search
-              placeholder="Tìm kiếm theo tên consultant"
+              placeholder="Tìm kiếm theo tên tư vấn viên"
               allowClear
               onSearch={handleSearch}
               style={{ width: 300 }}
@@ -344,7 +346,8 @@ export default function ManageBookingConsultant() {
               defaultValue={""}
               allowClear
             >
-              <Option value="PROCESSING">Chờ xác nhận</Option>
+              <Option value="PENDING">Chờ xác nhận</Option>
+              <Option value="PROCESSING">Chờ thanh toán</Option>
               <Option value="CONFIRMED">Đã xác nhận</Option>
               <Option value="SCHEDULED">Đã lên lịch</Option>
               <Option value="COMPLETED">Hoàn thành</Option>

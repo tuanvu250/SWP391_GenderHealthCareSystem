@@ -72,7 +72,7 @@ const HistoryConsultantBooking = () => {
       const data = response.data.data.content.map((item) => ({
         ...item,
         id: item.bookingId,
-        price: item.amount,
+        price: item.hourlyRate,
         bookingDate: dayjs(item.createAt).format("DD/MM/YYYY"),
         appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
         appointmentTime: `${dayjs(item.bookingDate).format("HH:mm")} - ${dayjs(
@@ -190,6 +190,12 @@ const HistoryConsultantBooking = () => {
         return (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Hoàn thành
+          </Tag>
+        );
+      case "REFUND_PENDING":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="warning">
+            Đang xử lý hoàn tiền
           </Tag>
         );
       case "CANCELLED":

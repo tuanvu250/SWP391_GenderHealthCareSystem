@@ -117,7 +117,7 @@ export default function ConsultantProfile() {
         const finalData = {
           ...res,
           userImageUrl:
-          res.userImageUrl || user?.userImageUrl || "/placeholder.svg",
+            res.userImageUrl || user?.userImageUrl || "/placeholder.svg",
           location: res.location || "Thành phố Hồ Chí Minh",
         };
         setProfileData(finalData);
@@ -137,7 +137,7 @@ export default function ConsultantProfile() {
         experienceYears: 0,
         hourlyRate: 0,
         introduction: "",
-        employmentStatus: true, 
+        employmentStatus: true,
       };
 
       setProfileData({
@@ -498,6 +498,7 @@ export default function ConsultantProfile() {
           name="employmentStatus"
           label="Trạng thái"
           valuePropName="checked"
+          normalize={(value) => value === undefined ? false : value}
         >
           <Switch
             checkedChildren="Đang nhận tư vấn"
@@ -626,7 +627,9 @@ export default function ConsultantProfile() {
                 }
                 color={profileData.employmentStatus ? "success" : "default"}
               >
-                {profileData.employmentStatus ? "Đang nhận tư vấn" : "Tạm ngưng"}
+                {profileData.employmentStatus
+                  ? "Đang nhận tư vấn"
+                  : "Tạm ngưng"}
               </Tag>
             </Space>
           </Col>
@@ -801,7 +804,9 @@ export default function ConsultantProfile() {
                   {profileData.hourlyRate?.toLocaleString()} VNĐ/giờ
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
-                  {profileData.employmentStatus ? "Đang nhận tư vấn" : "Tạm ngưng"}
+                  {profileData.employmentStatus
+                    ? "Đang nhận tư vấn"
+                    : "Tạm ngưng"}
                 </Descriptions.Item>
               </Descriptions>
             </Card>

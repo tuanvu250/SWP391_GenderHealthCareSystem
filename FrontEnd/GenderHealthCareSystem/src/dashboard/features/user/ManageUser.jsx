@@ -46,7 +46,10 @@ import {
   CheckCircleOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { editEmploymentStatusAPI, editHourlyRateAPI } from "../../../components/api/Consultant.api";
+import {
+  editEmploymentStatusAPI,
+  editHourlyRateAPI,
+} from "../../../components/api/Consultant.api";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -171,9 +174,9 @@ const ManageUser = () => {
           fullName: values.fullName,
           role: values.role,
           phone: values.phone,
-        }
+        };
         await editUserAPI(userId, userData);
-        if(values.role === "Consultant") {
+        if (values.role === "Consultant") {
           await editHourlyRateAPI(userId, values.hourlyRate);
           await editEmploymentStatusAPI(userId, values.employmentStatus);
         }
@@ -313,7 +316,6 @@ const ManageUser = () => {
       key: "action",
       width: 200,
       render: (_, record) => {
-
         // Menu cho dropdown action
         const actionMenu = (
           <Menu onClick={({ key }) => handleStatusChange(record, key)}>
@@ -341,60 +343,24 @@ const ManageUser = () => {
 
         return (
           <Space size="small">
-            <Button size="small" onClick={() => handleEditUser(record)}>
-              Sửa
-            </Button>
-
-            <Dropdown overlay={actionMenu} placement="bottomRight">
-              <Button size="small" type="primary">
-                Trạng thái <DownOutlined />
-              </Button>
-            </Dropdown>
+            {(isAdmin || (isManager && record.role !== "Customer")) && (
+              <>
+                <Button size="small" onClick={() => handleEditUser(record)}>
+                  Sửa
+                </Button>
+                <Dropdown overlay={actionMenu} placement="bottomRight">
+                  <Button size="small" type="primary">
+                    Trạng thái <DownOutlined />
+                  </Button>
+                </Dropdown>
+              </>
+            )}
           </Space>
         );
       },
     };
 
-    // Cột đặc biệt cho từng loại user
-    const consultantColumns = [
-      {
-        title: "Chuyên môn",
-        dataIndex: "specialization",
-        key: "specialization",
-      },
-      {
-        title: "Đánh giá",
-        dataIndex: "rating",
-        key: "rating",
-        render: (rating) => `${rating || 0}/5`,
-      },
-    ];
-
-    const customerColumns = [
-      {
-        title: "Số đơn hàng",
-        dataIndex: "orderCount",
-        key: "orderCount",
-        render: (count) => count || 0,
-      },
-    ];
-
-    // Lựa chọn cột theo tab
-    let specificColumns = [];
-
-    switch (activeTab) {
-      case "Consultant":
-        specificColumns = consultantColumns;
-        break;
-      case "Customer":
-        specificColumns = customerColumns;
-        break;
-      default:
-        // Không thêm cột đặc biệt
-        break;
-    }
-
-    return [...commonColumns, ...specificColumns, actionColumn];
+    return [...commonColumns, actionColumn];
   };
 
   // Thêm hàm xử lý thay đổi trạng thái

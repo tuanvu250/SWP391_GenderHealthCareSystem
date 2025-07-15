@@ -50,7 +50,6 @@ import ManageUser from "../dashboard/features/user/ManageUser";
 import ManageFeedbackService from "../dashboard/features/feedback/ManageFeedbackService";
 import ConsultantBookingSchedule from "../dashboard/features/booking/ConsultantBookingSchedule";
 import ConsultantProfile from "../dashboard/features/profile/ConsultantProfile";
-import ConsultantManagement from "../dashboard/features/profile/ConsultantManagement";
 import ConsultantAnswerPage from "../dashboard/features/asking/ConsultantAnswerPage";
 
 import ConsultantDetail from "../site-info/Expert-info/ConsultantDetail";
@@ -219,10 +218,6 @@ function RouteMap() {
         <Route
           path="manage-feedback-service"
           element={<ManageFeedbackService />}
-        />
-        <Route
-          path="manage-consultant-profile"
-          element={<ConsultantManagement />}
         />
         <Route path="manage-users" element={<ManageUser />} />
         <Route
