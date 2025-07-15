@@ -97,6 +97,7 @@ const AccountSetting = () => {
                 >
                   Đổi mật khẩu
                 </div>
+                {user.role !== 'Admin' && (
                 <div 
                   className={`py-2 px-4 cursor-pointer ${
                     activeTab === 'delete' ? 'border-b-2 border-blue-500 text-blue-600' : ''
@@ -105,6 +106,7 @@ const AccountSetting = () => {
                 >
                   Xóa tài khoản
                 </div>
+                )}
               </div>
             </div>
 

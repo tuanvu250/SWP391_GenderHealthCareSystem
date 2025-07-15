@@ -4,6 +4,7 @@ import { getStatisticsFeedbackTestingAPI } from "../../../../components/api/Feed
 import dayjs from "dayjs"; // Sử dụng dayjs để xử lý ngày tháng
 import {
   getRevenueStatsAPI,
+  getStatsUserRoleAPI,
   getUserAndBookingStatsAPI,
 } from "../../../../components/api/Report.api";
 
@@ -120,11 +121,32 @@ export const getDashboardStats = async (role) => {
       const usersAndAppointments = await getUsersAndAppointmentsStats();
       return {
         todayTestings: 12,
-        todayConsultations: 8,  
+        todayConsultations: 8,
         appointmentTypeData: usersAndAppointments.map((item) => ({
           date: item.date,
           testAppointments: item.testAppointments,
           consultAppointments: item.consultAppointments,
+        })),
+      };
+    }
+
+    case "Admin": {
+      const user = await getUserAndBookingStatsAPI();
+      const statsByRole = await getStatsByRole();
+      return {
+        totalUsers: statsByRole.Total || 0,
+
+        userRoles: {
+          "Khách hàng": statsByRole.Customer,
+          "Tư vấn viên": statsByRole.Consultant,
+          "Nhân viên": statsByRole.Staff,
+          "Quản lí": statsByRole.Manager,
+          Admin: statsByRole.Admin,
+        },
+
+        userGrowth: user.data.data.map((item) => ({
+          period: dayjs(item.date).format("DD/MM"),
+          newUsers: item.users,
         })),
       };
     }
@@ -205,6 +227,20 @@ export const getRevenueStats = async () => {
   } catch (error) {
     console.error("Error fetching revenue statistics:", error);
     message.error("Không thể lấy thống kê doanh thu.");
+    return [];
+  }
+};
+
+export const getStatsByRole = async () => {
+  try {
+    const res = await getStatsUserRoleAPI();
+    console.log(">>> Stats by role:", res.data.data);
+    return res.data.data;
+  } catch (error) {
+    console.error("Error fetching stats by role:", error);
+    message.error(
+      error.response?.data?.message || "Không thể lấy thống kê theo vai trò."
+    );
     return [];
   }
 };
