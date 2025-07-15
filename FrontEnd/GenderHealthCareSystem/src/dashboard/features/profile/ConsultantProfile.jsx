@@ -248,18 +248,16 @@ export default function ConsultantProfile() {
         details: updatedDetails,
       };
 
+      delete updatedProfileData.userImageUrl;
       // Cập nhật vào API
-      await updateConsultantProfile({
-        ...form.getFieldsValue(),
-        details: updatedDetails,
-      });
+      await updateConsultantProfile(updatedProfileData);
 
       // Cập nhật state và hiển thị
       setProfileData(updatedProfileData);
       message.success("Đã xóa thông tin chi tiết");
     } catch (error) {
       console.error("Error deleting detail:", error);
-      message.error("Lỗi khi xóa thông tin chi tiết");
+      message.error(error.response?.data?.message || "Lỗi khi xóa thông tin chi tiết" );
     }
   };
 
