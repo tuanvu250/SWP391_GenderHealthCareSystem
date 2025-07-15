@@ -244,7 +244,7 @@ const STITesting = () => {
                 <Button
                   size="large"
                   className="h-12 px-8 rounded-full border-[#0099CF] text-[#0099CF] hover:text-[#0088bb] hover:border-[#0088bb] shadow-sm"
-                  onClick={() => navigate("/consultation")}
+                  onClick={() => navigate("/services/consultation")}
                 >
                   Tư vấn trước
                 </Button>
