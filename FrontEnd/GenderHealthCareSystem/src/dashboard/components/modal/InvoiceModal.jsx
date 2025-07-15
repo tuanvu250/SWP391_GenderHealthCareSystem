@@ -152,9 +152,7 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {}, booking 
           <div className="flex justify-between border-b pb-2">
             <div>{invoice.serviceName}</div>
             <div className="font-medium">
-              {invoice.currency === "USD"
-                ? formatPrice(convertUsdToVnd(originalPrice))
-                : formatPrice(originalPrice)}
+              {formatPrice(originalPrice)}
             </div>
           </div>
 
@@ -162,13 +160,10 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {}, booking 
           {hasDiscount && (
             <div className="flex justify-between text-red-500 pb-2">
               <div className="flex items-center">
-                <PercentageOutlined className="mr-1" /> 
                 Giảm giá ({booking.discount}%):
               </div>
               <div>
-                -{invoice.currency === "USD"
-                  ? formatPrice(convertUsdToVnd(discountAmount))
-                  : formatPrice(discountAmount)}
+                -{formatPrice(discountAmount)}
               </div>
             </div>
           )}
@@ -176,9 +171,7 @@ const InvoiceModal = ({ visible, onCancel, invoice = {}, customer = {}, booking 
           <div className="flex justify-between font-bold text-lg pt-2">
             <div>Tổng tiền:</div>
             <div className="font-medium">
-              {invoice.currency === "USD"
-                ? formatPrice(convertUsdToVnd(finalAmount))
-                : formatPrice(finalAmount)}
+              {formatPrice(originalPrice - discountAmount)}
             </div>
           </div>
         </div>

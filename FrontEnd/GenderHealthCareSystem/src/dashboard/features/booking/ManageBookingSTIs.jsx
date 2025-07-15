@@ -319,17 +319,22 @@ const ManageBookingStis = () => {
     const items = [];
 
     if (record.status === "CONFIRMED") {
-      items.push({
-        key: "pendingResult",
-        label: "Chờ kết quả",
-        icon: <ClockCircleOutlined />,
-      });
+      if (record.paymentStatus === "PAID") {
+        items.push({
+          key: "pendingResult",
+          label: "Chờ kết quả",
+          icon: <ClockCircleOutlined />,
+        });
+      }
       items.push({
         key: "noShow",
         label: "Không đến",
         icon: <CloseCircleOutlined />,
       });
-      if (record.paymentStatus === "UNPAID" && record.paymentMethod === "cash") {
+      if (
+        record.paymentStatus === "UNPAID" &&
+        record.paymentMethod === "cash"
+      ) {
         items.push({
           key: "confirm-payment",
           label: "Xác nhận thanh toán",
@@ -428,9 +433,7 @@ const ManageBookingStis = () => {
         return (
           <div>
             {/* Giá đã giảm */}
-            <span className="font-medium">
-              {formatPrice(discountedPrice)}
-            </span>
+            <span className="font-medium">{formatPrice(discountedPrice)}</span>
           </div>
         );
       },
