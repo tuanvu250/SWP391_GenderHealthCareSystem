@@ -35,96 +35,13 @@ import { getServiceSingleAPI } from "../../components/api/ServiceTesting.api";
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
-// Mock data cho các dịch vụ xét nghiệm STIs
-const mockServices = [
-  {
-    id: 1,
-    name: "Xét nghiệm HIV",
-    description:
-      "Xét nghiệm HIV là xét nghiệm phát hiện kháng thể hoặc kháng nguyên của virus HIV trong máu. Đây là phương pháp chính xác để biết một người có nhiễm HIV hay không.",
-    shortDescription: "Phát hiện nhiễm HIV qua xét nghiệm máu chuyên sâu",
-    price: 200000,
-    category: "single",
-    testType: "hiv",
-    discountPercent: 0,
-    duration: 30,
-    rating: 4.8,
-    reviewCount: 124,
-    popularityScore: 95,
-  },
-  {
-    id: 4,
-    name: "Xét nghiệm Giang mai",
-    description:
-      "Xét nghiệm giang mai phát hiện sự hiện diện của kháng thể được tạo ra để chống lại vi khuẩn gây bệnh giang mai (Treponema pallidum). Xét nghiệm này giúp phát hiện sớm và điều trị kịp thời.",
-    shortDescription: "Phát hiện bệnh giang mai qua xét nghiệm huyết thanh",
-    price: 180000,
-    category: "single",
-    testType: "syphilis",
-    discountPercent: 0,
-    duration: 30,
-    rating: 4.7,
-    reviewCount: 98,
-    popularityScore: 85,
-  },
-  {
-    id: 5,
-    name: "Xét nghiệm Viêm gan B",
-    description:
-      "Xét nghiệm viêm gan B giúp phát hiện sự hiện diện của virus viêm gan B (HBV) trong máu, xác định tình trạng nhiễm trùng cấp tính hoặc mãn tính. Đây là xét nghiệm quan trọng để ngăn ngừa các biến chứng nguy hiểm về gan.",
-    shortDescription: "Xét nghiệm phát hiện virus viêm gan B và tình trạng miễn dịch",
-    price: 250000,
-    category: "single",
-    testType: "hepatitisB",
-    discountPercent: 0,
-    duration: 40,
-    rating: 4.9,
-    reviewCount: 156,
-    popularityScore: 90,
-  },
-  {
-    id: 7,
-    name: "Xét nghiệm HPV",
-    description:
-      "Xét nghiệm HPV phát hiện sự hiện diện của virus HPV có nguy cơ cao, giúp đánh giá nguy cơ ung thư cổ tử cung ở nữ giới. Đây là xét nghiệm quan trọng trong tầm soát và phòng ngừa ung thư sớm.",
-    shortDescription: "Phát hiện các chủng HPV nguy cơ cao gây ung thư",
-    price: 450000,
-    category: "single",
-    testType: "hpv",
-    discountPercent: 0,
-    duration: 45,
-    rating: 4.8,
-    reviewCount: 132,
-    popularityScore: 92,
-  },
-  {
-    id: 10,
-    name: "Xét nghiệm Herpes",
-    description:
-      "Xét nghiệm Herpes phát hiện kháng thể chống lại virus Herpes simplex (HSV) type 1 và 2 trong máu. Giúp chẩn đoán chính xác nhiễm herpes sinh dục hoặc herpes miệng, đặc biệt trong các trường hợp không có triệu chứng rõ ràng.",
-    shortDescription: "Xét nghiệm phân biệt HSV-1 và HSV-2 qua mẫu máu",
-    price: 300000,
-    category: "single",
-    testType: "herpes",
-    discountPercent: 0,
-    duration: 30,
-    rating: 4.6,
-    reviewCount: 85,
-    popularityScore: 78,
-  },
-];
 
 const RetailService = () => {
   const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [sortOption, setSortOption] = useState("popularity");
-  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);;
 
   const navigate = useNavigate();
 
-  // Lấy dữ liệu dịch vụ từ mock data
   useEffect(() => {
     const fetchServices = async() => {
       try {
@@ -137,20 +54,10 @@ const RetailService = () => {
     };
 
     fetchServices();
-  }, [searchQuery, filterType, sortOption]);
+  }, []);
 
-  // Đặt lịch dịch vụ
   const handleBookService = (serviceId) => {
     navigate(`/sti-booking?serviceId=${serviceId}`);
-  };
-
-  // Thêm/xóa dịch vụ yêu thích
-  const toggleFavorite = (serviceId) => {
-    if (favorites.includes(serviceId)) {
-      setFavorites(favorites.filter(id => id !== serviceId));
-    } else {
-      setFavorites([...favorites, serviceId]);
-    }
   };
 
   return (
@@ -176,56 +83,6 @@ const RetailService = () => {
             Dịch vụ chẩn đoán và xét nghiệm các bệnh lây truyền qua đường tình dục tại Gender Health Care
           </Text>
         </div>
-
-        {/* Filters and Search */}
-        <Card className="mb-8 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Input.Search
-                placeholder="Tìm kiếm dịch vụ..."
-                allowClear
-                enterButton={<SearchOutlined />}
-                size="large"
-                onSearch={(value) => setSearchQuery(value)}
-              />
-            </div>
-
-            <div>
-              <Select
-                placeholder="Loại xét nghiệm"
-                style={{ width: "100%" }}
-                size="large"
-                onChange={(value) => setFilterType(value)}
-                value={filterType}
-                suffixIcon={<FilterOutlined />}
-              >
-                <Option value="all">Tất cả các loại</Option>
-                <Option value="hiv">HIV</Option>
-                <Option value="syphilis">Giang mai</Option>
-                <Option value="hepatitisB">Viêm gan B</Option>
-                <Option value="hpv">HPV</Option>
-                <Option value="herpes">Herpes</Option>
-              </Select>
-            </div>
-
-            <div>
-              <Select
-                placeholder="Sắp xếp theo"
-                style={{ width: "100%" }}
-                size="large"
-                onChange={(value) => setSortOption(value)}
-                value={sortOption}
-              >
-                <Option value="popularity">Phổ biến nhất</Option>
-                <Option value="rating">Đánh giá cao nhất</Option>
-                <Option value="price_low">Giá thấp đến cao</Option>
-                <Option value="price_high">Giá cao đến thấp</Option>
-              </Select>
-            </div>
-          </div>
-        </Card>
-
-
         {/* Services List */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -248,33 +105,14 @@ const RetailService = () => {
                 >
                   <div className="flex flex-col flex-grow">
                     <div className="flex justify-between items-start mb-2">
-                      {/* Loại bỏ icon - chỉ giữ lại tiêu đề */}
                       <Title level={4} className="mb-1">
                         {service.serviceName}
                       </Title>
-                      <Button
-                        type="text"
-                        shape="circle"
-                        icon={favorites.includes(service.serviceId) ? <HeartFilled className="text-red-500" /> : <HeartOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(service.serviceId);
-                        }}
-                      />
                     </div>
 
                     <Paragraph className="text-gray-500 mb-4 line-clamp-3">
                       {service.description}
                     </Paragraph>
-
-                    {/* <div className="mb-4">
-                      <div className="flex items-center gap-1">
-                        <Rate disabled defaultValue={service.rating} allowHalf character={<StarFilled />} className="text-sm" />
-                        <Text className="text-sm text-gray-500">
-                          ({service.reviewCount} đánh giá)
-                        </Text>
-                      </div>
-                    </div> */}
 
                     <div className="flex gap-2 mb-3">
                       <Tag color="cyan">Thời gian: {service.duration} phút</Tag>
@@ -290,7 +128,6 @@ const RetailService = () => {
                         </Text>
                       </div>
 
-                      {/* Loại bỏ nút Chi tiết, chỉ giữ lại Đặt lịch */}
                       <Button 
                         type="primary" 
                         icon={<ShoppingCartOutlined />}

@@ -36,7 +36,7 @@ const Login = () => {
         }, 500);
       } else {
         message.error(response.message);
-        form.setFieldValue("password", ""); // Clear password field on error
+        form.setFieldValue("password", ""); 
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -66,7 +66,6 @@ const Login = () => {
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imgLogin})` }}
     >
-      {/* Nút quay lại đã cải tiến */}
       <div className="absolute top-6 left-6">
         <Button
           type="primary"

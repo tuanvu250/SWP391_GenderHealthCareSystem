@@ -316,7 +316,7 @@ const UserFormModal = ({ visible, onCancel, onSubmit, userData, isAdmin, mode = 
             >
               <Option value="Staff">Nhân viên</Option>
               <Option value="Consultant">Tư vấn viên</Option>
-              <Option value="Customer">Khách hàng</Option>
+              {isAdmin && <Option value="Customer">Khách hàng</Option>}
               {isAdmin && <Option value="Manager">Quản lý</Option>}
               {isAdmin && isEdit && <Option value="Admin">Quản trị</Option>}
             </Select>

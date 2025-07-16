@@ -30,13 +30,13 @@ import { pathStatusUserAPI } from "../components/api/Users.api";
 const { Title, Text } = Typography;
 
 const AccountSetting = () => {
-  const { user, logoutAction} = useAuth();
+  const { user, logoutAction } = useAuth();
   //const useAuth = useAuth();
   const [loading, setLoading] = useState(false);
   const [deleteForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState('password');
+  const [activeTab, setActiveTab] = useState("password");
   const navigate = useNavigate();
 
   // Xử lý đổi mật khẩu
@@ -47,12 +47,15 @@ const AccountSetting = () => {
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });
-      
+
       message.success("Đổi mật khẩu thành công!");
       passwordForm.resetFields();
     } catch (error) {
       console.error("Lỗi khi đổi mật khẩu:", error);
-      message.error(error?.response?.data?.message || "Đổi mật khẩu thất bại. Vui lòng thử lại!");
+      message.error(
+        error?.response?.data?.message ||
+          "Đổi mật khẩu thất bại. Vui lòng thử lại!"
+      );
     } finally {
       setLoading(false);
     }
@@ -63,21 +66,21 @@ const AccountSetting = () => {
     try {
       setLoading(true);
       await pathStatusUserAPI(user.accountId, "DELETED");
-      
+
       message.success("Tài khoản đã được xóa thành công!");
       setIsModalVisible(false);
-      
-      // Đăng xuất sau khi xóa tài khoản
       logoutAction();
       navigate("/login");
     } catch (error) {
       console.error("Lỗi khi xóa tài khoản:", error);
-      message.error(error?.response?.data?.message || "Không thể xóa tài khoản. Vui lòng thử lại!");
+      message.error(
+        error?.response?.data?.message ||
+          "Không thể xóa tài khoản. Vui lòng thử lại!"
+      );
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -85,32 +88,38 @@ const AccountSetting = () => {
         {/* Nội dung bên phải */}
         <div className="w-full">
           <Card>
-            <Title level={4} className="mb-6">Cài đặt tài khoản</Title>
-            
+            <Title level={4} className="mb-6">
+              Cài đặt tài khoản
+            </Title>
+
             <div className="mb-6">
               <div className="flex border-b">
-                <div 
+                <div
                   className={`py-2 px-4 cursor-pointer ${
-                    activeTab === 'password' ? 'border-b-2 border-blue-500 text-blue-600' : ''
+                    activeTab === "password"
+                      ? "border-b-2 border-blue-500 text-blue-600"
+                      : ""
                   }`}
-                  onClick={() => setActiveTab('password')}
+                  onClick={() => setActiveTab("password")}
                 >
                   Đổi mật khẩu
                 </div>
-                {user.role !== 'Admin' && (
-                <div 
-                  className={`py-2 px-4 cursor-pointer ${
-                    activeTab === 'delete' ? 'border-b-2 border-blue-500 text-blue-600' : ''
-                  }`}
-                  onClick={() => setActiveTab('delete')}
-                >
-                  Xóa tài khoản
-                </div>
+                {user.role !== "Admin" && (
+                  <div
+                    className={`py-2 px-4 cursor-pointer ${
+                      activeTab === "delete"
+                        ? "border-b-2 border-blue-500 text-blue-600"
+                        : ""
+                    }`}
+                    onClick={() => setActiveTab("delete")}
+                  >
+                    Xóa tài khoản
+                  </div>
                 )}
               </div>
             </div>
 
-            {activeTab === 'password' && (
+            {activeTab === "password" && (
               <>
                 <Form
                   form={passwordForm}
@@ -123,11 +132,16 @@ const AccountSetting = () => {
                     name="oldPassword"
                     label="Mật khẩu hiện tại"
                     rules={[
-                      { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập mật khẩu hiện tại!",
+                      },
                     ]}
                   >
                     <Input.Password
-                      iconRender={visible => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+                      iconRender={(visible) =>
+                        visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      }
                       placeholder="Nhập mật khẩu hiện tại"
                       className="py-2"
                     />
@@ -137,11 +151,16 @@ const AccountSetting = () => {
                     name="newPassword"
                     label="Mật khẩu mới"
                     rules={[
-                      { required: true, message: "Vui lòng nhập mật khẩu mới!" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập mật khẩu mới!",
+                      },
                     ]}
                   >
                     <Input.Password
-                      iconRender={visible => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+                      iconRender={(visible) =>
+                        visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      }
                       placeholder="Nhập mật khẩu mới"
                       className="py-2"
                     />
@@ -152,28 +171,38 @@ const AccountSetting = () => {
                     label="Xác nhận mật khẩu mới"
                     dependencies={["newPassword"]}
                     rules={[
-                      { required: true, message: "Vui lòng xác nhận mật khẩu mới!" },
+                      {
+                        required: true,
+                        message: "Vui lòng xác nhận mật khẩu mới!",
+                      },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue("newPassword") === value) {
+                          if (
+                            !value ||
+                            getFieldValue("newPassword") === value
+                          ) {
                             return Promise.resolve();
                           }
-                          return Promise.reject(new Error("Mật khẩu xác nhận không khớp!"));
+                          return Promise.reject(
+                            new Error("Mật khẩu xác nhận không khớp!")
+                          );
                         },
                       }),
                     ]}
                   >
                     <Input.Password
-                      iconRender={visible => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+                      iconRender={(visible) =>
+                        visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      }
                       placeholder="Xác nhận mật khẩu mới"
                       className="py-2"
                     />
                   </Form.Item>
 
                   <Form.Item>
-                    <Button 
-                      type="primary" 
-                      htmlType="submit" 
+                    <Button
+                      type="primary"
+                      htmlType="submit"
                       loading={loading}
                       className="bg-blue-500 hover:bg-blue-600"
                     >
@@ -184,7 +213,7 @@ const AccountSetting = () => {
               </>
             )}
 
-            {activeTab === 'delete' && (
+            {activeTab === "delete" && (
               <>
                 <Alert
                   message="Cảnh báo: Hành động không thể hoàn tác"
@@ -195,9 +224,10 @@ const AccountSetting = () => {
                 />
 
                 <Text className="block mb-4">
-                  Trước khi xóa tài khoản, vui lòng xem xét các lựa chọn thay thế:
+                  Trước khi xóa tài khoản, vui lòng xem xét các lựa chọn thay
+                  thế:
                 </Text>
-                
+
                 <ul className="list-disc pl-5 mb-6">
                   <li>Cập nhật thông tin cá nhân trong phần hồ sơ</li>
                   <li>Liên hệ hỗ trợ nếu bạn gặp vấn đề với tài khoản</li>
@@ -216,13 +246,11 @@ const AccountSetting = () => {
                       cancelText="Không, giữ lại"
                       onConfirm={handleDeleteAccount}
                       okButtonProps={{ danger: true }}
-                      icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                      icon={
+                        <ExclamationCircleOutlined style={{ color: "red" }} />
+                      }
                     >
-                      <Button 
-                        danger 
-                        type="primary" 
-                        icon={<DeleteOutlined />}
-                      >
+                      <Button danger type="primary" icon={<DeleteOutlined />}>
                         Xóa tài khoản của tôi
                       </Button>
                     </Popconfirm>

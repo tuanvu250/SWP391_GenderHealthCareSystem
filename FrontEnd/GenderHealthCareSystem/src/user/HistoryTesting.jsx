@@ -136,6 +136,7 @@ const HistoryTesting = () => {
   const handlePayment = async (bookingId, totalPrice, paymentMethod) => {
     setLoadingPayment(true);
     try {
+      const usd = await convertVndToUsd(totalPrice);
       const response =
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(
@@ -143,7 +144,7 @@ const HistoryTesting = () => {
               `${bookingId} Đặt lịch xét nghiệm STI`,
               bookingId
             )
-          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingId);
+          : await paymentPayPalAPI(usd, bookingId);
 
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", totalPrice);
@@ -419,7 +420,6 @@ const HistoryTesting = () => {
                     <Button
                       type="primary"
                       size="middle"
-                      loading={loadingPayment}
                       onClick={() => {
                         handlePayment(
                           booking.id,

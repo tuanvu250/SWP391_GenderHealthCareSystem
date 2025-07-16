@@ -10,7 +10,8 @@ export function formatPrice(price) {
 }
 
 
-export function convertVndToUsd(vndAmount, exchangeRate = getUSDToVNDExchangeRate()) {
+export async function convertVndToUsd (vndAmount) {
+  const exchangeRate = await getUSDToVNDExchangeRate();
   const usdAmount = vndAmount / exchangeRate;
   
   return new Intl.NumberFormat('en-US', { 
@@ -19,7 +20,8 @@ export function convertVndToUsd(vndAmount, exchangeRate = getUSDToVNDExchangeRat
   }).format(usdAmount);
 }
 
-export function convertUsdToVnd(usdAmount, exchangeRate = getUSDToVNDExchangeRate()) {
+export async function convertUsdToVnd(usdAmount) {
+  const exchangeRate = await getUSDToVNDExchangeRate();
   const vndAmount = usdAmount * exchangeRate;
   
   return new Intl.NumberFormat('vi-VN', { 
@@ -47,7 +49,8 @@ export async function getUSDToVNDExchangeRate() {
   const cachedData = localStorage.getItem('exchange_rate_data');
   
   if (cachedData) {
-    return cachedData
+    const rate = parseFloat(cachedData);
+    return rate;
   }
 
   try {

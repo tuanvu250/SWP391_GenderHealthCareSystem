@@ -49,35 +49,28 @@ const BlogDetail = () => {
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(blog?.likeCount || 0);
-  const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [shareMenuVisible, setShareMenuVisible] = useState(false);
-  const [commentForm] = Form.useForm();
   const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentInputValue, setCommentInputValue] = useState("");
-
-  // State cho việc sửa comment
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentValue, setEditCommentValue] = useState("");
 
   const fetchBlog = async () => {
     setLoading(true);
-    // Trong thực tế, bạn sẽ gọi API với ID từ params
     const response = await blogDetailAPI(postId);
     if (response && response.data) {
       const post = response.data.data;
       const tagArray = post.tags
         ? post.tags.split(", ").map((tag) => ({
             text: tag.trim(),
-            color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+            color: getTagColor(tag.trim()), 
           }))
         : [];
 
       setBlog({
         ...post,
         tags: tagArray,
-        // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
         thumbnailUrl:
           post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
             ? post.thumbnailUrl
@@ -129,7 +122,7 @@ const BlogDetail = () => {
   }, [postId]);
 
   const handleGoBack = () => {
-    navigate(-1); // Quay lại trang trước đó
+    navigate(-1); 
   };
 
   const handleLike = async () => {
@@ -160,12 +153,10 @@ const BlogDetail = () => {
       message.warning("Vui lòng nhập nội dung bình luận");
       return;
     }
-    // Tạo comment mới
     try {
       await postCommentBlogAPI(postId, commentInputValue);
-      // Thêm comment vào danh sách
       fetchComments();
-      setCommentInputValue(""); // Reset input
+      setCommentInputValue(""); 
       message.success("Đã đăng bình luận thành công!");
       setCommentModalOpen(false);
     } catch (error) {
@@ -208,7 +199,6 @@ const BlogDetail = () => {
   const handleDeleteComment = async (commentId) => {
     try {
       await deleteCommentBlogAPI(commentId);
-      // Cập nhật lại danh sách comments
       message.success("Đã xóa bình luận");
       fetchComments();
     } catch (error) {
@@ -253,7 +243,6 @@ const BlogDetail = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-6 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Breadcrumb và nút quay lại */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <Breadcrumb
             items={[
@@ -273,7 +262,6 @@ const BlogDetail = () => {
           </Button>
         </div>
 
-        {/* Ảnh bìa bài viết */}
         <div className="mb-8 rounded-xl overflow-hidden">
           <img
             src={blog.thumbnailUrl}
@@ -282,7 +270,6 @@ const BlogDetail = () => {
           />
         </div>
 
-        {/* Tiêu đề và thông tin bài viết */}
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm mb-8">
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -305,7 +292,6 @@ const BlogDetail = () => {
                 <Avatar src={blog.consultantImageUrl} size={40} />
                 <div>
                   <Text strong>{blog.consultantName}</Text>
-                  {/* <div className="text-gray-500 text-sm">{blog.author.bio}</div> */}
                 </div>
               </Space>
             </Space>
@@ -475,7 +461,7 @@ const BlogDetail = () => {
                         />
                       </Dropdown>
                     ),
-                  ].filter(Boolean)} // Lọc bỏ các giá trị falsy
+                  ].filter(Boolean)} // Lọc bỏ các giá trị false
                 >
                   <List.Item.Meta
                     avatar={<Avatar src={comment.userImageUrl} />}
@@ -562,8 +548,6 @@ const BlogDetail = () => {
             </div>
           </div> )}
         </Modal>
-
-        {/* Modal chia sẻ */}
       </div>
     </div>
   );

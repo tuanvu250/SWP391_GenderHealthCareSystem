@@ -14,14 +14,10 @@ const OauthRedirect = () => {
   useEffect(() => {
     const handleRedirect = async () => {
       if (token && !processed) {
-        // Đánh dấu là đã xử lý để tránh chạy lại
-
         try {
           sessionStorage.setItem("token", token);
           await auth.refreshUserProfile();
-          console.log(">>> google user: ", auth.user);
 
-          // Điều hướng người dùng sau khi xử lý thành công
           if (auth.user) {
             setProcessed(true);
             // Kiểm tra nếu cần điền thêm thông tin
@@ -33,7 +29,7 @@ const OauthRedirect = () => {
               navigate("/google-signup-complete");
             } else {
               message.success("Đăng nhập thành công!");
-              navigate("/home"); // Hoặc trang phù hợp với role
+              navigate("/home"); 
               return;
             }
           }

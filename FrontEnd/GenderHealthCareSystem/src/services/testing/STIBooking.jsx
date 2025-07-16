@@ -194,6 +194,7 @@ const STIBooking = () => {
 
   const handlePayment = async (bookingID, paymentMethod) => {
     try {
+      const usd = await convertVndToUsd(totalPrice);
       const response =
         paymentMethod === "vnpay"
           ? await paymentVNPayAPI(
@@ -201,18 +202,15 @@ const STIBooking = () => {
               `${bookingID} Đặt lịch xét nghiệm STI`,
               bookingID
             )
-          : await paymentPayPalAPI(convertVndToUsd(totalPrice), bookingID);
+          : await paymentPayPalAPI(usd, bookingID);
 
       localStorage.setItem("bookingID", bookingID);
       localStorage.setItem("amount", totalPrice);
       localStorage.setItem("orderInfo", `${bookingID} Đặt lịch xét nghiệm STI`);
 
       setIsConfirmModalOpen(false);
-
-      // Mô phỏng thanh toán thành công
       message.success("Đang chuyển hướng đến trang thanh toán ...");
 
-      // Giả lập thanh toán thành công sau 3 giây
       setTimeout(() => {
         window.location.href = response.data;
       }, 1500);
@@ -229,7 +227,6 @@ const STIBooking = () => {
     setIsConfirmModalOpen(false);
   };
 
-  // Render nội dung của từng bước
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -259,7 +256,6 @@ const STIBooking = () => {
     }
   };
 
-  // Render nút điều hướng
   const renderNavigationButtons = () => {
     return (
       <div className="flex justify-between pt-6 border-t">

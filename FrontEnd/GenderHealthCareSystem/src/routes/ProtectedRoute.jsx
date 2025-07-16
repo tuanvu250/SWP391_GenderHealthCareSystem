@@ -24,22 +24,18 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // Kiểm tra đã đăng nhập chưa
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Nếu không cần kiểm tra role hoặc không có role nào được yêu cầu
   if (!allowedRoles || allowedRoles.length === 0) {
     return children;
   }
 
-  // Kiểm tra quyền truy cập dựa trên role
 
-  const userRole = user?.role; // Giả sử user object có trường roleId
+  const userRole = user?.role;
   const hasPermission = userRole && allowedRoles.includes(userRole);
 
-  // Nếu không có quyền truy cập, chuyển hướng về trang chủ
   if (!hasPermission) {
     console.log("Không đủ quyền truy cập");
     return <Navigate to="/" replace />;

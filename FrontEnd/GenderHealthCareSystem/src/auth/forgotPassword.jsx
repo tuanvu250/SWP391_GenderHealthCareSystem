@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button, Form, Input, message } from "antd";
 import {
   ArrowLeftOutlined,
-  MailOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { forgotPasswordAPI, verifyOTPAPI } from "../components/api/Auth.api";
@@ -17,14 +16,10 @@ const ForgotPassword = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  // Xử lý gửi yêu cầu lấy mã OTP
-
   const handleSendOTP = async (values) => {
     setLoading(true);
     try {
       const response = await forgotPasswordAPI(values.usernameOrEmail);
-      //console.log("Response from forgotPasswordAPI:", response);
-
       setOtpSent(false);
       if (response.status == 200) {
         message.success("Mã OTP đã được gửi đến email của bạn!");
@@ -32,7 +27,6 @@ const ForgotPassword = () => {
         setOtpSent(true);
       }
     } catch (error) {
-      //console.error("Error sending OTP:", error);
       if (error.response && error.response.status === 404) {
         message.error("Tên đăng nhập hoặc email không tồn tại!");
       } else {
@@ -63,7 +57,6 @@ const ForgotPassword = () => {
         return;
       }
     } catch (error) {
-      //console.error("Error verifying OTP:", error);
       if (error.response && error.response.status === 400) {
         message.error("Mã OTP không đúng hoặc đã hết hạn. Vui lòng thử lại.");
       } else {
@@ -78,8 +71,6 @@ const ForgotPassword = () => {
 
   const handleOtpChange = (value) => {
     setOtpValue(value);
-
-    // Chỉ set field value khi form đã tồn tại và đang ở trạng thái OTP
     if (form && otpSent) {
       form.setFieldsValue({ otp: value });
     }
@@ -100,7 +91,6 @@ const ForgotPassword = () => {
       className="flex min-h-screen items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imgLogin})` }}
     >
-      {/* Nút quay lại */}
       <div className="absolute top-6 left-6">
         <Button
           type="primary"

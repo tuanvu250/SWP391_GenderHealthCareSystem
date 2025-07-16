@@ -136,8 +136,7 @@ const HomeRating = () => {
             </button>
           </div>
         </div>
-
-        {/* Testimonials Carousel */}
+        
         <div className="relative max-h-full">
           <Carousel
             ref={carouselRef}

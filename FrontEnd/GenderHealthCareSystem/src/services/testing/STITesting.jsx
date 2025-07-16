@@ -1,38 +1,24 @@
 import React, { useState, useEffect, use } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Row,
-  Col,
   Card,
   Button,
   Typography,
   Steps,
-  Timeline,
   Collapse,
   Rate,
   Avatar,
-  Tag,
-  Modal,
   Form,
-  Input,
-  DatePicker,
   Select,
   message,
+  Tooltip,
 } from "antd";
 import {
-  SafetyCertificateOutlined,
   ClockCircleOutlined,
-  FileTextOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
-  UserOutlined,
-  CalendarOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
   EyeInvisibleOutlined,
   SafetyOutlined,
-  HeartOutlined,
-  WarningOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { FaVial, FaMicroscope, FaUserMd, FaShieldAlt } from "react-icons/fa";
@@ -71,7 +57,6 @@ const STITesting = () => {
       try {
         const response = await getServiceCombosAPI();
         if (response && response.data) {
-          // Assuming response.data is an array of packages
           const packages = response.data.data.map((pkg) => ({
             ...pkg,
             id: pkg.serviceId,
@@ -99,11 +84,11 @@ const STITesting = () => {
     },
     {
       title: "Lấy mẫu",
-      description: "Đến phòng lab hoặc lấy mẫu tại nhà",
+      description: "Đến phòng khám để lấy mẫu xét nghiệm",
     },
     {
       title: "Xét nghiệm",
-      description: "Mẫu được xử lý tại phòng lab chứng nhận",
+      description: "Mẫu được xử lý tại phòng xét nghiệm chứng nhận",
     },
     {
       title: "Kết quả",
@@ -166,37 +151,6 @@ const STITesting = () => {
           tôi sẽ hỗ trợ bạn kiểm tra và làm thủ tục bảo hiểm nếu có thể.
         </p>
       ),
-    },
-  ];
-
-  // Testimonials specific to STI testing
-  const stiTestimonials = [
-    {
-      id: 1,
-      rating: 5,
-      content:
-        "Quy trình xét nghiệm rất chuyên nghiệp và kín đáo. Tôi cảm thấy yên tâm và được tư vấn kỹ lưỡng về kết quả. Nhân viên rất thân thiện và hiểu biết.",
-      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-      name: "Nguyễn Thị Lan",
-      age: "28 tuổi",
-    },
-    {
-      id: 2,
-      rating: 5,
-      content:
-        "Dịch vụ lấy mẫu tại nhà rất tiện lợi, đặc biệt là cho người bận rộn như tôi. Kết quả chính xác và được giải thích rõ ràng.",
-      avatar: "https://randomuser.me/api/portraits/men/25.jpg",
-      name: "Trần Văn Minh",
-      age: "31 tuổi",
-    },
-    {
-      id: 3,
-      rating: 4.5,
-      content:
-        "Gói xét nghiệm toàn diện giúp tôi yên tâm về sức khỏe của mình. Giá cả hợp lý và chất lượng dịch vụ tốt.",
-      avatar: "https://randomuser.me/api/portraits/women/41.jpg",
-      name: "Lê Thị Hương",
-      age: "26 tuổi",
     },
   ];
 
@@ -321,9 +275,11 @@ const STITesting = () => {
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">
                       {pkg.name}
                     </h3>
-                    <p className="text-gray-600 text-sm h-12 flex items-center justify-center">
-                      {pkg.description}
-                    </p>
+                    <Tooltip title={pkg.description} placement="bottom">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[40px] cursor-help">
+                        {pkg.description}
+                      </p>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -333,12 +289,9 @@ const STITesting = () => {
                     <div className="mb-4">
                       {pkg.discount > 0 ? (
                         <div>
-                          {/* Giá đã giảm */}
                           <span className="text-3xl font-bold text-[#0099CF]">
                             {formatPrice(pkg.price * (1 - pkg.discount / 100))}
                           </span>
-                          
-                          {/* Giá gốc với gạch ngang */}
                           <div className="mt-1">
                             <span className="text-gray-500 text-lg line-through mr-2">
                               {formatPrice(pkg.price)}
@@ -360,7 +313,6 @@ const STITesting = () => {
                     </div>
                   </div>
 
-                  {/* Tests included - Redesigned to maintain height */}
                   <div className="mb-6 flex-grow">
                     <div className="flex items-center gap-2 mb-3">
                       <div
@@ -511,48 +463,6 @@ const STITesting = () => {
                 Nhận kết quả trong 2-5 ngày, có dịch vụ khẩn cấp 24h
               </p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Customer Testimonials */}
-      <div className="py-16 px-16 bg-gradient-to-b from-sky-50 to-white">
-        <div className="mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-sm font-semibold text-[#0099CF] uppercase tracking-wider">
-              Phản hồi khách hàng
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
-              Khách hàng nói gì về dịch vụ
-            </h2>
-            <div className="w-20 h-1 bg-[#0099CF] mx-auto mt-4"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stiTestimonials.map((testimonial) => (
-              <Card
-                key={testimonial.id}
-                className="h-full shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="text-center mb-4">
-                  <Rate
-                    disabled
-                    defaultValue={testimonial.rating}
-                    className="text-yellow-400"
-                  />
-                </div>
-                <p className="text-gray-700 italic mb-6">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center">
-                  <Avatar src={testimonial.avatar} size={48} />
-                  <div className="ml-3">
-                    <h4 className="font-bold">{testimonial.name}</h4>
-                    <p className="text-gray-500 text-sm">{testimonial.age}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
           </div>
         </div>
       </div>

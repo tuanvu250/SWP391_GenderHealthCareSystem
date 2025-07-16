@@ -20,8 +20,7 @@ export const paymentPayPalAPI = async (price, bookingId) => {
     price,
   };
   return apiClient.post("/payment/pay", values, {
-    responseType: "text", // Để nhận về URL
-    maxRedirects: 0,
+    responseType: "text", 
   });
 };
 

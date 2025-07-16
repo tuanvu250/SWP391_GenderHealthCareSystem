@@ -30,7 +30,7 @@ import {
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
 
-import { convertVndToUsd, formatPrice } from "../components/utils/format";
+import { formatPrice } from "../components/utils/format";
 
 import FeedbackModal from "./FeedbackModal";
 import {
@@ -160,13 +160,9 @@ const HistoryConsultantBooking = () => {
       message.warning("Không có link cuộc họp cho lịch hẹn này");
       return;
     }
-
-    // Kiểm tra xem link có chứa protocol hay không
     if (!meetLink.startsWith("http://") && !meetLink.startsWith("https://")) {
-      // Nếu không có, thêm https:// vào đầu
       meetLink = "https://" + meetLink;
     }
-
     // Mở link trong tab mới
     window.open(meetLink, "_blank");
   };
@@ -281,10 +277,7 @@ const HistoryConsultantBooking = () => {
 
   // Component để render mỗi booking dạng card
   const BookingCard = ({ booking }) => {
-    // Kiểm tra xem có meetLink và cuộc hẹn đã được xác nhận
     const canJoinMeeting = booking.meetLink && booking.status === "SCHEDULED";
-
-    // Tạo menu cho dropdown thanh toán
     const paymentMenu = (
       <Menu
         onClick={({ key }) => {

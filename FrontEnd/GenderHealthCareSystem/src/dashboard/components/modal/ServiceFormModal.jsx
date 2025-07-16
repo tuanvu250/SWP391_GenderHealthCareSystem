@@ -50,13 +50,10 @@ const ServiceFormModal = ({ open, onCancel, onOk, form, editingId}) => {
   };
 
   // Xử lý thêm loại bệnh tùy chỉnh
-  const handleAddCustomTest = (name) => {
-    // Format tên bệnh để làm value (lowercase, không dấu)
-    const value = name.toLowerCase().replace(/\s+/g, '_');
-    
+  const handleAddCustomTest = (name) => {   
     // Thêm vào danh sách bệnh tùy chỉnh
-    setCustomTests([...customTests, { value, label: name }]);
-    return value;
+    setCustomTests([...customTests, { name, label: name }]);
+    return name;
   };
 
   // Danh sách tất cả các loại bệnh (có sẵn + tùy chỉnh)
