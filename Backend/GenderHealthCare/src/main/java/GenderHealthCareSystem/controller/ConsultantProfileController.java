@@ -25,6 +25,7 @@ public class ConsultantProfileController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('Consultant','Manager','Admin')")
+    // API để tạo hồ sơ chuyên gia tư vấn
     public ResponseEntity<?> create(@RequestBody ConsultantProfileRequest req,
                                     @AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
@@ -33,6 +34,7 @@ public class ConsultantProfileController {
 
     @PutMapping
     @PreAuthorize("hasAnyRole('Consultant','Manager','Admin')")
+    // API để cập nhật hồ sơ chuyên gia tư vấn
     public ResponseEntity<?> update(@RequestBody ConsultantProfileRequest req,
                                     @AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
@@ -41,6 +43,7 @@ public class ConsultantProfileController {
 
     @DeleteMapping
     @PreAuthorize("hasRole('Consultant')")
+    // API để xóa hồ sơ chuyên gia tư vấn
     public ResponseEntity<?> delete(@AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
         service.delete(consultantId);
@@ -48,6 +51,7 @@ public class ConsultantProfileController {
     }
 
     @GetMapping
+    // API để lấy hồ sơ chuyên gia tư vấn của người dùng đang đăng nhập
     public ResponseEntity<?> get(@AuthenticationPrincipal Jwt jwt) {
         Integer consultantId = ((Number) jwt.getClaim("userID")).intValue();
         return ResponseEntity.ok(service.get(consultantId));
@@ -56,12 +60,14 @@ public class ConsultantProfileController {
 
         @GetMapping("/all")
         @PreAuthorize("hasAnyRole('Customer', 'Manager', 'Admin')")
+        // API để lấy tất cả hồ sơ chuyên gia tư vấn
         public ResponseEntity<?> getAll() {
             return ResponseEntity.ok(service.getAllConsultants());
         }
 
         @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('Customer','Manager','Admin')")
+    // API để lấy hồ sơ chuyên gia tư vấn theo ID
     public ResponseEntity<?> getConsultantProfile(@PathVariable Integer id) {
         try {
             var profile = service.get(id);
@@ -73,6 +79,7 @@ public class ConsultantProfileController {
 
     @PutMapping("/{id}/employment-status")
     @PreAuthorize("hasAnyRole('Manager', 'Admin')")
+    // API để cập nhật trạng thái làm việc của chuyên gia tư vấn
     public ResponseEntity<?> updateEmploymentStatus(@PathVariable Integer id, @RequestParam Boolean employmentStatus) {
         try {
             String result = service.updateEmploymentStatus(id, employmentStatus);
@@ -84,6 +91,7 @@ public class ConsultantProfileController {
 
     @PutMapping("/{id}/hourly-rate")
     @PreAuthorize("hasAnyRole('Manager', 'Admin')")
+    // API để cập nhật mức phí theo giờ của chuyên gia tư vấn
     public ResponseEntity<?> updateHourlyRate(@PathVariable Integer id, @RequestParam Double hourlyRate) {
         try {
             String result = service.updateHourlyRate(id, hourlyRate);
@@ -97,6 +105,7 @@ public class ConsultantProfileController {
 
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('Manager', 'Customer')")
+    // API để lấy danh sách chuyên gia tư vấn đang hoạt động
     public ResponseEntity<List<ConsultantProfileResponse>> getActiveConsultants() {
         List<ConsultantProfileResponse> activeConsultants = service.getActiveConsultants();
         return ResponseEntity.ok(activeConsultants);
