@@ -53,6 +53,9 @@ public class UserService {
         if (accountRepository.findByUserName(createRequest.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists: " + createRequest.getUsername());
         }
+        if (userRepository.findByPhone(createRequest.getPhone()).isPresent()) {
+            throw new RuntimeException("Phone number already exists: " + createRequest.getPhone());
+        }
         // Create new user
         Users user = new Users();
         user.setFullName(createRequest.getFullName());
