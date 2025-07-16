@@ -34,7 +34,7 @@ public class ConsultantInvoiceService {
 
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
         Double hourlyRateVND = booking.getConsultant().getConsultantProfile().getHourlyRate();
-        Double hourlyRateUSD = Math.round((hourlyRateVND / 24000) * 100.0) / 100.0; // Convert VND to USD with rounding
+        Double hourlyRateUSD = Math.round((hourlyRateVND / 26000) * 100.0) / 100.0; // Convert VND to USD with rounding
 
         System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Hourly Rate USD = " + hourlyRateUSD);
 
