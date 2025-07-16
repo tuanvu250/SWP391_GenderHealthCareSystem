@@ -24,6 +24,7 @@ public class MenstrualCalendarController {
     private final MenstrualCalendarService calendarService;
 
     @GetMapping("/me")
+    // API to get the menstrual calendar of the logged-in user
     public ResponseEntity<?> getMyCalendar(@AuthenticationPrincipal Jwt jwt) {
         if (jwt == null || jwt.getClaimAsString("userID") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid JWT");
@@ -53,3 +54,4 @@ public class MenstrualCalendarController {
         return ResponseEntity.ok(cal);
     }
 }
+

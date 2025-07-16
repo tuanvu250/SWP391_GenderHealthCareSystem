@@ -33,6 +33,7 @@ public class ConsultantBookingController {
     private final ConsultantInvoiceService invoiceService;
 
     @PostMapping
+    // API to create a new booking
     public ResponseEntity<ApiResponse<ConsultantBookingResponse>> createBooking(
             @RequestBody @Valid ConsultantBookingRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -46,6 +47,7 @@ public class ConsultantBookingController {
 
     // 3. Consultant: view all bookings with customer info
     @GetMapping("/consultant/schedule")
+    // API for consultants to view their schedule
     public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> getConsultantSchedule(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -60,6 +62,7 @@ public class ConsultantBookingController {
     }
 
         @GetMapping("/consultant/schedule/search")
+    // API for consultants to search their schedule with filters
     public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> searchConsultantSchedule(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -84,12 +87,14 @@ public class ConsultantBookingController {
 
 
     @GetMapping("/calendar/{consultantId}")
+    // API to get the calendar of a specific consultant
     public ResponseEntity<?> getConsultantCalendar(@PathVariable Integer consultantId) {
         var calendar = bookingService.getConsultantCalendar(consultantId);
         return ResponseEntity.ok(ApiResponse.success(calendar));
     }
 
     @GetMapping("/history")
+    // API for customers to view their booking history
     public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingResponse>>> getBookingHistory(
             @RequestParam(required = false) Integer consultantId,
             @RequestParam(required = false) String startDate,
@@ -118,6 +123,7 @@ public class ConsultantBookingController {
     }
     @PutMapping("/cancel/{bookingId}")
     @PreAuthorize("hasRole('Customer')")
+    // API for customers to cancel a booking
     public ResponseEntity<RefundResponse> cancelBooking(
             @PathVariable Integer bookingId,
             @AuthenticationPrincipal Jwt jwt) {
@@ -139,6 +145,7 @@ public class ConsultantBookingController {
      */
     @PutMapping("/reschedule")
     @PreAuthorize("hasRole('Customer')")
+    // API for customers to reschedule a paid booking
     public ResponseEntity<Map<String, String>> reschedule(
             @RequestBody RescheduleRequest req,
             @AuthenticationPrincipal Jwt jwt) {
@@ -151,6 +158,7 @@ public class ConsultantBookingController {
 
     @PutMapping("/update-meeting-link/{bookingId}")
     @PreAuthorize("hasRole('Staff')")
+    // API for staff to update the meeting link of a booking
     public ResponseEntity<?> updateMeetingLink(
             @PathVariable Integer bookingId,
             @RequestParam String meetingLink) {
@@ -164,6 +172,7 @@ public class ConsultantBookingController {
 
     @PutMapping("/{bookingId}/status")
     @PreAuthorize("hasAnyRole('Consultant','Staff')")
+    // API for consultants or staff to update the status of a booking
     public ResponseEntity<ApiResponse<String>> updateBookingStatus(
             @PathVariable Integer bookingId,
             @RequestParam String status,
@@ -184,6 +193,7 @@ public class ConsultantBookingController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('Manager', 'Admin', 'Staff')")
+    // API for managers, admins, or staff to search bookings
     public ResponseEntity<PageResponse<ConsultantBookingResponse>> searchBookings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -207,3 +217,4 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(bookings);
     }
 }
+

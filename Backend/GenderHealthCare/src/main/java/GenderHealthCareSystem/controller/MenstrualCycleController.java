@@ -27,6 +27,7 @@ public class MenstrualCycleController {
     private final MenstrualCalendarService calendarService;
 
     @PostMapping("/calculate")
+    // API to create and calculate a new menstrual cycle
     public ResponseEntity<?> createAndCalculateCycle(
             @RequestBody MenstrualCycleRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -66,6 +67,7 @@ public class MenstrualCycleController {
     }
 
     @PostMapping("/update")
+    // API to update an existing menstrual cycle
     public ResponseEntity<?> updateCycle(
             @RequestBody MenstrualCycleRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -105,3 +107,4 @@ public class MenstrualCycleController {
         }
     }
 }
+

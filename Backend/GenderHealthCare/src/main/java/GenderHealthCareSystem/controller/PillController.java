@@ -18,7 +18,9 @@ public class PillController {
 
     @Autowired
     private PillService pillService;
+
     @PostMapping
+    // API to create a new pill
     public ResponseEntity<ApiResponse<PillResponse>> createPill(
             @RequestBody PillRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -40,6 +42,7 @@ public class PillController {
     }
 
     @PatchMapping("/update-frequency")
+    // API to update the notification frequency of a pill
     public ResponseEntity<ApiResponse<Void>> updateNotificationFrequency(
             @RequestParam Integer pillId,
             @RequestParam Pills.NotificationFrequency frequency,
