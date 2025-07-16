@@ -33,11 +33,12 @@ public class ConsultantInvoiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
 
         Double paidAmount = Double.valueOf(payment.getTransactions().get(0).getAmount().getTotal());
-        Double hourlyRate = booking.getConsultant().getConsultantProfile().getHourlyRate(); // Lấy trực tiếp hourlyRate
+        Double hourlyRateVND = booking.getConsultant().getConsultantProfile().getHourlyRate();
+        Double hourlyRateUSD = Math.round((hourlyRateVND / 24000) * 100.0) / 100.0; // Convert VND to USD with rounding
 
-        System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Hourly Rate USD = " + hourlyRate);
+        System.out.println(">>> [PAYPAL] Paid USD = " + paidAmount + ", Hourly Rate USD = " + hourlyRateUSD);
 
-        if (Math.abs(paidAmount - hourlyRate) > 0.01) {
+        if (Math.abs(paidAmount - hourlyRateUSD) > 0.01) { // Allow minor differences due to rounding
             throw new IllegalArgumentException("Số tiền thanh toán không khớp!");
         }
 
@@ -47,7 +48,7 @@ public class ConsultantInvoiceService {
             invoice.setConsultationBooking(booking);
         }
 
-        invoice.setTotalAmount(hourlyRate); // Sử dụng hourlyRate thay vì totalAmount
+        invoice.setTotalAmount(hourlyRateUSD); // Use hourlyRateUSD for consistency
         invoice.setCurrency("USD");
         invoice.setPaymentMethod("PAYPAL");
         invoice.setTransactionId(payment.getId());
