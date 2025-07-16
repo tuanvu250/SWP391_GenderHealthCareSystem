@@ -247,8 +247,8 @@ export default function PillScheduleCalendar() {
           </table>
 
           <div className="mt-4 text-center text-sm text-gray-700">
-            <p>✅ Đã uống: <strong>{takenCount}</strong> viên</p>
-            <p>❌ Chưa uống: <strong>{notTakenCount}</strong> viên</p>
+            <p>Đã uống: <strong>{takenCount}</strong> viên</p>
+            <p>Chưa uống: <strong>{notTakenCount}</strong> viên</p>
           </div>
 
           {takenCount >= parseInt(localStorage.getItem('pillType') || '28', 10) && (
@@ -276,7 +276,7 @@ export default function PillScheduleCalendar() {
               }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
-              ← Nhập lại lịch mới
+              Nhập lại lịch mới
             </button>
           </div>
         </>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { menstrualHistoryAPI, updateTrackerAPI } from "../components/api/HeathTracker.api";
+import { menstrualHistoryAPI } from "../components/api/HeathTracker.api";
+import dayjs from "dayjs";
 
 export default function OvulationCalendar() {
   const navigate = useNavigate();
@@ -9,52 +10,49 @@ export default function OvulationCalendar() {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null);
   const [availableMonths, setAvailableMonths] = useState([]);
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     const fetchCalendar = async () => {
       const token = sessionStorage.getItem("token");
       if (!token) return navigate("/login");
 
-      try {
-        let calendarData = location.state?.calendar;
-        if (!calendarData) {
-          const res = await menstrualHistoryAPI();
-          calendarData = res.data;
-        }
-
-        if (!calendarData || !calendarData.days?.length) {
-          navigate("/menstrual/tracker");
-          return;
-        }
-
-        setCalendar(calendarData);
-
-        const monthSet = new Set(
-          calendarData.days.map(d => {
-            const [y, m] = d.date.split("-").map(Number);
-            return `${y}-${String(m).padStart(2, "0")}`;
-          })
-        );
-
-        const sortedMonths = Array.from(monthSet).sort((a, b) => new Date(a + "-01") - new Date(b + "-01"));
-        setAvailableMonths(sortedMonths);
-
-        const lastReal = calendarData.days
-          .filter(d => d.type === "MENSTRUATION" && d.note === "form")
-          .map(d => new Date(d.date))
-          .sort((a, b) => b - a)[0];
-
-        const baseDate = lastReal || new Date();
-        const key = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, "0")}`;
-        const [y, m] = key.split("-").map(Number);
-        setSelectedYear(y);
-        setSelectedMonth(m - 1);
-      } catch (err) {
-        console.error("Lỗi tải lịch:", err);
-        navigate("/menstrual/tracker");
+      let calendarData = location.state?.calendar;
+      if (!calendarData) {
+        const res = await menstrualHistoryAPI();
+        calendarData = res.data;
       }
+
+      if (!calendarData || !calendarData.days?.length) {
+        navigate("/menstrual/tracker");
+        return;
+      }
+
+      setCalendar(calendarData);
+
+      const monthSet = new Set(
+        calendarData.days.map((d) => {
+          const [y, m] = d.date.split("-").map(Number);
+          return `${y}-${String(m).padStart(2, "0")}`;
+        })
+      );
+
+      const sortedMonths = Array.from(monthSet).sort(
+        (a, b) => new Date(a + "-01") - new Date(b + "-01")
+      );
+      setAvailableMonths(sortedMonths);
+
+      const lastReal = calendarData.days
+        .filter((d) => d.type === "MENSTRUATION" && d.note === "form")
+        .map((d) => new Date(d.date))
+        .sort((a, b) => b - a)[0];
+
+      const baseDate = lastReal || new Date();
+      const key = `${baseDate.getFullYear()}-${String(
+        baseDate.getMonth() + 1
+      ).padStart(2, "0")}`;
+      const [y, m] = key.split("-").map(Number);
+      setSelectedYear(y);
+      setSelectedMonth(m - 1);
     };
 
     fetchCalendar();
@@ -67,8 +65,8 @@ export default function OvulationCalendar() {
       const date = new Date(year, month, i);
       days.push({
         date,
-        dateStr: date.toISOString().split("T")[0],
-        weekday: date.getDay()
+        dateStr: dayjs(date).format("YYYY-MM-DD"), // dùng dayjs tránh lệch
+        weekday: date.getDay(),
       });
     }
     return days;
@@ -87,13 +85,17 @@ export default function OvulationCalendar() {
   };
 
   const getColor = (dateStr) => {
-    const match = calendar.days.find(d => d.date === dateStr);
+    const match = calendar.days.find((d) => d.date === dateStr);
     if (!match) return "bg-white text-gray-700";
     switch (match.type) {
-      case "MENSTRUATION": return "bg-red-400 text-white";
-      case "HIGH_FERTILITY": return "bg-green-500 text-white";
-      case "MEDIUM_FERTILITY": return "bg-yellow-300 text-black";
-      default: return "bg-gray-100 text-gray-700";
+      case "MENSTRUATION":
+        return "bg-red-400 text-white";
+      case "HIGH_FERTILITY":
+        return "bg-green-500 text-white";
+      case "MEDIUM_FERTILITY":
+        return "bg-yellow-300 text-black";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -117,55 +119,59 @@ export default function OvulationCalendar() {
     }
   };
 
-  const handleDayClick = (dateStr) => {
-    setSelectedDay(dateStr);
-    setDirty(true);
-  };
-
-  const handleSave = async () => {
-    if (!selectedDay) return;
-
-    const cycleLength = parseInt(localStorage.getItem("menstrualCycleLength") || "28", 10);
-    const startDate = selectedDay;
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 5 - 1); // Mặc định 5 ngày hành kinh
-
-    try {
-      await updateTrackerAPI({
-        startDate,
-        endDate: endDate.toISOString().split("T")[0],
-        cycleLength,
-        note: "form",
-      });
-
-      localStorage.setItem("menstrualStartDate", startDate);
-      localStorage.setItem("menstrualCycleLength", cycleLength.toString());
-
-      const res = await menstrualHistoryAPI();
-      setCalendar(res.data);
-      setDirty(false);
-    } catch (err) {
-      console.error("Lỗi khi lưu:", err);
-    }
-  };
-
   if (!calendar || selectedYear === null || selectedMonth === null) return null;
   const calendarGrid = buildCalendarGrid(selectedYear, selectedMonth);
 
+  const cycleLength = calendar.cycleLength || localStorage.getItem("menstrualCycleLength");
+  const startDate = calendar.startDate || localStorage.getItem("menstrualStartDate");
+  const menstruationDays = calendar.days.filter((d) => d.type === "MENSTRUATION");
+  const periodLength = menstruationDays.length || "-";
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-2xl font-bold mb-2">
         Dự đoán chu kỳ - Tháng {selectedMonth + 1}/{selectedYear}
       </h2>
 
+      <div className="mb-6 text-gray-700">
+        <p>
+          <strong>Ngày bắt đầu:</strong>{" "}
+          {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "Không có"}
+        </p>
+        <p>
+          <strong>Độ dài kỳ kinh:</strong> {periodLength} ngày
+        </p>
+        <p>
+          <strong>Độ dài chu kỳ:</strong> {cycleLength} ngày
+        </p>
+      </div>
+
       <div className="flex justify-center items-center gap-4 mb-6">
-        <button onClick={handlePrev} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">← Tháng trước</button>
-        <span className="font-medium text-lg">Tháng {selectedMonth + 1} / {selectedYear}</span>
-        <button onClick={handleNext} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Tháng sau →</button>
+        <button
+          onClick={handlePrev}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          ← Tháng trước
+        </button>
+        <span className="font-medium text-lg">
+          Tháng {selectedMonth + 1} / {selectedYear}
+        </span>
+        <button
+          onClick={handleNext}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Tháng sau →
+        </button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 font-semibold text-center text-sm text-gray-700 mb-2">
-        <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
+        <div>CN</div>
+        <div>T2</div>
+        <div>T3</div>
+        <div>T4</div>
+        <div>T5</div>
+        <div>T6</div>
+        <div>T7</div>
       </div>
 
       {calendarGrid.map((week, i) => (
@@ -174,15 +180,22 @@ export default function OvulationCalendar() {
             day ? (
               <div
                 key={j}
-                onClick={() => handleDayClick(day.dateStr)}
-                className={`w-16 h-16 flex flex-col items-center justify-center rounded-full shadow text-xs cursor-pointer ${getColor(day.dateStr)} ${selectedDay === day.dateStr ? 'ring-4 ring-blue-400' : ''}`}
+                className={`w-16 h-16 flex flex-col items-center justify-center rounded-full shadow text-xs ${getColor(
+                  day.dateStr
+                )}`}
               >
                 <div className="font-bold text-base">{day.date.getDate()}</div>
                 <div className="text-[10px] mt-1">
-                  {calendar.days.find(d => d.date === day.dateStr)?.type === 'MENSTRUATION' ? 'Kinh nguyệt'
-                    : calendar.days.find(d => d.date === day.dateStr)?.type === 'HIGH_FERTILITY' ? 'Thụ thai cao'
-                    : calendar.days.find(d => d.date === day.dateStr)?.type === 'MEDIUM_FERTILITY' ? 'Thụ thai TB'
-                    : 'Thường ngày'}
+                  {calendar.days.find((d) => d.date === day.dateStr)?.type ===
+                  "MENSTRUATION"
+                    ? "Kinh nguyệt"
+                    : calendar.days.find((d) => d.date === day.dateStr)?.type ===
+                      "HIGH_FERTILITY"
+                    ? "Thụ thai cao"
+                    : calendar.days.find((d) => d.date === day.dateStr)?.type ===
+                      "MEDIUM_FERTILITY"
+                    ? "Thụ thai TB"
+                    : "Thường ngày"}
                 </div>
               </div>
             ) : (
@@ -193,27 +206,33 @@ export default function OvulationCalendar() {
       ))}
 
       <div className="mt-6 grid grid-cols-2 gap-2 text-sm max-w-sm mx-auto text-left">
-        <p><span className="inline-block w-4 h-4 bg-red-400 rounded-full mr-2"></span>Kinh nguyệt</p>
-        <p><span className="inline-block w-4 h-4 bg-green-500 rounded-full mr-2"></span>Thụ thai cao</p>
-        <p><span className="inline-block w-4 h-4 bg-yellow-300 rounded-full mr-2"></span>Thụ thai trung bình</p>
-        <p><span className="inline-block w-4 h-4 bg-gray-100 rounded-full mr-2"></span>Ngày thường</p>
+        <p>
+          <span className="inline-block w-4 h-4 bg-red-400 rounded-full mr-2"></span>
+          Kinh nguyệt
+        </p>
+        <p>
+          <span className="inline-block w-4 h-4 bg-green-500 rounded-full mr-2"></span>
+          Thụ thai cao
+        </p>
+        <p>
+          <span className="inline-block w-4 h-4 bg-yellow-300 rounded-full mr-2"></span>
+          Thụ thai trung bình
+        </p>
+        <p>
+          <span className="inline-block w-4 h-4 bg-gray-100 rounded-full mr-2"></span>
+          Ngày thường
+        </p>
       </div>
 
       <div className="mt-8 flex justify-center gap-4">
         <button
-          onClick={() => navigate("/menstrual/tracker", { state: { forceInput: true } })}
+          onClick={() =>
+            navigate("/menstrual/tracker", { state: { forceInput: true } })
+          }
           className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
         >
           ← Nhập kỳ kinh mới
         </button>
-        {dirty && (
-          <button
-            onClick={handleSave}
-            className="px-5 py-2 bg-[#0099CF] text-white rounded hover:bg-blue-600"
-          >
-            Lưu thay đổi
-          </button>
-        )}
       </div>
     </div>
   );

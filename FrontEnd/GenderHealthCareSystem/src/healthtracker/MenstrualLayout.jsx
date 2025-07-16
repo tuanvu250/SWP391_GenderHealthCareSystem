@@ -40,22 +40,22 @@ const MenstrualLayout = () => {
   return (
     <Layout className="min-h-screen">
       <Layout.Content className="bg-gray-50">
-        {/* Banner theo dõi kinh nguyệt với tone hồng - đã giảm kích thước */}
-        <div className="bg-gradient-to-r from-pink-50 to-pink-100 py-6 px-4 sm:px-6 lg:px-8">
+        {/* Banner theo dõi kinh nguyệt với tone xanh dương */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-6 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">
             <div className="flex flex-col lg:flex-row items-start justify-between">
-              {/* Phần nội dung bên trái - đã giảm nội dung */}
+              {/* Phần nội dung bên trái */}
               <div className="w-full lg:w-1/2 pr-0 lg:pr-8 mb-4 lg:mb-0">
                 <div className="flex items-center mb-2">
-                  <CalendarOutlined className="text-pink-500 mr-2" />
-                  <Text className="text-pink-700 font-medium">
+                  <CalendarOutlined className="text-blue-500 mr-2" />
+                  <Text className="text-blue-700 font-medium">
                     Theo dõi chu kỳ kinh nguyệt & sức khỏe phụ nữ
                   </Text>
                 </div>
 
                 <Title level={3} className="mb-2">
                   <span className="text-gray-800">Theo dõi kinh nguyệt</span>{" "}
-                  <span className="text-pink-500">chính xác & tiện lợi</span>
+                  <span className="text-blue-500">chính xác & tiện lợi</span>
                 </Title>
 
                 <Text className="text-gray-600 block">
@@ -63,24 +63,22 @@ const MenstrualLayout = () => {
                   theo và bảo mật 100%.
                 </Text>
 
-                {/* Đã bỏ phần buttons */}
-
                 <div className="flex items-center gap-8 mt-4">
                   <div className="flex items-center">
-                    <CalendarOutlined className="text-pink-500 mr-2" />
+                    <CalendarOutlined className="text-blue-500 mr-2" />
                     <Text>Dự đoán chính xác</Text>
                   </div>
                   <div className="flex items-center">
-                    <SafetyOutlined className="text-pink-500 mr-2" />
+                    <SafetyOutlined className="text-blue-500 mr-2" />
                     <Text>100% bảo mật</Text>
                   </div>
                 </div>
               </div>
 
-              {/* Phần bên phải - Quy trình 4 bước - đã tối giản */}
+              {/* Phần bên phải - Quy trình 2 bước */}
               <div className="w-full lg:w-5/12 rounded-xl p-4">
-                <div className=" mb-3">
-                  <div className="items-center justify-center bg-pink-100 mb-2">
+                <div className="mb-3">
+                  <div className="items-center justify-center bg-blue-100 mb-2">
                     <Title level={4} className="mb-1">
                       Quy trình đơn giản
                     </Title>
@@ -89,7 +87,7 @@ const MenstrualLayout = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex gap-2 items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">
                       1
                     </div>
                     <div>
@@ -99,7 +97,7 @@ const MenstrualLayout = () => {
                     </div>
                   </div>
                   <div className="flex gap-2 items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">
                       2
                     </div>
                     <div>
