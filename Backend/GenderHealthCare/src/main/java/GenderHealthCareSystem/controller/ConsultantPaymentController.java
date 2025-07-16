@@ -75,7 +75,7 @@ public class ConsultantPaymentController {
             logger.info("VNPAY amount for booking ID {}: {}", bookingId, vnpayAmount);
             paymentUrl = vnPayService.createPaymentUrl(vnpayAmount, "Consultation", bookingId.toString(), request.getRemoteAddr());
         } else if ("PAYPAL".equalsIgnoreCase(method)) {
-            double usdAmount = hourlyRate; // Directly use hourlyRate
+            double usdAmount =  Math.round((hourlyRate / 26000) * 100.0) / 100.0;; // Directly use hourlyRate
             logger.info("PayPal amount (USD) for booking ID {}: {}", bookingId, usdAmount);
             Payment payment = payPalService.createPayment(
                     bookingId.toString(),
