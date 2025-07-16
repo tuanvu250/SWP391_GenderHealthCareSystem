@@ -51,11 +51,9 @@ const BookingForm = ({
   const [worrkingTime, setWorkingTime] = useState(workingHours || []);
   const [activePackageType, setActivePackageType] = useState("combo");
 
-  // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6; // Show 6 items per page (2 rows x 3 columns)
+  const pageSize = 6;
 
-  // Calculate paginated packages
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
@@ -69,7 +67,6 @@ const BookingForm = ({
     form.setFieldsValue({ package: undefined, packageDetails: undefined });
   };
 
-  // Tự động điền thông tin người dùng từ context khi component được tạo
   useEffect(() => {
     form.setFieldsValue({
       fullName: user?.fullName,
@@ -92,12 +89,16 @@ const BookingForm = ({
 
       if (!serviceId) return;
 
-      // Check tất cả thời gian song song
       const timeCheckPromises = workingHours.map(async (hour) => {
-        const bookingDateTime = `${date.format("YYYY-MM-DD")}T${hour.value}:00.0000000`;
+        const bookingDateTime = `${date.format("YYYY-MM-DD")}T${
+          hour.value
+        }:00.0000000`;
 
         try {
-          const response = await checkLimitTimeToBookAPI(serviceId, bookingDateTime);
+          const response = await checkLimitTimeToBookAPI(
+            serviceId,
+            bookingDateTime
+          );
           return {
             time: hour.value,
             isDisabled: response.data?.data === true,
@@ -124,7 +125,7 @@ const BookingForm = ({
     }
   };
 
-  // ✅ Reset disabled hours khi thay đổi service
+  // Reset disabled hours khi thay đổi service
   useEffect(() => {
     setDisabledHours(new Set());
   }, [form.getFieldValue("package")]);
@@ -172,18 +173,16 @@ const BookingForm = ({
 
   // Render a package card with enhanced styling for grid
   const renderPackageCardForGrid = (pkg) => {
-    // Make sure to compare with same type (string or number)
     const formPackageId = form.getFieldValue("package");
     const isSelected =
       formPackageId !== undefined &&
       (formPackageId === pkg.serviceId ||
         formPackageId === pkg.serviceId.toString());
-    
-    // Tính toán giá giảm nếu có discount
+
     const hasDiscount = pkg.discount > 0;
-    const discountedPrice = hasDiscount ? 
-      Math.round(pkg.price * (1 - pkg.discount / 100)) : 
-      pkg.price;
+    const discountedPrice = hasDiscount
+      ? Math.round(pkg.price * (1 - pkg.discount / 100))
+      : pkg.price;
 
     return (
       <div
@@ -230,12 +229,9 @@ const BookingForm = ({
 
         <div className="flex justify-between items-end mt-auto pt-2 border-t border-gray-100">
           <div>
-            {/* Hiển thị giá sau khi giảm */}
             <div className="text-base font-bold text-[#0099CF]">
               {formatPrice(discountedPrice)}
             </div>
-            
-            {/* Hiển thị giá gốc nếu có giảm giá */}
             {hasDiscount && (
               <div className="line-through text-xs text-gray-500">
                 {formatPrice(pkg.price)}
@@ -262,22 +258,16 @@ const BookingForm = ({
       </div>
     );
   };
-
-  // Theo dõi thay đổi phương thức thanh toán
   const handlePaymentMethodChange = (e) => {
     setPaymentMethod(e.target.value);
-
-    // Reset trường onlinePaymentMethod khi người dùng chuyển về thanh toán tiền mặt
     if (e.target.value !== "online") {
-      form.setFieldsValue({ onlinePaymentMethod: undefined }); // Đúng với tên field mới
+      form.setFieldsValue({ onlinePaymentMethod: undefined }); 
     }
   };
 
   return (
     <div>
       <Divider />
-
-      {/* Chọn gói xét nghiệm */}
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-4">Chọn gói xét nghiệm</h3>
 
@@ -286,7 +276,6 @@ const BookingForm = ({
           onChange={handlePackageTypeChange}
           className="mb-4"
         >
-          {/* Đổi vị trí tab combo và single */}
           <TabPane
             tab={<span>Gói combo tiết kiệm ({comboPackages.length})</span>}
             key="combo"
@@ -515,7 +504,7 @@ const BookingForm = ({
               {paymentMethod === "online" && (
                 <div className="pl-7 mt-2">
                   <Form.Item
-                    name="onlinePaymentMethod" // Đổi từ "paymentMethod" thành "onlinePaymentMethod"
+                    name="onlinePaymentMethod" 
                     rules={[
                       {
                         required: paymentMethod === "online",

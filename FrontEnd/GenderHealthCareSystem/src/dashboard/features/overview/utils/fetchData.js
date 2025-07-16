@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { getStatisticsFeedbackConsultantAPI } from "../../../../components/api/FeedbackConsultant.api";
 import { getStatisticsFeedbackTestingAPI } from "../../../../components/api/FeedbackTesting.api";
-import dayjs from "dayjs"; // Sử dụng dayjs để xử lý ngày tháng
+import dayjs from "dayjs"; 
 import {
   getRevenueStatsAPI,
   getStatsUserRoleAPI,
@@ -21,7 +21,6 @@ export const getDashboardStats = async (role) => {
         pendingPosts: 0,
         averageRating: serviceRatings.testingAvg,
 
-        // Thêm dữ liệu đánh giá dịch vụ
         serviceRatings: serviceRatings,
 
         usersAndAppointments: await getUsersAndAppointmentsStats(),
@@ -237,7 +236,6 @@ export const getRevenueStats = async () => {
 export const getStatsByRole = async () => {
   try {
     const res = await getStatsUserRoleAPI();
-    console.log(">>> Stats by role:", res.data.data);
     return res.data.data;
   } catch (error) {
     console.error("Error fetching stats by role:", error);

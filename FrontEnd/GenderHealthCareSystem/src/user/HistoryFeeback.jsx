@@ -151,7 +151,6 @@ const HistoryFeedback = () => {
           feedback.consultantId,
           feedback.bookingId
         );
-        // Refresh dữ liệu
         fetchConsultantFeedbacks();
       }
 
@@ -174,11 +173,9 @@ const HistoryFeedback = () => {
 
       if (type === "service") {
         await deleteFeedbackTestingAPI(feedbackId);
-        // Refresh dữ liệu
         fetchTestingFeedbacks();
       } else {
         //await deleteFeedbackConsultantAPI(feedbackId);
-        // Refresh dữ liệu
         fetchConsultantFeedbacks();
       }
 

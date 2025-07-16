@@ -8,7 +8,6 @@ import {
   Avatar,
   Row,
   Col,
-  Divider,
   Space,
   Pagination,
   Button,
@@ -16,7 +15,6 @@ import {
 } from "antd";
 import {
   SearchOutlined,
-  CalendarOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { formatDateTime, getTagColor } from "../components/utils/format";
@@ -48,9 +46,9 @@ const Blog = () => {
     try {
       const response = await blogSearchAPI({
         title: searchQuery,
-        page: currentPage - 1, // API thường sử dụng chỉ số trang bắt đầu từ 0
+        page: currentPage - 1,
         size: postsPerPage,
-        tag: selectedTags.join(", "), // Chuyển đổi mảng tags thành chuỗi
+        tag: selectedTags.join(", "),
         sort: sortOrder,
       });
 
@@ -59,18 +57,16 @@ const Blog = () => {
         setTotalPages(response.data.data.totalPages);
 
         const formattedPosts = response.data.data.content.map((post) => {
-          // Chuyển đổi trường tags từ chuỗi thành mảng objects
           const tagArray = post.tags
             ? post.tags.split(",").map((tag) => ({
                 text: tag.trim(),
-                color: getTagColor(tag.trim()), // Hàm helper để gán màu cho tag
+                color: getTagColor(tag.trim()), 
               }))
             : [];
 
           return {
             ...post,
             tags: tagArray,
-            // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
             thumbnailUrl:
               post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
                 ? post.thumbnailUrl
@@ -90,7 +86,6 @@ const Blog = () => {
   };
 
   useEffect(() => {
-    // Lấy danh sách bài viết khi component mount
     fetchBlogPosts();
   }, [searchQuery, selectedTags, sortOrder, currentPage]);
 
@@ -172,7 +167,7 @@ const Blog = () => {
                 style={{ width: "100%" }}
                 placeholder="Sắp xếp theo"
                 onChange={handleSortChange}
-                defaultValue="newest"
+                defaultValue="desc"
                 size="large"
               >
                 <Option value="desc">Mới nhất trước</Option>
@@ -227,7 +222,7 @@ const Blog = () => {
           </Text>
         </div>
 
-        {/* Blog Posts Grid - Thay đổi thành 4 cột */}
+        {/* Blog Posts Grid */}
         {blogPosts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {blogPosts.map((post) => (

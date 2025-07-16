@@ -1,6 +1,5 @@
 // src/api/booking.api.js
 import apiClient from "./apiClient";
-import dayjs from "dayjs";
 
 export const getSTISPackagesAPI = async () => {
   return apiClient.get("/stis-services");
@@ -23,7 +22,6 @@ export const bookStisAPI = async (values) => {
     note: values.notes,
     paymentMethod: values.paymentMethod,
   };
-  console.log("Booking Data:", bookingData);
   return apiClient.post("/stis-bookings", bookingData);
 };
 

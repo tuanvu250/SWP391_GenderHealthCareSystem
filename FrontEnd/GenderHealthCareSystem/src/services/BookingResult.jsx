@@ -36,7 +36,6 @@ const BookingResult = () => {
   const isVNpay = !!vnpayResponseCode;
   const isPaypal = !!paymentId && !!payerId;
 
-  // ✅ THÊM VÀO ĐÂY — không còn lỗi nữa
   const [bookingType, setBookingType] = useState(
     localStorage.getItem("bookingType") || "sti"
   );
@@ -112,9 +111,10 @@ const BookingResult = () => {
           isVNpay ? "VNPAY" : "PAYPAL"
         );
       } else {
+        const usd = await convertVndToUsd(amount);
         response = isVNpay
           ? await paymentVNPayAPI(amount, orderInfo, bookingID)
-          : await paymentPayPalAPI(convertVndToUsd(amount), bookingID);
+          : await paymentPayPalAPI(usd, bookingID);
       }
 
       message.success("Đang chuyển hướng đến trang thanh toán ...");

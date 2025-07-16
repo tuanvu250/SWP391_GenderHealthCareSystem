@@ -20,7 +20,7 @@ public class ProfileDetail {
     @JoinColumn(name = "ProfileID", nullable = false)
     private ConsultantProfile profile;
 
-    @Column(name = "DetailType", nullable = false, length = 10)
+    @Column(name = "DetailType", nullable = false, length = 100)
     private String detailType; // WORK, EDU, CERT/
 
     @Column(name = "Title", length = 100, columnDefinition = "NVARCHAR(100)")

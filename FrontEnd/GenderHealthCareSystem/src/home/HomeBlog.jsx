@@ -10,16 +10,12 @@ const HomeBlog = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch latest blog posts from API
     const fetchBlogPosts = async () => {
       try {
         const response = await blogHomeAPI();
 
-        // Truy cập đúng mảng blog posts
         if (response && response.data && Array.isArray(response.data.data)) {
-          // Chuyển đổi dữ liệu từ API để phù hợp với cấu trúc dự kiến
           const formattedPosts = response.data.data.map((post) => {
-            // Chuyển đổi trường tags từ chuỗi thành mảng objects
             const tagArray = post.tags
               ? post.tags.split(",").map((tag) => ({
                   text: tag.trim(),
@@ -30,7 +26,6 @@ const HomeBlog = () => {
             return {
               ...post,
               tags: tagArray,
-              // Đặt URL hình ảnh mặc định nếu thumbnailUrl không hợp lệ
               thumbnailUrl:
                 post.thumbnailUrl && !post.thumbnailUrl.includes("example.com")
                   ? post.thumbnailUrl
@@ -40,17 +35,15 @@ const HomeBlog = () => {
 
           setBlogPosts(formattedPosts);
         } else {
-          //console.error("Invalid data format:", response);
-          setBlogPosts([]); // Đặt mảng rỗng nếu không có dữ liệu hợp lệ
+          setBlogPosts([]);
         }
       } catch (error) {
         console.error("Error fetching blog posts:", error);
-        setBlogPosts([]); // Khởi tạo mảng rỗng trong trường hợp lỗi
+        setBlogPosts([]); 
       }
     };
     fetchBlogPosts();
   }, []);
-  //Thêm state cho blog posts
 
   return (
     <div className="py-16 px-16 bg-white">

@@ -92,7 +92,6 @@ const ManageMyBlog = () => {
     { value: "Rejected", label: "Bị từ chối", color: "red" },
   ];
 
-
   // Fetch danh sách blog
   useEffect(() => {
     !isInitialLoad && fetchBlogList();
@@ -314,15 +313,7 @@ const ManageMyBlog = () => {
       key: "title",
       width: 300,
       render: (text, record) => (
-        <div className="">
-          <a
-            onClick={() => handleViewBlog(record.postId)}
-            className="font-medium hover:text-blue-500"
-            title={text}
-          >
-            {text}
-          </a>
-        </div>
+        <div className="font-medium text-blue-500">{text}</div>
       ),
     },
     {

@@ -6,15 +6,12 @@ import {
   Select,
   DatePicker,
   message,
-  Card,
   Steps,
 } from "antd";
 import {
-  ArrowLeftOutlined,
   PhoneOutlined,
   HomeOutlined,
   CalendarOutlined,
-  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/provider/AuthProvider";

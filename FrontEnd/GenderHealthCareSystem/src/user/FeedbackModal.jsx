@@ -49,7 +49,6 @@ const FeedbackModal = ({
   const [loading, setLoading] = useState(false);
   const isEdit = mode === "edit";
 
-  // Reset form khi modal mở hoặc cập nhật từ existingReview nếu ở chế độ edit
   useEffect(() => {
     if (visible) {
       if (isEdit && existingReview) {
@@ -70,7 +69,6 @@ const FeedbackModal = ({
       const values = await form.validateFields();
       setLoading(true);
       
-      // Chuẩn bị dữ liệu
       const feedbackData = {
         rating,
         content: values.content,
@@ -81,8 +79,6 @@ const FeedbackModal = ({
       };
       
       console.log("Dữ liệu đánh giá:", feedbackData);
-      
-      // Gọi API dựa trên loại đánh giá và chế độ (create/edit)
       if (isEdit) {
         if (type === "service") {
           await editFeedbackTestingAPI(
@@ -114,11 +110,9 @@ const FeedbackModal = ({
         message.success("Đã gửi đánh giá thành công!");
       }
       
-      // Đóng modal và gọi callback
       form.resetFields();
       onCancel();
       
-      // Gọi callback onSuccess nếu có
       if (onSuccess && typeof onSuccess === 'function') {
         onSuccess();
       }
@@ -130,7 +124,6 @@ const FeedbackModal = ({
     }
   };
 
-  // Render nội dung khác nhau dựa vào type
   const renderContent = () => {
     if (type === "service") {
       return (

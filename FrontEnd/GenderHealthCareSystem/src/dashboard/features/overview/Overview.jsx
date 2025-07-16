@@ -24,7 +24,6 @@ const Overview = () => {
       setLoading(true);
       try {
         const mockData = await getDashboardStats(role);
-        console.log(">>> Mock data for role:", role, mockData);
         setStats(mockData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);

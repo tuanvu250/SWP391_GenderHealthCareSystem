@@ -13,7 +13,7 @@ const RelatedBlog = ({ posts = [] }) => {
   const navigate = useNavigate();
 
   if (posts.length === 0) {
-    return null; // Không hiển thị gì nếu không có bài viết liên quan
+    return null;
   }
 
   return (
