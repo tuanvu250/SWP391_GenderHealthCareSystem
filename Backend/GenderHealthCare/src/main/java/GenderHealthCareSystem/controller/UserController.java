@@ -31,18 +31,18 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<?>> createUser(@Valid @RequestBody CreateUserRequest createRequest) {
-        try {
+//        try {
             userService.createUser(createRequest);
             return new ResponseEntity<>(
                     new ApiResponse<>(HttpStatus.CREATED, "User created successfully", null, null),
                     HttpStatus.CREATED
             );
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to create user", null, e.getMessage()),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+//        }catch (Exception e) {
+//            return new ResponseEntity<>(
+//                    new ApiResponse<>(HttpStatus.BAD_REQUEST, "Failed to create user", null, e.getMessage()),
+//                    HttpStatus.BAD_REQUEST
+//            );
+//        }
     }
 
     @GetMapping("/{id}")
