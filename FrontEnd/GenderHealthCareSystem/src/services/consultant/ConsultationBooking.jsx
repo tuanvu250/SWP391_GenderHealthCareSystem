@@ -215,6 +215,7 @@ export default function ConsultationBooking() {
                 <DatePicker 
                   style={{ width: '100%' }} 
                   placeholder="Chọn ngày tư vấn"
+                  format={"DD/MM/YYYY"}
                   disabledDate={(current) => {
                     return current && current.valueOf() < Date.now() - 24 * 60 * 60 * 1000;
                   }}

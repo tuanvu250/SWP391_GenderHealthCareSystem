@@ -29,18 +29,18 @@ import dayjs from "dayjs";
 import { 
   manageBookingsAPI, 
   viewResultStisAPI, 
-  markPendingResultBookingStisAPI,
-  markCompletedBookingStisAPI
 } from "../../../../components/api/BookingTesting.api";
 import UpdateMeetLinkModal from "../../../components/modal/UpdateMeetLinkModal";
 import ResultStisModal from "../../../components/modal/ResultStisModal";
 import ViewResultStisModal from "../../../components/modal/ViewResultStisModal";
 import { getUserByIdAPI } from "../../../../components/api/Auth.api";
 import { getServiceTestingByIdAPI } from "../../../../components/api/ServiceTesting.api";
+import { useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 
 const StaffDashboard = ({ stats }) => {
+  const navigate = useNavigate();
   const [testingAppointments, setTestingAppointments] = useState([]);
   const [consultingAppointments, setConsultingAppointments] = useState([]);
   const [paginationTesting, setPaginationTesting] = useState({
@@ -130,7 +130,6 @@ const StaffDashboard = ({ stats }) => {
   const handleUpdateSuccess = () => {
     setIsModalVisible(false);
     setCurrentBooking(null);
-    // Tải lại dữ liệu lịch hẹn
     fetchConsultingAppointments();
   };
   
@@ -264,7 +263,8 @@ const StaffDashboard = ({ stats }) => {
             />
             {testingAppointments.length > 0 && (
               <div className="mt-2">
-                <Button size="small" danger>
+                <Button size="small" danger
+                onClick={() => navigate("/staff/dashboard/manage-booking-stis")}>
                   Cập nhật ngay
                 </Button>
               </div>

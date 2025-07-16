@@ -318,12 +318,6 @@ const HistoryConsultantBooking = () => {
                     {booking.consultantName}
                   </Title>
                 </div>
-                <div className="flex items-center mt-1">
-                  <PhoneOutlined className="mr-2 text-gray-500" />
-                  <Text type="secondary">
-                    {booking.consultantPhone || "Không có số điện thoại"}
-                  </Text>
-                </div>
                 <Text type="secondary" className="mt-1 block">
                   Mã đặt lịch: #{booking.id}
                 </Text>

@@ -149,11 +149,8 @@ const HistoryTesting = () => {
       localStorage.setItem("bookingID", bookingId);
       localStorage.setItem("amount", totalPrice);
       localStorage.setItem("orderInfo", `${bookingId} Đặt lịch xét nghiệm STI`);
-
-      // Mô phỏng thanh toán thành công
       message.success("Đang chuyển hướng đến trang thanh toán ...");
 
-      // Giả lập thanh toán thành công sau 3 giây
       setTimeout(() => {
         window.location.href = response.data;
       }, 1500);
@@ -396,6 +393,7 @@ const HistoryTesting = () => {
               {/* Nút hành động */}
               <div className="flex flex-wrap justify-end gap-2">
                 {booking.status !== "CANCELLED" &&
+                booking.status !== "FAILED_PAYMENT" &&
                   booking.status !== "COMPLETED" && (
                     <Popconfirm
                       title="Xác nhận hủy lịch khám"
@@ -416,6 +414,7 @@ const HistoryTesting = () => {
 
                 {booking.paymentMethod !== "cash" &&
                   booking.paymentStatus === "UNPAID" &&
+                  booking.status !== "FAILED_PAYMENT" &&
                   booking.status !== "CANCELLED" && (
                     <Button
                       type="primary"

@@ -166,7 +166,7 @@ const BookingResult = () => {
               onClick={() =>
                 navigate(
                   bookingType === "consultant"
-                    ? "/consultation"
+                    ? "/services/consultation"
                     : "/sti-testing"
                 )
               }

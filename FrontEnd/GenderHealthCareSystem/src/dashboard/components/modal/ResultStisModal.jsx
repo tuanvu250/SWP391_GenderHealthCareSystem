@@ -89,10 +89,8 @@ const ResultStisModal = ({
     const selectedDiseases = getSelectedDiseases();
     const currentValue = form.getFieldValue(['detectedStis', currentFieldName, 'disease']);
     
-    // Trả về toàn bộ danh sách nếu là xét nghiệm đơn lẻ
     if (isSingleTest) return stisList;
     
-    // Nếu không, lọc ra những bệnh chưa được chọn và bệnh đang được chọn ở field hiện tại
     return stisList.filter(
       disease => !selectedDiseases.includes(disease.value) || disease.value === currentValue
     );
@@ -136,7 +134,7 @@ const ResultStisModal = ({
       setTestDetails("");
       setFileList([]);
       onSave();
-      onCancel(); // Đóng modal sau khi lưu
+      onCancel(); 
     } catch (error) {
       console.error("Error saving test results:", error);
       message.error(

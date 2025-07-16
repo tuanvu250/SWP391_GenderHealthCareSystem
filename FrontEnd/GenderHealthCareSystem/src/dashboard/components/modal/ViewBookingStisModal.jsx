@@ -43,7 +43,8 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
       CONFIRMED: { color: "purple", label: "Đã xác nhận" },
       COMPLETED: { color: "green", label: "Hoàn thành" },
       CANCELLED: { color: "red", label: "Đã hủy" },
-      no_show: { color: "orange", label: "Không đến" },
+      NO_SHOW: { color: "orange", label: "Không đến" },
+      FAILED_PAYMENT: { color: "red", label: "Thanh toán thất bại" },
     };
 
     const config = statusConfig[status] || { color: "default", label: status };
@@ -67,7 +68,6 @@ const ViewBookingStisModal = ({ open, onCancel, booking, customer }) => {
       cash: { label: "Tiền mặt" },
       "credit card": { label: "Ngân hàng" },
       vnpay: { label: "VNPay" },
-      momo: { label: "MoMo" },
     };
 
     const config = methodConfig[method] || { label: method || "Chưa xác định" };
