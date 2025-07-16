@@ -10,7 +10,7 @@ export function formatPrice(price) {
 }
 
 
-export function convertVndToUsd(vndAmount, exchangeRate = 24000) {
+export function convertVndToUsd(vndAmount, exchangeRate = getUSDToVNDExchangeRate()) {
   const usdAmount = vndAmount / exchangeRate;
   
   return new Intl.NumberFormat('en-US', { 
@@ -19,7 +19,7 @@ export function convertVndToUsd(vndAmount, exchangeRate = 24000) {
   }).format(usdAmount);
 }
 
-export function convertUsdToVnd(usdAmount, exchangeRate = 24000) {
+export function convertUsdToVnd(usdAmount, exchangeRate = getUSDToVNDExchangeRate()) {
   const vndAmount = usdAmount * exchangeRate;
   
   return new Intl.NumberFormat('vi-VN', { 
@@ -49,8 +49,7 @@ export async function getUSDToVNDExchangeRate() {
   if (cachedData) {
     return cachedData
   }
-  
-  // Nếu không có dữ liệu cache hoặc dữ liệu đã cũ, gọi API
+
   try {
     console.log('Fetching new exchange rate');
     const response = await axios.get("https://v6.exchangerate-api.com/v6/f4bf27f3ae7743b87405279d/latest/USD");
@@ -59,6 +58,6 @@ export async function getUSDToVNDExchangeRate() {
     return rate;
   } catch (error) {
     console.error("Error fetching exchange rate:", error);
-    return 24000;
+    return 26000;
   }
 }
