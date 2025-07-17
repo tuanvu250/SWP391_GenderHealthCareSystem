@@ -114,9 +114,6 @@ const STIBooking = () => {
     if (current && current < dayjs().endOf("day")) {
       return true;
     }
-
-    // Không cho chọn ngày cuối tuần
-    return current && (current.day() === 0 || current.day() === 6);
   };
 
   // Xử lý chọn gói dịch vụ

@@ -107,8 +107,8 @@ const ReportComponent = () => {
         ["THỐNG KÊ TỔNG QUAN"],
         ["Chỉ số", "Giá trị"],
         ["Tổng lịch hẹn", statsData.totals.totalAppointments || 0],
-        ["Lịch tư vấn", statsData.totals.consultingAppointments || 0],
-        ["Lịch xét nghiệm", statsData.totals.testingAppointments || 0],
+        ["Lịch tư vấn", statsData.totals.totalConsultingAppointments || 0],
+        ["Lịch xét nghiệm", statsData.totals.totalTestingAppointments || 0],
         [
           "Tổng doanh thu",
           `${(statsData.totals.totalRevenue || 0).toLocaleString()} VNĐ`,
@@ -448,13 +448,13 @@ const ReportComponent = () => {
             )}
             {renderStatsCard(
               "Lịch tư vấn",
-              statsData.totals?.consultingAppointments || 0,
+              statsData.totals?.totalConsultingAppointments || 0,
               <UserOutlined />,
               "#52c41a"
             )}
             {renderStatsCard(
               "Lịch xét nghiệm",
-              statsData.totals.testingAppointments || 0,
+              statsData.totals.totalTestingAppointments || 0,
               <FileTextOutlined />,
               "#faad14"
             )}

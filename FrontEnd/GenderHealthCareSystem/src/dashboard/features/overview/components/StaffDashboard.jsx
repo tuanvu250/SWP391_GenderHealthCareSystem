@@ -236,7 +236,7 @@ const StaffDashboard = ({ stats }) => {
           <Card>
             <Statistic
               title="Lịch hẹn chờ xác nhận"
-              value={consultingAppointments.length || 0}
+              value={paginationConsulting.total || 0}
               valueStyle={{
                 color: stats.pendingAppointments > 5 ? "#faad14" : "",
               }}
@@ -255,13 +255,13 @@ const StaffDashboard = ({ stats }) => {
           <Card>
             <Statistic
               title="Kết quả cần cập nhật"
-              value={testingAppointments.length || 0}
+              value={paginationTesting.total || 0}
               valueStyle={{
-                color: testingAppointments.length > 0 ? "#f5222d" : "",
+                color: paginationTesting.total > 0 ? "#f5222d" : "",
               }}
               prefix={<FileDoneOutlined />}
             />
-            {testingAppointments.length > 0 && (
+            {paginationTesting.total > 0 && (
               <div className="mt-2">
                 <Button size="small" danger
                 onClick={() => navigate("/staff/dashboard/manage-booking-stis")}>

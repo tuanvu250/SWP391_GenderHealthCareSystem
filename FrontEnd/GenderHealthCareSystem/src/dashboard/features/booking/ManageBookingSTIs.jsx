@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import ViewBookingStisModal from "../../components/modal/ViewBookingStisModal";
 import ResultStisModal from "../../components/modal/ResultStisModal";
 import InvoiceModal from "../../components/modal/InvoiceModal";
-import { formatPrice } from "../../../components/utils/format";
+import { formatPrice, formatTimeString } from "../../../components/utils/format";
 import {
   manageBookingsAPI,
   markConfirmedBookingStisAPI,
@@ -166,15 +166,15 @@ const ManageBookingStis = () => {
       });
       setPagination({
         ...pagination,
-        total: response.data.totalElements,
+        total: response.data.data.totalElements,
       });
-
+      console.log("Bookings data:", response.data.data);
       setBookings(
         response.data.data.content.map((booking) => ({
           ...booking,
           id: booking.bookingId,
           discount: booking.discount || 0,
-          bookingTime: `${booking.bookingTimeStart} - ${booking.bookingTimeEnd}`,
+          bookingTime: `${formatTimeString(booking.bookingTimeStart)} - ${formatTimeString(booking.bookingTimeEnd)}`,
         }))
       );
     } catch (error) {
