@@ -21,20 +21,24 @@ public class MenstrualCycleReminderService {
     private final AccountRepository accountRepository;
     private final EmailService emailService;
 
-    @Scheduled(cron = "0 0 8 * * *") // Chạy mỗi ngày lúc 8:00 sáng
+    @Scheduled(cron = "* * * * * *") // Chạy mỗi phút
     public void sendDailyFertilityNotifications() {
         System.out.println("[DEBUG] Starting sendDailyFertilityNotifications...");
 
         List<Account> accounts = accountRepository.findAll();
+        System.out.println("[DEBUG] Total accounts: " + accounts.size());
+
         if (accounts.isEmpty()) {
             System.out.println("[DEBUG] No accounts to process.");
             return;
         }
 
         LocalDate today = LocalDate.now();
+        System.out.println("[DEBUG] Today's date: " + today);
 
         for (Account account : accounts) {
             Integer userId = account.getUsers().getUserId();
+            System.out.println("[DEBUG] Processing user ID: " + userId);
 
             Optional<MenstrualCycle> cycleOpt =
                     menstrualCycleRepository.findFirstByCustomerUserIdOrderByStartDateDesc(userId);
@@ -45,6 +49,7 @@ public class MenstrualCycleReminderService {
             }
 
             MenstrualCycle cycle = cycleOpt.get();
+            System.out.println("[DEBUG] Found cycle for user ID: " + userId);
 
             LocalDate startDate = cycle.getStartDate();
             LocalDate endDate = cycle.getEndDate();
@@ -52,6 +57,7 @@ public class MenstrualCycleReminderService {
             int menstruationDays = (int) (endDate.toEpochDay() - startDate.toEpochDay()) + 1;
 
             String userEmail = account.getEmail();
+            System.out.println("[DEBUG] User email: " + userEmail);
 
             int numberOfCycles = 6;
             for (int i = 0; i < numberOfCycles; i++) {
@@ -65,12 +71,10 @@ public class MenstrualCycleReminderService {
 
                     long dist = Math.abs(currentDate.toEpochDay() - ovulationDate.toEpochDay());
 
-                    // Chỉ xử lý nếu currentDate là hôm nay hoặc ngay trước hôm nay
                     if (!(currentDate.isEqual(today) || currentDate.minusDays(1).isEqual(today))) {
                         continue;
                     }
 
-                    // Xác định loại thông báo
                     String type = null;
                     String subject = "";
                     String content = "";
@@ -94,21 +98,22 @@ public class MenstrualCycleReminderService {
 
                     if (type == null) continue;
 
-                    // Kiểm tra đã gửi chưa
                     if (currentDate.equals(cycle.getLastNotificationDate())
                             && type.equalsIgnoreCase(cycle.getLastNotificationType())) {
                         System.out.println("[DEBUG] Already sent " + type + " for " + userEmail + " on " + currentDate);
                         continue;
                     }
 
-                    // Gửi email
-                    emailService.sendFertilityNotificationEmail(userEmail, subject, content);
-                    System.out.println("[DEBUG] Sent " + type + " email to " + userEmail);
+                    try {
+                        emailService.sendFertilityNotificationEmail(userEmail, subject, content);
+                        System.out.println("[DEBUG] Sent " + type + " email to " + userEmail);
 
-                    // Cập nhật thông tin đã gửi
-                    cycle.setLastNotificationDate(currentDate);
-                    cycle.setLastNotificationType(type);
-                    menstrualCycleRepository.save(cycle);
+                        cycle.setLastNotificationDate(currentDate);
+                        cycle.setLastNotificationType(type);
+                        menstrualCycleRepository.save(cycle);
+                    } catch (Exception e) {
+                        System.out.println("[ERROR] Failed to send email to " + userEmail + ": " + e.getMessage());
+                    }
                 }
             }
         }
