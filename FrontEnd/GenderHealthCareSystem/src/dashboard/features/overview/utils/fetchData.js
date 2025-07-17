@@ -174,8 +174,8 @@ export const getRatingStats = async () => {
         two: consulting.data.data.ratingCounts?.[2] || 0,
         one: consulting.data.data.ratingCounts?.[1] || 0,
       },
-      testingAvg: testing.data.data.averageRating || 0,
-      consultingAvg: consulting.data.data.averageRating || 0,
+      testingAvg: testing.data.data.averageRating.toFixed(1) || 0,
+      consultingAvg: consulting.data.data.averageRating.toFixed(1) || 0,
     };
   } catch (error) {
     console.error("Error fetching rating statistics:", error);

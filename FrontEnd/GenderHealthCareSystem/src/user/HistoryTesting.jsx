@@ -39,7 +39,7 @@ import {
 import dayjs from "dayjs";
 import { useAuth } from "../components/provider/AuthProvider";
 
-import { convertVndToUsd, formatPrice } from "../components/utils/format";
+import { convertVndToUsd, formatPrice, formatTimeString } from "../components/utils/format";
 import {
   cancelBookingAPI,
   historyBookingAPI,
@@ -93,11 +93,12 @@ const HistoryTesting = () => {
         price: item.servicePrice,
         bookingDate: dayjs(item.updatedAt).format("DD/MM/YYYY"),
         appointmentDate: dayjs(item.bookingDate).format("DD/MM/YYYY"),
-        appointmentTime: `${item.bookingTimeStart} - ${item.bookingTimeEnd}`,
+        appointmentTime: `${formatTimeString(item.bookingTimeStart)} - ${formatTimeString(item.bookingTimeEnd)}`,
         notes: item.note,
         testingStatus: item.status,
       }));
       setBookings(data);
+      console.log("Bookings data:", response.data.data.content);
     } catch (error) {
       console.error("Error fetching booking history:", error);
       message.error("Không thể tải lịch sử đặt lịch");

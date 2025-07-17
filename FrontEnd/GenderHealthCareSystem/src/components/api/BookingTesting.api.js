@@ -62,6 +62,7 @@ export const manageBookingsAPI = async ({
     startDate,
     endDate,
   }).toString();
+  console.log("Query for manage bookings:", query);
   return apiClient.get(`/stis-bookings?${query}`);
 };
 

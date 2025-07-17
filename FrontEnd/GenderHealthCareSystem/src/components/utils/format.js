@@ -5,6 +5,18 @@ export function formatDateTime(isoString) {
   return dayjs(isoString).format("HH:mm - DD/MM/YYYY");
 }
 
+export const formatTimeString = (timeString) => {
+  if (!timeString) return 'N/A';
+  
+  if (timeString.includes(':')) {
+    // Nếu chỉ là thời gian không có ngày, thì lấy giờ và phút
+    const timeParts = timeString.split(':');
+    if (timeParts.length >= 2) {
+      return `${timeParts[0]}:${timeParts[1]}`;
+    }
+  }
+};
+
 export function formatPrice(price) {
   return price?.toLocaleString("vi-VN") + " đ";
 }
