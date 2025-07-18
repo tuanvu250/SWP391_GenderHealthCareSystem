@@ -33,6 +33,7 @@ import {
 import FeedbackModal from "../../components/modal/FeedbackModal";
 import { formatDateTime } from "../../../components/utils/format";
 import { getAllFeedbackTestingAPI, getAverageRatingAPI, hideFeedbackTestingAPI } from "../../../components/api/FeedbackTesting.api";
+import { getServiceTestingAPI } from "../../../components/api/ServiceTesting.api";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -43,8 +44,9 @@ const ManageFeedbackService = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [services, setServices] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [serviceFilter, setServiceFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("");
   const [ratingFilter, setRatingFilter] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
@@ -58,8 +60,6 @@ const ManageFeedbackService = () => {
     avgRating: 0,
   });
 
-  const mockServices = [];
-
   const fetchFeedbacks = async () => {
     setLoading(true);
     try {
@@ -67,9 +67,9 @@ const ManageFeedbackService = () => {
         page: pagination.current - 1,
         size: pagination.pageSize,
         rating: ratingFilter,
+        serviceId: serviceFilter,
       });
       const res = await getAverageRatingAPI();
-
       setPagination({
         ...pagination,
         total: response.data.data.totalElements,
@@ -92,10 +92,23 @@ const ManageFeedbackService = () => {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const response = await getServiceTestingAPI({
+        page: 0,
+        size: 100,
+      });
+      setServices(response.data.data.content); 
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
   // Fetching data (giả lập)
   useEffect(() => {
     fetchFeedbacks();
-  }, [pagination.current, pagination.pageSize, ratingFilter]);
+    fetchServices();
+  }, [pagination.current, pagination.pageSize, ratingFilter, serviceFilter]);
 
   // Handle view feedback details
   const handleViewFeedback = (record) => {
@@ -258,11 +271,11 @@ const ManageFeedbackService = () => {
             allowClear
             suffixIcon={<FilterOutlined />}
           >
-            <Option value="all">Tất cả dịch vụ</Option>
-            {mockServices.map((service) => (
-              <Option key={service.id} value={service.id.toString()}>
-                {service.name}
-              </Option>
+            <Option value="" >Tất cả dịch vụ</Option>
+            {services.map((service) => (
+              <Option key={service.serviceId} value={service.serviceId}>
+                {service.serviceName}
+              </Option> 
             ))}
           </Select>
 

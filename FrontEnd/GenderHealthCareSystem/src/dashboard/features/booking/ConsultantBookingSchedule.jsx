@@ -56,7 +56,7 @@ export default function ConsultantBookingSchedule() {
         status,
         startDate: startDate ? dayjs(startDate).format("YYYY-MM-DDT00:00") : "",
         endDate: endDate ? dayjs(endDate).format("YYYY-MM-DDT00:00") : "",
-        page: pagination.current - 1, // API thường dùng 0-based index
+        page: pagination.current - 1, 
         size: pagination.pageSize,
       });
       setPagination({
