@@ -28,10 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Simple Service for handling Consultant feedback operations without
- * Specification
- */
+
 @Service
 @RequiredArgsConstructor
 public class ConsultantFeedbackService {
@@ -41,9 +38,6 @@ public class ConsultantFeedbackService {
     private final UserRepository userRepo;
     private final ConsultantProfileRepository profileRepo;
 
-    /**
-     * Create new feedback
-     */
     @Transactional
     public ConsultantFeedbackResponse createFeedback(ConsultantFeedbackRequest request) {
         Integer customerId;
@@ -187,9 +181,6 @@ public class ConsultantFeedbackService {
         return avg != null ? avg : 0.0;
     }
 
-    /**
-     * Map entity to response DTO
-     */
     private ConsultantFeedbackResponse mapToResponse(ConsultantFeedback feedback) {
         ConsultantFeedbackResponse response = new ConsultantFeedbackResponse();
         response.setFeedbackId(feedback.getFeedbackId());

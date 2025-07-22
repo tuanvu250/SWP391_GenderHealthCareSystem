@@ -39,7 +39,6 @@ public class QuestionCommentService {
         comment.setUser(user);
         comment.setContent(request.getContent());
         comment.setCreatedAt(LocalDateTime.now());
-        // Removed status setting - all comments are visible by default
 
         QuestionComment savedComment = questionCommentRepository.save(comment);
         return mapToResponse(savedComment);
@@ -59,23 +58,13 @@ public class QuestionCommentService {
         return comments.map(this::mapToResponse);
     }
 
-    public Page<QuestionCommentResponse> getCommentsByUserId(Integer userId, Pageable pageable) {
-        Page<QuestionComment> comments = questionCommentRepository
-                .findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
-        return comments.map(this::mapToResponse);
-    }
-
-    // Removed deleteComment method - comments cannot be hidden/deleted to maintain conversation integrity
-
     private QuestionCommentResponse mapToResponse(QuestionComment comment) {
         QuestionCommentResponse response = new QuestionCommentResponse();
         response.setCommentId(comment.getCommentId());
         response.setQuestionId(comment.getQuestion().getQuestionId());
         response.setContent(comment.getContent());
         response.setCreatedAt(comment.getCreatedAt());
-        // Removed status mapping - no longer needed
 
-        // User information
         if (comment.getUser() != null) {
             response.setUserId(comment.getUser().getUserId());
             response.setUserFullName(comment.getUser().getFullName());

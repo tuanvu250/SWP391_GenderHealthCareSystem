@@ -56,12 +56,10 @@ public class CloudinaryService {
         }
     }
 
-    // (nếu muốn) Thêm luôn hàm xóa file:
     public void deleteFile(String publicId) {
         try {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
         } catch (Exception e) {
-            // Xử lý lỗi nếu cần
         }
     }
 }

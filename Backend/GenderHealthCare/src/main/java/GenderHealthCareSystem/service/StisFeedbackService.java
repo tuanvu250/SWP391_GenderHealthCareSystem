@@ -9,8 +9,6 @@ import GenderHealthCareSystem.model.StisFeedback;
 import GenderHealthCareSystem.model.Users;
 import GenderHealthCareSystem.repository.StisBookingRepository;
 import GenderHealthCareSystem.repository.StisFeedbackRepository;
-import GenderHealthCareSystem.repository.StisServiceRepository;
-import GenderHealthCareSystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,38 +23,22 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Service for handling STI service feedback operations
- */
 @Service
 @RequiredArgsConstructor
 public class StisFeedbackService {
+
     private final StisFeedbackRepository feedbackRepo;
     private final StisBookingRepository bookingRepo;
-    private final StisServiceRepository serviceRepo;
-    private final UserRepository userRepository;
 
-    /**
-     * Creates a new feedback for a completed STI service booking
-     * 
-     * @param req The feedback request containing bookingId, rating, and comment
-     * @return The created feedback entity
-     * @throws IllegalStateException    if authentication fails or booking status is
-     *                                  invalid
-     * @throws IllegalArgumentException if booking doesn't exist
-     */
     public StisFeedback createFeedback(StisFeedbackRequest req) {
-        // Extract user ID from JWT token
+
         Integer userId = extractUserIdFromToken();
 
-        // Get and validate the booking
         StisBooking booking = validateAndGetBooking(req.getBookingId());
 
-        // Create and save the feedback
         StisFeedback feedback = new StisFeedback();
         feedback.setStisBooking(booking);
         feedback.setRating(req.getRating());
@@ -72,33 +54,16 @@ public class StisFeedbackService {
         return feedbackRepo.save(feedback);
     }
 
-    /**
-     * Gets the feedback history for a specific user with pagination
-     *
-     * @param userId The ID of the user
-     * @param page   The page number (0-based)
-     * @param size   The page size
-     * @param sort   The sort direction ("asc" or "desc")
-     * @return Page of StisFeedbackResponse DTOs
-     */
     public Page<StisFeedbackResponse> getUserFeedbackHistory(Integer userId, int page, int size, String sort) {
-        // Create pageable object with sort direction
+
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
 
-        // Get feedback page from repository - only ACTIVE status
         Page<StisFeedback> feedbackPage = feedbackRepo.findByUserIdAndStatus(userId, "ACTIVE", pageable);
 
-        // Map to response DTOs
         return feedbackPage.map(this::mapToResponse);
     }
 
-    /**
-     * Maps a StisFeedback entity to a StisFeedbackResponse DTO
-     * 
-     * @param feedback The feedback entity to map
-     * @return The mapped response DTO
-     */
     private StisFeedbackResponse mapToResponse(StisFeedback feedback) {
         StisFeedbackResponse response = new StisFeedbackResponse();
         response.setFeedbackId(feedback.getFeedbackId());
@@ -122,12 +87,7 @@ public class StisFeedbackService {
         return response;
     }
 
-    /**
-     * Extracts the user ID from the JWT token in the security context
-     * 
-     * @return The user ID as an Integer
-     * @throws IllegalStateException if authentication fails
-     */
+
     private Integer extractUserIdFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -141,15 +101,7 @@ public class StisFeedbackService {
         return userIdLong.intValue();
     }
 
-    /**
-     * Validates and retrieves the booking by ID
-     * 
-     * @param bookingId The ID of the booking to validate
-     * @return The validated booking entity
-     * @throws IllegalArgumentException if booking doesn't exist
-     * @throws IllegalStateException    if booking is not completed or already has
-     *                                  feedback
-     */
+
     private StisBooking validateAndGetBooking(Integer bookingId) {
         StisBooking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại!"));
@@ -165,39 +117,22 @@ public class StisFeedbackService {
         return booking;
     }
 
-    /**
-     * Gets all feedback for a specific service with ACTIVE status
-     *
-     * @param serviceId The ID of the service
-     * @return List of StisFeedbackResponse DTOs
-     */
     public List<StisFeedbackResponse> getServiceFeedback(Integer serviceId) {
-        // Get feedback list from repository - only ACTIVE status
+
         List<StisFeedback> feedbackList = feedbackRepo.findByStisService_ServiceIdAndStatus(serviceId, "ACTIVE");
 
-        // Map to response DTOs
         return feedbackList.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Updates an existing feedback by ID
-     *
-     * @param id  The ID of the feedback to update
-     * @param req The feedback entity with updated information
-     * @return The updated feedback entity
-     * @throws RuntimeException if feedback not found
-     */
     public StisFeedback update(Integer id, StisFeedback req) {
         StisFeedback existingFeedback = feedbackRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + id));
 
-        // Update fields
         existingFeedback.setRating(req.getRating());
         existingFeedback.setComment(req.getComment());
 
-        // Luôn đảm bảo status là "ACTIVE"
         existingFeedback.setStatus("ACTIVE");
 
         existingFeedback.setUpdatedAt(LocalDateTime.now());
@@ -205,13 +140,6 @@ public class StisFeedbackService {
         return feedbackRepo.save(existingFeedback);
     }
 
-    /**
-     * Hides a feedback by setting its status to "HIDDEN"
-     *
-     * @param id The ID of the feedback to hide
-     * @return The updated feedback entity with HIDDEN status
-     * @throws RuntimeException if feedback not found
-     */
     public StisFeedback hideFeedback(Integer id) {
         StisFeedback existingFeedback = feedbackRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + id));
@@ -222,13 +150,6 @@ public class StisFeedbackService {
         return feedbackRepo.save(existingFeedback);
     }
 
-    /**
-     * Gets the average rating for a specific service
-     * 
-     * 
-     * @param serviceId The ID of the service
-     * @return The average rating for the service
-     */
     public double getAvgRating(Integer serviceId) {
         List<StisFeedback> feedbacks = feedbackRepo.findByStisService_ServiceId(serviceId);
         if (feedbacks.isEmpty())
@@ -236,11 +157,6 @@ public class StisFeedbackService {
         return feedbacks.stream().mapToInt(StisFeedback::getRating).average().orElse(0);
     }
 
-    /**
-     * Gets the average rating of all feedback
-     * 
-     * @return The average rating across all feedback
-     */
     public double getTotalAvgRating() {
         List<StisFeedback> allFeedbacks = feedbackRepo.findAll();
         if (allFeedbacks.isEmpty())
@@ -252,37 +168,25 @@ public class StisFeedbackService {
         feedbackRepo.deleteById(feedbackId);
     }
 
-    /**
-     * Gets all active feedback with pagination and optional filters
-     *
-     * @param page      The page number (0-based)
-     * @param size      The page size
-     * @param sort      The sort direction ("asc" or "desc")
-     * @param serviceId Optional service ID to filter by (can be null)
-     * @param rating    Optional rating to filter by (can be null)
-     * @return Page of StisFeedbackResponse DTOs
-     */
-        // Create pageable object with sort direction
     public Page<StisFeedbackResponse> getAllActiveFeedback(int page, int size, Integer serviceId, Integer rating) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "rating"));
         Page<StisFeedback> feedbackPage;
 
         if (serviceId != null && rating != null) {
-            // Filter by both service ID and rating
+
             feedbackPage = feedbackRepo.findByStisService_ServiceIdAndRatingAndStatus(serviceId, rating, "ACTIVE",
                     pageable);
         } else if (serviceId != null) {
-            // Filter by service ID only
+
             feedbackPage = feedbackRepo.findByStisService_ServiceIdAndStatus(serviceId, "ACTIVE", pageable);
         } else if (rating != null) {
-            // Filter by rating only
+
             feedbackPage = feedbackRepo.findByRatingAndStatus(rating, "ACTIVE", pageable);
         } else {
-            // No filters, get all active feedback
+
             feedbackPage = feedbackRepo.findByStatus("ACTIVE", pageable);
         }
 
-        // Map to response DTOs
         return feedbackPage.map(this::mapToResponse);
     }
 
