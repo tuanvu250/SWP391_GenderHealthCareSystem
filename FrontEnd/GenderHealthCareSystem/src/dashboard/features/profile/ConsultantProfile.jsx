@@ -69,14 +69,13 @@ export default function ConsultantProfile() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [detailSaving, setDetailSaving] = useState(false); // State cho việc lưu detail
+  const [detailSaving, setDetailSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
-  const [hasProfile, setHasProfile] = useState(true); // Trạng thái có profile hay chưa
+  const [hasProfile, setHasProfile] = useState(true); 
   const { user, updateUser } = useAuth();
 
-  // States cho modal thêm/sửa detail
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [editingDetailIndex, setEditingDetailIndex] = useState(-1); // -1 là thêm mới, >= 0 là sửa
   const [editingDetail, setEditingDetail] = useState(null);
