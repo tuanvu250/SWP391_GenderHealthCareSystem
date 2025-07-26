@@ -66,8 +66,8 @@ public class StisBookingService {
 
     public StisBookingResponse createBooking(StisBookingRequest booking) {
         StisBooking stisBooking = new StisBooking();
-        if (this.stisBookingRepository.countByUserIdAndBookingDate(booking.getCustomerId(),
-                booking.getBookingDate().atStartOfDay(), booking.getBookingDate().atTime(LocalTime.MAX)) > 0) {
+        if (this.stisBookingRepository.countByUserIdAndBookingDateAndStatus(booking.getCustomerId(),
+                booking.getBookingDate().atStartOfDay(), booking.getBookingDate().atTime(LocalTime.MAX),StisBookingStatus.CONFIRMED) > 0) {
             throw new RuntimeException("Bạn đã có lịch hẹn trong ngày này. Vui lòng chọn ngày khác.");
         }
         if (this.isBookingLimitExceeded(booking.getServiceId(),
