@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDateTime;
-import java.util.Map;
+
 
 
 @RestController
@@ -140,21 +140,6 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(new RefundResponse(msg, amount, status));
     }
 
-    /**
-     * Customer đổi lịch tư vấn đã thanh toán
-     */
-    @PutMapping("/reschedule")
-    @PreAuthorize("hasRole('Customer')")
-    // API for customers to reschedule a paid booking
-    public ResponseEntity<Map<String, String>> reschedule(
-            @RequestBody RescheduleRequest req,
-            @AuthenticationPrincipal Jwt jwt) {
-
-        Integer customerId = ((Number) jwt.getClaim("userID")).intValue();
-        String result = invoiceService.rescheduleBooking(
-                req.getBookingId(), customerId, req.getNewBookingDate());
-        return ResponseEntity.ok(Map.of("message", result));
-    }
 
     @PutMapping("/update-meeting-link/{bookingId}")
     @PreAuthorize("hasRole('Staff')")

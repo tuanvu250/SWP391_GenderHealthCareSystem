@@ -54,7 +54,6 @@ public class ConsultantBookingService {
     }
 
     @Transactional
-
     public ConsultantBookingResponse createBooking(ConsultantBookingRequest req, int customerId) {
         validateBookingRequest(req);
 
@@ -99,23 +98,23 @@ public class ConsultantBookingService {
 
 
 
-
-    /** Consultant view: full booking details including customer name and contact **/
-    public List<ConsultantBookingDetailResponse> getScheduleForConsultant(Integer consultantId) {
-        Users consultant = userRepository.findById(consultantId)
-                .orElseThrow(() -> new IllegalArgumentException("Consultant không tồn tại"));
-        List<ConsultationBooking> bookings = bookingRepo.findByConsultant(consultant);
-        return bookings.stream().map(b -> new ConsultantBookingDetailResponse(
-                b.getBookingId(),
-                b.getCustomer().getFullName(),
-                b.getCustomer().getUserId(),
-                b.getBookingDate(),
-                b.getStatus().name(), // Convert BookingStatus to String
-                b.getPaymentStatus(),
-                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null, // Added paymentMethod mapping
-                b.getMeetLink()
-        )).collect(Collectors.toList());
-    }
+//
+//    /** Consultant view: full booking details including customer name and contact **/
+//    public List<ConsultantBookingDetailResponse> getScheduleForConsultant(Integer consultantId) {
+//        Users consultant = userRepository.findById(consultantId)
+//                .orElseThrow(() -> new IllegalArgumentException("Consultant không tồn tại"));
+//        List<ConsultationBooking> bookings = bookingRepo.findByConsultant(consultant);
+//        return bookings.stream().map(b -> new ConsultantBookingDetailResponse(
+//                b.getBookingId(),
+//                b.getCustomer().getFullName(),
+//                b.getCustomer().getUserId(),
+//                b.getBookingDate(),
+//                b.getStatus().name(), // Convert BookingStatus to String
+//                b.getPaymentStatus(),
+//                b.getInvoice() != null ? b.getInvoice().getPaymentMethod() : null, // Added paymentMethod mapping
+//                b.getMeetLink()
+//        )).collect(Collectors.toList());
+//    }
 
     public Map<String, List<LocalDateTime>> getConsultantCalendar(Integer consultantId) {
         Users consultant = userRepository.findById(consultantId)

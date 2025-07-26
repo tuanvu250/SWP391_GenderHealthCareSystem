@@ -21,7 +21,7 @@ public class MenstrualCycleReminderService {
     private final AccountRepository accountRepository;
     private final EmailService emailService;
 
-    @Scheduled(cron = "* * * * * *") // Chạy mỗi phút
+        @Scheduled(cron = "0 * * * * *") // Chạy mỗi giờ
     public void sendDailyFertilityNotifications() {
         System.out.println("[DEBUG] Starting sendDailyFertilityNotifications...");
 
