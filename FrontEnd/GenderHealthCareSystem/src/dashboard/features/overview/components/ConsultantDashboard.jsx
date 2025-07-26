@@ -12,6 +12,8 @@ import {
   Typography,
   Space,
   message,
+  Tooltip,
+  Popconfirm,
 } from "antd";
 import {
   ArrowUpOutlined,
@@ -115,7 +117,7 @@ const ConsultantDashboard = ({ stats }) => {
         startDate: dayjs(new Date()).format("YYYY-MM-DDT00:00"),
         endDate: dayjs(new Date()).add(2, "day").format("YYYY-MM-DDT00:00"),
       });
-      const data = response.data.content.map((item) => ({
+      const data = response.data.data.content.map((item) => ({
         ...item,
         bookingTimeStart: dayjs(item.bookingDate).format("HH:mm"),
         bookingTimeEnd: dayjs(item.bookingDate).add(1, "hour").format("HH:mm"),

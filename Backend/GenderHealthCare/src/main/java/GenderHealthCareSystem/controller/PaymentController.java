@@ -30,8 +30,8 @@ public class PaymentController {
     private final StisInvoiceService stiInvoiceService;
     private final PayPalService payPalService;
 
-    public static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-    public static final String CANCEL_URL = "http://localhost:5173/booking-result";
+    public static final String SUCCESS_URL = "http://14.225.192.28/booking-result";
+    public static final String CANCEL_URL = "http://14.225.192.28/booking-result";
     private final InvoiceService invoiceService;
 
     @GetMapping("/vn-pay")

@@ -35,7 +35,6 @@ public class QuestionService {
         question.setCreatedAt(LocalDateTime.now());
         question.setStatus("PENDING");
 
-        // If consultant is specified, assign the question
         if (request.getConsultantId() != null) {
             Users consultant = userRepository.findById(request.getConsultantId())
                     .orElseThrow(() -> new RuntimeException("Consultant not found with ID: " + request.getConsultantId()));
@@ -93,7 +92,6 @@ public class QuestionService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new RuntimeException("Question not found with ID: " + questionId));
 
-        // Only allow update if question is not answered and belongs to the customer
         if (question.isAnswered()) {
             throw new RuntimeException("Cannot update answered question");
         }
@@ -114,7 +112,6 @@ public class QuestionService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new RuntimeException("Question not found with ID: " + questionId));
 
-        // Only allow delete if question is not answered and belongs to the customer
         if (question.isAnswered()) {
             throw new RuntimeException("Cannot delete answered question");
         }
@@ -123,7 +120,6 @@ public class QuestionService {
             throw new RuntimeException("You can only delete your own questions");
         }
 
-        // Hard delete: Xóa tất cả comments trước, sau đó xóa question
         questionCommentRepository.deleteByQuestion_QuestionId(questionId);
         questionRepository.deleteById(questionId);
     }
@@ -133,7 +129,6 @@ public class QuestionService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new RuntimeException("Question not found with ID: " + questionId));
 
-        // Only allow delete if question is not answered and belongs to the customer
         if (question.isAnswered()) {
             throw new RuntimeException("Cannot delete answered question");
         }
@@ -142,7 +137,6 @@ public class QuestionService {
             throw new RuntimeException("You can only delete your own questions");
         }
 
-        // Soft delete: Chỉ đổi status
         question.setStatus("DELETED");
         questionRepository.save(question);
     }
@@ -163,28 +157,24 @@ public class QuestionService {
         response.setStatus(question.getStatus());
         response.setAnswered(question.isAnswered());
 
-        // Customer information
         if (question.getCustomer() != null) {
             response.setCustomerId(question.getCustomer().getUserId());
             response.setCustomerFullName(question.getCustomer().getFullName());
             response.setCustomerImageUrl(question.getCustomer().getUserImageUrl());
         }
 
-        // Consultant information (if assigned)
         if (question.getConsultant() != null) {
             response.setConsultantId(question.getConsultant().getUserId());
             response.setConsultantFullName(question.getConsultant().getFullName());
             response.setConsultantImageUrl(question.getConsultant().getUserImageUrl());
         }
 
-        // Answer by information (if answered)
         if (question.getAnswerBy() != null) {
             response.setAnswerById(question.getAnswerBy().getUserId());
             response.setAnswerByFullName(question.getAnswerBy().getFullName());
             response.setAnswerByImageUrl(question.getAnswerBy().getUserImageUrl());
         }
 
-        // Comment count
         long commentCount = questionCommentRepository.countByQuestionId(question.getQuestionId());
         response.setCommentCount((int) commentCount);
 

@@ -7,33 +7,23 @@ import GenderHealthCareSystem.dto.StisFeedbackRequest;
 import GenderHealthCareSystem.dto.StisFeedbackResponse;
 import GenderHealthCareSystem.model.StisFeedback;
 import GenderHealthCareSystem.service.StisFeedbackService;
-import GenderHealthCareSystem.util.PageResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
 import static GenderHealthCareSystem.util.PageResponseUtil.mapToPageResponse;
 
 import java.util.List;
 
-/**
- * REST controller for handling STI service feedback operations
- */
+
 @RestController
 @RequestMapping("/api/stis-feedback")
 @RequiredArgsConstructor
 public class StisFeedbackController {
     private final StisFeedbackService feedbackService;
 
-    /**
-     * Creates a new feedback for an STI service booking
-     * 
-     * @param req The feedback request containing bookingId, rating, and comment
-     * @return ResponseEntity with the created feedback or error message
-     */
     @PostMapping
     public ResponseEntity<ApiResponse<StisFeedback>> addFeedback(@RequestBody StisFeedbackRequest req) {
         try {
@@ -52,15 +42,6 @@ public class StisFeedbackController {
         }
     }
 
-    /**
-     * Gets the feedback history for the authenticated user
-     * 
-     * @param page The page number (0-based)
-     * @param size The page size
-     * @param sort The sort direction ("asc" or "desc")
-     * @param jwt  The JWT token of the authenticated user
-     * @return ResponseEntity with paginated feedback history
-     */
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<PageResponse<StisFeedbackResponse>>> getFeedbackHistory(
             @RequestParam(defaultValue = "0") int page,
@@ -81,12 +62,6 @@ public class StisFeedbackController {
         }
     }
 
-    /**
-     * Gets all feedback for a specific service with ACTIVE status
-     * 
-     * @param serviceId The ID of the service
-     * @return ResponseEntity with list of feedback for the service
-     */
     @GetMapping("/service/{serviceId}")
     public ResponseEntity<ApiResponse<List<StisFeedbackResponse>>> getServiceFeedback(
             @PathVariable Integer serviceId) {
@@ -100,13 +75,6 @@ public class StisFeedbackController {
         }
     }
 
-    /**
-     * Updates an existing feedback by ID
-     *
-     * @param id  The ID of the feedback to update
-     * @param req The feedback entity with updated information
-     * @return ResponseEntity with the updated feedback or error message
-     */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StisFeedback>> update(@PathVariable Integer id, @RequestBody StisFeedback req) {
         try {
@@ -127,12 +95,6 @@ public class StisFeedbackController {
         }
     }
 
-    /**
-     * Hides a feedback by setting its status to "HIDDEN"
-     *
-     * @param id The ID of the feedback to hide
-     * @return ResponseEntity with the updated feedback or error message
-     */
     @PutMapping("/{id}/hide")
     public ResponseEntity<ApiResponse<StisFeedback>> hideFeedback(@PathVariable Integer id) {
         try {
@@ -158,11 +120,6 @@ public class StisFeedbackController {
         return ResponseEntity.ok(feedbackService.getAvgRating(serviceId));
     }
 
-    /**
-     * Gets the average rating across all feedback
-     * 
-     * @return The overall average rating
-     */
     @GetMapping("/total-average")
     public ResponseEntity<Double> getTotalAvgRating() {
         return ResponseEntity.ok(feedbackService.getTotalAvgRating());
@@ -178,16 +135,6 @@ public class StisFeedbackController {
         }
     }
 
-    /**
-     * Gets all active feedback without authentication (public)
-     * 
-     * @param page      The page number (0-based)
-     * @param size      The page size
-     * @param sort      The sort direction ("asc" or "desc")
-     * @param serviceId Optional service ID to filter by (can be null)
-     * @param rating    Optional rating to filter by (can be null)
-     * @return ResponseEntity with paginated feedback list
-     */
     @CrossOrigin
     @GetMapping("/public-feedback")
     public ResponseEntity<ApiResponse<PageResponse<StisFeedbackResponse>>> getAllPublicFeedback(

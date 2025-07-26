@@ -39,8 +39,8 @@ public class ConsultantPaymentController {
     private final ConsultantInvoiceService consultantInvoiceService;
     private final ConsultationBookingRepository bookingRepository;
 
-         private static final String SUCCESS_URL = "http://localhost:5173/booking-result";
-         private static final String CANCEL_URL = "http://localhost:5173/booking-result";
+         private static final String SUCCESS_URL = "http://14.225.192.28/booking-result";
+         private static final String CANCEL_URL = "http://14.225.192.28/booking-result";
 
 //    private static final String SUCCESS_URL = "http://localhost:8080/api/consultant-payment/success";
 //    private static final String CANCEL_URL = "http://localhost:8080/api/consultant-payment/cancel";

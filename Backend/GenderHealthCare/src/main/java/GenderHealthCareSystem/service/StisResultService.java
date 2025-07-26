@@ -30,77 +30,6 @@ public class StisResultService {
     private final StisResultRepository stisResultRepository;
 
     @Transactional
-    public StisResult createResult(Integer bookingId, StisResultRequest req) {
-        StisBooking booking = stisBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy booking!"));
-
-
-        if (req.getTestCode() == null || req.getTestCode().trim().isEmpty()) {
-            throw new IllegalArgumentException("Mã xét nghiệm (test_code) không được để trống!");
-        }
-
-        switch (booking.getStatus()) {
-            case CONFIRMED:
-
-                List<StisResult> existingResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
-                boolean testCodeExists = existingResults.stream()
-                        .anyMatch(r -> req.getTestCode().trim().equals(r.getTestCode()));
-                if (testCodeExists) {
-                    throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này!");
-                }
-                break;
-            case PENDING_TEST_RESULT:
-
-                List<StisResult> completedResults = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
-                if (!completedResults.isEmpty()) {
-
-                    boolean testCodeExistsInCompleted = completedResults.stream()
-                            .anyMatch(r -> req.getTestCode().trim().equals(r.getTestCode()));
-                    if (testCodeExistsInCompleted) {
-                        throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này!");
-                    }
-
-                }
-                break;
-            case PENDING:
-                throw new IllegalStateException("Không thể trả kết quả cho booking đang chờ xác nhận (PENDING)!");
-            case CANCELLED:
-                throw new IllegalStateException("Booking đã bị huỷ (CANCELLED), không thể trả kết quả!");
-            case NO_SHOW:
-                throw new IllegalStateException("Booking khách không đến (NO_SHOW), không thể trả kết quả!");
-            case DENIED:
-                throw new IllegalStateException("Booking không đủ điều kiện (DENIED), không thể trả kết quả!");
-            case DELETED:
-                throw new IllegalStateException("Booking đã bị xóa (DELETED), không thể trả kết quả!");
-            default:
-                throw new IllegalStateException("Trạng thái booking không hợp lệ!");
-        }
-
-        try {
-            StisResult result = new StisResult();
-            result.setStisBooking(booking);
-            result.setResultDate(LocalDateTime.now());
-            result.setTestCode(req.getTestCode().trim());
-            result.setResultValue(req.getResultValue());
-            result.setReferenceRange(req.getReferenceRange());
-            result.setResultText(req.getResultText());
-            result.setNote(req.getNote());
-            result.setCreatedAt(LocalDateTime.now());
-            result.setUpdatedAt(LocalDateTime.now());
-            stisResultRepository.save(result);
-            booking.setStatus(StisBookingStatus.PENDING_TEST_RESULT);
-            stisBookingRepository.save(booking);
-            return result;
-        } catch (Exception e) {
-
-            if (e.getMessage().contains("unique constraint") || e.getMessage().contains("duplicate")) {
-                throw new IllegalArgumentException("Mã xét nghiệm '" + req.getTestCode() + "' đã tồn tại cho booking này! Vui lòng sử dụng mã khác.");
-            }
-            throw e;
-        }
-    }
-
-    @Transactional
     public List<StisResult> createMultipleResults(Integer bookingId, List<StisResultRequest> requests) {
         if (requests == null || requests.isEmpty()) {
             throw new IllegalArgumentException("Danh sách kết quả không được để trống!");
@@ -320,29 +249,11 @@ public class StisResultService {
         return PageResponseUtil.mapToPageResponse(responsePages);
     }
 
-    /**
-     * Kiểm tra xem booking có tồn tại không
-     * 
-     * @param bookingId ID của booking cần kiểm tra
-     * @return true nếu booking tồn tại, false nếu không
-     */
+
     public boolean bookingExists(Integer bookingId) {
         return stisBookingRepository.existsById(bookingId);
     }
 
-    /**
-     * Cập nhật URL PDF cho các kết quả của booking
-     * Nếu updateAll=true, cập nhật tất cả các kết quả
-     * Nếu updateAll=false:
-     * - Nếu không có kết quả nào có PDF, cập nhật cho kết quả đầu tiên
-     * - Nếu đã có ít nhất một kết quả có PDF, không cập nhật
-     *
-     * @param bookingId ID của booking cần cập nhật PDF
-     * @param pdfUrl    URL của file PDF đã upload
-     * @param updateAll true để cập nhật tất cả kết quả, false để chỉ cập nhật kết
-     *                  quả đầu tiên nếu chưa có PDF
-     * @return Danh sách các kết quả đã được cập nhật
-     */
     @Transactional
     public List<StisResultResponse> updatePdfUrlForBooking(Integer bookingId, String pdfUrl, boolean updateAll) {
         List<StisResult> results = stisResultRepository.findAllByStisBooking_BookingId(bookingId);
@@ -378,16 +289,4 @@ public class StisResultService {
         return getAllResultsByBookingId(bookingId);
     }
 
-    /**
-     * Cập nhật URL PDF cho các kết quả của booking
-     * Phương thức overload cho phương thức cũ, mặc định không cập nhật tất cả
-     * 
-     * @param bookingId ID của booking cần cập nhật PDF
-     * @param pdfUrl    URL của file PDF đã upload
-     * @return Danh sách các kết quả đã được cập nhật
-     */
-    @Transactional
-    public List<StisResultResponse> updatePdfUrlForBooking(Integer bookingId, String pdfUrl) {
-        return updatePdfUrlForBooking(bookingId, pdfUrl, false);
-    }
 }

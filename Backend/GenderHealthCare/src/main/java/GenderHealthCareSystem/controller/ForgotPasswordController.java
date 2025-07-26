@@ -44,7 +44,6 @@ public class ForgotPasswordController {
         account.setOtpVerified(false);
         accountRepository.save(account);
 
-        // Gửi OTP qua email, không trả về OTP trong response
         emailService.sendOtpEmail(account.getEmail(), otp);
 
         return ResponseEntity.ok(Map.of(
@@ -103,7 +102,7 @@ public class ForgotPasswordController {
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
         account.setResetOtp(null);
         account.setResetOtpExpiry(null);
-        account.setOtpVerified(false); // reset lại trạng thái
+        account.setOtpVerified(false);
         accountRepository.save(account);
 
         return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật!"));
