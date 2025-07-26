@@ -79,7 +79,7 @@ public class MenstrualCycleService {
      */
     public MenstrualCycleResponse getLatestCycleForUser(Integer userId) {
         MenstrualCycle cycle = menstrualCycleRepository
-                .findFirstByCustomerUserIdOrderByStartDateDesc(userId)
+                .findFirstByCustomerUserIdOrderByUpdatedAtDesc(userId)
                 .orElseThrow(() -> new RuntimeException("No cycle found for user " + userId));
 
         return new MenstrualCycleResponse(
@@ -108,7 +108,7 @@ public class MenstrualCycleService {
 
         // 2. Lấy chu kỳ hiện tại
         MenstrualCycle currentCycle = menstrualCycleRepository
-                .findFirstByCustomerUserIdOrderByStartDateDesc(userId)
+                .findFirstByCustomerUserIdOrderByUpdatedAtDesc(userId)
                 .orElseThrow(() -> new RuntimeException("No cycle found for user " + userId));
 
         // Save the current cycle into MenstrualCycleHistory before updating
@@ -119,6 +119,7 @@ public class MenstrualCycleService {
         history.setCycleLength(currentCycle.getCycleLength());
         history.setNote(currentCycle.getNote());
         history.setCreatedAt(currentCycle.getCreatedAt());
+        history.setCreatedAt(LocalDateTime.now());
         menstrualCycleHistoryRepository.save(history);
 
         // Update the current cycle with new data
@@ -126,6 +127,7 @@ public class MenstrualCycleService {
         currentCycle.setEndDate(request.getEndDate());
         currentCycle.setCycleLength(request.getCycleLength());
         currentCycle.setNote(request.getNote());
+        currentCycle.setUpdatedAt(LocalDateTime.now());
         currentCycle.setCreatedAt(LocalDateTime.now());
 
         MenstrualCycle updatedCycle = menstrualCycleRepository.save(currentCycle);

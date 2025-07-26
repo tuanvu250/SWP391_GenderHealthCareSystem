@@ -22,9 +22,7 @@ public class MenstrualCycleReminderService {
     private final EmailService emailService;
 
 
-        @Scheduled(cron = "0 * * * * *") // Chạy mỗi giờ
-
-
+    @Scheduled(cron = "0 * * * * *")
     public void sendDailyFertilityNotifications() {
         System.out.println("[DEBUG] Starting sendDailyFertilityNotifications...");
 
@@ -44,7 +42,7 @@ public class MenstrualCycleReminderService {
             System.out.println("[DEBUG] Processing user ID: " + userId);
 
             Optional<MenstrualCycle> cycleOpt =
-                    menstrualCycleRepository.findFirstByCustomerUserIdOrderByStartDateDesc(userId);
+                    menstrualCycleRepository.findFirstByCustomerUserIdOrderByUpdatedAtDesc(userId);
 
             if (cycleOpt.isEmpty()) {
                 System.out.println("[DEBUG] No cycle found for user ID: " + userId);
@@ -74,10 +72,6 @@ public class MenstrualCycleReminderService {
 
                     long dist = Math.abs(currentDate.toEpochDay() - ovulationDate.toEpochDay());
 
-                    if (!(currentDate.isEqual(today) || currentDate.minusDays(1).isEqual(today))) {
-                        continue;
-                    }
-
                     String type = null;
                     String subject = "";
                     String content = "";
@@ -101,19 +95,34 @@ public class MenstrualCycleReminderService {
 
                     if (type == null) continue;
 
-                    if (currentDate.equals(cycle.getLastNotificationDate())
-                            && type.equalsIgnoreCase(cycle.getLastNotificationType())) {
-                        System.out.println("[DEBUG] Already sent " + type + " for " + userEmail + " on " + currentDate);
-                        continue;
+                    if (cycle.getLastNotificationDate() != null) {
+                        if (cycle.getLastNotificationDate().isAfter(today)) {
+                            System.out.println("[DEBUG] Notification date is in the future for: " + userEmail);
+                            break; // Không gửi nếu ngày thông báo là trong tương lai
+                        }
+
+                        if ((cycle.getLastNotificationDate().isEqual(today) || cycle.getLastNotificationDate().isBefore(today)) &&
+                                cycle.getLastNotificationType() != null &&
+                                cycle.getLastNotificationType().equals(type)) {
+                            System.out.println("[DEBUG] Notification of type " + type + " already sent on: " + cycle.getLastNotificationDate() + " to: " + userEmail);
+                            break; // Đã gửi thông báo loại này trước đó => bỏ qua
+                        }
+                    }
+
+                    if (!(currentDate.isEqual(today) || currentDate.minusDays(1).isEqual(today))) {
+                        continue; // Chỉ gửi nếu hôm nay là ngày bắt đầu hoặc 1 ngày trước đó
                     }
 
                     try {
                         emailService.sendFertilityNotificationEmail(userEmail, subject, content);
                         System.out.println("[DEBUG] Sent " + type + " email to " + userEmail);
 
-                        cycle.setLastNotificationDate(currentDate);
+                        cycle.setLastNotificationDate(today);
                         cycle.setLastNotificationType(type);
                         menstrualCycleRepository.save(cycle);
+
+                        break;
+
                     } catch (Exception e) {
                         System.out.println("[ERROR] Failed to send email to " + userEmail + ": " + e.getMessage());
                     }
