@@ -21,14 +21,12 @@ public class MenstrualCycleReminderService {
     private final AccountRepository accountRepository;
     private final EmailService emailService;
 
-
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "*/30 * * * * *")
     public void sendDailyFertilityNotifications() {
         System.out.println("[DEBUG] Starting sendDailyFertilityNotifications...");
 
         List<Account> accounts = accountRepository.findAll();
         System.out.println("[DEBUG] Total accounts: " + accounts.size());
-
         if (accounts.isEmpty()) {
             System.out.println("[DEBUG] No accounts to process.");
             return;
@@ -56,7 +54,6 @@ public class MenstrualCycleReminderService {
             LocalDate endDate = cycle.getEndDate();
             int cycleLength = cycle.getCycleLength();
             int menstruationDays = (int) (endDate.toEpochDay() - startDate.toEpochDay()) + 1;
-
             String userEmail = account.getEmail();
             System.out.println("[DEBUG] User email: " + userEmail);
 
@@ -65,17 +62,12 @@ public class MenstrualCycleReminderService {
                 LocalDate cycleStart = startDate.plusDays((long) i * cycleLength);
                 LocalDate ovulationDate = cycleStart.plusDays(cycleLength - 14);
 
-                for (int day = 0; day < cycleLength; day++) {
+                for (int day = menstruationDays; day < cycleLength; day++) {
                     LocalDate currentDate = cycleStart.plusDays(day);
-
-                    if (day < menstruationDays) continue;
-
                     long dist = Math.abs(currentDate.toEpochDay() - ovulationDate.toEpochDay());
 
-                    String type = null;
-                    String subject = "";
-                    String content = "";
-
+                    // Xác định loại và nội dung email
+                    String type = null, subject = "", content = "";
                     if (dist <= 1) {
                         type = "HIGH";
                         subject = "Thông báo: Giai đoạn khả năng mang thai cao";
@@ -92,40 +84,38 @@ public class MenstrualCycleReminderService {
                         content = "Bạn sắp bước vào giai đoạn khả năng mang thai thấp từ "
                                 + currentDate + " đến " + currentDate.plusDays(4);
                     }
-
-                    if (type == null) continue;
-
-                    if (cycle.getLastNotificationDate() != null) {
-                        if (cycle.getLastNotificationDate().isAfter(today)) {
-                            System.out.println("[DEBUG] Notification date is in the future for: " + userEmail);
-                            break; // Không gửi nếu ngày thông báo là trong tương lai
-                        }
-
-                        if ((cycle.getLastNotificationDate().isEqual(today) || cycle.getLastNotificationDate().isBefore(today)) &&
-                                cycle.getLastNotificationType() != null &&
-                                cycle.getLastNotificationType().equals(type)) {
-                            System.out.println("[DEBUG] Notification of type " + type + " already sent on: " + cycle.getLastNotificationDate() + " to: " + userEmail);
-                            break; // Đã gửi thông báo loại này trước đó => bỏ qua
-                        }
+                    if (type == null) {
+                        continue;  // không phải giai đoạn cần gửi
                     }
 
-                    if (!(currentDate.isEqual(today) || currentDate.minusDays(1).isEqual(today))) {
-                        continue; // Chỉ gửi nếu hôm nay là ngày bắt đầu hoặc 1 ngày trước đó
-                    }
+                    // 1) Nếu chưa từng gửi (two columns null) → gửi luôn
+                    boolean neverSent = cycle.getLastNotificationDate() == null
+                            || cycle.getLastNotificationType() == null;
+                    // 2) Hoặc bắt đầu chu kỳ mới (ngày đầu hoặc 1 ngày sau startDate)
+                    boolean newCycleStart = currentDate.equals(startDate)
+                            || currentDate.minusDays(1).equals(startDate);
+                    // 3) Đã gửi cùng type hôm nay → không gửi
+                    boolean sentTodaySameType = today.equals(cycle.getLastNotificationDate())
+                            && type.equals(cycle.getLastNotificationType());
+                    // 4) Nếu không phải ngày hôm nay hoặc hôm trước → không gửi
+                    boolean notRightDay = !(currentDate.equals(today)
+                            || currentDate.minusDays(1).equals(today));
 
-                    try {
-                        emailService.sendFertilityNotificationEmail(userEmail, subject, content);
-                        System.out.println("[DEBUG] Sent " + type + " email to " + userEmail);
-
-                        cycle.setLastNotificationDate(today);
-                        cycle.setLastNotificationType(type);
-                        menstrualCycleRepository.save(cycle);
-
+                    if ((neverSent || newCycleStart)
+                            || (!sentTodaySameType && !notRightDay)) {
+                        // gửi mail và cập nhật
+                        try {
+                            emailService.sendFertilityNotificationEmail(userEmail, subject, content);
+                            System.out.println("[DEBUG] Sent " + type + " email to " + userEmail);
+                            cycle.setLastNotificationDate(today);
+                            cycle.setLastNotificationType(type);
+                            menstrualCycleRepository.save(cycle);
+                        } catch (Exception e) {
+                            System.out.println("[ERROR] Failed to send email to " + userEmail + ": " + e.getMessage());
+                        }
                         break;
-
-                    } catch (Exception e) {
-                        System.out.println("[ERROR] Failed to send email to " + userEmail + ": " + e.getMessage());
                     }
+                    // nếu không vào bất kỳ trường hợp nào ở trên → tiếp tục vòng ngày
                 }
             }
         }

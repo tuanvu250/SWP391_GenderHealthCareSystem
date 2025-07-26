@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import GenderHealthCareSystem.dto.MenstrualCycleRequest;
 import GenderHealthCareSystem.dto.MenstrualCycleResponse;
 import GenderHealthCareSystem.model.MenstrualCycle;
-import GenderHealthCareSystem.model.MenstrualCycleHistory;
 import GenderHealthCareSystem.model.Users;
-import GenderHealthCareSystem.repository.MenstrualCycleHistoryRepository;
 import GenderHealthCareSystem.repository.MenstrualCycleRepository;
 import GenderHealthCareSystem.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +23,6 @@ public class MenstrualCycleService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private MenstrualCycleHistoryRepository menstrualCycleHistoryRepository;
 
     /**
      * Tạo mới chu kỳ kinh nguyệt và lưu vào DB
@@ -50,7 +45,7 @@ public class MenstrualCycleService {
         }
         LocalDate endDate = startDate.plusDays(periodLength - 1);
 
-        // 3. Tạo và lưu chu kỳ
+        // 3. Tạo và l��u chu kỳ
         MenstrualCycle cycle = new MenstrualCycle();
         cycle.setCustomer(user);
         cycle.setStartDate(startDate);
@@ -110,17 +105,6 @@ public class MenstrualCycleService {
         MenstrualCycle currentCycle = menstrualCycleRepository
                 .findFirstByCustomerUserIdOrderByUpdatedAtDesc(userId)
                 .orElseThrow(() -> new RuntimeException("No cycle found for user " + userId));
-
-        // Save the current cycle into MenstrualCycleHistory before updating
-        MenstrualCycleHistory history = new MenstrualCycleHistory();
-        history.setMenstrualCycle(currentCycle);
-        history.setStartDate(currentCycle.getStartDate());
-        history.setEndDate(currentCycle.getEndDate());
-        history.setCycleLength(currentCycle.getCycleLength());
-        history.setNote(currentCycle.getNote());
-        history.setCreatedAt(currentCycle.getCreatedAt());
-        history.setCreatedAt(LocalDateTime.now());
-        menstrualCycleHistoryRepository.save(history);
 
         // Update the current cycle with new data
         currentCycle.setStartDate(request.getStartDate());
