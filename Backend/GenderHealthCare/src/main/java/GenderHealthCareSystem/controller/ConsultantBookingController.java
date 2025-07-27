@@ -140,6 +140,32 @@ public class ConsultantBookingController {
         return ResponseEntity.ok(new RefundResponse(msg, amount, status));
     }
 
+    @PutMapping("/reschedule")
+    @PreAuthorize("hasRole('Customer')")
+    // API for customers to reschedule a booking
+    public ResponseEntity<ApiResponse<String>> rescheduleBooking(
+            @RequestBody @Valid RescheduleRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        try {
+            Integer customerId = Integer.parseInt(jwt.getClaimAsString("userID"));
+            String result = invoiceService.rescheduleBooking(
+                    request.getBookingId(),
+                    customerId,
+                    request.getNewBookingDate()
+            );
+            return ResponseEntity.ok(ApiResponse.success(result));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(ex.getMessage()));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Có lỗi xảy ra khi thay đổi lịch hẹn"));
+        }
+    }
+
 
     @PutMapping("/update-meeting-link/{bookingId}")
     @PreAuthorize("hasRole('Staff')")
