@@ -51,13 +51,15 @@ public class ConsultantBookingController {
     public ResponseEntity<ApiResponse<PageResponse<ConsultantBookingDetailResponse>>> getConsultantSchedule(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "bookingDate") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
             @AuthenticationPrincipal Jwt jwt) {
         int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
         String role = jwt.getClaimAsString("role");
         if (!"CONSULTANT".equalsIgnoreCase(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Bạn không có quyền truy cập lịch tư vấn."));
         }
-        PageResponse<ConsultantBookingDetailResponse> schedule = bookingService.getPaginatedScheduleForConsultant(consultantId, page, size);
+        PageResponse<ConsultantBookingDetailResponse> schedule = bookingService.getPaginatedScheduleForConsultant(consultantId, page, size, sortBy, direction);
         return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 
@@ -70,6 +72,8 @@ public class ConsultantBookingController {
             @RequestParam(required = false) String customerName,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "bookingDate") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
             @AuthenticationPrincipal Jwt jwt) {
         int consultantId = Integer.parseInt(jwt.getClaimAsString("userID"));
         String role = jwt.getClaimAsString("role");
@@ -81,7 +85,7 @@ public class ConsultantBookingController {
         LocalDateTime end = endDate != null && !endDate.isEmpty() ? LocalDateTime.parse(endDate) : null;
 
         PageResponse<ConsultantBookingDetailResponse> schedule = bookingService.searchConsultantSchedule(
-                consultantId, page, size, status, customerName, start, end);
+                consultantId, page, size, status, customerName, start, end, sortBy, direction);
         return ResponseEntity.ok(ApiResponse.success(schedule));
     }
 

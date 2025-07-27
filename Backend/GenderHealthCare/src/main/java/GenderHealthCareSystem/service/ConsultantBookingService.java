@@ -229,8 +229,9 @@ public class ConsultantBookingService {
         return PageResponseUtil.mapToPageResponse(responsePage);
     }
 
-    public PageResponse<ConsultantBookingDetailResponse> getPaginatedScheduleForConsultant(Integer consultantId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("bookingDate"));
+    public PageResponse<ConsultantBookingDetailResponse> getPaginatedScheduleForConsultant(Integer consultantId, int page, int size, String sortBy, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         Page<ConsultationBooking> bookingsPage = bookingRepo.findByConsultant(consultantId, pageable);
 
         Page<ConsultantBookingDetailResponse> responsePage = bookingsPage.map(b -> new ConsultantBookingDetailResponse(
@@ -247,8 +248,14 @@ public class ConsultantBookingService {
         return PageResponseUtil.mapToPageResponse(responsePage);
     }
 
-    public PageResponse<ConsultantBookingDetailResponse> searchConsultantSchedule(Integer consultantId, int page, int size, String status, String customerName, LocalDateTime startDate, LocalDateTime endDate) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("bookingDate"));
+    // Overload method for backward compatibility
+    public PageResponse<ConsultantBookingDetailResponse> getPaginatedScheduleForConsultant(Integer consultantId, int page, int size) {
+        return getPaginatedScheduleForConsultant(consultantId, page, size, "bookingDate", "asc");
+    }
+
+    public PageResponse<ConsultantBookingDetailResponse> searchConsultantSchedule(Integer consultantId, int page, int size, String status, String customerName, LocalDateTime startDate, LocalDateTime endDate, String sortBy, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<ConsultationBooking> bookingsPage = bookingRepo.findByConsultantAndFilters(
                 consultantId, status, customerName, startDate, endDate, pageable);
@@ -265,5 +272,10 @@ public class ConsultantBookingService {
         ));
 
         return PageResponseUtil.mapToPageResponse(responsePage);
+    }
+
+    // Overload method for backward compatibility
+    public PageResponse<ConsultantBookingDetailResponse> searchConsultantSchedule(Integer consultantId, int page, int size, String status, String customerName, LocalDateTime startDate, LocalDateTime endDate) {
+        return searchConsultantSchedule(consultantId, page, size, status, customerName, startDate, endDate, "bookingDate", "asc");
     }
 }
