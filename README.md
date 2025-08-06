@@ -254,7 +254,7 @@ The backend follows a clean, layered architecture pattern:
 
 ## 🚀 Deployment
 
-URL: 14.225.192.28/
+**🌐 Production Server**: `http://14.225.192.28/`
 
 ## 📝 License
 
